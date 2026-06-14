@@ -6,6 +6,8 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
+
+const accentLetters = [...t("hero.headlineAccent")];
 ---
 
 <section id="hero" class="hero">
@@ -15,7 +17,15 @@ const t = useTranslations(lang);
       <p class="hero__eyebrow">{t("hero.eyebrow")}</p>
       <h1 class="hero__headline">
         {t("hero.headlineLead")}{" "}
-        <span class="hero__accent">{t("hero.headlineAccent")}</span>
+        <span class="hero__accent" style={`--n:${accentLetters.length}`}>
+          {
+            accentLetters.map((ch, i) => (
+              <span class="hero__accent-ltr" style={`--i:${i}`}>
+                {ch}
+              </span>
+            ))
+          }
+        </span>
       </h1>
     </div>
 
@@ -94,16 +104,30 @@ const t = useTranslations(lang);
   }
 
   .hero__accent {
+    --n: 1;
     font-family: var(--font-serif), serif;
     font-style: italic;
     font-weight: 400;
     font-size: 1.06em;
     letter-spacing: 0;
-    background: linear-gradient(105deg, #fff6f0 10%, #ffb3a6 90%);
+    white-space: nowrap;
+  }
+
+  .hero__accent-ltr {
+    --i: 0;
+    display: inline-block;
+    padding: 0.3em 0.36em;
+    margin: -0.3em -0.36em;
+    background: linear-gradient(105deg, #fff6f0 0%, #ffb3a6 100%)
+      calc(var(--i) / max(var(--n) - 1, 1) * 100%) 50% / calc(var(--n) * 100%)
+      100%;
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     color: transparent;
+    animation: accent-wave 2.4s ease-in-out infinite;
+    animation-delay: calc(var(--i) * 0.08s);
+    will-change: transform;
   }
 
   .hero__scroll {
@@ -147,8 +171,19 @@ const t = useTranslations(lang);
     }
   }
 
+  @keyframes accent-wave {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-0.12em);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
-    .hero__scroll-line {
+    .hero__scroll-line,
+    .hero__accent-ltr {
       animation: none;
     }
   }
