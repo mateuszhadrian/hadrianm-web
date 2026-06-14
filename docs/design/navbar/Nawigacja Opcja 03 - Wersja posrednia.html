@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hadrianm · Nawigacja — Opcja 03 · wersja pośrednia (desktop → tablet → mobile)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     KIERUNEK 4 — Opcja 03 · wersja POŚREDNIA (responsywna)
+     3 progi sterowane realnymi szerokościami (liczone w JS):
+       • DESKTOP  — brand lewo, menu + PL/EN prawo (jedna linia)
+       • TABLET   — gdy odstęp brand↔DLA KOGO < odstęp DLA KOGO↔slash:
+                    menu skacze pod brand, PL/EN na dół ekranu,
+                    odstępy między linkami zacieśniają się przy zwężaniu
+       • MOBILE   — gdy linki zaczęłyby na siebie wchodzić → hamburger
+     Tło: pełna czerń. Przeciągnij prawą krawędź okna, by zmienić szerokość.
+     ───────────────────────────────────────────────────────────── */
+  :root{
+    --bg:#000000;
+    --ink:#F5F0EC;
+    --muted:rgba(245,240,236,0.58);
+    --faint:rgba(245,240,236,0.34);
+    --line:rgba(245,240,236,0.12);
+    --accent:#FF5A47;
+    --glow:255,90,71;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  *,*::before,*::after{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{background:#0b0b0b;color:var(--ink);font-family:'Archivo',sans-serif;
+    -webkit-font-smoothing:antialiased;min-height:100vh;
+    display:flex;flex-direction:column;align-items:center;gap:14px;padding:60px 24px 90px;}
+
+  .hint{font-family:var(--mono);font-size:11px;letter-spacing:0.18em;color:var(--faint);
+    text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+  .hint .pill{color:var(--ink);}
+  .state-readout{font-family:var(--mono);font-size:11px;letter-spacing:0.2em;color:var(--accent);
+    text-transform:uppercase;}
+
+  /* ── okno podglądu (resizowalne) — reprezentuje cały ekran ── */
+  .viewport{position:relative;width:1040px;min-width:300px;max-width:1240px;height:520px;
+    resize:horizontal;overflow:hidden;background:var(--bg);
+    border:1px solid var(--line);border-radius:16px;
+    box-shadow:0 50px 110px -50px rgba(0,0,0,0.9);}
+  /* uchwyt zmiany szerokości (prawy-dolny róg) */
+  .viewport::after{content:'';position:absolute;right:5px;bottom:5px;width:14px;height:14px;
+    border-right:2px solid rgba(245,240,236,0.34);border-bottom:2px solid rgba(245,240,236,0.34);
+    border-radius:0 0 4px 0;pointer-events:none;}
+
+  /* ── pasek nawigacji ── */
+  .shell{position:static;display:flex;align-items:center;
+    justify-content:space-between;gap:20px;padding:26px 30px;}
+  .shell .brand{font-weight:800;font-size:19px;letter-spacing:0.01em;white-space:nowrap;}
+  .shell .brand b{color:var(--muted);font-weight:800;}
+
+  .cluster{display:flex;align-items:center;gap:24px;}
+
+  .nav{display:flex;flex-wrap:nowrap;align-items:center;gap:var(--nav-gap,22px);}
+  .nav a{position:relative;text-decoration:none;cursor:pointer;white-space:nowrap;
+    color:var(--faint);font-weight:500;font-size:12px;text-transform:uppercase;letter-spacing:0.26em;
+    transition:color .35s ease;}
+  .nav .sep{color:var(--line);font-size:12px;user-select:none;}
+  .nav a::before{content:'';position:absolute;inset:-16px -20px;z-index:-1;border-radius:40px;
+    background:radial-gradient(closest-side,rgba(var(--glow),0.32) 0%,rgba(0,0,0,0) 75%);
+    opacity:0;filter:blur(4px);transition:opacity .4s ease;}
+  .nav a:hover{color:var(--ink);}
+  .nav a:hover::before{opacity:1;}
+
+  .lang{display:flex;align-items:center;gap:10px;padding-left:22px;
+    border-left:1px solid var(--line);font-family:var(--mono);font-size:12px;letter-spacing:0.16em;}
+  .lang button{font:inherit;letter-spacing:inherit;background:none;border:none;cursor:pointer;
+    color:var(--faint);transition:color .3s,text-shadow .3s;}
+  .lang button.on{color:var(--ink);text-shadow:0 0 16px rgba(var(--glow),0.5);}
+  .lang .lsep{color:var(--line);}
+
+  /* hamburger (ukryty poza trybem mobilnym) */
+  .burger{position:relative;width:26px;height:18px;cursor:pointer;flex-shrink:0;display:none;}
+  .burger span{position:absolute;right:0;height:2px;background:var(--ink);border-radius:2px;
+    transition:transform .38s cubic-bezier(.5,0,.2,1),width .38s,top .38s;}
+  .burger span:nth-child(1){top:3px;width:26px;}
+  .burger span:nth-child(2){top:13px;width:16px;}
+
+  /* ════ STAN: TABLET (menu pod brandem, PL/EN na dole) ════ */
+  .viewport.is-tablet .shell{flex-wrap:wrap;align-items:flex-start;}
+  .viewport.is-tablet .cluster{flex-basis:100%;margin-top:22px;}
+  .viewport.is-tablet .lang{position:absolute;left:30px;bottom:24px;padding-left:0;border-left:none;}
+
+  /* ════ STAN: MOBILE (hamburger + menu) ════ */
+  .viewport.is-mobile .cluster{display:none;}
+  .viewport.is-mobile .burger{display:block;}
+
+  /* nakładka menu — wyśrodkowany stos capsów z halo */
+  .menu{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;
+    background:rgba(0,0,0,0.80);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    padding:88px 26px 30px;opacity:0;visibility:hidden;transition:opacity .4s ease,visibility .4s;}
+  .viewport.is-open.is-mobile .menu{opacity:1;visibility:visible;}
+  .viewport.is-open .burger span:nth-child(1){top:8px;width:26px;transform:rotate(45deg);
+    box-shadow:0 0 16px rgba(var(--glow),0.6);}
+  .viewport.is-open .burger span:nth-child(2){top:8px;width:26px;transform:rotate(-45deg);
+    box-shadow:0 0 16px rgba(var(--glow),0.6);}
+  .menu .mhead{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--accent);
+    text-transform:uppercase;margin-bottom:24px;text-align:center;}
+  .menu nav{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .menu nav a{position:relative;text-decoration:none;white-space:nowrap;color:var(--faint);
+    font-weight:500;font-size:16px;text-transform:uppercase;letter-spacing:0.24em;padding:16px 0;
+    transition:color .3s;}
+  .menu nav a::before{content:'';position:absolute;inset:-6px -26px;z-index:-1;border-radius:40px;
+    background:radial-gradient(closest-side,rgba(var(--glow),0.34),rgba(0,0,0,0) 75%);
+    opacity:0;filter:blur(4px);transition:opacity .4s;}
+  .menu nav a:hover,.menu nav a:active{color:var(--ink);}
+  .menu nav a:hover::before,.menu nav a:active::before{opacity:1;}
+  .menu .mlang{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:12px;
+    font-family:var(--mono);font-size:12px;letter-spacing:0.18em;padding-top:24px;
+    border-top:1px solid var(--line);}
+  .menu .mlang .lab{color:var(--faint);margin-right:2px;}
+  .menu .mlang button{font:inherit;letter-spacing:inherit;background:none;border:none;cursor:pointer;
+    color:var(--faint);transition:color .3s,text-shadow .3s;}
+  .menu .mlang button.on{color:var(--ink);text-shadow:0 0 16px rgba(var(--glow),0.5);}
+  .menu .mlang .lsep{color:var(--line);}
+</style>
+</head>
+<body>
+  <div class="hint">
+    <span class="pill">↔ Przeciągnij prawą krawędź okna</span>
+    <span>·</span>
+    <span class="state-readout" id="readout">DESKTOP</span>
+  </div>
+
+  <div class="viewport is-desktop" id="viewport">
+    <header class="shell">
+      <div class="brand">hadrian<b>m</b></div>
+
+      <div class="cluster">
+        <nav class="nav" id="nav">
+          <a href="#" data-pl="Dla kogo" data-en="Who it's for">Dla kogo</a>
+          <span class="sep">/</span>
+          <a href="#" data-pl="Oferta" data-en="Services">Oferta</a>
+          <span class="sep">/</span>
+          <a href="#" data-pl="Realizacje" data-en="Work">Realizacje</a>
+          <span class="sep">/</span>
+          <a href="#" data-pl="O mnie" data-en="About">O mnie</a>
+          <span class="sep">/</span>
+          <a href="#" data-pl="FAQ" data-en="FAQ">FAQ</a>
+          <span class="sep">/</span>
+          <a href="#" data-pl="Kontakt" data-en="Contact">Kontakt</a>
+        </nav>
+        <div class="lang">
+          <button data-lang="pl" class="on">PL</button>
+          <span class="lsep">/</span>
+          <button data-lang="en">EN</button>
+        </div>
+      </div>
+
+      <div class="burger" data-toggle><span></span><span></span></div>
+    </header>
+
+    <!-- menu mobilne -->
+    <div class="menu">
+      <div class="mhead">Menu</div>
+      <nav>
+        <a href="#" data-pl="Dla kogo" data-en="Who it's for">Dla kogo</a>
+        <a href="#" data-pl="Oferta" data-en="Services">Oferta</a>
+        <a href="#" data-pl="Realizacje" data-en="Work">Realizacje</a>
+        <a href="#" data-pl="O mnie" data-en="About">O mnie</a>
+        <a href="#" data-pl="FAQ" data-en="FAQ">FAQ</a>
+        <a href="#" data-pl="Kontakt" data-en="Contact">Kontakt</a>
+      </nav>
+      <div class="mlang">
+        <span class="lab">Język</span>
+        <button data-lang="pl" class="on">PL</button>
+        <span class="lsep">/</span>
+        <button data-lang="en">EN</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+(function(){
+  var viewport = document.getElementById('viewport');
+  var nav      = document.getElementById('nav');
+  var readout  = document.getElementById('readout');
+  var shell    = viewport.querySelector('.shell');
+  var brand    = shell.querySelector('.brand');
+  var cluster  = shell.querySelector('.cluster');
+  var lang     = shell.querySelector('.lang');
+
+  var GAP_MAX = 22;   // maks. odstęp między pozycjami menu (= odstęp DLA KOGO↔slash)
+  var GAP_MIN = 9;    // min. odstęp zanim linki zaczną na siebie wchodzić
+
+  // zmierzone naturalne szerokości (niezależne od stanu)
+  var M = null;
+
+  function measure(){
+    // mierzymy w układzie desktop, przy GAP_MAX
+    viewport.classList.remove('is-tablet','is-mobile');
+    viewport.classList.add('is-desktop');
+    nav.style.setProperty('--nav-gap', GAP_MAX + 'px');
+
+    var cs = getComputedStyle(shell);
+    var padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+    var clusterGap = parseFloat(getComputedStyle(cluster).columnGap) || 0;
+    var brandW = brand.offsetWidth;
+    var langW  = lang.offsetWidth;
+    var gaps   = nav.children.length - 1;
+
+    // szerokość samej treści menu (bez odstępów)
+    nav.style.setProperty('--nav-gap', '0px');
+    var navContent = nav.scrollWidth;
+    nav.style.setProperty('--nav-gap', GAP_MAX + 'px');
+
+    var navMax = navContent + GAP_MAX * gaps;          // menu przy maks. odstępie
+    var clusterW = navMax + clusterGap + langW;
+
+    M = {
+      padX: padX,
+      navContent: navContent,
+      gaps: gaps,
+      // próg DESKTOP→TABLET: brand↔menu < odstęp menu (GAP_MAX)
+      tStack: brandW + clusterW + GAP_MAX + padX,
+      // szerokość, przy której menu wypełnia wiersz dokładnie przy GAP_MAX
+      wGapMax: navContent + GAP_MAX * gaps + padX,
+      // próg TABLET→MOBILE: menu nie mieści się już nawet przy GAP_MIN
+      tMobile: navContent + GAP_MIN * gaps + padX
+    };
+  }
+
+  function apply(){
+    if(!M) return;
+    var w = viewport.clientWidth;
+
+    if(w >= M.tStack){
+      setState('desktop');
+      nav.style.setProperty('--nav-gap', GAP_MAX + 'px');
+    } else if(w > M.tMobile){
+      setState('tablet');
+      var g;
+      if(w >= M.wGapMax) g = GAP_MAX;
+      else g = GAP_MIN + (w - M.tMobile) / (M.wGapMax - M.tMobile) * (GAP_MAX - GAP_MIN);
+      nav.style.setProperty('--nav-gap', g.toFixed(1) + 'px');
+    } else {
+      setState('mobile');
+    }
+  }
+
+  function setState(s){
+    viewport.classList.toggle('is-desktop', s === 'desktop');
+    viewport.classList.toggle('is-tablet',  s === 'tablet');
+    viewport.classList.toggle('is-mobile',  s === 'mobile');
+    if(s !== 'mobile') viewport.classList.remove('is-open');
+    readout.textContent = s.toUpperCase();
+  }
+
+  // ── język ──
+  function setLang(l){
+    document.querySelectorAll('a[data-pl]').forEach(function(a){
+      a.textContent = (l === 'pl') ? a.dataset.pl : a.dataset.en;
+    });
+    document.querySelectorAll('button[data-lang]').forEach(function(b){
+      b.classList.toggle('on', b.dataset.lang === l);
+    });
+    document.documentElement.lang = l;
+    measure(); apply();   // szerokość PL/EN może się zmienić → przelicz progi
+  }
+  document.addEventListener('click', function(e){
+    var b = e.target.closest('button[data-lang]');
+    if(b){ e.preventDefault(); setLang(b.dataset.lang); }
+    var t = e.target.closest('[data-toggle]');
+    if(t){ e.preventDefault(); viewport.classList.toggle('is-open'); }
+  });
+
+  // ── obserwacja szerokości okna (pętla rAF — niezawodna przy przeciąganiu krawędzi) ──
+  var lastW = -1;
+  function watch(){
+    var w = viewport.clientWidth;
+    if(w !== lastW){ lastW = w; apply(); }
+    requestAnimationFrame(watch);
+  }
+  requestAnimationFrame(watch);
+  window.addEventListener('resize', apply);
+
+  function init(){ measure(); apply(); }
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(init); }
+  init();
+})();
+</script>
+</body>
+</html>

@@ -12,7 +12,6 @@ const accentLetters = [...t("hero.headlineAccent")];
 
 <section id="hero" class="hero">
   <div class="hero__content">
-    <div class="hero__brand">hadrian<span>m</span></div>
     <div class="hero__center">
       <p class="hero__eyebrow">{t("hero.eyebrow")}</p>
       <h1 class="hero__headline">
@@ -51,22 +50,6 @@ const accentLetters = [...t("hero.headlineAccent")];
     position: sticky;
     top: 0;
     height: 100svh;
-  }
-
-  .hero__brand {
-    position: absolute;
-    top: clamp(1.5rem, 5.5vh, 3.75rem);
-    left: 50%;
-    transform: translateX(-50%);
-    font-family: var(--font-body), sans-serif;
-    font-weight: 800;
-    font-size: clamp(1rem, 0.95vw, 1.18rem);
-    letter-spacing: 0.01em;
-    color: var(--ink);
-    white-space: nowrap;
-  }
-  .hero__brand span {
-    color: var(--muted);
   }
 
   .hero__center {

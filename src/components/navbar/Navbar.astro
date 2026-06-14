@@ -1,0 +1,712 @@
+---
+import { type Lang } from "@/i18n/utils";
+import { navItems, navLabel } from "@/i18n/nav";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const isEn = lang === "en";
+
+const homeHref = isEn ? "/en/" : "/";
+
+const t = {
+  nav: isEn ? "Main navigation" : "Główna nawigacja",
+  mobileNav: isEn ? "Mobile menu" : "Menu mobilne",
+  openMenu: isEn ? "Open menu" : "Otwórz menu",
+  closeMenu: isEn ? "Close menu" : "Zamknij menu",
+  langGroup: isEn ? "Language" : "Wybór języka",
+  menuHead: "Menu",
+  langLabel: isEn ? "Language" : "Język",
+};
+---
+
+<div class="nav-root" data-nav data-state="desktop">
+  <nav class="nav-bar" aria-label={t.nav}>
+    <a class="brand" href={homeHref}>hadrian<span>m</span></a>
+
+    <ul class="nav-links">
+      {
+        navItems.map((item, i) => (
+          <Fragment>
+            {i > 0 && (
+              <li class="sep" aria-hidden="true">
+                /
+              </li>
+            )}
+            <li>
+              <a
+                class="nav-link"
+                href={`#${item.id}`}
+                aria-label={navLabel(item, lang)}
+              >
+                {[...navLabel(item, lang)].map((ch, ci) =>
+                  ch === " " ? (
+                    <span class="char char--space" aria-hidden="true" />
+                  ) : (
+                    <span class="char" aria-hidden="true" style={`--i:${ci}`}>
+                      <span>{ch}</span>
+                      <span>{ch}</span>
+                    </span>
+                  ),
+                )}
+              </a>
+            </li>
+          </Fragment>
+        ))
+      }
+    </ul>
+
+    <div class="lang" role="group" aria-label={t.langGroup}>
+      <a
+        href="/"
+        class:list={["lang-btn", { on: !isEn }]}
+        aria-current={!isEn ? "true" : undefined}
+        hreflang="pl">PL</a
+      >
+      <span class="lsep" aria-hidden="true">/</span>
+      <a
+        href="/en/"
+        class:list={["lang-btn", { on: isEn }]}
+        aria-current={isEn ? "true" : undefined}
+        hreflang="en">EN</a
+      >
+    </div>
+
+    <button
+      class="burger"
+      type="button"
+      data-burger
+      aria-expanded="false"
+      aria-controls="nav-mobile-menu"
+      aria-label={t.openMenu}
+      data-open-label={t.openMenu}
+      data-close-label={t.closeMenu}
+    >
+      <span></span><span></span>
+    </button>
+  </nav>
+
+  <div class="mobile-menu" id="nav-mobile-menu" data-menu>
+    <p class="m-head">{t.menuHead}</p>
+    <nav aria-label={t.mobileNav}>
+      <ul>
+        {
+          navItems.map((item) => (
+            <li>
+              <a class="m-link" href={`#${item.id}`} data-menu-link>
+                {navLabel(item, lang)}
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <div class="m-lang" role="group" aria-label={t.langGroup}>
+      <span class="lab">{t.langLabel}</span>
+      <a
+        href="/"
+        class:list={["lang-btn", { on: !isEn }]}
+        aria-current={!isEn ? "true" : undefined}
+        hreflang="pl">PL</a
+      >
+      <span class="lsep" aria-hidden="true">/</span>
+      <a
+        href="/en/"
+        class:list={["lang-btn", { on: isEn }]}
+        aria-current={isEn ? "true" : undefined}
+        hreflang="en">EN</a
+      >
+    </div>
+  </div>
+</div>
+
+<style>
+  .nav-root {
+    --ink: #f5f0ec;
+    --muted: rgba(245, 240, 236, 0.58);
+    --faint: rgba(245, 240, 236, 0.34);
+    --line: rgba(245, 240, 236, 0.12);
+    --accent: #ff5a47;
+    --glow: 255, 90, 71;
+
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    /* niewidzialny kontener — nie przechwytuje klików nad treścią */
+    pointer-events: none;
+  }
+  /* tylko elementy interaktywne łapią wskaźnik */
+  .brand,
+  .nav-link,
+  .lang a,
+  .burger,
+  .mobile-menu {
+    pointer-events: auto;
+  }
+
+  /* ── pasek ── */
+  .nav-bar {
+    display: flex;
+    align-items: center;
+    column-gap: 24px;
+    padding-block: clamp(1.25rem, 3.2vh, 1.9rem);
+    padding-inline: clamp(1.25rem, 4vw, 2.75rem);
+    transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
+  }
+  .nav-root[data-hidden] .nav-bar {
+    transform: translateY(-130%);
+  }
+
+  .brand {
+    font-family: var(--font-body), sans-serif;
+    font-weight: 800;
+    font-size: clamp(1.05rem, 1.1vw, 1.2rem);
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .brand span {
+    color: var(--muted);
+  }
+
+  /* ── linki desktop (rozdzielone slashem) ── */
+  .nav-links {
+    --nav-gap: 22px; /* nadpisywane z JS przy zwężaniu (stan tablet) */
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    margin-left: auto; /* dosuń zestaw do prawej krawędzi */
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--nav-gap);
+  }
+  .nav-link {
+    position: relative;
+    text-decoration: none;
+    white-space: nowrap;
+    /* stan docelowy = dawny hover (kolor + halo zapalone na stałe).
+       Hover dorobimy później, gdy ustalimy jego docelowe zachowanie. */
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.26em;
+    transition: color 0.35s ease;
+  }
+  .sep {
+    color: var(--line);
+    font-size: 12px;
+    user-select: none;
+  }
+  /* miękkie koralowe halo za słowem + rozbłysk bieli na hover */
+  .nav-link::before {
+    content: "";
+    position: absolute;
+    inset: -16px -20px;
+    z-index: -1;
+    border-radius: 40px;
+    background: radial-gradient(
+      closest-side,
+      rgba(var(--glow), 0.32) 0%,
+      rgba(0, 0, 0, 0) 75%
+    );
+    opacity: 0;
+    filter: blur(4px);
+    transition: opacity 0.4s ease;
+  }
+  /* halo zapala się dopiero na hover (razem z falą liter Wersji B) */
+  .nav-link:hover::before,
+  .nav-link:focus-visible::before {
+    opacity: 1;
+  }
+
+  .nav-link .char {
+    --i: 0; /* indeks litery (do staggera) — ustawiany inline z markupu */
+    position: relative;
+    display: inline-block;
+    /* clip-path maskuje wjeżdżającą kopię BEZ zmiany baseline
+       (overflow:hidden przesuwałby litery w dół) */
+    clip-path: inset(0);
+    line-height: 1;
+    vertical-align: baseline;
+  }
+  .nav-link .char--space {
+    width: 0.3em;
+  }
+  .nav-link .char > span {
+    display: block;
+    transition: transform 0.42s cubic-bezier(0.76, 0, 0.24, 1);
+    transition-delay: calc(var(--i) * 0.028s);
+  }
+  .nav-link .char > span:nth-child(2) {
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+  .nav-link:hover .char > span,
+  .nav-link:focus-visible .char > span {
+    transform: translateY(-100%);
+  }
+
+  /* ── przełącznik języka ── */
+  .lang {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-left: 22px;
+    border-left: 1px solid var(--line);
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.16em;
+  }
+  .lang-btn {
+    color: var(--faint);
+    text-decoration: none;
+    transition:
+      color 0.3s,
+      text-shadow 0.3s;
+  }
+  .lang-btn.on {
+    color: var(--ink);
+    text-shadow: 0 0 16px rgba(var(--glow), 0.5);
+  }
+  .lang-btn:hover,
+  .lang-btn:focus-visible {
+    color: var(--ink);
+  }
+  .lsep {
+    color: var(--line);
+  }
+
+  .burger {
+    position: relative;
+    width: 26px;
+    height: 18px;
+    flex-shrink: 0;
+    margin-left: auto;
+    display: none;
+    padding: 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  .burger span {
+    position: absolute;
+    right: 0;
+    height: 2px;
+    background: var(--ink);
+    border-radius: 2px;
+    transition:
+      transform 0.38s cubic-bezier(0.5, 0, 0.2, 1),
+      width 0.38s,
+      top 0.38s;
+  }
+  .burger span:nth-child(1) {
+    top: 3px;
+    width: 26px;
+  }
+  .burger span:nth-child(2) {
+    top: 13px;
+    width: 16px;
+  }
+  .nav-root[data-open] .burger span:nth-child(1) {
+    top: 8px;
+    width: 26px;
+    transform: rotate(45deg);
+    box-shadow: 0 0 16px rgba(var(--glow), 0.6);
+  }
+  .nav-root[data-open] .burger span:nth-child(2) {
+    top: 8px;
+    width: 26px;
+    transform: rotate(-45deg);
+    box-shadow: 0 0 16px rgba(var(--glow), 0.6);
+  }
+
+  /* ════ STAN: TABLET (linki pod brandem, PL/EN w prawym górnym rogu) ════ */
+  .nav-root[data-state="tablet"] .nav-bar {
+    flex-wrap: wrap;
+    align-items: center;
+    row-gap: 18px;
+  }
+  .nav-root[data-state="tablet"] .nav-links {
+    order: 3;
+    flex-basis: 100%;
+    margin-left: 0;
+    justify-content: flex-start;
+  }
+  .nav-root[data-state="tablet"] .lang {
+    order: 2;
+    margin-left: auto;
+    padding-left: 0;
+    border-left: none;
+  }
+  .nav-root[data-state="tablet"] .brand {
+    order: 1;
+  }
+
+  /* ════ STAN: MOBILE (hamburger + panel) ════ */
+  .nav-root[data-state="mobile"] .nav-links,
+  .nav-root[data-state="mobile"] .lang {
+    display: none;
+  }
+  .nav-root[data-state="mobile"] .burger {
+    display: block;
+  }
+
+  /* ── panel mobilny ── */
+  .mobile-menu {
+    position: fixed;
+    inset: 0;
+    z-index: -1; /* pod paskiem: brand + „×" zostają widoczne i klikalne */
+    display: flex;
+    flex-direction: column;
+    padding: clamp(5.5rem, 16vh, 7rem) 26px 30px;
+    background: rgba(0, 0, 0, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.4s ease,
+      visibility 0.4s;
+  }
+  .nav-root[data-open] .mobile-menu {
+    opacity: 1;
+    visibility: visible;
+  }
+  .m-head {
+    margin: 0 0 24px;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+    text-align: center;
+  }
+  .mobile-menu nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+  }
+  .m-link {
+    position: relative;
+    display: inline-block;
+    text-decoration: none;
+    white-space: nowrap;
+    color: var(--faint);
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    text-transform: uppercase;
+    letter-spacing: 0.24em;
+    padding: 16px 0;
+    opacity: 0;
+    transform: translateY(10px);
+    transition:
+      opacity 0.4s ease,
+      transform 0.4s ease,
+      color 0.3s;
+  }
+  .m-link::before {
+    content: "";
+    position: absolute;
+    inset: -6px -26px;
+    z-index: -1;
+    border-radius: 40px;
+    background: radial-gradient(
+      closest-side,
+      rgba(var(--glow), 0.34),
+      rgba(0, 0, 0, 0) 75%
+    );
+    opacity: 0;
+    filter: blur(4px);
+    transition: opacity 0.4s;
+  }
+  .m-link:hover,
+  .m-link:focus-visible {
+    color: var(--ink);
+  }
+  .m-link:hover::before,
+  .m-link:focus-visible::before {
+    opacity: 1;
+  }
+  .nav-root[data-open] .m-link {
+    opacity: 1;
+    transform: none;
+  }
+  .nav-root[data-open] .mobile-menu nav li:nth-child(1) .m-link {
+    transition-delay: 0.06s;
+  }
+  .nav-root[data-open] .mobile-menu nav li:nth-child(2) .m-link {
+    transition-delay: 0.1s;
+  }
+  .nav-root[data-open] .mobile-menu nav li:nth-child(3) .m-link {
+    transition-delay: 0.14s;
+  }
+  .nav-root[data-open] .mobile-menu nav li:nth-child(4) .m-link {
+    transition-delay: 0.18s;
+  }
+  .nav-root[data-open] .mobile-menu nav li:nth-child(5) .m-link {
+    transition-delay: 0.22s;
+  }
+  .nav-root[data-open] .mobile-menu nav li:nth-child(6) .m-link {
+    transition-delay: 0.26s;
+  }
+
+  .m-lang {
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding-top: 24px;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.18em;
+  }
+  .m-lang .lab {
+    color: var(--faint);
+    margin-right: 2px;
+  }
+
+  /* ── reduced motion: navbar zawsze widoczny, bez przejść ── */
+  @media (prefers-reduced-motion: reduce) {
+    .nav-bar {
+      transition: none;
+      transform: none !important;
+    }
+    .mobile-menu,
+    .m-link,
+    .burger span {
+      transition: none;
+    }
+    .m-link {
+      opacity: 1;
+      transform: none;
+    }
+    /* bez fali liter na hover, gdy użytkownik ogranicza ruch */
+    .nav-link .char > span {
+      transition: none;
+    }
+    .nav-link:hover .char > span,
+    .nav-link:focus-visible .char > span {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  type State = "desktop" | "tablet" | "mobile";
+
+  const root = document.querySelector<HTMLElement>("[data-nav]");
+  if (root) {
+    const bar = root.querySelector<HTMLElement>(".nav-bar")!;
+    const brand = root.querySelector<HTMLElement>(".brand")!;
+    const links = root.querySelector<HTMLElement>(".nav-links")!;
+    const lang = root.querySelector<HTMLElement>(".lang")!;
+    const burger = root.querySelector<HTMLButtonElement>("[data-burger]")!;
+    const menu = root.querySelector<HTMLElement>("[data-menu]")!;
+    const reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
+
+    // ── progi responsywności (px) ──
+    const GAP_MAX = 22; // maks. odstęp między pozycjami menu
+    const GAP_MIN = 10; // min. odstęp zanim linki zaczną na siebie wchodzić
+    const BRAND_GAP = 40; // komfortowy odstęp brand ↔ menu w jednej linii
+
+    type Measure = {
+      navContent: number;
+      gaps: number;
+      padX: number;
+      langGap: number;
+      brandW: number;
+      langW: number;
+    };
+    let M: Measure | null = null;
+
+    // Pomiar naturalnych szerokości — wymusza chwilowo układ desktop
+    // i czyta wymiary SYNCHRONICZNIE (bez przerysowania = bez mignięcia).
+    function measure() {
+      const prev = root!.dataset.state as State;
+      root!.dataset.state = "desktop";
+
+      links.style.setProperty("--nav-gap", "0px");
+      const navContent = links.scrollWidth; // linki + slashe bez odstępów
+      links.style.setProperty("--nav-gap", GAP_MAX + "px");
+
+      const cs = getComputedStyle(bar);
+      const padX = parseFloat(cs.paddingLeft) + parseFloat(cs.paddingRight);
+      const langGap = parseFloat(getComputedStyle(lang).paddingLeft) || 0;
+
+      M = {
+        navContent,
+        gaps: links.children.length - 1,
+        padX,
+        langGap,
+        brandW: brand.offsetWidth,
+        langW: lang.offsetWidth,
+      };
+
+      if (prev) root!.dataset.state = prev;
+    }
+
+    function apply() {
+      if (!M) return;
+      const w = document.documentElement.clientWidth;
+
+      const navMax = M.navContent + GAP_MAX * M.gaps;
+      const oneLine =
+        M.brandW + BRAND_GAP + navMax + M.langGap + M.langW + M.padX;
+      const wGapMax = M.navContent + GAP_MAX * M.gaps + M.padX;
+      const tMobile = M.navContent + GAP_MIN * M.gaps + M.padX;
+
+      if (w >= oneLine) {
+        setState("desktop");
+        links.style.setProperty("--nav-gap", GAP_MAX + "px");
+      } else if (w > tMobile) {
+        setState("tablet");
+        let g = GAP_MAX;
+        if (w < wGapMax) {
+          g =
+            GAP_MIN +
+            ((w - tMobile) / (wGapMax - tMobile)) * (GAP_MAX - GAP_MIN);
+        }
+        links.style.setProperty("--nav-gap", g.toFixed(1) + "px");
+      } else {
+        setState("mobile");
+      }
+    }
+
+    function setState(s: State) {
+      if (root!.dataset.state === s) return;
+      root!.dataset.state = s;
+      if (s !== "mobile") closeMenu();
+    }
+
+    // ── hide-on-scroll (desktop + tablet) ──
+    const TOP_ZONE = 64; // w tej strefie u góry pasek zawsze widoczny
+    const DELTA = 8; // próg ruchu zanim zmienimy kierunek (anty-migotanie)
+    let lastY = window.scrollY;
+    let ticking = false;
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        ticking = false;
+        const y = window.scrollY;
+
+        if (reduceMQ.matches || root!.dataset.state === "mobile" || isOpen) {
+          root!.removeAttribute("data-hidden");
+          lastY = y;
+          return;
+        }
+        if (y <= TOP_ZONE) {
+          root!.removeAttribute("data-hidden");
+          lastY = y;
+          return;
+        }
+        const dy = y - lastY;
+        if (Math.abs(dy) < DELTA) return; // za mały ruch — trzymaj kotwicę
+        if (dy > 0) root!.setAttribute("data-hidden", "");
+        else root!.removeAttribute("data-hidden");
+        lastY = y;
+      });
+    }
+    addEventListener("scroll", onScroll, { passive: true });
+
+    // ── panel mobilny: otwieranie / zamykanie + a11y ──
+    let isOpen = false;
+    let savedScroll = 0;
+
+    function lockBody() {
+      savedScroll = window.scrollY;
+      document.body.style.position = "fixed";
+      document.body.style.top = `-${savedScroll}px`;
+      document.body.style.left = "0";
+      document.body.style.right = "0";
+    }
+    function unlockBody() {
+      document.body.style.position = "";
+      document.body.style.top = "";
+      document.body.style.left = "";
+      document.body.style.right = "";
+      window.scrollTo(0, savedScroll);
+    }
+
+    function openMenu() {
+      if (isOpen) return;
+      isOpen = true;
+      root!.setAttribute("data-open", "");
+      root!.removeAttribute("data-hidden");
+      burger.setAttribute("aria-expanded", "true");
+      burger.setAttribute("aria-label", burger.dataset.closeLabel || "");
+      lockBody();
+      menu.querySelector<HTMLElement>("a")?.focus();
+    }
+    function closeMenu(returnFocus = false) {
+      if (!isOpen) return;
+      isOpen = false;
+      root!.removeAttribute("data-open");
+      burger.setAttribute("aria-expanded", "false");
+      burger.setAttribute("aria-label", burger.dataset.openLabel || "");
+      unlockBody();
+      if (returnFocus) burger.focus();
+    }
+
+    burger.addEventListener("click", () =>
+      isOpen ? closeMenu(true) : openMenu(),
+    );
+    // klik w pozycję menu zamyka panel (gdy linki zaczną nawigować)
+    menu
+      .querySelectorAll("[data-menu-link]")
+      .forEach((a) => a.addEventListener("click", () => closeMenu()));
+
+    // ── focus trap + Esc ──
+    document.addEventListener("keydown", (e) => {
+      if (!isOpen) return;
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeMenu(true);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const f = [...menu.querySelectorAll<HTMLElement>("a[href]"), burger];
+      if (!f.length) return;
+      const first = f[0];
+      const last = f[f.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+
+    // ── obserwacja szerokości (ResizeObserver — liczy tylko przy zmianie) ──
+    const ro = new ResizeObserver(() => apply());
+    ro.observe(document.documentElement);
+
+    function init() {
+      measure();
+      apply();
+    }
+    init();
+    if (document.fonts?.ready) {
+      document.fonts.ready.then(() => {
+        measure();
+        apply();
+      });
+    }
+  }
+</script>

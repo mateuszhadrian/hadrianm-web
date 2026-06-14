@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Navbar from "@/components/navbar/Navbar.astro";
 import Hero from "@/components/sections/hero/Hero.astro";
 import HeroBackground from "@/components/sections/hero/HeroBackground.astro";
 import Problem from "@/components/sections/problem/Problem.astro";
@@ -22,6 +23,8 @@ const t = useTranslations(lang);
       <ProblemBackground />
     </div>
   </div>
+
+  <Navbar lang={lang} />
 
   <main class="page">
     <Hero lang={lang} />

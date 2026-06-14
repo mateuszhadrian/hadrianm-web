@@ -1,0 +1,223 @@
+<!--
+
+  Dwie wersje:
+    A) GSAP  -> najwierniejsza oryginałowi (lukebaffait.fr używa GSAP)
+    B) CSS   -> czysty CSS-owy "swap z maską" (overflow:hidden + translateY),
+                bez JS do samej animacji; dobry jako fallback / lekka alternatywa
+-->
+<style>
+  :root {
+    /* --- zmienne do strojenia efektu (Wersja A / GSAP) --- */
+    --rise: -72%;          /* jak wysoko podskakuje litera (yPercent) */
+    --dur: 0.22;           /* czas jednej fazy (s) -> ustawiane też w JS */
+    --stagger: 0.028;      /* odstęp między literami (s) -> ustawiane też w JS */
+
+    --bg: #0a0a0a;
+    --fg: #e8e6e2;
+    --muted: #6f6c68;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--fg);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    gap: 64px;
+    padding: 48px;
+  }
+
+  .demo-label {
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 18px;
+  }
+
+  /* ---------- układ paska nawigacji (wspólny) ---------- */
+  .nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-top: 1px solid rgba(255,255,255,0.12);
+    padding-top: 18px;
+  }
+  .nav__group { display: flex; align-items: center; gap: 22px; }
+  .nav__sep { color: var(--muted); font-size: 13px; }
+
+  .nav-link {
+    color: var(--fg);
+    text-decoration: none;
+    font-size: 14px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    /* maska w pionie: gdy litera podskakuje, nie wchodzi na sąsiednie wiersze */
+    display: inline-block;
+    line-height: 1;
+    padding: 2px 0;
+  }
+
+  /* pojedyncza litera po splicie */
+  .char {
+    display: inline-block;
+    will-change: transform;
+    /* spacja musi zachować szerokość */
+  }
+  .char--space { width: 0.32em; }
+
+  /* uszanuj preferencje dostępności */
+  @media (prefers-reduced-motion: reduce) {
+    .char { transform: none !important; }
+  }
+
+  /* =========================================================
+     WERSJA B — czysty CSS ("swap z maską")
+     Każda litera ma DWIE kopie ustawione jedna pod drugą w okienku
+     z overflow:hidden. Na hover cały stos jedzie w górę o 100% ->
+     dolna (identyczna) kopia wjeżdża na miejsce. Stagger robimy
+     przez transition-delay: calc(var(--i) * krok).
+     ========================================================= */
+  .nav--css .nav-link { overflow: hidden; }
+  .nav--css .char {
+    position: relative;
+    overflow: hidden;
+    height: 1em;
+    line-height: 1;
+  }
+  .nav--css .char > span {
+    display: block;
+    transition: transform 0.42s cubic-bezier(0.76, 0, 0.24, 1);
+    transition-delay: calc(var(--i) * 0.028s);
+  }
+  .nav--css .char > span:nth-child(2) {
+    position: absolute;
+    top: 100%;
+    left: 0;
+  }
+  .nav--css .nav-link:hover .char > span { transform: translateY(-100%); }
+</style>
+
+<!-- ============== WERSJA A: GSAP ============== -->
+<section>
+  <div class="demo-label">Wersja A — GSAP (jak na oryginale, animacja "fala" raz na hover)</div>
+  <nav class="nav nav--gsap">
+    <div class="nav__group">
+      <span style="color:var(--muted);font-size:13px">&rarr; V3.0</span>
+    </div>
+    <div class="nav__group">
+      <a class="nav-link" href="#"><span class="label">Behance</span></a>
+      <span class="nav__sep">/</span>
+      <a class="nav-link" href="#"><span class="label">Linkedin</span></a>
+      <span class="nav__sep">/</span>
+      <a class="nav-link" href="#"><span class="label">Github</span></a>
+    </div>
+    <div class="nav__group">
+      <a class="nav-link" href="#"><span class="label">Work</span></a>
+      <a class="nav-link" href="#"><span class="label">Info</span></a>
+      <a class="nav-link" href="#"><span class="label">Contact</span></a>
+    </div>
+  </nav>
+</section>
+
+<!-- ============== WERSJA B: czysty CSS ============== -->
+<section>
+  <div class="demo-label">Wersja B — czysty CSS (swap z maską, stały stan :hover)</div>
+  <nav class="nav nav--css">
+    <div class="nav__group">
+      <span style="color:var(--muted);font-size:13px">&rarr; V3.0</span>
+    </div>
+    <div class="nav__group">
+      <a class="nav-link" href="#"><span class="label">Behance</span></a>
+      <span class="nav__sep">/</span>
+      <a class="nav-link" href="#"><span class="label">Linkedin</span></a>
+      <span class="nav__sep">/</span>
+      <a class="nav-link" href="#"><span class="label">Github</span></a>
+    </div>
+    <div class="nav__group">
+      <a class="nav-link" href="#"><span class="label">Work</span></a>
+      <a class="nav-link" href="#"><span class="label">Info</span></a>
+      <a class="nav-link" href="#"><span class="label">Contact</span></a>
+    </div>
+  </nav>
+</section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // --- prosty splitter: zamienia tekst w spany .char ---
+  // (zamiast płatnego pluginu SplitText; zachowuje dostępność przez aria-label)
+  function splitChars(label) {
+    const text = label.textContent;
+    label.setAttribute('aria-label', text);
+    label.textContent = '';
+    const chars = [];
+    [...text].forEach((ch, i) => {
+      const span = document.createElement('span');
+      span.setAttribute('aria-hidden', 'true');
+      if (ch === ' ') {
+        span.className = 'char char--space';
+      } else {
+        span.className = 'char';
+        span.textContent = ch;
+        span.style.setProperty('--i', i); // przyda się też wersji CSS
+      }
+      label.appendChild(span);
+      if (ch !== ' ') chars.push(span);
+    });
+    return chars;
+  }
+
+  // ---------- WERSJA A (GSAP) ----------
+  const RISE_PERCENT = -72;  // jak wysoko podskakuje litera
+  const DURATION = 0.22;     // czas jednej fazy
+  const STAGGER = 0.028;     // odstęp między literami
+  const EASE = 'power3.out';
+
+  document.querySelectorAll('.nav--gsap .nav-link').forEach(link => {
+    const chars = splitChars(link.querySelector('.label'));
+
+    link.addEventListener('mouseenter', () => {
+      if (reduceMotion) return;
+      gsap.killTweensOf(chars);          // restart, jeśli wjeżdżamy ponownie
+      gsap.set(chars, { yPercent: 0 });
+      gsap.to(chars, {
+        yPercent: RISE_PERCENT,
+        duration: DURATION,
+        ease: EASE,
+        stagger: { each: STAGGER },      // fala od lewej do prawej
+        yoyo: true,                      // ...i powrót na linię bazową
+        repeat: 1
+      });
+    });
+  });
+
+  // ---------- WERSJA B (CSS) ----------
+  // dla wersji CSS dublujemy każdą literę (dwie kopie pod sobą) i nadajemy --i
+  document.querySelectorAll('.nav--css .nav-link').forEach(link => {
+    const label = link.querySelector('.label');
+    const text = label.textContent;
+    label.setAttribute('aria-label', text);
+    label.textContent = '';
+    [...text].forEach((ch, i) => {
+      const charEl = document.createElement('span');
+      if (ch === ' ') {
+        charEl.className = 'char char--space';
+      } else {
+        charEl.className = 'char';
+        charEl.setAttribute('aria-hidden', 'true');
+        charEl.style.setProperty('--i', i);
+        const a = document.createElement('span'); a.textContent = ch;
+        const b = document.createElement('span'); b.textContent = ch; // kopia, która "wjeżdża"
+        charEl.append(a, b);
+      }
+      label.appendChild(charEl);
+    });
+  });
+</script>
