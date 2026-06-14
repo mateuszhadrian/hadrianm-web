@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>K4 · Klatka C · bez tła</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; width: 100%; height: 100%; background: #0A0709; overflow: hidden; }
+  #stage { position: fixed; top: 50%; left: 50%; transform-origin: center center; }
+  #lbl { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%);
+         font: 10px/1 monospace; color: rgba(255,90,71,.45); letter-spacing: .18em; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+<div id="lbl">K4 · CZERWONA MGŁA · KLATKA C · BEZ TŁA</div>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel">
+// vena-themes.jsx — 3 kierunki wizualne + ekrany "mini-strony" studia beauty
+// Exports: VENA_THEMES, VMONO, VPhotoSlot, BeautySiteWide, BeautySiteMobile
+
+const VMONO = "ui-monospace, 'SF Mono', Menlo, Consolas, monospace";
+
+const VENA_THEMES = {
+  champagne: {
+    id: 'champagne',
+    name: 'Szampan & Noir',
+    bg: '#100D0A',
+    ink: '#F4EFE6',
+    muted: 'rgba(244,239,230,0.58)',
+    faint: 'rgba(244,239,230,0.34)',
+    line: 'rgba(244,239,230,0.14)',
+    accent: '#E3BE7F',
+    accentInk: '#1C150C',
+    glow: 'rgba(227,190,127,0.22)',
+    display: "'Instrument Serif', Georgia, serif",
+    displayWeight: 400,
+    caps: false,
+    italicAccent: true,
+    tracking: '0.005em',
+    body: "'Manrope', sans-serif",
+    site: { bg: '#F8F3EA', ink: '#1D1712', muted: 'rgba(29,23,18,0.62)', line: 'rgba(29,23,18,0.12)', accentText: '#9C7233' }
+  },
+  acid: {
+    id: 'acid',
+    name: 'Acid Studio',
+    bg: '#0A0C09',
+    ink: '#EDF2EA',
+    muted: 'rgba(237,242,234,0.55)',
+    faint: 'rgba(237,242,234,0.32)',
+    line: 'rgba(237,242,234,0.14)',
+    accent: '#C6F23F',
+    accentInk: '#111608',
+    glow: 'rgba(198,242,63,0.15)',
+    display: "'Space Grotesk', sans-serif",
+    displayWeight: 700,
+    caps: true,
+    italicAccent: false,
+    tracking: '-0.02em',
+    body: "'Space Grotesk', sans-serif",
+    site: { bg: '#F3F5EF', ink: '#151812', muted: 'rgba(21,24,18,0.6)', line: 'rgba(21,24,18,0.12)', accentText: '#56710F' }
+  },
+  violet: {
+    id: 'violet',
+    name: 'Ultrafiolet',
+    bg: '#0C0A15',
+    ink: '#EFECF8',
+    muted: 'rgba(239,236,248,0.58)',
+    faint: 'rgba(239,236,248,0.34)',
+    line: 'rgba(239,236,248,0.14)',
+    accent: '#A06BFF',
+    accentInk: '#F8F5FF',
+    glow: 'rgba(160,107,255,0.24)',
+    display: "'Syne', sans-serif",
+    displayWeight: 800,
+    caps: false,
+    italicAccent: false,
+    tracking: '-0.01em',
+    body: "'Manrope', sans-serif",
+    site: { bg: '#F6F3FB', ink: '#171323', muted: 'rgba(23,19,35,0.6)', line: 'rgba(23,19,35,0.12)', accentText: '#6F44C9' }
+  }
+};
+
+// ── Placeholder na zdjęcie (paski + opis mono) ──────────────────
+function VPhotoSlot({ label, style }) {
+  return (
+    <div style={{
+      background: 'repeating-linear-gradient(45deg, rgba(0,0,0,0.045) 0 12px, rgba(0,0,0,0) 12px 24px)',
+      border: '1px solid rgba(0,0,0,0.14)',
+      borderRadius: 16,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      ...style
+    }}>
+      <span style={{ fontFamily: VMONO, fontSize: 12, opacity: 0.55, letterSpacing: '0.06em' }}>{label}</span>
+    </div>);
+
+}
+
+// ── Mini-strona studia beauty — layout szeroki (laptop, 1280×800) ──
+function BeautySiteWide({ t }) {
+  const s = t.site;
+  return (
+    <div style={{ width: 1280, height: 800, background: s.bg, color: s.ink, fontFamily: t.body, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '26px 56px 18px' }}>
+        <div style={{ fontFamily: t.display, fontWeight: t.displayWeight, fontSize: 30, letterSpacing: t.caps ? '-0.01em' : '0' }}>lumi<span style={{ color: s.accentText }}>.</span></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 36, fontSize: 15, fontWeight: 600 }}>
+          <span>Zabiegi</span>
+          <span>Cennik</span>
+          <span>Opinie</span>
+          <button style={{ fontFamily: t.body, fontWeight: 700, fontSize: 15, background: t.accent, color: t.accentInk, borderRadius: 999, padding: '11px 24px', border: 'none', cursor: 'pointer' }}>Umów wizytę</button>
+        </div>
+      </div>
+      <div style={{ flex: 1, display: 'grid', gridTemplateColumns: '1.05fr 0.95fr', gap: 48, padding: '8px 56px 34px', minHeight: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 22 }}>
+          <div style={{ fontFamily: VMONO, fontSize: 12, letterSpacing: '0.3em', color: s.accentText }}>STUDIO URODY — WARSZAWA</div>
+          <h1 style={{ margin: 0, fontFamily: t.display, fontWeight: t.displayWeight, fontSize: 60, lineHeight: 1.05, letterSpacing: t.tracking, textTransform: t.caps ? 'uppercase' : 'none', textWrap: 'balance' }}>Twoja strona.</h1>
+          <p style={{ margin: 0, fontSize: 17, lineHeight: 1.55, color: s.muted, maxWidth: 400 }}>Pielęgnacja, stylizacja i makijaż w jednym miejscu. Rezerwacja online w 30 sekund.</p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginTop: 6 }}>
+            <button style={{ fontFamily: t.body, fontWeight: 700, fontSize: 16, background: t.accent, color: t.accentInk, borderRadius: 999, padding: '14px 30px', border: 'none', cursor: 'pointer' }}>Zarezerwuj wizytę</button>
+            <span style={{ fontSize: 15, fontWeight: 700, borderBottom: `2px solid ${s.line}`, paddingBottom: 2 }}>Zobacz cennik →</span>
+          </div>
+        </div>
+        <VPhotoSlot label="[ zdjęcie · zabieg / portret ]" style={{ margin: '6px 0' }}></VPhotoSlot>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32, borderTop: `1px solid ${s.line}`, padding: '20px 56px 26px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>Pielęgnacja twarzy</span>
+          <span style={{ fontFamily: VMONO, fontSize: 12, color: s.muted }}>od 180 zł</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>Stylizacja brwi i rzęs</span>
+          <span style={{ fontFamily: VMONO, fontSize: 12, color: s.muted }}>od 90 zł</span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: 15, fontWeight: 700 }}>Makijaż okolicznościowy</span>
+          <span style={{ fontFamily: VMONO, fontSize: 12, color: s.muted }}>od 250 zł</span>
+        </div>
+      </div>
+    </div>);
+
+}
+
+// ── Mini-strona — layout wąski / stacked (telefon, 390×800) ──────
+function BeautySiteMobile({ t }) {
+  const s = t.site;
+  return (
+    <div style={{ width: 390, height: 800, background: s.bg, color: s.ink, fontFamily: t.body, display: 'flex', flexDirection: 'column', boxSizing: 'border-box', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '24px 24px 8px' }}>
+        <div style={{ fontFamily: t.display, fontWeight: t.displayWeight, fontSize: 24 }}>lumi<span style={{ color: s.accentText }}>.</span></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 5, alignItems: 'flex-end' }}>
+          <div style={{ width: 22, height: 2, background: s.ink }}></div>
+          <div style={{ width: 14, height: 2, background: s.ink }}></div>
+        </div>
+      </div>
+      <div style={{ padding: '14px 24px 0', display: 'flex', flexDirection: 'column', gap: 15 }}>
+        <div style={{ fontFamily: VMONO, fontSize: 10, letterSpacing: '0.3em', color: s.accentText }}>STUDIO URODY — WARSZAWA</div>
+        <h1 style={{ margin: 0, fontFamily: t.display, fontWeight: t.displayWeight, fontSize: 38, lineHeight: 1.08, letterSpacing: t.tracking, textTransform: t.caps ? 'uppercase' : 'none', textWrap: 'balance' }}>Twoja strona.</h1>
+        <p style={{ margin: 0, fontSize: 14.5, lineHeight: 1.5, color: s.muted }}>Pielęgnacja, stylizacja i makijaż w jednym miejscu.</p>
+        <button style={{ fontFamily: t.body, fontWeight: 700, fontSize: 15, background: t.accent, color: t.accentInk, borderRadius: 999, padding: '14px 0', border: 'none', width: '100%', cursor: 'pointer' }}>Zarezerwuj wizytę</button>
+        <VPhotoSlot label="[ zdjęcie · wnętrze studia ]" style={{ height: 190 }}></VPhotoSlot>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '13px 0', borderTop: `1px solid ${s.line}` }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>Pielęgnacja twarzy</span>
+            <span style={{ fontFamily: VMONO, fontSize: 11, color: s.muted }}>od 180 zł</span>
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', padding: '13px 0', borderTop: `1px solid ${s.line}` }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>Stylizacja brwi i rzęs</span>
+            <span style={{ fontFamily: VMONO, fontSize: 11, color: s.muted }}>od 90 zł</span>
+          </div>
+        </div>
+      </div>
+    </div>);
+
+}
+
+Object.assign(window, { VENA_THEMES, VMONO, VPhotoSlot, BeautySiteWide, BeautySiteMobile });
+
+// vena-themes-v2.jsx — runda 2: 3 nowe kierunki w duchu Kierunku 1 (premium noir),
+// typografia: ciężki grotesk + serif italic jako kontrapunkt; tło: rozmyta "chmurka".
+// Exports: VENA_THEMES_V2
+
+const VENA_THEMES_V2 = {
+  // ── Kierunek 4 — Czerwona Mgła (à la screenshot "Luke Baffait") ──
+  crimson: {
+    id: 'crimson',
+    name: 'Czerwona Mgła',
+    bg: '#0A0709',
+    ink: '#F5F0EC',
+    muted: 'rgba(245,240,236,0.58)',
+    faint: 'rgba(245,240,236,0.34)',
+    line: 'rgba(245,240,236,0.14)',
+    accent: '#FF5A47',
+    accentInk: '#1C0B08',
+    glowRGB: '255,90,71',
+    glowA: 0.20,
+    glow: 'rgba(255,90,71,0.20)',
+    display: "'Archivo', sans-serif",
+    displayWeight: 800,
+    caps: false,
+    italicAccent: false,
+    tracking: '-0.035em',
+    serifAccent: "'Instrument Serif', Georgia, serif",
+    serifGradient: 'linear-gradient(105deg, #FFF6F0 10%, #FFB3A6 90%)',
+    headlineMode: 'mix',
+    body: "'Archivo', sans-serif",
+    mesh: true,
+    blobs: [
+      { x: 0.60, y: -0.26, r: 0.52, c: 'rgba(214,38,38,0.66)' },
+      { x: 0.88, y: 0.12, r: 0.32, c: 'rgba(255,90,71,0.32)' },
+      { x: 0.05, y: 0.64, r: 0.36, c: 'rgba(130,20,32,0.50)' },
+    ],
+    site: { bg: '#F7F1EC', ink: '#1D1412', muted: 'rgba(29,20,18,0.62)', line: 'rgba(29,20,18,0.12)', accentText: '#B33A2B' },
+  },
+
+  // ── Kierunek 5 — Złoty Dym (DNA Kierunku 1, grotesk dwutonowy à la "Strawberry") ──
+  goldsmoke: {
+    id: 'goldsmoke',
+    name: 'Złoty Dym',
+    bg: '#0E0B08',
+    ink: '#F4EFE6',
+    muted: 'rgba(244,239,230,0.55)',
+    faint: 'rgba(244,239,230,0.34)',
+    line: 'rgba(244,239,230,0.14)',
+    accent: '#E3BE7F',
+    accentInk: '#1C150C',
+    glowRGB: '227,190,127',
+    glowA: 0.22,
+    glow: 'rgba(227,190,127,0.22)',
+    display: "'Schibsted Grotesk', sans-serif",
+    displayWeight: 800,
+    caps: false,
+    italicAccent: false,
+    tracking: '-0.03em',
+    serifAccent: "'Instrument Serif', Georgia, serif",
+    serifGradient: 'linear-gradient(105deg, #FFF9EE 10%, #E3BE7F 90%)',
+    headlineMode: 'twotone',
+    body: "'Schibsted Grotesk', sans-serif",
+    mesh: true,
+    blobs: [
+      { x: 0.55, y: -0.30, r: 0.42, c: 'rgba(186,128,58,0.34)' },
+      { x: 0.02, y: 0.55, r: 0.32, c: 'rgba(120,82,40,0.26)' },
+    ],
+    site: { bg: '#F8F3EA', ink: '#1D1712', muted: 'rgba(29,23,18,0.62)', line: 'rgba(29,23,18,0.12)', accentText: '#9C7233' },
+  },
+
+  // ── Kierunek 6 — Plazma (magenta/fiolet à la kula plazmowa) ──
+  plasma: {
+    id: 'plasma',
+    name: 'Plazma',
+    bg: '#0A0812',
+    ink: '#F4F0F6',
+    muted: 'rgba(244,240,246,0.58)',
+    faint: 'rgba(244,240,246,0.34)',
+    line: 'rgba(244,240,246,0.14)',
+    accent: '#FF54C0',
+    accentInk: '#23071A',
+    glowRGB: '255,84,192',
+    glowA: 0.22,
+    glow: 'rgba(255,84,192,0.22)',
+    display: "'Archivo', sans-serif",
+    displayWeight: 900,
+    caps: false,
+    italicAccent: false,
+    tracking: '-0.03em',
+    serifAccent: "'Instrument Serif', Georgia, serif",
+    serifGradient: 'linear-gradient(105deg, #FFF2FA 10%, #FF9BD9 90%)',
+    headlineMode: 'accent',
+    textGlow: true,
+    body: "'Manrope', sans-serif",
+    blobs: [
+      { x: 0.58, y: -0.22, r: 0.38, c: 'rgba(255,84,192,0.34)' },
+      { x: 0.74, y: 0.18, r: 0.26, c: 'rgba(120,76,255,0.30)' },
+      { x: 0.04, y: 0.66, r: 0.30, c: 'rgba(90,40,160,0.24)' },
+    ],
+    site: { bg: '#F8F2F6', ink: '#1C1220', muted: 'rgba(28,18,32,0.6)', line: 'rgba(28,18,32,0.12)', accentText: '#C03A8C' },
+  },
+
+  // ── Kierunek 7 — Dym Monochromatyczny (à la bymonolog.com) ──
+  // Czysta szarość: czarna baza + jasnoszare smugi dymu + ziarno. Bez koloru.
+  smoke: {
+    id: 'smoke',
+    name: 'Dym Monochromatyczny',
+    bg: '#0B0B0C',
+    ink: '#EDEBE6',
+    muted: 'rgba(237,235,230,0.56)',
+    faint: 'rgba(237,235,230,0.32)',
+    line: 'rgba(237,235,230,0.13)',
+    accent: '#C9C6BD',
+    accentInk: '#141413',
+    glowRGB: '210,206,196',
+    glowA: 0.16,
+    glow: 'rgba(210,206,196,0.16)',
+    display: "'Archivo', sans-serif",
+    displayWeight: 800,
+    caps: false,
+    italicAccent: false,
+    tracking: '-0.035em',
+    serifAccent: "'Instrument Serif', Georgia, serif",
+    serifGradient: 'linear-gradient(105deg, #FBFAF6 10%, #B7B4AB 90%)',
+    headlineMode: 'twotone',
+    body: "'Archivo', sans-serif",
+    fog: true,
+    mesh: true,
+    blobs: [
+      { x: 0.50, y: 0.92, r: 0.62, c: 'rgba(168,165,156,0.30)' },
+      { x: 0.74, y: 0.06, r: 0.44, c: 'rgba(132,130,124,0.20)' },
+      { x: 0.06, y: 0.46, r: 0.46, c: 'rgba(86,86,88,0.18)' },
+    ],
+    fogStreaks: [
+      { x: 0.50, y: 0.78, w: 1.35, h: 0.30, rot: -14, c: 'rgba(192,189,180,0.34)' },
+      { x: 0.30, y: 0.34, w: 0.95, h: 0.18, rot: 20, c: 'rgba(150,148,142,0.22)' },
+      { x: 0.82, y: 0.58, w: 0.80, h: 0.16, rot: -28, c: 'rgba(168,166,158,0.20)' },
+    ],
+    site: { bg: '#F4F3EF', ink: '#19191A', muted: 'rgba(25,25,26,0.6)', line: 'rgba(25,25,26,0.12)', accentText: '#6B695F' },
+  },
+};
+
+Object.assign(window, { VENA_THEMES_V2 });
+
+
+// vena-devices.jsx — generyczne urządzenia (bez logo): laptop + smartfon
+// Ekrany renderują treść w natywnej skali (1280×800 / 390×800) i skalują ją transformem.
+// Exports: VenaLaptop, VenaPhone, VenaFloorGlow
+
+function VDScreenScaler({ dw, dh, scale, children }) {
+  return (
+    <div style={{ width: dw * scale, height: dh * scale, overflow: 'hidden', position: 'relative' }}>
+      <div style={{ width: dw, height: dh, transform: `scale(${scale})`, transformOrigin: 'top left' }}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function VDReflection() {
+  return (
+    <div style={{
+      position: 'absolute', inset: 0, pointerEvents: 'none',
+      background: 'linear-gradient(112deg, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0.035) 26%, rgba(255,255,255,0) 45%)',
+    }}></div>
+  );
+}
+
+// Laptop — minimalne bezele, zaokrąglona pokrywa, baza z wycięciem. Bez znaków.
+// chassis (0–100) steruje jasnością obudowy; bezelScale grubością ramek.
+function VenaLaptop({ t, width = 920, bezelScale = 1, chassis = 50, children }) {
+  const bezel = Math.max(2, Math.round(14 * bezelScale));
+  const scale = (width - bezel * 2) / 1280;
+  const g = (l) => `hsl(240 5% ${l.toFixed(1)}%)`;
+  return (
+    <div style={{ width, position: 'relative' }}>
+      <div style={{
+        background: `linear-gradient(180deg, ${g(4 + chassis * 0.28)} 0%, ${g(1.6 + chassis * 0.136)} 55%, ${g(1 + chassis * 0.098)} 100%)`,
+        borderRadius: '20px 20px 6px 6px',
+        padding: bezel,
+        boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.08), 0 80px 160px -40px rgba(0,0,0,0.85), 0 40px 130px -30px ${t.glow}`,
+      }}>
+        <div style={{ borderRadius: 8, overflow: 'hidden', position: 'relative', background: '#000' }}>
+          <VDScreenScaler dw={1280} dh={800} scale={scale}>{children}</VDScreenScaler>
+          <VDReflection></VDReflection>
+        </div>
+      </div>
+      <div style={{
+        position: 'relative', height: 19, width: '114%', marginLeft: '-7%',
+        background: `linear-gradient(180deg, ${g(5 + chassis * 0.345)} 0%, ${g(2 + chassis * 0.178)} 45%, ${g(0.7 + chassis * 0.072)} 100%)`,
+        borderRadius: '3px 3px 16px 16px',
+        boxShadow: '0 26px 60px -16px rgba(0,0,0,0.8)',
+      }}>
+        <div style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: width * 0.16, height: 7, background: 'rgba(0,0,0,0.45)', borderRadius: '0 0 10px 10px' }}></div>
+      </div>
+    </div>
+  );
+}
+
+// Smartfon — neutralny (ani iPhone, ani konkretny Android): punch-hole, równe bezele.
+function VenaPhone({ t, width = 250, bezelScale = 1, chassis = 50, children }) {
+  const bezel = Math.max(2, Math.round(9 * bezelScale));
+  const scale = (width - bezel * 2) / 390;
+  const outerR = width * 0.165;
+  const g = (l) => `hsl(240 5% ${l.toFixed(1)}%)`;
+  return (
+    <div style={{
+      width, position: 'relative', boxSizing: 'border-box',
+      background: `linear-gradient(180deg, ${g(4 + chassis * 0.30)} 0%, ${g(1.5 + chassis * 0.158)} 60%, ${g(1 + chassis * 0.118)} 100%)`,
+      borderRadius: outerR,
+      padding: bezel,
+      boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.10), 0 60px 120px -30px rgba(0,0,0,0.85), 0 30px 100px -20px ${t.glow}`,
+    }}>
+      <div style={{ borderRadius: outerR - bezel, overflow: 'hidden', position: 'relative', background: '#000' }}>
+        <VDScreenScaler dw={390} dh={800} scale={scale}>{children}</VDScreenScaler>
+        <div style={{ position: 'absolute', top: 9, left: '50%', transform: 'translateX(-50%)', width: 11, height: 11, borderRadius: 99, background: '#0a0a0a', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.06)' }}></div>
+        <VDReflection></VDReflection>
+      </div>
+    </div>
+  );
+}
+
+// Miękka poświata "podłogi" pod lewitującymi urządzeniami
+function VenaFloorGlow({ t, width = 900, height = 170, style }) {
+  return (
+    <div style={{
+      width, height,
+      borderRadius: '50%',
+      background: `radial-gradient(ellipse at center, ${t.glow} 0%, rgba(0,0,0,0) 65%)`,
+      filter: 'blur(10px)',
+      pointerEvents: 'none',
+      ...style,
+    }}></div>
+  );
+}
+
+// ── Klawiatura 3D (wewnątrz VenaLaptop3D) ──
+function LaptopKeyboard3D({ width, depth, chassis }) {
+  const g = (l) => `hsl(240 5% ${l.toFixed(1)}%)`;
+  const keyBg = g(1.2 + chassis * 0.08);
+  const padH = depth * 0.10;
+  const padW = width * 0.05;
+  const availH = depth - padH * 2;
+  const availW = width - padW * 2;
+  const touchH = availH * 0.22;
+  const keyAreaH = availH - touchH - 8;
+  const numRows = 6;
+  const rowH = Math.max(6, Math.round((keyAreaH - 5 * 4) / numRows));
+  const gap = Math.max(2, Math.round(availW * 0.004));
+
+  const rowDefs = [
+    { count: 15, extras: {} },
+    { count: 14, extras: {} },
+    { count: 14, extras: {} },
+    { count: 13, extras: { 0: 1.8 } },
+    { count: 11, extras: { 0: 2.5 } },
+    { count: 5,  extras: { 0: 1.2, 1: 1.2, 2: 5.0, 3: 1.2, 4: 1.2 } },
+  ];
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+      <div style={{
+        position: 'absolute', top: padH, left: padW, width: availW,
+        display: 'flex', flexDirection: 'column', gap: 4,
+      }}>
+        {rowDefs.map(({ count, extras }, ri) => (
+          <div key={ri} style={{ display: 'flex', gap, height: rowH, flexShrink: 0 }}>
+            {Array.from({ length: count }, (_, ki) => (
+              <div key={ki} style={{
+                flex: extras[ki] || 1, height: rowH, minWidth: 0,
+                background: keyBg, borderRadius: 2,
+                boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.07), inset 0 -1px 0 rgba(0,0,0,0.28)',
+              }} />
+            ))}
+          </div>
+        ))}
+        <div style={{
+          width: availW * 0.28, height: touchH,
+          alignSelf: 'center', marginTop: 8, flexShrink: 0,
+          background: g(1.8 + chassis * 0.10), borderRadius: 7,
+          boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.05)',
+        }} />
+      </div>
+    </div>
+  );
+}
+
+// ── Laptop 3D — pokrywa z ekranem + klawiatura wychodząca z zawiasu ──
+// Używać wyłącznie w kontekście preserve-3d (Klatka C).
+function VenaLaptop3D({ t, width = 920, bezelScale = 1, chassis = 50, screenTilt = 11, deckAngle = -84, showBase = true, children }) {
+  const bezel = Math.max(2, Math.round(14 * bezelScale));
+  const screenW = width - bezel * 2;
+  const screenH = Math.round(screenW * 800 / 1280);
+  const lidH = screenH + bezel * 2;
+  const baseD = Math.round(width * 0.62);
+  const edgeT = 12;
+
+  const g = (l) => `hsl(240 5% ${l.toFixed(1)}%)`;
+  const cFront = `linear-gradient(180deg, ${g(4+chassis*0.28)} 0%, ${g(1.6+chassis*0.136)} 55%, ${g(1+chassis*0.098)} 100%)`;
+  const cBase  = `linear-gradient(160deg, ${g(3.5+chassis*0.22)} 0%, ${g(2+chassis*0.16)} 100%)`;
+  const cEdgeD = g(1.5 + chassis * 0.10);
+  const cEdgeL = g(2.8 + chassis * 0.15);
+
+  return (
+    <div style={{ width, height: lidH, position: 'relative', transformStyle: 'preserve-3d' }}>
+
+      {/* ── Pokrywa (ekran + krawędzie) — odchylona do tyłu wokół zawiasu u dołu ── */}
+      <div style={{
+        position: 'absolute', inset: 0, transformStyle: 'preserve-3d',
+        transform: `rotateX(${screenTilt}deg)`, transformOrigin: 'center bottom',
+      }}>
+        {/* Ekran (główna ściana) */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: cFront, borderRadius: '18px 18px 4px 4px',
+          padding: bezel, boxSizing: 'border-box',
+          boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.08), 0 80px 160px -40px rgba(0,0,0,0.85), 0 40px 130px -30px ${t.glow}`,
+        }}>
+          <div style={{ borderRadius: 8, overflow: 'hidden', position: 'relative', background: '#000', height: '100%' }}>
+            <VDScreenScaler dw={1280} dh={800} scale={screenW / 1280}>{children}</VDScreenScaler>
+            <VDReflection />
+          </div>
+        </div>
+
+        {/* Górna krawędź pokrywy */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width, height: edgeT,
+          background: cEdgeD, borderRadius: '18px 18px 0 0',
+          transform: 'rotateX(-90deg)', transformOrigin: 'center top',
+        }} />
+        {/* Prawa krawędź pokrywy */}
+        <div style={{
+          position: 'absolute', top: 0, right: 0, width: edgeT, height: lidH,
+          background: cEdgeL,
+          transform: 'rotateY(-90deg)', transformOrigin: 'right center',
+        }} />
+        {/* Lewa krawędź pokrywy */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: edgeT, height: lidH,
+          background: cEdgeD,
+          transform: 'rotateY(90deg)', transformOrigin: 'left center',
+        }} />
+      </div>
+
+      {/* ── Podstawa z klawiaturą — płaska, zawias u dołu pokrywy ── */}
+      {showBase && (
+      <div style={{
+        position: 'absolute', top: lidH, left: 0, width, height: baseD,
+        background: cBase, borderRadius: '3px 3px 16px 16px',
+        transform: `rotateX(${deckAngle}deg)`, transformOrigin: 'center top',
+        transformStyle: 'preserve-3d',
+        boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.06)',
+      }}>
+        <LaptopKeyboard3D width={width} depth={baseD} chassis={chassis} />
+        {/* Prawa krawędź podstawy (grubość) */}
+        <div style={{
+          position: 'absolute', top: 0, right: 0, width: edgeT, height: baseD,
+          background: cEdgeL,
+          transform: 'rotateY(-90deg)', transformOrigin: 'right center',
+        }} />
+        {/* Lewa krawędź podstawy (grubość) */}
+        <div style={{
+          position: 'absolute', top: 0, left: 0, width: edgeT, height: baseD,
+          background: cEdgeD,
+          transform: 'rotateY(90deg)', transformOrigin: 'left center',
+        }} />
+        {/* Przednia krawędź podstawy (front lip — bliżej widza) */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, width, height: edgeT + 10,
+          background: `linear-gradient(180deg, ${g(2.4+chassis*0.14)} 0%, ${g(1+chassis*0.09)} 100%)`,
+          borderRadius: '0 0 16px 16px',
+          transform: 'rotateX(-90deg)', transformOrigin: 'center bottom',
+        }} />
+      </div>
+      )}
+    </div>
+  );
+}
+
+// ── Telefon 3D — z widoczną grubością krawędzi bocznych ──
+function VenaPhone3D({ t, width = 250, bezelScale = 1, chassis = 50, edge = 9, children }) {
+  const bezel = Math.max(2, Math.round(9 * bezelScale));
+  const scale = (width - bezel * 2) / 390;
+  const phoneH = Math.round(800 * scale) + bezel * 2;
+  const outerR = width * 0.165;
+  const edgeT = Math.max(0, edge);                       // głębokość bocznej ścianki (grubość telefonu)
+  const edgeLayers = Math.max(8, Math.round(edgeT * 1.8)); // gęstość warstw rośnie z grubością (bez szczelin)
+  const edgeStep = edgeLayers ? edgeT / edgeLayers : 0;
+
+  const g = (l) => `hsl(240 5% ${l.toFixed(1)}%)`;
+  const cBody = `linear-gradient(180deg, ${g(4+chassis*0.30)} 0%, ${g(1.5+chassis*0.158)} 60%, ${g(1+chassis*0.118)} 100%)`;
+  const cEdgeD = g(1.5 + chassis * 0.10);
+  const cEdgeL = g(2.8 + chassis * 0.15);
+
+  return (
+    <div style={{ width, height: phoneH, position: 'relative', transformStyle: 'preserve-3d' }}>
+      {/* Boczna ścianka (grubość) — wytłoczenie z warstw, podąża za zaokrągleniem także na rogach */}
+      {Array.from({ length: edgeLayers }).map((_, i) => {
+        const d = (i + 1) / edgeLayers;            // 0→1 w głąb
+        const lz = 2 + chassis * 0.13 - d * 1.6;   // ciemniej ku tyłowi
+        return (
+          <div key={i} style={{
+            position: 'absolute', inset: 0,
+            borderRadius: outerR,
+            background: `linear-gradient(90deg, ${g(lz*0.7)} 0%, ${g(lz)} 45%, ${g(lz*1.5)} 100%)`,
+            transform: `translateZ(${-(i + 1) * edgeStep}px)`,
+            boxShadow: i === edgeLayers - 1 ? '0 0 0 1px rgba(0,0,0,0.4)' : 'none',
+          }} />
+        );
+      })}
+      {/* Korpus + ekran (na wierzchu) */}
+      <div style={{
+        position: 'absolute', inset: 0, transform: 'translateZ(0.5px)',
+        background: cBody, borderRadius: outerR,
+        padding: bezel, boxSizing: 'border-box',
+        boxShadow: `inset 0 0 0 1px rgba(255,255,255,0.10), 0 60px 120px -30px rgba(0,0,0,0.85), 0 30px 100px -20px ${t.glow}`,
+      }}>
+        <div style={{ borderRadius: outerR - bezel, overflow: 'hidden', position: 'relative', background: '#000', height: '100%' }}>
+          <VDScreenScaler dw={390} dh={800} scale={scale}>{children}</VDScreenScaler>
+          <div style={{ position: 'absolute', top: 9, left: '50%', transform: 'translateX(-50%)', width: 11, height: 11, borderRadius: 99, background: '#0a0a0a', boxShadow: 'inset 0 0 0 2px rgba(255,255,255,0.06)' }} />
+          <VDReflection />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+Object.assign(window, { VenaLaptop, VenaPhone, VenaFloorGlow, VenaLaptop3D, VenaPhone3D });
+
+
+// vena-frames.jsx — klatki hero: A (hasło), B (urządzenia frontalnie),
+// C (kamera odsunięta, 3D) + wariant mobilny. Wszystko parametryzowane motywem.
+// Exports: FrameA, FrameB, FrameC, FrameMobile
+
+// ── Scena: ciemne, kinowe tło + winieta + dolna poświata akcentu ──
+function VStage({ t, w = 1920, h = 1080, label, children, style }) {
+  return (
+    <div data-screen-label={label} style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: t.bg, fontFamily: t.body, ...style }}>
+      <div style={{ position: 'absolute', inset: 0, background: `radial-gradient(${w * 0.65}px ${h * 0.6}px at 50% 112%, ${t.glow} 0%, rgba(0,0,0,0) 62%)`, opacity: 0.55 }}></div>
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(135% 100% at 50% 45%, rgba(0,0,0,0) 52%, rgba(0,0,0,0.5) 100%)' }}></div>
+      {children}
+    </div>
+  );
+}
+
+function VBrand({ t, size = 15, style }) {
+  return (
+    <div style={{ fontFamily: t.body, fontWeight: 800, letterSpacing: '0.42em', fontSize: size, color: t.ink, ...style }}>VENA<span style={{ color: t.accent }}>.</span></div>
+  );
+}
+
+function VScrollHint({ t, style }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12, ...style }}>
+      <span style={{ fontFamily: VMONO, fontSize: 11, letterSpacing: '0.34em', color: t.faint }}>SCROLL</span>
+      <div style={{ width: 1, height: 46, background: `linear-gradient(180deg, ${t.accent} 0%, rgba(0,0,0,0) 100%)` }}></div>
+    </div>
+  );
+}
+
+// Główny nagłówek — placeholder, edytowalny tekst
+function VHeadline({ t, size = 120, width = 1440, align = 'center', style }) {
+  return (
+    <h1 style={{
+      margin: 0, maxWidth: width,
+      fontFamily: t.display, fontWeight: t.displayWeight,
+      fontSize: size, lineHeight: 1.06, letterSpacing: t.tracking,
+      textTransform: t.caps ? 'uppercase' : 'none',
+      color: t.ink, textAlign: align, textWrap: 'balance',
+      ...style,
+    }}>Twoja firma zasługuje na stronę <span style={{ color: t.accent, fontStyle: t.italicAccent ? 'italic' : 'normal' }}>z innej ligi.</span></h1>
+  );
+}
+
+// Hasła reklamowe w finalnym układzie (hierarchia 01 > 02 ≥ 03)
+function VSlogans({ t, width = 620 }) {
+  return (
+    <div style={{ width, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', paddingBottom: 30 }}>
+        <span style={{ fontFamily: VMONO, fontSize: 13, color: t.accent, flexShrink: 0 }}>01</span>
+        <h2 style={{ margin: 0, fontFamily: t.display, fontWeight: t.displayWeight, fontSize: t.caps ? 46 : 54, lineHeight: 1.1, letterSpacing: t.tracking, textTransform: t.caps ? 'uppercase' : 'none', color: t.ink, textWrap: 'balance' }}>Strona, która sprzedaje, gdy Ty śpisz.</h2>
+      </div>
+      <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, padding: '26px 0' }}>
+        <span style={{ fontFamily: VMONO, fontSize: 13, color: t.accent, flexShrink: 0 }}>02</span>
+        <p style={{ margin: 0, fontFamily: t.body, fontWeight: 600, fontSize: 26, lineHeight: 1.3, color: t.muted }}>Pierwsze wrażenie. Zaprojektowane.</p>
+      </div>
+      <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, padding: '26px 0 0' }}>
+        <span style={{ fontFamily: VMONO, fontSize: 13, color: t.accent, flexShrink: 0 }}>03</span>
+        <p style={{ margin: 0, fontFamily: t.body, fontWeight: 600, fontSize: 26, lineHeight: 1.3, color: t.muted }}>Płynnie. Na każdym ekranie.</p>
+      </div>
+    </div>
+  );
+}
+
+// ── KLATKA A — tylko hasło ───────────────────────────────────────
+function FrameA({ t }) {
+  return (
+    <VStage t={t} label={`Klatka A — ${t.name}`}>
+      <VBrand t={t} style={{ position: 'absolute', top: 64, left: '50%', transform: 'translateX(-50%)' }}></VBrand>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 38, padding: '0 200px' }}>
+        <div style={{ fontFamily: VMONO, fontSize: 12, letterSpacing: '0.44em', color: t.faint }}>STUDIO STRON INTERNETOWYCH</div>
+        <VHeadline t={t} size={t.caps ? 100 : 126}></VHeadline>
+      </div>
+      <div style={{ position: 'absolute', bottom: 44, left: '50%', transform: 'translateX(-50%)' }}>
+        <VScrollHint t={t}></VScrollHint>
+      </div>
+    </VStage>
+  );
+}
+
+// ── KLATKA B — urządzenia na środku, frontalnie ─────────────────
+function FrameB({ t }) {
+  return (
+    <VStage t={t} label={`Klatka B — ${t.name}`}>
+      <VBrand t={t} style={{ position: 'absolute', top: 56, left: '50%', transform: 'translateX(-50%)' }}></VBrand>
+      <div style={{ position: 'absolute', top: 112, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: 0.15, transform: 'scale(0.92)', pointerEvents: 'none' }}>
+        <VHeadline t={t} size={t.caps ? 66 : 80} width={1200}></VHeadline>
+      </div>
+      <div style={{ position: 'absolute', left: '50%', top: '58%', transform: 'translate(-50%, -50%)', width: 880 }}>
+        <VenaFloorGlow t={t} width={1150} height={210} style={{ position: 'absolute', left: '50%', bottom: -80, transform: 'translateX(-50%)' }}></VenaFloorGlow>
+        <VenaLaptop t={t} width={880}>
+          <BeautySiteWide t={t}></BeautySiteWide>
+        </VenaLaptop>
+        <div style={{ position: 'absolute', right: -64, bottom: -36 }}>
+          <VenaPhone t={t} width={224}>
+            <BeautySiteMobile t={t}></BeautySiteMobile>
+          </VenaPhone>
+        </div>
+      </div>
+      <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)' }}>
+        <VScrollHint t={t}></VScrollHint>
+      </div>
+    </VStage>
+  );
+}
+
+// ── KLATKA C — po ruchu kamery: urządzenia w 3D po prawej, hasła po lewej ──
+function FrameC({ t }) {
+  return (
+    <VStage t={t} label={`Klatka C — ${t.name}`}>
+      <VBrand t={t} style={{ position: 'absolute', top: 56, left: 88 }}></VBrand>
+      <div style={{ position: 'absolute', top: 60, right: 88, fontFamily: VMONO, fontSize: 11, letterSpacing: '0.3em', color: t.faint }}>REALIZACJE · PROCES · KONTAKT</div>
+      <div style={{ position: 'absolute', left: 96, top: '50%', transform: 'translateY(-50%)' }}>
+        <VSlogans t={t} width={620}></VSlogans>
+      </div>
+      <div style={{ position: 'absolute', right: -70, top: '50%', transform: 'translateY(-53%)', width: 1150, height: 820, perspective: 2400, perspectiveOrigin: '6% 42%' }}>
+        <div style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-30deg) rotateX(9deg)', transformStyle: 'preserve-3d' }}>
+          <VenaFloorGlow t={t} width={1020} height={200} style={{ position: 'absolute', left: 90, bottom: 0, transform: 'translateZ(-50px)' }}></VenaFloorGlow>
+          <div style={{ position: 'absolute', left: 150, top: 84, transformStyle: 'preserve-3d' }}>
+            <VenaLaptop3D t={t} width={930} showBase={false}>
+              <BeautySiteWide t={t}></BeautySiteWide>
+            </VenaLaptop3D>
+          </div>
+          <div style={{ position: 'absolute', left: 38, bottom: 56, transform: 'translateZ(130px)', transformStyle: 'preserve-3d' }}>
+            <VenaPhone3D t={t} width={236}>
+              <BeautySiteMobile t={t}></BeautySiteMobile>
+            </VenaPhone3D>
+          </div>
+        </div>
+      </div>
+    </VStage>
+  );
+}
+
+// ── WARIANT MOBILNY — urządzenia jedno pod drugim, hasła pomiędzy ──
+function FrameMobile({ t }) {
+  return (
+    <VStage t={t} w={430} h={1170} label={`Mobile — ${t.name}`}>
+      <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '42px 28px 32px', boxSizing: 'border-box' }}>
+        <VBrand t={t} size={13}></VBrand>
+        <div style={{ width: '100%', marginTop: 34 }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'baseline' }}>
+            <span style={{ fontFamily: VMONO, fontSize: 11, color: t.accent, flexShrink: 0 }}>01</span>
+            <h2 style={{ margin: 0, fontFamily: t.display, fontWeight: t.displayWeight, fontSize: t.caps ? 30 : 34, lineHeight: 1.12, letterSpacing: t.tracking, textTransform: t.caps ? 'uppercase' : 'none', color: t.ink, textWrap: 'balance' }}>Strona, która sprzedaje, gdy Ty śpisz.</h2>
+          </div>
+        </div>
+        <div style={{ marginTop: 34, position: 'relative' }}>
+          <VenaFloorGlow t={t} width={360} height={90} style={{ position: 'absolute', left: '50%', bottom: -34, transform: 'translateX(-50%)' }}></VenaFloorGlow>
+          <VenaLaptop t={t} width={326}>
+            <BeautySiteWide t={t}></BeautySiteWide>
+          </VenaLaptop>
+        </div>
+        <div style={{ width: '100%', marginTop: 38, display: 'flex', gap: 14, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, paddingTop: 18 }}>
+          <span style={{ fontFamily: VMONO, fontSize: 11, color: t.accent, flexShrink: 0 }}>02</span>
+          <p style={{ margin: 0, fontWeight: 600, fontSize: 18, lineHeight: 1.35, color: t.muted }}>Pierwsze wrażenie. Zaprojektowane.</p>
+        </div>
+        <div style={{ marginTop: 22 }}>
+          <VenaPhone t={t} width={170}>
+            <BeautySiteMobile t={t}></BeautySiteMobile>
+          </VenaPhone>
+        </div>
+        <div style={{ width: '100%', marginTop: 26, display: 'flex', gap: 14, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, paddingTop: 18 }}>
+          <span style={{ fontFamily: VMONO, fontSize: 11, color: t.accent, flexShrink: 0 }}>03</span>
+          <p style={{ margin: 0, fontWeight: 600, fontSize: 18, lineHeight: 1.35, color: t.muted }}>Płynnie. Na każdym ekranie.</p>
+        </div>
+        <div style={{ marginTop: 'auto' }}>
+          <VScrollHint t={t}></VScrollHint>
+        </div>
+      </div>
+    </VStage>
+  );
+}
+
+Object.assign(window, { VStage, VBrand, VScrollHint, VHeadline, VSlogans, FrameA, FrameB, FrameC, FrameMobile });
+
+
+// vena-frames-v2.jsx — runda 2: klatki z tłem-"chmurką", brandem hadrianm,
+// nowymi hasłami i podpięciem pod suwaki Tweaks (tw).
+// Exports: VStage2, HBrand, VHeadline2, Frame2A, Frame2B, Frame2C, Frame2Mobile
+
+// Tweaks → wartości pochodne (z bezpiecznymi domyślnymi)
+function twv(tw, key, dflt) {return tw && tw[key] != null ? tw[key] : dflt;}
+function twGlow(t, tw) {return `rgba(${t.glowRGB},${(t.glowA * twv(tw, 'glow', 100) / 100).toFixed(3)})`;}
+function twBezel(tw) {return twv(tw, 'bezel', 100) / 100;}
+function twChassis(tw) {return twv(tw, 'chassis', 50);}
+function twGapDelta(tw) {return twv(tw, 'gap', 40) - 40;}
+function twPhoneEdge(tw) {return twv(tw, 'phoneEdge', 9);}
+
+// Ziarno filmowe (feTurbulence) jako data-URI — nakładka na tło
+const VGRAIN = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(
+  "<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"
+);
+
+// ── Scena v2: ciemne tło + rozmyta barwna "chmurka" (docelowo reaguje na kursor) ──
+function VStage2({ t, tw, w = 1920, h = 1080, label, children, style }) {
+  const b = twv(tw, 'bgBrightness', 100) / 100;
+  return (
+    <div data-screen-label={label} style={{ width: w, height: h, position: 'relative', overflow: 'hidden', background: t.bg, fontFamily: t.body, ...style }}>
+      <div data-bg-blobs="true" style={{ position: 'absolute', inset: 0, opacity: Math.min(1, b) }}>
+        {t.blobs.map((bl, i) => {
+          const d = bl.r * 2 * w;
+          return (
+            <div key={i} style={{
+              position: 'absolute', left: bl.x * w - d / 2, top: bl.y * h - d / 2,
+              width: d, height: d, borderRadius: '50%',
+              background: `radial-gradient(closest-side, ${bl.c} 0%, rgba(0,0,0,0) 72%)`,
+              filter: `blur(${Math.round(w * 0.025)}px)`
+            }}></div>);
+
+        })}
+        {t.fog && t.fogStreaks ? t.fogStreaks.map((s, i) =>
+        <div key={`fog-${i}`} style={{
+          position: 'absolute', left: s.x * w - s.w * w / 2, top: s.y * h - s.h * h / 2,
+          width: s.w * w, height: s.h * h, transform: `rotate(${s.rot}deg)`,
+          background: `radial-gradient(closest-side, ${s.c} 0%, rgba(0,0,0,0) 70%)`,
+          borderRadius: '50%', filter: `blur(${Math.round(w * 0.04)}px)`, mixBlendMode: 'screen'
+        }}></div>
+        ) : null}
+      </div>
+      {b > 1 ? <div style={{ position: 'absolute', inset: 0, background: '#fff', opacity: (b - 1) * 0.10 }}></div> : null}
+      <div style={{ position: 'absolute', inset: 0, background: 'radial-gradient(135% 100% at 50% 45%, rgba(0,0,0,0) 50%, rgba(0,0,0,0.5) 100%)' }}></div>
+      {t.fog ? <div style={{ position: 'absolute', inset: 0, backgroundImage: `url("${VGRAIN}")`, backgroundSize: `${Math.round(w * 0.16)}px`, opacity: 0.42, mixBlendMode: 'overlay', pointerEvents: 'none' }}></div> : null}
+      {t.mesh ? (() => {
+        const dens = twv(tw, 'meshDensity', 80);
+        const ms = 3 + (1 - dens / 100) * 13; // px: większa gęstość → mniejszy rozstaw
+        const sz = twv(tw, 'meshDotSize', 55); // 0–100 → wielkość kropek
+        const coreFrac = 0.12 + sz / 100 * 0.34; // 0.12 .. 0.46
+        const core = (ms * coreFrac).toFixed(2);
+        const fade = (ms * Math.min(0.62, coreFrac * 1.7)).toFixed(2);
+        return <div data-bg-mesh="true" style={{
+          position: 'absolute', inset: 0, pointerEvents: 'none', mixBlendMode: 'multiply', opacity: twv(tw, 'meshOpacity', 85) / 100,
+          backgroundImage: `radial-gradient(circle at center, rgba(0,0,0,0.96) ${core}px, rgba(0,0,0,0) ${fade}px)`,
+          backgroundSize: `${ms.toFixed(2)}px ${ms.toFixed(2)}px`
+        }}></div>;
+      })() : null}
+      {children}
+    </div>);
+
+}
+
+// ── Brand: hadrianm — końcowe "m" przyciemnione ──
+function HBrand({ t, size = 18, style }) {
+  return (
+    <div style={{ fontFamily: t.body, fontWeight: 800, fontSize: size, letterSpacing: '0.01em', color: t.ink, ...style }}>hadrian<span style={{ color: t.muted }}>m</span></div>);
+
+}
+
+// ── Nagłówek: "strona zaskakująco inna" — 3 tryby typograficzne ──
+function VHeadline2({ t, size = 144, width = 1500, align = 'center', style }) {
+  const base = {
+    margin: 0, maxWidth: width, fontFamily: t.display, fontWeight: t.displayWeight,
+    fontSize: size, lineHeight: 1.04, letterSpacing: t.tracking,
+    color: t.ink, textAlign: align, textWrap: 'balance', ...style
+  };
+  const serif = {
+    fontFamily: t.serifAccent, fontStyle: 'italic', fontWeight: 400, fontSize: '1.06em',
+    letterSpacing: '0', background: t.serifGradient,
+    WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent'
+  };
+  if (t.headlineMode === 'mix') {
+    return <h1 style={base}>strona zaskakująco <span style={serif}>inna</span></h1>;
+  }
+  if (t.headlineMode === 'twotone') {
+    return <h1 style={base}><span style={{ color: t.muted }}>strona zaskakująco</span> <span style={{ color: t.ink }}>inna</span></h1>;
+  }
+  return <h1 style={base}>strona zaskakująco <span style={{ color: t.accent, textShadow: t.textGlow ? `0 0 70px rgba(${t.glowRGB},0.55)` : 'none' }}>inna</span></h1>;
+}
+
+// Hasło 01 — "wzniecaj emocje" w trybie zgodnym z nagłówkiem
+function VSloganOne({ t, size = 58 }) {
+  const base = { margin: 0, fontFamily: t.display, fontWeight: t.displayWeight, fontSize: size, lineHeight: 1.08, letterSpacing: t.tracking, color: t.ink, textWrap: 'balance' };
+  const serif = {
+    fontFamily: t.serifAccent, fontStyle: 'italic', fontWeight: 400, fontSize: '1.06em',
+    background: t.serifGradient, WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent', color: 'transparent'
+  };
+  if (t.headlineMode === 'mix') return <h2 style={base}>wzniecaj <span style={serif}>emocje</span></h2>;
+  if (t.headlineMode === 'twotone') return <h2 style={base}><span style={{ color: t.muted }}>wzniecaj</span> emocje</h2>;
+  return <h2 style={base}>wzniecaj <span style={{ color: t.accent, textShadow: t.textGlow ? `0 0 50px rgba(${t.glowRGB},0.55)` : 'none' }}>emocje</span></h2>;
+}
+
+// Hasła w finalnym układzie (hierarchia 01 > 02 ≥ 03)
+function VSlogans2({ t, width = 620 }) {
+  return (
+    <div style={{ width, display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', paddingBottom: 30 }}>
+        <span style={{ fontFamily: VMONO, fontSize: 13, color: t.accent, flexShrink: 0 }}>01</span>
+        <VSloganOne t={t} size={60}></VSloganOne>
+      </div>
+      <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, padding: '26px 0' }}>
+        <span style={{ fontFamily: VMONO, fontSize: 13, color: t.accent, flexShrink: 0 }}>02</span>
+        <p style={{ margin: 0, fontFamily: t.body, fontWeight: 600, fontSize: 26, lineHeight: 1.3, color: t.muted }}>Pierwsze wrażenie. Zaprojektowane.</p>
+      </div>
+      <div style={{ display: 'flex', gap: 22, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, padding: '26px 0 0' }}>
+        <span style={{ fontFamily: VMONO, fontSize: 13, color: t.accent, flexShrink: 0 }}>03</span>
+        <p style={{ margin: 0, fontFamily: t.body, fontWeight: 600, fontSize: 26, lineHeight: 1.3, color: t.muted }}>Płynnie. Na każdym ekranie.</p>
+      </div>
+    </div>);
+
+}
+
+// ── KLATKA A — tylko hasło ──
+function Frame2A({ t, tw }) {
+  return (
+    <VStage2 t={t} tw={tw} label={`Klatka A — ${t.name}`}>
+      <HBrand t={t} style={{ position: 'absolute', top: 60, left: '50%', transform: 'translateX(-50%)' }}></HBrand>
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 40, padding: '0 180px' }}>
+        <div style={{ fontFamily: VMONO, fontSize: 12, letterSpacing: '0.44em', color: t.faint }}>PRACOWNIA STRON I APLIKACJI</div>
+        <VHeadline2 t={t} size={150} width={1560}></VHeadline2>
+      </div>
+      <div style={{ position: 'absolute', bottom: 44, left: '50%', transform: 'translateX(-50%)' }}>
+        <VScrollHint t={t}></VScrollHint>
+      </div>
+    </VStage2>);
+
+}
+
+// ── KLATKA B — urządzenia na środku, frontalnie ──
+function Frame2B({ t, tw }) {
+  const t2 = { ...t, glow: twGlow(t, tw) };
+  const gd = twGapDelta(tw);
+  return (
+    <VStage2 t={t} tw={tw} label={`Klatka B — ${t.name}`}>
+      <HBrand t={t} style={{ position: 'absolute', top: 54, left: '50%', transform: 'translateX(-50%)' }}></HBrand>
+      <div style={{ position: 'absolute', top: 116, left: 0, right: 0, display: 'flex', justifyContent: 'center', opacity: 0.15, transform: 'scale(0.92)', pointerEvents: 'none' }}>
+        <VHeadline2 t={t} size={92} width={1250}></VHeadline2>
+      </div>
+      <div style={{ position: 'absolute', left: '50%', top: '58%', transform: 'translate(-50%, -50%)', width: 880 }}>
+        <VenaFloorGlow t={t2} width={1150} height={210} style={{ position: 'absolute', left: '50%', bottom: -80, transform: 'translateX(-50%)' }}></VenaFloorGlow>
+        <VenaLaptop t={t2} width={880} bezelScale={twBezel(tw)} chassis={twChassis(tw)}>
+          <BeautySiteWide t={t}></BeautySiteWide>
+        </VenaLaptop>
+        <div style={{ position: 'absolute', right: -64 - gd * 0.8, bottom: -36 }}>
+          <VenaPhone t={t2} width={224} bezelScale={twBezel(tw)} chassis={twChassis(tw)}>
+            <BeautySiteMobile t={t}></BeautySiteMobile>
+          </VenaPhone>
+        </div>
+      </div>
+      <div style={{ position: 'absolute', bottom: 40, left: '50%', transform: 'translateX(-50%)' }}>
+        <VScrollHint t={t}></VScrollHint>
+      </div>
+    </VStage2>);
+
+}
+
+// ── KLATKA C — po ruchu kamery: urządzenia w 3D po prawej, hasła po lewej ──
+function Frame2C({ t, tw }) {
+  const t2 = { ...t, glow: twGlow(t, tw) };
+  const gd = twGapDelta(tw);
+  return (
+    <VStage2 t={t} tw={tw} label={`Klatka C — ${t.name}`}>
+      <HBrand t={t} style={{ position: 'absolute', top: 52, left: 88 }}></HBrand>
+      <div style={{ position: 'absolute', top: 60, right: 88, fontFamily: VMONO, fontSize: 11, letterSpacing: '0.3em', color: t.faint }}>REALIZACJE · PROCES · KONTAKT</div>
+      <div style={{ position: 'absolute', left: 96, top: '50%', transform: 'translateY(-50%)' }}>
+        <VSlogans2 t={t} width={620}></VSlogans2>
+      </div>
+      <div style={{ position: 'absolute', right: -70, top: '50%', transform: 'translateY(-53%)', width: 1150, height: 820, perspective: 2400, perspectiveOrigin: '6% 42%' }}>
+        <div style={{ position: 'relative', width: '100%', height: '100%', transform: 'rotateY(-30deg) rotateX(9deg)', transformStyle: 'preserve-3d' }}>
+          <VenaFloorGlow t={t2} width={1020} height={200} style={{ position: 'absolute', left: 90, bottom: 0, transform: 'translateZ(-50px)' }}></VenaFloorGlow>
+          <div style={{ position: 'absolute', left: 150, top: 84, transformStyle: 'preserve-3d' }}>
+            <VenaLaptop3D t={t2} width={930} bezelScale={twBezel(tw)} chassis={twChassis(tw)} showBase={false}>
+              <BeautySiteWide t={t}></BeautySiteWide>
+            </VenaLaptop3D>
+          </div>
+          <div style={{ position: 'absolute', left: 38 - gd * 0.8, bottom: 56, transform: 'translateZ(130px)', transformStyle: 'preserve-3d' }}>
+            <VenaPhone3D t={t2} width={236} bezelScale={twBezel(tw)} chassis={twChassis(tw)} edge={twPhoneEdge(tw)}>
+              <BeautySiteMobile t={t}></BeautySiteMobile>
+            </VenaPhone3D>
+          </div>
+        </div>
+      </div>
+    </VStage2>);
+
+}
+
+// ── WARIANT MOBILNY — urządzenia jedno pod drugim, hasła pomiędzy ──
+function Frame2Mobile({ t, tw }) {
+  const t2 = { ...t, glow: twGlow(t, tw) };
+  const gd = Math.max(-20, twGapDelta(tw));
+  return (
+    <VStage2 t={t} tw={tw} w={430} h={1170} label={`Mobile — ${t.name}`}>
+      <div style={{ position: 'relative', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '42px 28px 32px', boxSizing: 'border-box' }}>
+        <HBrand t={t} size={15}></HBrand>
+        <div style={{ width: '100%', marginTop: 32 }}>
+          <div style={{ display: 'flex', gap: 14, alignItems: 'baseline' }}>
+            <span style={{ fontFamily: VMONO, fontSize: 11, color: t.accent, flexShrink: 0 }}>01</span>
+            <VSloganOne t={t} size={40}></VSloganOne>
+          </div>
+        </div>
+        <div style={{ marginTop: 34, position: 'relative' }}>
+          <VenaFloorGlow t={t2} width={360} height={90} style={{ position: 'absolute', left: '50%', bottom: -34, transform: 'translateX(-50%)' }}></VenaFloorGlow>
+          <VenaLaptop t={t2} width={326} bezelScale={twBezel(tw)} chassis={twChassis(tw)}>
+            <BeautySiteWide t={t}></BeautySiteWide>
+          </VenaLaptop>
+        </div>
+        <div style={{ width: '100%', marginTop: 36 + gd * 0.2, display: 'flex', gap: 14, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, paddingTop: 18 }}>
+          <span style={{ fontFamily: VMONO, fontSize: 11, color: t.accent, flexShrink: 0 }}>02</span>
+          <p style={{ margin: 0, fontWeight: 600, fontSize: 18, lineHeight: 1.35, color: t.muted }}>Pierwsze wrażenie. Zaprojektowane.</p>
+        </div>
+        <div style={{ marginTop: 20 + gd * 0.2 }}>
+          <VenaPhone t={t2} width={170} bezelScale={twBezel(tw)} chassis={twChassis(tw)}>
+            <BeautySiteMobile t={t}></BeautySiteMobile>
+          </VenaPhone>
+        </div>
+        <div style={{ width: '100%', marginTop: 26, display: 'flex', gap: 14, alignItems: 'baseline', borderTop: `1px solid ${t.line}`, paddingTop: 18 }}>
+          <span style={{ fontFamily: VMONO, fontSize: 11, color: t.accent, flexShrink: 0 }}>03</span>
+          <p style={{ margin: 0, fontWeight: 600, fontSize: 18, lineHeight: 1.35, color: t.muted }}>Płynnie. Na każdym ekranie.</p>
+        </div>
+        <div style={{ marginTop: 'auto' }}>
+          <VScrollHint t={t}></VScrollHint>
+        </div>
+      </div>
+    </VStage2>);
+
+}
+
+Object.assign(window, { VStage2, HBrand, VHeadline2, VSloganOne, VSlogans2, Frame2A, Frame2B, Frame2C, Frame2Mobile });
+
+const W = 1920, H = 1080;
+const t = { ...VENA_THEMES_V2.crimson, blobs: [], mesh: false, fog: false };
+const tw = { chassis: 88, glow: 174, bezel: 99, gap: 20, phoneEdge: 30, bgBrightness: 100, meshOpacity: 0, meshDensity: 43, meshDotSize: 26 };
+
+function scaleStage() {
+  const s = Math.min(window.innerWidth / W, window.innerHeight / H);
+  document.getElementById('stage').style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+}
+window.addEventListener('resize', scaleStage);
+
+ReactDOM.createRoot(document.getElementById('stage')).render(
+  React.createElement(Frame2C, { t, tw })
+);
+
+setTimeout(scaleStage, 200);
+</script>
+</body>
+</html>

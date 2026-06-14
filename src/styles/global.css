@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+@theme {
+  --font-display: "Archivo Variable", system-ui, sans-serif;
+  --font-body: "Archivo Variable", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}

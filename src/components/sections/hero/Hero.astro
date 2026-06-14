@@ -1,6 +1,28 @@
+---
+import { useTranslations, type Lang } from "@/i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
 <section id="hero" class="hero">
   <div class="hero__content">
-    <h1>Hero test content</h1>
+    <div class="hero__brand">hadrian<span>m</span></div>
+    <div class="hero__center">
+      <p class="hero__eyebrow">{t("hero.eyebrow")}</p>
+      <h1 class="hero__headline">
+        {t("hero.headlineLead")}{" "}
+        <span class="hero__accent">{t("hero.headlineAccent")}</span>
+      </h1>
+    </div>
+
+    <div class="hero__scroll">
+      <span class="hero__scroll-label">{t("hero.scroll")}</span>
+      <span class="hero__scroll-line" aria-hidden="true"></span>
+    </div>
   </div>
 </section>
 
@@ -8,20 +30,126 @@
   .hero {
     position: relative;
     min-height: 200svh;
+
+    --ink: #f5f0ec;
+    --muted: rgba(245, 240, 236, 0.58);
+    --faint: rgba(245, 240, 236, 0.34);
+    --accent: #ff5a47;
   }
 
   .hero__content {
     position: sticky;
     top: 0;
     height: 100svh;
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: system-ui, sans-serif;
   }
 
-  .hero__content h1 {
-    font-size: clamp(1.5rem, 5vw, 3rem);
-    font-weight: 700;
+  .hero__brand {
+    position: absolute;
+    top: clamp(1.5rem, 5.5vh, 3.75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    font-family: var(--font-body), sans-serif;
+    font-weight: 800;
+    font-size: clamp(1rem, 0.95vw, 1.18rem);
+    letter-spacing: 0.01em;
+    color: var(--ink);
+    white-space: nowrap;
+  }
+  .hero__brand span {
+    color: var(--muted);
+  }
+
+  .hero__center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(1.5rem, 2.1vw, 2.5rem);
+    padding: 0 clamp(1.5rem, 9.4vw, 11.25rem);
+    text-align: center;
+  }
+
+  .hero__eyebrow {
+    margin: 0;
+    font-family: var(--font-mono), monospace;
+    font-size: clamp(0.62rem, 0.66vw, 0.75rem);
+    letter-spacing: 0.44em;
+    text-indent: 0.44em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .hero__headline {
+    margin: 0;
+    max-width: 18ch;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(2.75rem, 7.9vw, 9.4rem);
+    line-height: 1.04;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+
+  .hero__accent {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: linear-gradient(105deg, #fff6f0 10%, #ffb3a6 90%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  .hero__scroll {
+    position: absolute;
+    bottom: clamp(1.25rem, 4vh, 2.75rem);
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .hero__scroll-label {
+    font-family: var(--font-mono), monospace;
+    font-size: clamp(0.6rem, 0.6vw, 0.7rem);
+    letter-spacing: 0.34em;
+    text-indent: 0.34em;
+    color: var(--faint);
+  }
+  .hero__scroll-line {
+    width: 1px;
+    height: clamp(2rem, 4.25vh, 2.875rem);
+    background: linear-gradient(
+      180deg,
+      var(--accent) 0%,
+      rgba(0, 0, 0, 0) 100%
+    );
+    transform-origin: top;
+    animation: scroll-pulse 2.4s ease-in-out infinite;
+  }
+
+  @keyframes scroll-pulse {
+    0%,
+    100% {
+      opacity: 0.55;
+      transform: scaleY(0.82);
+    }
+    50% {
+      opacity: 1;
+      transform: scaleY(1);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .hero__scroll-line {
+      animation: none;
+    }
   }
 </style>
