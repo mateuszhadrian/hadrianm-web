@@ -1,0 +1,83 @@
+---
+interface Props {
+  intro: string;
+  box: string;
+  outro: string;
+}
+const { intro, box, outro } = Astro.props;
+---
+
+<main>
+  <section class="screen intro">
+    <h1>{intro}</h1>
+  </section>
+
+  <section class="screen panel" data-pin>
+    <div class="box" data-box>{box}</div>
+  </section>
+
+  <section class="screen outro">
+    <h2>{outro}</h2>
+  </section>
+</main>
+
+<style>
+  main {
+    position: relative;
+    z-index: 1; /* nad stałym tłem Hero (z-index 0 w index.astro) */
+  }
+  .screen {
+    min-height: 100svh; /* svh = stabilna wysokość na mobile (pasek adresu) */
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: system-ui, sans-serif;
+  }
+  /* sekcje przezroczyste → prześwituje tło Hero z tyłu */
+  .panel {
+    overflow: clip;
+  }
+  .box {
+    display: grid;
+    place-items: center;
+    width: 140px;
+    height: 140px;
+    border-radius: 16px;
+    background: oklch(0.55 0.2 25); /* czerwień */
+    font-weight: 700;
+    font-size: 1.25rem;
+    will-change: transform; /* promocja do warstwy GPU — animujemy transform */
+  }
+</style>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger); // konieczne — chroni plugin przed tree-shakingiem
+
+  // matchMedia = responsywność + a11y w jednym; zwrócony cleanup leci automatycznie
+  const mm = gsap.matchMedia();
+
+  mm.add("(prefers-reduced-motion: no-preference)", () => {
+    const panel = document.querySelector<HTMLElement>("[data-pin]");
+    const box = document.querySelector<HTMLElement>("[data-box]");
+    if (!panel || !box) return;
+
+    gsap.to(box, {
+      rotate: 360,
+      scale: 2.4,
+      ease: "none",
+      scrollTrigger: {
+        trigger: panel,
+        start: "top top", // start, gdy góra panelu dotknie góry ekranu
+        end: "+=400%", // koniec po przescrollowaniu 120% wysokości okna
+        pin: true, // przypnij panel na czas animacji
+        scrub: true, // postęp animacji = pozycja scrolla (płynnie tam i z powrotem)
+      },
+    });
+
+    // sprzątanie (HMR przy zapisie pliku / ewentualne View Transitions)
+    return () => ScrollTrigger.getAll().forEach((t) => t.kill());
+  });
+</script>

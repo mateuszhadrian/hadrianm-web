@@ -1,0 +1,35 @@
+---
+// Wspólna treść strony głównej — JEDYNE miejsce z markupem strony.
+// Trasy /pages/index.astro (PL) i /pages/en/index.astro (EN) tylko ją renderują
+// z odpowiednim językiem. Teksty pobierane przez t() ze słownika src/i18n/ui.ts.
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Hero from "@/components/Hero.astro";
+import ScrollDemo from "@/components/ScrollDemo.astro";
+import { useTranslations, type Lang } from "@/i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<BaseLayout title={t("meta.title")} lang={lang}>
+  <div class="hero-bg"><Hero /></div>
+  <ScrollDemo
+    intro={t("demo.intro")}
+    box={t("demo.box")}
+    outro={t("demo.outro")}
+  />
+</BaseLayout>
+
+<style>
+  .hero-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+  }
+  :global(body) {
+    position: relative;
+  }
+</style>
