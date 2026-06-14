@@ -1,24 +1,21 @@
-<section class="hero">
-  <div class="hero__clouds" aria-hidden="true">
-    <span class="hero__cloud-c"></span>
-    <span class="hero__cloud-d"></span>
+<div class="hero-bg" aria-hidden="true">
+  <div class="hero-bg__clouds">
+    <span class="hero-bg__cloud-c"></span>
+    <span class="hero-bg__cloud-d"></span>
   </div>
-  <div class="hero__dots" aria-hidden="true"></div>
-  <div class="hero__content">
-    <slot />
-  </div>
-</section>
+  <div class="hero-bg__dots"></div>
+</div>
 
 <style>
-  .hero {
-    position: relative;
-    min-height: 100svh;
+  .hero-bg {
+    position: absolute;
+    inset: 0;
     background: #000000;
     overflow: clip;
     isolation: isolate;
   }
 
-  .hero::after {
+  .hero-bg::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -27,14 +24,14 @@
     box-shadow: inset 0 0 90px 14px #070506;
   }
 
-  .hero__clouds {
+  .hero-bg__clouds {
     position: absolute;
     inset: 0;
     z-index: 1;
     pointer-events: none;
   }
-  .hero__clouds::before,
-  .hero__clouds::after {
+  .hero-bg__clouds::before,
+  .hero-bg__clouds::after {
     content: "";
     position: absolute;
     width: 65%;
@@ -42,7 +39,7 @@
     filter: blur(55px);
     will-change: transform;
   }
-  .hero__clouds::before {
+  .hero-bg__clouds::before {
     bottom: -10%;
     left: -15%;
     background:
@@ -64,7 +61,7 @@
     animation: drift-a 2s ease-in-out infinite alternate;
   }
 
-  .hero__clouds::after {
+  .hero-bg__clouds::after {
     top: -25%;
     right: -25%;
     width: 80%;
@@ -88,7 +85,7 @@
     animation: drift-b 2s ease-in-out infinite alternate;
   }
 
-  .hero__cloud-c {
+  .hero-bg__cloud-c {
     position: absolute;
     top: 20%;
     right: -28%;
@@ -104,7 +101,7 @@
     animation: drift-c 3s ease-in-out infinite alternate;
   }
 
-  .hero__cloud-d {
+  .hero-bg__cloud-d {
     position: absolute;
     top: -20%;
     left: 28%;
@@ -145,7 +142,7 @@
     }
   }
 
-  .hero__dots {
+  .hero-bg__dots {
     position: absolute;
     inset: 0;
     z-index: 2;
@@ -164,52 +161,28 @@
     );
   }
 
-  .hero__content {
-    position: relative;
-    z-index: 4;
-    display: grid;
-    place-items: center;
-    min-height: 100svh;
-    color: #fff;
-  }
-
   @media (prefers-reduced-motion: reduce) {
-    .hero__clouds::before,
-    .hero__clouds::after,
-    .hero__cloud-c,
-    .hero__cloud-d {
+    .hero-bg__clouds::before,
+    .hero-bg__clouds::after,
+    .hero-bg__cloud-c,
+    .hero-bg__cloud-d {
       animation: none;
     }
   }
 
   @media (max-width: 768px) {
-    .hero__clouds::before {
+    .hero-bg__clouds::before {
       animation-duration: 80s;
     }
-    .hero__clouds::after {
+    .hero-bg__clouds::after {
       animation-duration: 105s;
     }
-    /* Bezpiecznik (włącz dopiero po pomiarze na realnym Androidzie, jeśli cokolwiek tnie):
-    .hero__clouds::before,
-    .hero__clouds::after { animation: none; } */
   }
 
-  /* pauza, gdy hero zjedzie z ekranu (klasę toggluje skrypt niżej) */
-  .hero.is-paused .hero__clouds::before,
-  .hero.is-paused .hero__clouds::after,
-  .hero.is-paused .hero__cloud-c,
-  .hero.is-paused .hero__cloud-d {
+  :global(.bg-layer.is-inactive) .hero-bg__clouds::before,
+  :global(.bg-layer.is-inactive) .hero-bg__clouds::after,
+  :global(.bg-layer.is-inactive) .hero-bg__cloud-c,
+  :global(.bg-layer.is-inactive) .hero-bg__cloud-d {
     animation-play-state: paused;
   }
 </style>
-
-<script>
-  const hero = document.querySelector<HTMLElement>(".hero");
-  if (hero) {
-    const io = new IntersectionObserver(
-      ([entry]) => hero.classList.toggle("is-paused", !entry.isIntersecting),
-      { threshold: 0 },
-    );
-    io.observe(hero);
-  }
-</script>

@@ -1,10 +1,9 @@
 ---
-// Wspólna treść strony głównej — JEDYNE miejsce z markupem strony.
-// Trasy /pages/index.astro (PL) i /pages/en/index.astro (EN) tylko ją renderują
-// z odpowiednim językiem. Teksty pobierane przez t() ze słownika src/i18n/ui.ts.
 import BaseLayout from "@/layouts/BaseLayout.astro";
-import Hero from "@/components/Hero.astro";
-import ScrollDemo from "@/components/ScrollDemo.astro";
+import Hero from "@/components/sections/hero/Hero.astro";
+import HeroBackground from "@/components/sections/hero/HeroBackground.astro";
+import Problem from "@/components/sections/problem/Problem.astro";
+import ProblemBackground from "@/components/sections/problem/ProblemBackground.astro";
 import { useTranslations, type Lang } from "@/i18n/utils";
 
 interface Props {
@@ -15,21 +14,127 @@ const t = useTranslations(lang);
 ---
 
 <BaseLayout title={t("meta.title")} lang={lang}>
-  <div class="hero-bg"><Hero /></div>
-  <ScrollDemo
-    intro={t("demo.intro")}
-    box={t("demo.box")}
-    outro={t("demo.outro")}
-  />
+  <div class="bg-stage" aria-hidden="true">
+    <div class="bg-layer" data-bg="hero">
+      <HeroBackground />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="problem">
+      <ProblemBackground />
+    </div>
+  </div>
+
+  <main class="page">
+    <Hero />
+    <Problem />
+  </main>
 </BaseLayout>
 
 <style>
-  .hero-bg {
+  .bg-stage {
     position: fixed;
     inset: 0;
     z-index: 0;
+    background: #000; /* widoczne w przerwie między tłami (OVERLAP < 0) */
+    pointer-events: none; /* scena nigdy nie przechwytuje klików */
   }
-  :global(body) {
+  .bg-layer {
+    position: absolute;
+    inset: 0;
+    will-change: opacity;
+  }
+  .bg-layer[data-bg="hero"] {
+    opacity: 1;
+  }
+  .bg-layer[data-bg="problem"] {
+    opacity: 0;
+  }
+
+  .page {
     position: relative;
+    z-index: 1;
+  }
+
+  :global(body) {
+    background: #000;
   }
 </style>
+
+<script>
+  import { gsap } from "gsap";
+  import { ScrollTrigger } from "gsap/ScrollTrigger";
+
+  gsap.registerPlugin(ScrollTrigger);
+
+  const OVERLAP = 0;
+
+  const mm = gsap.matchMedia();
+
+  // — pełna animacja (scrub) —
+  mm.add("(prefers-reduced-motion: no-preference)", () => {
+    const problem = document.querySelector<HTMLElement>("#problem");
+    const heroBg = document.querySelector<HTMLElement>('[data-bg="hero"]');
+    const problemBg = document.querySelector<HTMLElement>(
+      '[data-bg="problem"]',
+    );
+    if (!problem || !heroBg || !problemBg) return;
+
+    const o = OVERLAP / 2;
+
+    // Pauzuj animacje warstwy, gdy jest praktycznie niewidoczna (oszczędność CPU).
+    const syncActive = () => {
+      heroBg.classList.toggle(
+        "is-inactive",
+        parseFloat(getComputedStyle(heroBg).opacity) < 0.01,
+      );
+      problemBg.classList.toggle(
+        "is-inactive",
+        parseFloat(getComputedStyle(problemBg).opacity) < 0.01,
+      );
+    };
+
+    const tl = gsap.timeline({
+      defaults: { ease: "none" }, // liniowo — postęp 1:1 ze scrollem
+      scrollTrigger: {
+        trigger: problem, //sekcja zakotwiczona do sekcji problem
+        start: "top bottom", // start, gdy góra problem wjeżdża od dołu okna (= koniec hero)
+        end: "top top", // koniec, gdy góra problem dojedzie do góry okna (≈ 1 ekran przejścia)
+        scrub: true,
+        onUpdate: syncActive,
+      },
+    });
+
+    tl.to(heroBg, { opacity: 0, duration: 0.5 + o }, 0).to(
+      problemBg,
+      { opacity: 1, duration: 0.5 + o },
+      0.5 - o,
+    );
+
+    return () => {
+      tl.scrollTrigger?.kill();
+      tl.kill();
+    };
+  });
+
+  // — reduced motion: bez przenikania, twardy swap teł na granicy sekcji —
+  mm.add("(prefers-reduced-motion: reduce)", () => {
+    const problem = document.querySelector<HTMLElement>("#problem");
+    const heroBg = document.querySelector<HTMLElement>('[data-bg="hero"]');
+    const problemBg = document.querySelector<HTMLElement>(
+      '[data-bg="problem"]',
+    );
+    if (!problem || !heroBg || !problemBg) return;
+
+    const st = ScrollTrigger.create({
+      trigger: problem,
+      start: "top center",
+      onToggle: ({ isActive }) => {
+        gsap.set(heroBg, { opacity: isActive ? 0 : 1 });
+        gsap.set(problemBg, { opacity: isActive ? 1 : 0 });
+        heroBg.classList.toggle("is-inactive", isActive);
+        problemBg.classList.toggle("is-inactive", !isActive);
+      },
+    });
+
+    return () => st.kill();
+  });
+</script>

@@ -1,0 +1,51 @@
+<div class="problem-bg" aria-hidden="true">
+  <span class="problem-bg__glow"></span>
+</div>
+
+<style>
+  .problem-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(160deg, #000 0%, #000 55%, #000 100%);
+    overflow: clip;
+    isolation: isolate;
+  }
+
+  .problem-bg__glow {
+    position: absolute;
+    inset: -20%;
+    filter: blur(55px);
+    will-change: transform;
+    background:
+      radial-gradient(
+        50% 50% at 30% 35%,
+        oklch(0.468 0.147 21.133 / 0.85),
+        transparent 70%
+      ),
+      radial-gradient(
+        45% 45% at 75% 70%,
+        oklch(0.395 0.143 21.99),
+        transparent 72%
+      );
+    animation: pb-drift 9s ease-in-out infinite alternate;
+  }
+
+  @keyframes pb-drift {
+    from {
+      transform: translate3d(-3%, -2%, 0) scale(1.05);
+    }
+    to {
+      transform: translate3d(4%, 3%, 0) scale(1.18);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .problem-bg__glow {
+      animation: none;
+    }
+  }
+
+  :global(.bg-layer.is-inactive) .problem-bg__glow {
+    animation-play-state: paused;
+  }
+</style>
