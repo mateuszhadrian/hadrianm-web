@@ -51,14 +51,40 @@ const accentN = accentLetters.length;
       }
     </span>
 
+    <!-- Tekst (placeholder) — faza 2. Desktop: lewa kolumna; mobile: 3 pasma
+         interleaved z urządzeniami (dividery nad 02 i 03). Pojawia się przy
+         przesuwaniu urządzeń w prawo (desktop) / rozsuwaniu (mobile). -->
+    <div class="hero__copy">
+      <div class="hero__copy-row hero__copy-row--1">
+        <span class="hero__copy-num">01</span>
+        <p class="hero__copy-text">
+          {t("hero.s1Lead")}
+          <em>{t("hero.s1Accent")}</em>
+        </p>
+      </div>
+      <div class="hero__copy-row hero__copy-row--2">
+        <span class="hero__copy-num">02</span>
+        <p class="hero__copy-text">{t("hero.s2")}</p>
+      </div>
+      <div class="hero__copy-row hero__copy-row--3">
+        <span class="hero__copy-num">03</span>
+        <p class="hero__copy-text">{t("hero.s3")}</p>
+      </div>
+    </div>
+
     <!-- Scena urządzeń (laptop + smartfon) — pierwsza klatka z pliku produkcyjnego.
          Pojawia się rozmyta pod koniec drogi słowa i wyostrza w centrum. -->
     <div class="hero__devices" aria-hidden="true">
       <div class="device-scene">
         <div class="fit">
           <div class="camera" data-gsap="camera">
+            <!-- Poświata „podłogi" pod urządzeniami (czerwona mgła) -->
+            <div class="device-glow"></div>
+
             <!-- LAPTOP -->
             <div class="device laptop" data-gsap="laptop">
+              <!-- Poświata pod laptopem — tylko mobile (podąża za laptopem) -->
+              <div class="device-glow--lap"></div>
               <div class="extrude lid" data-extrude>
                 <div class="face">
                   <div class="screen" data-gsap="screen-laptop">
@@ -73,6 +99,8 @@ const accentN = accentLetters.length;
 
             <!-- TELEFON -->
             <div class="device phone" data-gsap="phone">
+              <!-- Poświata pod telefonem — tylko mobile (podąża za telefonem) -->
+              <div class="device-glow--ph"></div>
               <div class="extrude body" data-extrude>
                 <div class="face">
                   <div class="screen" data-gsap="screen-phone">
@@ -96,6 +124,7 @@ const accentN = accentLetters.length;
     --ink: #f5f0ec;
     --muted: rgba(245, 240, 236, 0.58);
     --faint: rgba(245, 240, 236, 0.34);
+    --line: rgba(245, 240, 236, 0.14);
     --accent: #ff5a47;
     --headline-size: clamp(2.75rem, 7.9vw, 9.4rem);
   }
@@ -204,6 +233,62 @@ const accentN = accentLetters.length;
     animation: scroll-pulse 2.4s ease-in-out infinite;
   }
 
+  /* ─────────────────────────── TEKST (placeholder) ─────────────────────────
+     Bazowo: zwykły blok w przepływie (fallback reduced-motion / brak JS).
+     W trybie ruchu (no-preference) pozycjonowany absolutnie i odsłaniany GSAP-em. */
+  .hero__copy {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: clamp(2rem, 7vw, 5rem);
+    display: flex;
+    flex-direction: column;
+  }
+  .hero__copy-row {
+    display: flex;
+    gap: clamp(0.85rem, 1.4vw, 1.4rem);
+    align-items: baseline;
+  }
+  .hero__copy-row--2,
+  .hero__copy-row--3 {
+    border-top: 1px solid var(--line);
+    margin-top: clamp(1.1rem, 2vw, 1.65rem);
+    padding-top: clamp(1.1rem, 2vw, 1.65rem);
+  }
+  .hero__copy-num {
+    flex-shrink: 0;
+    font-family: var(--font-mono), monospace;
+    font-size: clamp(0.7rem, 0.8vw, 0.82rem);
+    color: var(--accent);
+  }
+  .hero__copy-text {
+    margin: 0;
+    color: var(--muted);
+    font-family: var(--font-display), sans-serif;
+    font-weight: 600;
+    font-size: clamp(1rem, 1.45vw, 1.65rem);
+    line-height: 1.3;
+    text-wrap: balance;
+  }
+  .hero__copy-row--1 .hero__copy-text {
+    color: var(--ink);
+    font-weight: 800;
+    font-size: clamp(2rem, 3.9vw, 3.75rem);
+    line-height: 1.08;
+    letter-spacing: -0.03em;
+  }
+  .hero__copy-text em {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: linear-gradient(105deg, #fff6f0 0%, #ffb3a6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
   /* ─────────────────────────── SCENA URZĄDZEŃ ─────────────────────────── */
   .hero__devices {
     position: relative;
@@ -268,6 +353,34 @@ const accentN = accentLetters.length;
     transform-style: preserve-3d;
   }
 
+  /* Poświata „podłogi" pod urządzeniami — eliptyczny, rozmyty radial-gradient
+     w kolorze akcentu (jak VenaFloorGlow z k4-ref-C). Wewnątrz .camera, więc
+     przesuwa się / skaluje / przechyla razem z grupą (B→C). */
+  .device-glow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 980px;
+    height: 210px;
+    transform: translate(-50%, -50%) translate3d(0, 330px, -60px);
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(var(--glow), 0.34) 0%,
+      rgba(0, 0, 0, 0) 65%
+    );
+    filter: blur(12px);
+    pointer-events: none;
+  }
+
+  /* Poświata pod laptopem/telefonem — warianty mobilne (dzieci .laptop / .phone,
+     podążają za nimi: wjazd + rozsunięcie). Domyślnie ukryte; włączane w media
+     (max-width: 760px). */
+  .device-glow--lap,
+  .device-glow--ph {
+    display: none;
+  }
+
   .extrude {
     /* domyślne; konkretne wartości ustawiają .lid / .body */
     --r: 0px;
@@ -318,9 +431,12 @@ const accentN = accentLetters.length;
   }
 
   .laptop {
-    /* wjazd na mobile (poziom/głębia) — ustawiane z JS */
+    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP */
     --sl-lap: 0px;
     --sz-lap: 0px;
+    --apart-lap: 0px; /* rozsunięcie pionowe (mobile: laptop w górę) */
+    --lap-yaw: 0deg; /* dodatkowy skręt laptopa na klatce C (desktop) */
+    --lap-pitch: 0deg; /* odchylenie pokrywy do tyłu na klatce C (desktop) */
     transform: translate(-50%, -50%);
   }
   .laptop .lid {
@@ -360,9 +476,13 @@ const accentN = accentLetters.length;
   }
 
   .phone {
-    /* wjazd na mobile (poziom/głębia) — ustawiane z JS */
+    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP */
     --sl-ph: 0px;
     --sz-ph: 0px;
+    --apart-ph: 0px; /* rozsunięcie pionowe (mobile: telefon w dół) */
+    --ph-dx: 0px; /* przejazd prawo→lewo na klatce C (desktop) */
+    --ph-dy: 0px;
+    --ph-dz: 0px; /* wysunięcie do przodu na klatce C (desktop) */
     transform: translate(-50%, -50%);
     will-change: transform;
   }
@@ -390,7 +510,9 @@ const accentN = accentLetters.length;
      centrum — różnicę robi timeline GSAP. ── */
   @media (prefers-reduced-motion: no-preference) {
     .hero {
-      min-height: 480svh;
+      /* faza 1 (~1,4 ekr.) + faza 2 (~2,2 ekr.) napędzane scrollem (end +=4×vh)
+         + ~2 ekrany holdu, zanim sekcja się odpina */
+      min-height: 700svh;
     }
     .hero__stage {
       position: sticky;
@@ -423,6 +545,57 @@ const accentN = accentLetters.length;
       transform-origin: 50% 50%;
       pointer-events: none;
       will-change: transform, opacity;
+    }
+
+    /* ── DESKTOP/TABLET: lewa kolumna, wyśrodkowana w pionie, odsłaniana GSAP-em.
+       Odstęp tekst↔urządzenia steruje `left` + `width` (clamp → nigdy zerowy). ── */
+    .hero__copy {
+      position: absolute;
+      top: 50%;
+      left: clamp(2.5rem, 7.5vw, 9.5rem);
+      transform: translateY(-50%);
+      width: clamp(18rem, 31vw, 31rem);
+      max-width: none;
+      margin: 0;
+      padding: 0;
+      opacity: 0;
+      z-index: 4;
+      pointer-events: none;
+      will-change: transform, opacity;
+    }
+  }
+
+  /* ── MOBILE w trybie ruchu: 3 pasma interleaved z urządzeniami.
+     Pozycje pasm (top) dobrane wstępnie — do doszlifowania wizualnie. ── */
+  @media (prefers-reduced-motion: no-preference) and (max-width: 760px) {
+    .hero__copy {
+      position: absolute;
+      inset: 0;
+      width: auto;
+      left: 0;
+      top: 0;
+      transform: none;
+      padding: 0;
+      opacity: 0;
+      z-index: 4;
+      pointer-events: none;
+      will-change: opacity;
+    }
+    .hero__copy-row {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(86vw, 26rem);
+      margin: 0;
+    }
+    .hero__copy-row--1 {
+      top: 7svh;
+    }
+    .hero__copy-row--2 {
+      top: 45svh;
+    }
+    .hero__copy-row--3 {
+      top: 82svh;
     }
   }
 
@@ -457,6 +630,40 @@ const accentN = accentLetters.length;
       --ph-radius: 46px;
       --ph-bezel: 11px;
     }
+    /* bazowy kąt kamery (klatka B mobile) — kamera nie obraca się dalej na mobile */
+    .camera {
+      --cx: 4deg;
+    }
+    /* poświata „podłogi" (dziecko .camera) tylko na desktopie (jak k4-ref-C) */
+    .device-glow {
+      display: none;
+    }
+    /* poświata pod laptopem/telefonem — dzieci .laptop / .phone, więc podążają
+       za ich pozycją podczas wjazdu i rozsunięcia */
+    .device-glow--lap,
+    .device-glow--ph {
+      display: block;
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      border-radius: 50%;
+      transform: translate(-50%, -45%) translateZ(-40px);
+      background: radial-gradient(
+        ellipse at center,
+        rgba(var(--glow), 0.34) 0%,
+        rgba(0, 0, 0, 0) 65%
+      );
+      filter: blur(12px);
+      pointer-events: none;
+    }
+    .device-glow--lap {
+      width: calc(var(--lap-w) * 1.15);
+      height: 230px;
+    }
+    .device-glow--ph {
+      width: calc(var(--ph-w) * 1.5);
+      height: calc(var(--ph-w) * 0.42);
+    }
   }
 
   /* ── niski ekran (telefon w poziomie / krótkie okno) */
@@ -486,6 +693,21 @@ const accentN = accentLetters.length;
 
   ScrollTrigger.config({ ignoreMobileResize: true });
   ScrollTrigger.normalizeScroll(true);
+
+  // ── Docelowa poza urządzeń w klatce C (desktop) — jedno źródło prawdy:
+  //    używane i przy pomiarze adaptacyjnym (computeFrameC), i w timeline. ──
+  const FRAME_C = {
+    camCx: 11, // obrót kamery (oś X)
+    camCy: -27, // obrót kamery (oś Y)
+    lapYaw: -13, // skręt laptopa (oś Y)
+    lapPitch: 8, // odchylenie pokrywy do tyłu (oś X) — „bardziej otwarty"
+    phDx: -780, // telefon dalej w lewo (większe rozsunięcie od laptopa)
+    phDy: 70, // telefon niżej
+    phDz: 210, // telefon bardziej do przodu
+  };
+  // Adaptacyjne dopasowanie grupy do prawej strefy — liczone w layout (resize),
+  // czytane przez timeline. scale >1 = powiększenie, <1 = pomniejszenie.
+  let frameC = { x: 0, scale: 1 };
 
   const devicesEl = document.querySelector<HTMLElement>(".hero__devices");
 
@@ -587,15 +809,25 @@ const accentN = accentLetters.length;
 
     const applyFrame = () => {
       if (!camera || !laptop || !phone || !base) return;
-      const { lap, ph, cam } = geometry();
-      camera.style.setProperty("--cx", cam.cx + "deg");
-      camera.style.setProperty("--cy", cam.cy + "deg");
-      // var(--sl-*) = poziomy wjazd na mobile (laptop z prawej, telefon z lewej),
-      // var(--sz-*) = głębia wjazdu (laptop z tyłu, telefon z przodu).
-      // Na desktopie obie pozostają 0 → urządzenia pojawiają się przez wyostrzenie wrappera.
-      laptop.style.transform = `translate(-50%,-50%) translate3d(calc(${lap.x}px + var(--sl-lap, 0px)), ${lap.y}px, var(--sz-lap, 0px))`;
-      phone.style.transform = `translate(-50%,-50%) translate3d(calc(${ph.x}px + var(--sl-ph, 0px)), ${ph.y}px, calc(${ph.z}px + var(--sz-ph, 0px)))`;
-      base.style.opacity = "1";
+      const { lap, ph } = geometry();
+      // Pozycje bazowe (klatka B) w px projektu. Morph fazy 2 dokładany przez
+      // zmienne CSS animowane scrollem:
+      //   var(--sl-*)   = poziomy wjazd na mobile (laptop z prawej, telefon z lewej)
+      //   var(--sz-*)   = głębia wjazdu (laptop z tyłu, telefon z przodu)
+      //   var(--apart-*)= rozsunięcie pionowe (mobile: laptop↑, telefon↓)
+      //   var(--lap-yaw)= dodatkowy skręt laptopa na klatce C (desktop)
+      //   var(--ph-d*)  = przejazd prawo→lewo + wysunięcie telefonu na C (desktop)
+      // Kąt kamery (--cx/--cy) i opacity paska bazy są sterowane CSS/GSAP-em.
+      laptop.style.transform =
+        `translate(-50%, -50%) translate3d(` +
+        `calc(${lap.x}px + var(--sl-lap, 0px)), ` +
+        `calc(${lap.y}px + var(--apart-lap, 0px)), ` +
+        `var(--sz-lap, 0px)) rotateY(var(--lap-yaw, 0deg)) rotateX(var(--lap-pitch, 0deg))`;
+      phone.style.transform =
+        `translate(-50%, -50%) translate3d(` +
+        `calc(${ph.x}px + var(--sl-ph, 0px) + var(--ph-dx, 0px)), ` +
+        `calc(${ph.y}px + var(--apart-ph, 0px) + var(--ph-dy, 0px)), ` +
+        `calc(${ph.z}px + var(--sz-ph, 0px) + var(--ph-dz, 0px)))`;
     };
 
     // Skalowanie do realnych wymiarów grupy względem kontenera (stabilne 100svh).
@@ -615,13 +847,22 @@ const accentN = accentLetters.length;
     // pasek bazy, perspective-origin itd. — analityka tu nie wystarcza).
     const centerGroup = () => {
       if (!camera || !laptop || !phone || !fitEl) return;
-      // 1) wyzeruj offsety (centrujący + wjazd) i zmierz naturalny środek grupy w spoczynku
+      // 1) wyzeruj offsety (centrujący + wjazd + morph) i ustaw bazowy kąt kamery,
+      //    aby zmierzyć naturalny środek grupy w klatce B (spoczynek)
       camera.style.setProperty("--gx", "0px");
       camera.style.setProperty("--gy", "0px");
+      camera.style.setProperty("--cx", (isStacked() ? 4 : 0) + "deg");
+      camera.style.setProperty("--cy", "0deg");
       laptop.style.setProperty("--sl-lap", "0px");
       phone.style.setProperty("--sl-ph", "0px");
       laptop.style.setProperty("--sz-lap", "0px");
       phone.style.setProperty("--sz-ph", "0px");
+      laptop.style.setProperty("--apart-lap", "0px");
+      phone.style.setProperty("--apart-ph", "0px");
+      laptop.style.setProperty("--lap-yaw", "0deg");
+      phone.style.setProperty("--ph-dx", "0px");
+      phone.style.setProperty("--ph-dy", "0px");
+      phone.style.setProperty("--ph-dz", "0px");
       const lr = laptop.getBoundingClientRect();
       const pr = phone.getBoundingClientRect();
       const fr = fitEl.getBoundingClientRect(); // środek = origin kamery
@@ -645,10 +886,77 @@ const accentN = accentLetters.length;
       );
     };
 
+    // Zmierz bbox grupy w klatce C (przy neutralnym wrapperze .hero__devices),
+    // żeby policzyć adaptacyjne dopasowanie do prawej strefy. Stan po pomiarze
+    // wraca do spoczynku (klatka B).
+    const measureCBbox = () => {
+      const sx = (gsap.getProperty(devicesEl, "x") as number) || 0;
+      const ssc = (gsap.getProperty(devicesEl, "scaleX") as number) || 1;
+      gsap.set(devicesEl, { x: 0, scale: 1 });
+      camera!.style.setProperty("--cx", FRAME_C.camCx + "deg");
+      camera!.style.setProperty("--cy", FRAME_C.camCy + "deg");
+      laptop!.style.setProperty("--lap-yaw", FRAME_C.lapYaw + "deg");
+      laptop!.style.setProperty("--lap-pitch", FRAME_C.lapPitch + "deg");
+      phone!.style.setProperty("--ph-dx", FRAME_C.phDx + "px");
+      phone!.style.setProperty("--ph-dy", FRAME_C.phDy + "px");
+      phone!.style.setProperty("--ph-dz", FRAME_C.phDz + "px");
+      const lr = laptop!.getBoundingClientRect();
+      const pr = phone!.getBoundingClientRect();
+      const left = Math.min(lr.left, pr.left);
+      const right = Math.max(lr.right, pr.right);
+      const top = Math.min(lr.top, pr.top);
+      const bottom = Math.max(lr.bottom, pr.bottom);
+      // przywróć spoczynek (klatka B) + wrapper
+      camera!.style.setProperty("--cx", (isStacked() ? 4 : 0) + "deg");
+      camera!.style.setProperty("--cy", "0deg");
+      laptop!.style.setProperty("--lap-yaw", "0deg");
+      laptop!.style.setProperty("--lap-pitch", "0deg");
+      phone!.style.setProperty("--ph-dx", "0px");
+      phone!.style.setProperty("--ph-dy", "0px");
+      phone!.style.setProperty("--ph-dz", "0px");
+      gsap.set(devicesEl, { x: sx, scale: ssc });
+      return { cx: (left + right) / 2, w: right - left, h: bottom - top };
+    };
+
+    // Klatka C (desktop): dopasuj grupę do PRAWEJ strefy (viewport minus kolumna
+    // tekstu z lewej + min. odstęp). Marginesy asymetryczne: tekst↔lewa krawędź >
+    // urządzenia↔prawa krawędź. Grupa może się powiększać LUB zmniejszać.
+    const computeFrameC = () => {
+      if (!camera || !laptop || !phone) return;
+      if (
+        isStacked() ||
+        !window.matchMedia("(prefers-reduced-motion: no-preference)").matches
+      ) {
+        frameC = { x: 0, scale: 1 };
+        return;
+      }
+      const vw = devicesEl.clientWidth;
+      const vh = devicesEl.clientHeight;
+      const copyEl = document.querySelector<HTMLElement>(".hero__copy");
+      const gap = Math.max(vw * 0.04, 40); // min. odstęp tekst↔urządzenia
+      const rightMargin = Math.max(vw * 0.022, 18); // mały margines z prawej
+      const vMargin = Math.max(vh * 0.06, 24);
+      // prawa krawędź kolumny tekstu (offset* ignoruje transform GSAP-a)
+      const textRight = copyEl
+        ? copyEl.offsetLeft + copyEl.offsetWidth
+        : vw * 0.4;
+      const zoneL = textRight + gap;
+      const zoneR = vw - rightMargin;
+      const zoneW = Math.max(80, zoneR - zoneL);
+      const zoneH = Math.max(80, vh - vMargin * 2);
+      const cb = measureCBbox();
+      const scale = Math.max(0.4, Math.min(zoneW / cb.w, zoneH / cb.h, 1.8));
+      const targetCx = zoneL + zoneW / 2;
+      // środek grupy po skali K wokół środka stage'u: vw/2 + K·(cb.cx − vw/2) + x
+      const x = targetCx - vw / 2 - scale * (cb.cx - vw / 2);
+      frameC = { x, scale };
+    };
+
     const layoutDevices = () => {
       applyFrame();
       fit();
       centerGroup();
+      computeFrameC();
     };
 
     layoutDevices();
@@ -669,6 +977,7 @@ const accentN = accentLetters.length;
     const ghost = q(".hero__accent--ghost");
     const live = q(".hero__accent--live");
     const devices = q(".hero__devices");
+    const copy = q(".hero__copy");
     const scroll = q(".hero__scroll");
     if (!hero || !stage || !head || !ghost || !live || !devices) return null;
 
@@ -697,12 +1006,14 @@ const accentN = accentLetters.length;
       scrollTrigger: {
         trigger: hero,
         start: "top top",
-        // animacja kończy się po ~1,8 ekranu; dalej urządzenia stoją gotowe (~2 ekrany holdu)
-        end: () => "+=" + window.innerHeight * 1.8,
+        // faza 1 (przelot słowa + urządzenia na środku) + faza 2 (morph 3D /
+        // rozsunięcie + tekst) napędzane scrollem przez ~4 ekrany; potem ~2 ekrany
+        // holdu (z min-height: 700svh), zanim sekcja się odpina
+        end: () => "+=" + window.innerHeight * 4,
         scrub: true,
         invalidateOnRefresh: true,
         onUpdate: (self) =>
-          live.classList.toggle("is-wave-paused", self.progress > 0.5),
+          live.classList.toggle("is-wave-paused", self.progress > 0.3),
       },
     });
 
@@ -710,15 +1021,41 @@ const accentN = accentLetters.length;
     tl.to(head, { yPercent: -110, duration: 0.6 }, 0);
     if (scroll) tl.to(scroll, { autoAlpha: 0, duration: 0.12 }, 0);
 
-    return { tl, ghost, live, devices, scroll, startX, startY, endX, endY };
+    return {
+      tl,
+      ghost,
+      live,
+      devices,
+      copy,
+      scroll,
+      startX,
+      startY,
+      endX,
+      endY,
+    };
   };
 
   const cleanup = (b: NonNullable<ReturnType<typeof buildBase>>) => () => {
     b.tl.scrollTrigger?.kill();
     b.tl.kill();
-    gsap.set([b.ghost, b.live, b.devices, b.scroll].filter(Boolean), {
+    gsap.set([b.ghost, b.live, b.devices, b.copy, b.scroll].filter(Boolean), {
       clearProps: "all",
     });
+    // zdejmij morph z urządzeń (zmienne CSS) + przywróć pasek bazy
+    const lp = q("[data-gsap='laptop']");
+    const ph = q("[data-gsap='phone']");
+    const cam = q(".hero__devices .camera");
+    const bs = q("[data-gsap='laptop-base']");
+    lp?.style.removeProperty("--lap-yaw");
+    lp?.style.removeProperty("--lap-pitch");
+    lp?.style.removeProperty("--apart-lap");
+    ph?.style.removeProperty("--ph-dx");
+    ph?.style.removeProperty("--ph-dy");
+    ph?.style.removeProperty("--ph-dz");
+    ph?.style.removeProperty("--apart-ph");
+    cam?.style.removeProperty("--cx");
+    cam?.style.removeProperty("--cy");
+    if (bs) gsap.set(bs, { clearProps: "opacity" });
   };
 
   // ── DESKTOP/TABLET: słowo jedzie do środka + blur, urządzenia wyostrzają się ──
@@ -727,7 +1064,17 @@ const accentN = accentLetters.length;
     () => {
       const b = buildBase();
       if (!b) return;
-      const { tl, live, devices, startX, startY, endX, endY } = b;
+      const { tl, live, copy, devices, startX, startY, endX, endY } = b;
+
+      const laptop = q("[data-gsap='laptop']");
+      const phone = q("[data-gsap='phone']");
+      const camera = q(".hero__devices .camera");
+      const base = q("[data-gsap='laptop-base']");
+
+      // ── stałe fazy 2 (do dostrojenia wizualnego) ──
+      const PH2 = 0.95; // start fazy 2 na osi timeline (po wejściu urządzeń)
+      // Pozycja/skala grupy w klatce C są adaptacyjne (frameC, liczone w layout):
+      // grupa dopasowuje się do prawej strefy — może rosnąć lub maleć.
 
       // słowo "inna": hold → środek viewportu + skala ku użytkownikowi + blur → zanik
       tl.fromTo(
@@ -759,6 +1106,79 @@ const accentN = accentLetters.length;
         0.5,
       );
 
+      // ── FAZA 2 (desktop): morph 3D wg produkcja.html + przesuw grupy w prawo
+      //    + wjazd tekstu z lewej. Wszystko równolegle, napędzane scrollem. ──
+      // (a) telefon: przejazd prawo→lewo + wysunięcie do przodu + niżej (klatka B→C)
+      if (phone) {
+        tl.to(
+          phone,
+          {
+            "--ph-dx": FRAME_C.phDx + "px",
+            "--ph-dy": FRAME_C.phDy + "px",
+            "--ph-dz": FRAME_C.phDz + "px",
+            duration: 0.5,
+            ease: "power2.inOut",
+          },
+          PH2,
+        );
+      }
+      // (b) zanik paska bazy laptopa (klawiatury) — gdy laptop staje pod kątem,
+      //     pasek nie może być widoczny
+      if (base) {
+        tl.to(
+          base,
+          { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" },
+          PH2 + 0.03,
+        );
+      }
+      // (c) ruch kamery B→C + skręt (yaw) i odchylenie do tyłu (pitch) laptopa
+      if (camera) {
+        tl.to(
+          camera,
+          {
+            "--cx": FRAME_C.camCx + "deg",
+            "--cy": FRAME_C.camCy + "deg",
+            duration: 0.5,
+            ease: "power2.inOut",
+          },
+          PH2 + 0.45,
+        );
+      }
+      if (laptop) {
+        tl.to(
+          laptop,
+          {
+            "--lap-yaw": FRAME_C.lapYaw + "deg",
+            "--lap-pitch": FRAME_C.lapPitch + "deg",
+            duration: 0.5,
+            ease: "power2.inOut",
+          },
+          PH2 + 0.45,
+        );
+      }
+      // (d) cała grupa dopasowuje się do prawej strefy (adaptacyjnie: rośnie lub
+      //     maleje) i jedzie w prawo, robiąc miejsce na tekst z lewej
+      tl.to(
+        devices,
+        {
+          x: () => frameC.x,
+          scale: () => frameC.scale,
+          transformOrigin: "50% 50%",
+          duration: 1.0,
+          ease: "power2.inOut",
+        },
+        PH2,
+      );
+      // (e) tekst po lewej: fade + slide od lewej (kończy razem z dojściem do C)
+      if (copy) {
+        tl.fromTo(
+          copy,
+          { autoAlpha: 0, x: -48 },
+          { autoAlpha: 1, x: 0, duration: 0.6, ease: "power2.out" },
+          PH2 + 0.35,
+        );
+      }
+
       return cleanup(b);
     },
   );
@@ -769,11 +1189,17 @@ const accentN = accentLetters.length;
     () => {
       const b = buildBase();
       if (!b) return;
-      const { tl, live, devices, startX, startY } = b;
+      const { tl, live, copy, devices, startX, startY } = b;
 
       const laptop = q("[data-gsap='laptop']");
       const phone = q("[data-gsap='phone']");
       const fitEl = q(".hero__devices .fit");
+
+      // ── stałe fazy 2 (mobile) — do dostrojenia wizualnego ──
+      const APART_START = 1.3; // start rozsunięcia (po zakończeniu wjazdu)
+      const APART_LAP = -150; // laptop w górę (px projektu)
+      const APART_PH = 170; // telefon w dół (px projektu)
+      const MOB_END_SCALE = 0.82; // pomniejszenie grupy (miejsce na tekst góra/dół)
 
       const fitScale = () =>
         fitEl ? parseFloat(fitEl.style.getPropertyValue("--fit")) || 1 : 1;
@@ -795,18 +1221,19 @@ const accentN = accentLetters.length;
       // urządzenia widoczne i ostre; reveal = wjazd ŁUKIEM w płaszczyźnie XZ:
       // laptop z prawej i z TYŁU, telefon z lewej i z PRZODU. Różne ease na X i Z
       // wyginają tor (wrażenie okręgu). Wszystko to sam transform → tanio na GPU.
+      // Wjazd wolniejszy (dłuższy) i z mocnym ease-out na samym końcu (power4.out).
       gsap.set(devices, { autoAlpha: 1, filter: "none", scale: 1 });
       if (laptop) {
         tl.fromTo(
           laptop,
           { "--sl-lap": () => slide() + "px" },
-          { "--sl-lap": "0px", duration: 0.42, ease: "power3.out" },
+          { "--sl-lap": "0px", duration: 0.7, ease: "power4.out" },
           0.5,
         );
         tl.fromTo(
           laptop,
           { "--sz-lap": () => -zDepth() + "px" },
-          { "--sz-lap": "0px", duration: 0.42, ease: "power1.inOut" },
+          { "--sz-lap": "0px", duration: 0.7, ease: "power2.out" },
           0.5,
         );
       }
@@ -814,14 +1241,58 @@ const accentN = accentLetters.length;
         tl.fromTo(
           phone,
           { "--sl-ph": () => -slide() + "px" },
-          { "--sl-ph": "0px", duration: 0.42, ease: "power3.out" },
+          { "--sl-ph": "0px", duration: 0.7, ease: "power4.out" },
           0.5,
         );
         tl.fromTo(
           phone,
           { "--sz-ph": () => zDepth() + "px" },
-          { "--sz-ph": "0px", duration: 0.42, ease: "power1.inOut" },
+          { "--sz-ph": "0px", duration: 0.7, ease: "power2.out" },
           0.5,
+        );
+      }
+
+      // ── FAZA 2 (mobile): urządzenia rozsuwają się (laptop↑, telefon↓) i grupa
+      //    pomniejsza się, robiąc miejsce na dividery + tekst (01 góra, 02 między,
+      //    03 pod telefonem). Tekst pojawia się równolegle. ──
+      if (laptop) {
+        tl.to(
+          laptop,
+          {
+            "--apart-lap": APART_LAP + "px",
+            duration: 0.6,
+            ease: "power2.inOut",
+          },
+          APART_START,
+        );
+      }
+      if (phone) {
+        tl.to(
+          phone,
+          {
+            "--apart-ph": APART_PH + "px",
+            duration: 0.6,
+            ease: "power2.inOut",
+          },
+          APART_START,
+        );
+      }
+      tl.to(
+        devices,
+        {
+          scale: MOB_END_SCALE,
+          transformOrigin: "50% 50%",
+          duration: 0.6,
+          ease: "power2.inOut",
+        },
+        APART_START,
+      );
+      if (copy) {
+        tl.fromTo(
+          copy,
+          { autoAlpha: 0 },
+          { autoAlpha: 1, duration: 0.5, ease: "power2.out" },
+          APART_START + 0.25,
         );
       }
 

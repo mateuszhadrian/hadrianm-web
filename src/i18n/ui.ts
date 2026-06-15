@@ -15,6 +15,10 @@ export const ui = {
     "hero.headlineLead": "strona zaskakująco",
     "hero.headlineAccent": "inna",
     "hero.scroll": "SCROLL",
+    "hero.s1Lead": "wzniecaj",
+    "hero.s1Accent": "emocje",
+    "hero.s2": "Pierwsze wrażenie. Zaprojektowane.",
+    "hero.s3": "Płynnie. Na każdym ekranie.",
   },
   en: {
     "meta.title": "hadrianm — GSAP demo",
@@ -25,5 +29,9 @@ export const ui = {
     "hero.headlineLead": "a website strikingly",
     "hero.headlineAccent": "different",
     "hero.scroll": "SCROLL",
+    "hero.s1Lead": "ignite",
+    "hero.s1Accent": "emotion",
+    "hero.s2": "First impression. By design.",
+    "hero.s3": "Seamless. On every screen.",
   },
 } as const;
