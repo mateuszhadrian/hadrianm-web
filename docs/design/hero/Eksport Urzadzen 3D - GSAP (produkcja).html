@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hadrianm — Urządzenia 3D (produkcja)</title>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     URZĄDZENIA 3D (laptop + smartfon) pod animację GSAP — WERSJA PRODUKCYJNA
+     (bez żadnych suwaków / panelu demo)
+     ------------------------------------------------------------------------
+     • Tło PRZEZROCZYSTE — wrzuć blok .device-scene na dowolną sekcję strony.
+     • Kamera = jeden wrapper [data-gsap="camera"] z kątami --cx / --cy:
+       obraca CAŁĄ scenę (B → C). Urządzenia stoją w miejscu — rusza się kamera.
+     • Ekrany pełna biel #fff (tu wstawisz własną treść).
+     • Elementy pod GSAP są otagowane atrybutem data-gsap="...":
+         camera         – wrapper kamery (obrót sceny B→C)
+         laptop         – cały laptop (dostaje dodatkowy obrót w fazie 2)
+         laptop-base    – przedni pasek obudowy (zanika w fazie 1)
+         screen-laptop  – biały ekran laptopa
+         phone          – cały smartfon (przejeżdża prawo→lewo)
+         screen-phone   – biały ekran telefonu
+     • Bryła boczna budowana warstwowo (.extrude__layer) — realny prawy bok.
+
+     ANIMACJA (gotowy timeline GSAP, sekcja 3 w <script>):
+         faza 1 (0.00–0.50): telefon prawo→lewo + zanik klawiatury (paska)
+         faza 2 (0.50–1.00): ruch kamery B→C + mocniejszy kąt laptopa
+     Domyślnie timeline ODTWARZA SIĘ RAZ po załadowaniu (podgląd).
+     Aby sterować scrollem — patrz komentarz „ScrollTrigger" na końcu skryptu.
+
+     STAŁE DO REGULACJI (sekcja 2 w <script>):
+         LAP_YAW   = -13   // skręt laptopa na C (oś Y)
+         LAP_PITCH =   0   // pochylenie laptopa na C (oś X)
+         LAP_ROLL  =   0   // przechył laptopa na C (oś Z)
+         SCREEN_GAP_Z = 0  // odstęp ekran telefonu ↔ ekran laptopa (oś Z, px)
+     ════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+  :root{
+    /* ——— Parametry sceny ——— */
+    --chassis-1:#2b2b30;   /* jaśniejszy ton obudowy (góra) */
+    --chassis-2:#161619;   /* ciemniejszy ton obudowy (dół/bok) */
+    --chassis-3:#0d0d10;   /* najciemniejszy (tył bryły) */
+    --glow: 255,90,71;     /* kolor glow urządzenia (Czerwona Mgła) */
+    --glow-strength: .55;
+
+    /* Geometria laptopa */
+    --lap-w: 840px;        /* szerokość pokrywy */
+    --lap-h: 534px;        /* wysokość pokrywy (16:10 + ramka) */
+    --lap-bezel: 11px;
+    --lap-radius: 16px;
+    --lap-depth: 16px;     /* głębokość bryły (subtelna) */
+
+    /* Geometria telefonu */
+    --ph-w: 212px;
+    --ph-h: 432px;
+    --ph-bezel: 8px;
+    --ph-radius: 34px;
+    --ph-depth: 22px;      /* grubość telefonu */
+  }
+
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0a0709;            /* TYLKO PODGLĄD — usuń przy wklejaniu na stronę (scena jest przezroczysta) */
+    overflow:hidden;
+  }
+
+  /* ───────────────────────── SCENA (to kopiujesz na stronę) ──────────────── */
+  .device-scene{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    perspective: 1900px;
+    perspective-origin: 50% 44%;
+    pointer-events:none;            /* scena dekoracyjna; włącz jeśli klikalna */
+  }
+  .fit{                            /* skalowanie do szerokości viewportu */
+    position:relative;
+    width: 1180px; height: 720px;
+    transform: translate(-50%,-50%) scale(var(--fit,1));
+    left:50%; top:50%;
+    transform-origin:center center;
+  }
+
+  /* Kamera — obrót CAŁEJ sceny (B → C). Steruje --cx / --cy. */
+  .camera{
+    position:absolute; left:50%; top:50%;
+    transform-style:preserve-3d;
+    transform: translate(-50%,-50%)
+               rotateX(var(--cx,0deg))
+               rotateY(var(--cy,0deg));
+    will-change: transform;
+  }
+
+  /* ——— Urządzenie: wspólne ——— */
+  .device{ position:absolute; left:0; top:0; transform-style:preserve-3d; }
+
+  /* Bryła warstwowa (realny bok + zaokrąglone rogi) */
+  .extrude{ position:relative; transform-style:preserve-3d; }
+  .extrude__layer{
+    position:absolute; inset:0;
+    border-radius: var(--r);
+    background: linear-gradient(90deg,
+                 var(--chassis-3) 0%, var(--chassis-2) 46%, var(--chassis-1) 100%);
+  }
+  /* Lico = obudowa + biały ekran */
+  .face{
+    position:absolute; inset:0;
+    border-radius: var(--r);
+    padding: var(--bezel);
+    box-sizing:border-box;
+    background: linear-gradient(150deg, var(--chassis-1) 0%, var(--chassis-2) 60%, var(--chassis-3) 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.07),
+      0 60px 120px -34px rgba(0,0,0,.85),
+      0 26px 90px -24px rgba(var(--glow), var(--glow-strength));
+  }
+  .screen{
+    width:100%; height:100%;
+    border-radius: calc(var(--r) - var(--bezel) + 2px);
+    background:#ffffff;            /* PEŁNA BIEL — tu wstawisz treść */
+    overflow:hidden; position:relative;
+  }
+  .screen__glass{ position:absolute; inset:0; pointer-events:none; } /* hook na refleks */
+
+  /* ——— LAPTOP ——— */
+  .laptop{ transform: translate(-50%,-50%); }     /* środek sceny (nadpisywane w apply) */
+  .laptop .lid{
+    --r: var(--lap-radius); --bezel: var(--lap-bezel);
+    width: var(--lap-w); height: var(--lap-h);
+  }
+  /* Przedni pasek obudowy — to, co widać na Klatce B (sam przód, BEZ klawiatury).
+     W tej samej płaszczyźnie co ekran, tuż pod nim; zanika w fazie 1. */
+  .laptop-base{
+    position:absolute; left:50%; top: calc(var(--lap-h) - 4px);
+    transform: translateX(-50%);
+    width: calc(var(--lap-w) * 1.05); height: 22px;
+    border-radius: 3px 3px 17px 17px;
+    background: linear-gradient(180deg, var(--chassis-1) 0%, var(--chassis-2) 48%, var(--chassis-3) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07),
+                0 30px 60px -22px rgba(0,0,0,.8),
+                0 14px 50px -18px rgba(var(--glow), var(--glow-strength));
+    will-change: opacity;
+  }
+  .lap-notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:14%; height:7px; background:rgba(0,0,0,.45); border-radius:0 0 10px 10px;
+  }
+
+  /* ——— TELEFON ——— */
+  .phone{ transform: translate(-50%,-50%); will-change: transform; }
+  .phone .body{
+    --r: var(--ph-radius); --bezel: var(--ph-bezel);
+    width: var(--ph-w); height: var(--ph-h);
+  }
+  .punch{
+    position:absolute; top:11px; left:50%; transform:translateX(-50%);
+    width:11px; height:11px; border-radius:99px;
+    background:#0a0a0a; box-shadow: inset 0 0 0 2px rgba(255,255,255,.06);
+    z-index:2;
+  }
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════════════ SCENA URZĄDZEŃ ════════════════════════════╗ -->
+<div class="device-scene">
+  <div class="fit">
+    <div class="camera" data-gsap="camera">
+
+      <!-- LAPTOP (nieruchomy; kamera go „obchodzi") -->
+      <div class="device laptop" data-gsap="laptop">
+        <div class="extrude lid" data-extrude>
+          <div class="face">
+            <div class="screen" data-gsap="screen-laptop">
+              <div class="screen__glass"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Przedni pasek obudowy — widoczny na Klatce B, zanika w fazie 1 -->
+        <div class="laptop-base" data-gsap="laptop-base">
+          <div class="lap-notch"></div>
+        </div>
+      </div>
+
+      <!-- TELEFON (przejeżdża prawo → lewo) -->
+      <div class="device phone" data-gsap="phone">
+        <div class="extrude body" data-extrude>
+          <div class="face">
+            <div class="screen" data-gsap="screen-phone">
+              <div class="punch"></div>
+              <div class="screen__glass"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ╚════════════════════════════════════════════════════════════════════════╝ -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   1) BUDOWA BRYŁY 3D — warstwy tworzą realny bok z zaokrąglonymi rogami.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function buildExtrude(el, depth){
+  const layers = Math.max(10, Math.round(depth));   // 1 warstwa ≈ 1px głębi (bez szczelin)
+  const step = depth / layers;
+  const r = getComputedStyle(el).getPropertyValue('--r').trim();
+  const frag = document.createDocumentFragment();
+  for(let i=layers; i>=1; i--){
+    const d = i/layers;
+    const lay = document.createElement('div');
+    lay.className = 'extrude__layer';
+    lay.style.filter = `brightness(${(1 - d*0.45).toFixed(3)})`;   // ciemniej ku tyłowi
+    lay.style.transform = `translateZ(${(-i*step).toFixed(2)}px)`;
+    if(r) lay.style.borderRadius = r;
+    frag.appendChild(lay);
+  }
+  el.insertBefore(frag, el.firstChild);              // warstwy ZA licem (.face)
+}
+const cssVar = n => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(n));
+document.querySelectorAll('.lid[data-extrude]').forEach(el=>buildExtrude(el, cssVar('--lap-depth')));
+document.querySelectorAll('.body[data-extrude]').forEach(el=>buildExtrude(el, cssVar('--ph-depth')));
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2) STAŁE + STAN — wszystko, co animuje GSAP, idzie przez `state`.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const STACKED = window.matchMedia('(max-width: 760px)').matches;   // wariant mobilny
+
+// Pozycje telefonu: start (prawo od laptopa) → koniec (lewo, wysunięty do przodu)
+const PH = STACKED
+  ? { start:{x:0,   y:430, z:60 }, end:{x:0,   y:430, z:60 } }    // mobile: pod laptopem
+  : { start:{x:470, y:130, z:40 }, end:{x:-262,y:122, z:210} };   // desktop: prawo→lewo
+
+// Kąty kamery: B (frontalnie, płasko) → C (ujęcie 3D)
+const CAM = STACKED
+  ? { B:{cx:4, cy:0}, C:{cx:4, cy:0} }
+  : { B:{cx:0, cy:0}, C:{cx:11, cy:-27} };
+
+// Dodatkowy obrót SAMEGO laptopa na Klatce C (narasta wraz z ruchem kamery)
+const LAP_YAW   = STACKED ? 0 : -13;   // oś Y (skręt)
+const LAP_PITCH = 0;                    // oś X (pochylenie)
+const LAP_ROLL  = 0;                    // oś Z (przechył)
+
+// Odstęp w osi Z między płaszczyzną ekranu telefonu a ekranu laptopa (px)
+const SCREEN_GAP_Z = 0;
+
+const state = { cx:CAM.B.cx, cy:CAM.B.cy, px:PH.start.x, py:PH.start.y, pz:PH.start.z, kb:1 };
+
+const camera = document.querySelector('[data-gsap="camera"]');
+const laptop = document.querySelector('[data-gsap="laptop"]');
+const phone  = document.querySelector('[data-gsap="phone"]');
+const base   = document.querySelector('[data-gsap="laptop-base"]');
+
+function apply(){
+  camera.style.setProperty('--cx', state.cx+'deg');
+  camera.style.setProperty('--cy', state.cy+'deg');
+  // kąt laptopa narasta proporcjonalnie do obrotu kamery (0 przy B → max przy C)
+  const camProg = CAM.C.cy ? (state.cy / CAM.C.cy) : 0;
+  laptop.style.transform = `translate(-50%,-50%) `+
+    `rotateX(${(camProg*LAP_PITCH).toFixed(2)}deg) `+
+    `rotateY(${(camProg*LAP_YAW).toFixed(2)}deg) `+
+    `rotateZ(${(camProg*LAP_ROLL).toFixed(2)}deg)`;
+  phone.style.transform =
+    `translate(-50%,-50%) translate3d(${state.px}px, ${state.py}px, ${state.pz + SCREEN_GAP_Z}px)`;
+  base.style.opacity = state.kb;
+}
+apply();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3) TIMELINE GSAP
+        faza 1 (0.00–0.50): telefon prawo→lewo + zanik paska klawiatury
+        faza 2 (0.50–1.00): ruch kamery B→C (+ kąt laptopa liczony w apply)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function makeTimeline(){
+  const tl = gsap.timeline({ paused:true, defaults:{ ease:'power2.inOut' }, onUpdate:apply });
+  tl.to(state, { px:PH.end.x, py:PH.end.y, pz:PH.end.z, duration:0.5 }, 0.0);  // telefon
+  tl.to(state, { kb:0, duration:0.36 }, 0.06);                                  // zanik paska
+  tl.to(state, { cx:CAM.C.cx, cy:CAM.C.cy, duration:0.5 }, 0.5);                // kamera B→C
+  return tl;
+}
+const tl = makeTimeline();
+window.deviceTimeline = tl;   // dostęp z zewnątrz (np. do ScrollTrigger)
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4) SKALOWANIE DO VIEWPORTU (responsywność desktop/tablet/mobile)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function fit(){
+  const f=document.querySelector('.fit');
+  const margin = STACKED ? 24 : 60;
+  const s=Math.min((window.innerWidth-margin*2)/1180, (window.innerHeight-150)/720, 1.15);
+  f.style.setProperty('--fit', Math.max(0.3, s));
+}
+window.addEventListener('resize',fit); fit();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5) URUCHOMIENIE
+      Domyślnie: odtwórz raz po załadowaniu (podgląd).
+      ── Aby sterować SCROLLEM, usuń linię `tl.play()` i podłącz ScrollTrigger:
+         gsap.registerPlugin(ScrollTrigger);
+         ScrollTrigger.create({
+           trigger: '#hero', start: 'top top', end: '+=2000', scrub: true,
+           animation: tl                      // timeline napędzany scrollem
+         });
+   ═══════════════════════════════════════════════════════════════════════════ */
+window.addEventListener('load', ()=> tl.play());
+</script>
+</body>
+</html>

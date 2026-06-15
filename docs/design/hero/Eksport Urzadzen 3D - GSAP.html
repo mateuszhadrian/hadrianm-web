@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hadrianm — Eksport urządzeń 3D pod GSAP</title>
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     EKSPORT URZĄDZEŃ 3D (laptop + smartfon) pod animację GSAP
+     ------------------------------------------------------------------------
+     • Tło PRZEZROCZYSTE — wrzuć .device-scene na dowolną sekcję.
+     • Kamera = jeden wrapper [data-gsap="camera"]. Dwa kąty (--cx, --cy)
+       obracają CAŁĄ scenę. Urządzenia się nie ruszają — rusza się kamera.
+     • Ekrany pełna biel #fff (treść dorobisz później).
+     • Elementy pod GSAP są otagowane atrybutem data-gsap="...":
+         camera         – wrapper kamery (obrót sceny B→C)
+         laptop         – cały laptop
+         laptop-base    – podstawa z klawiaturą (do efektu zaniku)
+         screen-laptop  – biały ekran laptopa
+         phone          – cały smartfon (przejeżdża prawo→lewo)
+         screen-phone   – biały ekran telefonu
+     • Bryła boczna budowana warstwowo (.extrude__layer) — realny prawy bok.
+     • Sekcja "DEMO UI" (panel + suwak) jest TYLKO do podglądu — w produkcji
+       usuwasz wszystko oznaczone /* DEMO */ i bierzesz sam blok .device-scene
+       + funkcję buildExtrude() + timeline z makeTimeline().
+     ════════════════════════════════════════════════════════════════════════ -->
+
+<style>
+  :root{
+    /* ——— Parametry sceny (zmieniaj śmiało) ——— */
+    --chassis-1:#2b2b30;   /* jaśniejszy ton obudowy (góra) */
+    --chassis-2:#161619;   /* ciemniejszy ton obudowy (dół/bok) */
+    --chassis-3:#0d0d10;   /* najciemniejszy (tył bryły) */
+    --glow: 255,90,71;     /* kolor glow urządzenia (Czerwona Mgła) */
+    --glow-strength: .55;
+
+    /* Geometria laptopa */
+    --lap-w: 840px;        /* szerokość pokrywy */
+    --lap-h: 534px;        /* wysokość pokrywy (16:10 + ramka) */
+    --lap-bezel: 11px;
+    --lap-radius: 16px;
+    --lap-depth: 16px;     /* głębokość bryły (subtelna) */
+    --lap-base-d: 300px;   /* głębokość podstawy z klawiaturą */
+
+    /* Geometria telefonu */
+    --ph-w: 212px;
+    --ph-h: 432px;
+    --ph-bezel: 8px;
+    --ph-radius: 34px;
+    --ph-depth: 22px;      /* grubość telefonu */
+  }
+
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:'Archivo',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+    background:#0a0709;            /* DEMO: tło podglądu (sama scena jest przezroczysta) */
+    color:#f5f0ec;
+    overflow:hidden;
+  }
+
+  /* Szachownica = dowód przezroczystości (DEMO, przełączana) */
+  body.checker{
+    background:
+      conic-gradient(from 90deg at 1px 1px,#0000 25%,#1b1b1e 0) 0 0/26px 26px,
+      #121214;
+  }
+
+  /* ───────────────────────── SCENA (to kopiujesz do produkcji) ───────────── */
+  .device-scene{
+    position:absolute; inset:0;
+    display:flex; align-items:center; justify-content:center;
+    perspective: 1900px;
+    perspective-origin: 50% 44%;
+    pointer-events:none;            /* scena dekoracyjna; włącz jeśli klikalna */
+  }
+  .fit{                            /* skalowanie do szerokości viewportu */
+    position:relative;
+    width: 1180px; height: 720px;
+    transform: translate(-50%,-50%) scale(var(--fit,1));
+    left:50%; top:50%;
+    transform-origin:center center;
+  }
+
+  /* Kamera — obrót CAŁEJ sceny (B → C). Steruje --cx / --cy. */
+  .camera{
+    position:absolute; left:50%; top:50%;
+    transform-style:preserve-3d;
+    transform: translate(-50%,-50%)
+               rotateX(var(--cx,6deg))
+               rotateY(var(--cy,0deg));
+    will-change: transform;
+  }
+
+  /* ——— Urządzenie: wspólne ——— */
+  .device{ position:absolute; left:0; top:0; transform-style:preserve-3d; }
+
+  /* Bryła warstwowa (realny bok + zaokrąglone rogi) */
+  .extrude{ position:relative; transform-style:preserve-3d; }
+  .extrude__layer{
+    position:absolute; inset:0;
+    border-radius: var(--r);
+    background: linear-gradient(90deg,
+                 var(--chassis-3) 0%, var(--chassis-2) 46%, var(--chassis-1) 100%);
+  }
+  /* Lico = obudowa + biały ekran */
+  .face{
+    position:absolute; inset:0;
+    border-radius: var(--r);
+    padding: var(--bezel);
+    box-sizing:border-box;
+    background: linear-gradient(150deg, var(--chassis-1) 0%, var(--chassis-2) 60%, var(--chassis-3) 100%);
+    box-shadow:
+      inset 0 0 0 1px rgba(255,255,255,.07),
+      0 60px 120px -34px rgba(0,0,0,.85),
+      0 26px 90px -24px rgba(var(--glow), var(--glow-strength));
+  }
+  .screen{
+    width:100%; height:100%;
+    border-radius: calc(var(--r) - var(--bezel) + 2px);
+    background:#ffffff;            /* PEŁNA BIEL — tu wstawisz treść */
+    overflow:hidden; position:relative;
+  }
+  /* delikatny refleks szkła wyłączony (effects: tylko glow) — zostawiam hook */
+  .screen__glass{ position:absolute; inset:0; pointer-events:none; }
+
+  /* ——— LAPTOP ——— */
+  .laptop{ transform: translate(-50%,-50%); }     /* środek sceny, nieruchomy */
+  .laptop .lid{
+    --r: var(--lap-radius); --bezel: var(--lap-bezel);
+    width: var(--lap-w); height: var(--lap-h);
+  }
+  /* Przedni pasek obudowy — to, co widać na Klatce B (sam przód, BEZ klawiatury).
+     W tej samej płaszczyźnie co ekran, tuż pod nim; zanika w fazie 1. */
+  .laptop-base{
+    position:absolute; left:50%; top: calc(var(--lap-h) - 4px);
+    transform: translateX(-50%);
+    width: calc(var(--lap-w) * 1.05); height: 22px;
+    border-radius: 3px 3px 17px 17px;
+    background: linear-gradient(180deg, var(--chassis-1) 0%, var(--chassis-2) 48%, var(--chassis-3) 100%);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.07),
+                0 30px 60px -22px rgba(0,0,0,.8),
+                0 14px 50px -18px rgba(var(--glow), var(--glow-strength));
+    will-change: opacity;
+  }
+  /* wcięcie otwierania (jak w referencji) */
+  .lap-notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:14%; height:7px; background:rgba(0,0,0,.45); border-radius:0 0 10px 10px;
+  }
+
+  /* ——— TELEFON ——— */
+  .phone{ transform: translate(-50%,-50%); will-change: transform; }
+  .phone .body{
+    --r: var(--ph-radius); --bezel: var(--ph-bezel);
+    width: var(--ph-w); height: var(--ph-h);
+  }
+  .punch{
+    position:absolute; top:11px; left:50%; transform:translateX(-50%);
+    width:11px; height:11px; border-radius:99px;
+    background:#0a0a0a; box-shadow: inset 0 0 0 2px rgba(255,255,255,.06);
+    z-index:2;
+  }
+
+  /* ═══════════════════════════ DEMO UI (usuń w produkcji) ═══════════════════ */
+  /* DEMO */ .ui{ position:fixed; left:0; right:0; top:0; z-index:50;
+      display:flex; flex-direction:column; align-items:center; gap:12px;
+      padding:18px 20px 20px; pointer-events:none; }
+  /* DEMO */ .ui *{ pointer-events:auto; }
+  /* DEMO */ .scrub-wrap{ width:min(720px,86vw); display:flex; align-items:center; gap:16px;
+      background:rgba(20,16,18,.72); backdrop-filter:blur(14px);
+      border:1px solid rgba(245,240,236,.12); border-radius:16px; padding:14px 18px; }
+  /* DEMO */ .play{ width:42px; height:42px; flex:0 0 auto; border:none; cursor:pointer;
+      border-radius:11px; background:rgb(var(--glow)); color:#1c0b08;
+      display:flex; align-items:center; justify-content:center; }
+  /* DEMO */ .play svg{ width:18px; height:18px; }
+  /* DEMO */ .scrub{ flex:1; -webkit-appearance:none; appearance:none; height:5px; border-radius:5px;
+      background:linear-gradient(90deg,rgb(var(--glow)) 0%,rgb(var(--glow)) var(--p,0%),rgba(245,240,236,.18) var(--p,0%));
+      outline:none; }
+  /* DEMO */ .scrub::-webkit-slider-thumb{ -webkit-appearance:none; width:18px; height:18px; border-radius:50%;
+      background:#f5f0ec; box-shadow:0 2px 8px rgba(0,0,0,.5); cursor:pointer; }
+  /* DEMO */ .scrub::-moz-range-thumb{ width:18px; height:18px; border:none; border-radius:50%; background:#f5f0ec; cursor:pointer; }
+  /* DEMO */ .sliders-row{ display:grid; grid-template-columns:1fr 1fr; gap:10px; width:min(860px,92vw); }
+  /* DEMO */ .depth-wrap{ width:auto; display:flex; align-items:center; gap:14px;
+      background:rgba(20,16,18,.72); backdrop-filter:blur(14px);
+      border:1px solid rgba(245,240,236,.12); border-radius:14px; padding:10px 16px; }
+  /* DEMO */ .depth-lbl{ font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+      color:rgba(245,240,236,.62); flex:0 0 auto; }
+  /* DEMO */ .depth-val{ font-size:12px; color:rgba(245,240,236,.8); flex:0 0 auto;
+      min-width:54px; text-align:right; font-variant-numeric:tabular-nums; }
+  /* DEMO */ .phase{ font-size:12px; letter-spacing:.12em; text-transform:uppercase;
+      color:rgba(245,240,236,.62); min-width:128px; text-align:right;
+      font-variant-numeric:tabular-nums; }
+  /* DEMO */ .chips{ display:flex; gap:8px; }
+  /* DEMO */ .chip{ font:inherit; font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+      padding:8px 14px; border-radius:10px; cursor:pointer;
+      background:rgba(245,240,236,.06); color:rgba(245,240,236,.8);
+      border:1px solid rgba(245,240,236,.14); }
+  /* DEMO */ .chip:hover{ background:rgba(245,240,236,.12); }
+  /* DEMO */ .chip[data-on="true"]{ background:rgb(var(--glow)); color:#1c0b08; border-color:transparent; }
+
+  /* DEMO */ .legend{ position:fixed; bottom:18px; left:18px; z-index:50; max-width:300px;
+      background:rgba(20,16,18,.72); backdrop-filter:blur(14px);
+      border:1px solid rgba(245,240,236,.12); border-radius:14px; padding:16px 18px; }
+  /* DEMO */ .legend h1{ margin:0 0 4px; font-size:15px; font-weight:800; }
+  /* DEMO */ .legend h1 b{ color:rgba(245,240,236,.55); font-weight:800; }
+  /* DEMO */ .legend p{ margin:0 0 12px; font-size:12px; line-height:1.5; color:rgba(245,240,236,.6); }
+  /* DEMO */ .legend code{ font-family:ui-monospace,Menlo,Consolas,monospace; font-size:11px;
+      color:rgb(var(--glow)); background:rgba(255,90,71,.1); padding:1px 5px; border-radius:4px; }
+  /* DEMO */ .legend ul{ margin:0; padding:0; list-style:none; display:flex; flex-direction:column; gap:6px; }
+  /* DEMO */ .legend li{ font-size:11.5px; color:rgba(245,240,236,.72); display:flex; gap:8px; align-items:baseline; }
+  /* DEMO */ .legend li code{ flex:0 0 auto; }
+  /* DEMO */ .legend .row{ display:flex; gap:8px; margin-top:14px; }
+</style>
+</head>
+<body>
+
+<!-- ╔══════════════════ SCENA — TO KOPIUJESZ DO PRODUKCJI ══════════════════╗ -->
+<div class="device-scene">
+  <div class="fit">
+    <div class="camera" data-gsap="camera">
+
+      <!-- LAPTOP (nieruchomy; kamera go „obchodzi") -->
+      <div class="device laptop" data-gsap="laptop">
+        <div class="extrude lid" data-extrude>
+          <div class="face">
+            <div class="screen" data-gsap="screen-laptop">
+              <div class="screen__glass"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Przedni pasek obudowy — to, co widać na Klatce B (bez klawiatury). Zanika w fazie 1. -->
+        <div class="laptop-base" data-gsap="laptop-base">
+          <div class="lap-notch"></div>
+        </div>
+      </div>
+
+      <!-- TELEFON (przejeżdża prawo → lewo) -->
+      <div class="device phone" data-gsap="phone">
+        <div class="extrude body" data-extrude>
+          <div class="face">
+            <div class="screen" data-gsap="screen-phone">
+              <div class="punch"></div>
+              <div class="screen__glass"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ╚════════════════════════════════════════════════════════════════════════╝ -->
+
+
+<!-- ══════════════════════════ DEMO UI (usuń w produkcji) ════════════════════ -->
+<!-- DEMO --><div class="legend">
+<!-- DEMO -->  <h1>hadrian<b>m</b> · eksport 3D</h1>
+<!-- DEMO -->  <p>Sekwencja: <b>Klatka B</b> → telefon prawo→lewo + zanik klawiatury → ruch kamery do <b>Klatki C</b>. Tło przezroczyste, ekrany białe.</p>
+<!-- DEMO -->  <ul>
+<!-- DEMO -->    <li><code>camera</code> obrót całej sceny</li>
+<!-- DEMO -->    <li><code>phone</code> przejazd + bok 3D</li>
+<!-- DEMO -->    <li><code>laptop-base</code> klawiatura (zanika)</li>
+<!-- DEMO -->    <li><code>screen-*</code> białe ekrany</li>
+<!-- DEMO -->  </ul>
+<!-- DEMO -->  <div class="row">
+<!-- DEMO -->    <button class="chip" id="t-checker" data-on="false">Przezroczystość</button>
+<!-- DEMO -->  </div>
+<!-- DEMO --></div>
+
+<!-- DEMO --><div class="ui">
+<!-- DEMO -->  <div class="chips">
+<!-- DEMO -->    <button class="chip" data-jump="0">Klatka B</button>
+<!-- DEMO -->    <button class="chip" data-jump="0.5">Po przejeździe</button>
+<!-- DEMO -->    <button class="chip" data-jump="1">Klatka C</button>
+<!-- DEMO -->  </div>
+<!-- DEMO -->  <div class="scrub-wrap">
+<!-- DEMO -->    <button class="play" id="play" aria-label="Odtwórz / pauza">
+<!-- DEMO -->      <svg id="play-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+<!-- DEMO -->    </button>
+<!-- DEMO -->    <input class="scrub" id="scrub" type="range" min="0" max="1000" value="0">
+<!-- DEMO -->    <div class="phase" id="phase">Klatka B</div>
+<!-- DEMO -->  </div>
+<!-- DEMO -->  <div class="sliders-row">
+<!-- DEMO -->  <div class="depth-wrap">
+<!-- DEMO -->    <span class="depth-lbl">Odległość ekranów</span>
+<!-- DEMO -->    <input class="scrub depth" id="depth" type="range" min="-200" max="320" value="0">
+<!-- DEMO -->    <span class="depth-val" id="depth-val">0&nbsp;px</span>
+<!-- DEMO -->  </div>
+<!-- DEMO -->  <div class="depth-wrap">
+<!-- DEMO -->    <span class="depth-lbl">Laptop — oś Y (skręt)</span>
+<!-- DEMO -->    <input class="scrub angle" id="angle" type="range" min="-50" max="50" value="-13">
+<!-- DEMO -->    <span class="depth-val" id="angle-val">-13°</span>
+<!-- DEMO -->  </div>
+<!-- DEMO -->  <div class="depth-wrap">
+<!-- DEMO -->    <span class="depth-lbl">Laptop — oś X (pochylenie)</span>
+<!-- DEMO -->    <input class="scrub angle" id="angleX" type="range" min="-50" max="50" value="0">
+<!-- DEMO -->    <span class="depth-val" id="angleX-val">0°</span>
+<!-- DEMO -->  </div>
+<!-- DEMO -->  <div class="depth-wrap">
+<!-- DEMO -->    <span class="depth-lbl">Laptop — oś Z (przechył)</span>
+<!-- DEMO -->    <input class="scrub angle" id="angleZ" type="range" min="-50" max="50" value="0">
+<!-- DEMO -->    <span class="depth-val" id="angleZ-val">0°</span>
+<!-- DEMO -->  </div>
+<!-- DEMO -->  </div>
+<!-- DEMO --></div>
+<!-- ═════════════════════════ /DEMO UI ══════════════════════════════════════ -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+/* ═══════════════════════════════════════════════════════════════════════════
+   1) BUDOWA BRYŁY 3D — warstwy tworzą realny bok z zaokrąglonymi rogami.
+      Czyta z elementu zmienne CSS --lap-depth / --ph-depth (przez klasę).
+   ═══════════════════════════════════════════════════════════════════════════ */
+function buildExtrude(el, depth){
+  const layers = Math.max(10, Math.round(depth));   // 1 warstwa ≈ 1px głębi (bez szczelin)
+  const step = depth / layers;
+  const r = getComputedStyle(el).getPropertyValue('--r').trim();
+  const frag = document.createDocumentFragment();
+  for(let i=layers; i>=1; i--){
+    const d = i/layers;                              // 0→1 w głąb
+    const lay = document.createElement('div');
+    lay.className = 'extrude__layer';
+    // ciemniej ku tyłowi
+    lay.style.filter = `brightness(${(1 - d*0.45).toFixed(3)})`;
+    lay.style.transform = `translateZ(${(-i*step).toFixed(2)}px)`;
+    if(r) lay.style.borderRadius = r;
+    frag.appendChild(lay);
+  }
+  el.insertBefore(frag, el.firstChild);              // warstwy ZA licem (.face)
+}
+document.querySelectorAll('.lid[data-extrude]').forEach(el=>{
+  buildExtrude(el, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lap-depth')));
+});
+document.querySelectorAll('.body[data-extrude]').forEach(el=>{
+  buildExtrude(el, parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--ph-depth')));
+});
+/* klawisze: brak — na Klatce B widzimy tylko przód obudowy (pasek), bez klawiatury */
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   2) STAN SCENY + APPLY — wszystko, co animuje GSAP, idzie przez te zmienne.
+      To jest sedno: jedna kamera (cx,cy) + pozycja telefonu + opacity klawiatury.
+   ═══════════════════════════════════════════════════════════════════════════ */
+const camera = document.querySelector('[data-gsap="camera"]');
+const laptop = document.querySelector('[data-gsap="laptop"]');
+const phone  = document.querySelector('[data-gsap="phone"]');
+const base   = document.querySelector('[data-gsap="laptop-base"]');
+
+const STACKED = window.matchMedia('(max-width: 760px)').matches;  // wariant mobilny
+
+// Pozycje telefonu: start (prawo od laptopa) → koniec (lewo, wysunięty do przodu)
+const PH = STACKED
+  ? { start:{x:0,   y:430, z:60 }, end:{x:0,   y:430, z:60 } }   // mobile: pod laptopem
+  : { start:{x:470, y:130, z:40 }, end:{x:-262,y:122, z:210} };  // desktop: prawo→lewo
+
+// Kąty kamery: B (frontalnie, płasko jak na referencji) → C (ujęcie 3D).
+const CAM = STACKED
+  ? { B:{cx:4, cy:0}, C:{cx:4, cy:0} }
+  : { B:{cx:0, cy:0}, C:{cx:11, cy:-27} };
+
+// Dodatkowy obrót SAMEGO laptopa w fazie 2 — żeby jego ekran był pod nieco
+// innym (mocniejszym) kątem niż telefon, tak jak na Klatce C.
+// Sterowane suwakiem "Kąt laptopa (C)"; narasta wraz z obrotem kamery.
+const LAP_YAW_C = STACKED ? 0 : -13;
+let lapYawMax   = LAP_YAW_C;   // oś Y (skręt)
+let lapPitchMax = 0;           // oś X (pochylenie)
+let lapRollMax  = 0;           // oś Z (przechył)
+
+const state = { cx:CAM.B.cx, cy:CAM.B.cy, px:PH.start.x, py:PH.start.y, pz:PH.start.z, kb:1 };
+
+// Dodatkowy odstęp w osi Z między płaszczyzną ekranu telefonu a ekranu laptopa
+// (steruje nim suwak "Odległość ekranów"; niezależny od timeline).
+let screenGapZ = 0;
+
+function apply(){
+  camera.style.setProperty('--cx', state.cx+'deg');
+  camera.style.setProperty('--cy', state.cy+'deg');
+  // kąty laptopa narastają proporcjonalnie do obrotu kamery (0 przy B → max przy C)
+  const camProg = CAM.C.cy ? (state.cy / CAM.C.cy) : 0;
+  laptop.style.transform = `translate(-50%,-50%) `+
+    `rotateX(${(camProg*lapPitchMax).toFixed(2)}deg) `+
+    `rotateY(${(camProg*lapYawMax).toFixed(2)}deg) `+
+    `rotateZ(${(camProg*lapRollMax).toFixed(2)}deg)`;
+  phone.style.transform =
+    `translate(-50%,-50%) translate3d(${state.px}px, ${state.py}px, ${state.pz + screenGapZ}px)`;
+  base.style.opacity = state.kb;
+}
+apply();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   3) TIMELINE GSAP — to kopiujesz na stronę / podajesz Claude Code.
+      Trzy fazy:
+        0.00–0.50  telefon prawo→lewo  +  klawiatura znika
+        0.50–1.00  ruch kamery B→C (obrót całej sceny)
+      Podmień `paused:true` + scrubber na ScrollTrigger, jeśli chcesz na scroll.
+   ═══════════════════════════════════════════════════════════════════════════ */
+function makeTimeline(){
+  const tl = gsap.timeline({ paused:true, defaults:{ ease:'power2.inOut' }, onUpdate:apply });
+
+  // FAZA 1 — przejazd telefonu (prawo → lewo) + wysunięcie do przodu
+  tl.to(state, { px:PH.end.x, py:PH.end.y, pz:PH.end.z, duration:0.5 }, 0.0);
+  // FAZA 1 — równoczesny zanik klawiatury
+  tl.to(state, { kb:0, duration:0.36 }, 0.06);
+  // FAZA 2 — ruch kamery do ujęcia C (kąt laptopa liczony w apply() z postępu kamery)
+  tl.to(state, { cx:CAM.C.cx, cy:CAM.C.cy, duration:0.5 }, 0.5);
+
+  return tl;
+}
+const tl = makeTimeline();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   4) DEMO UI — sterowanie podglądem (USUŃ w produkcji).
+   ═══════════════════════════════════════════════════════════════════════════ */
+// DEMO
+(function(){
+  const scrub=document.getElementById('scrub'), play=document.getElementById('play'),
+        icon=document.getElementById('play-icon'), phase=document.getElementById('phase');
+  const PLAY='M8 5v14l11-7z', PAUSE='M6 5h4v14H6zM14 5h4v14h-4z';
+  function label(p){ if(p<0.04) return 'Klatka B'; if(p<0.5) return 'Przejazd telefonu';
+    if(p<0.54) return 'Po przejeździe'; if(p<1) return 'Ruch kamery'; return 'Klatka C'; }
+  function sync(){ const p=tl.progress(); scrub.value=Math.round(p*1000);
+    scrub.style.setProperty('--p',(p*100)+'%'); phase.textContent=label(p); }
+  gsap.ticker.add(sync);
+  scrub.addEventListener('input',()=>{ tl.pause(); icon.querySelector('path').setAttribute('d',PLAY);
+    tl.progress(scrub.value/1000); });
+  play.addEventListener('click',()=>{
+    if(tl.isActive()){ tl.pause(); icon.querySelector('path').setAttribute('d',PLAY); }
+    else { if(tl.progress()>=1) tl.progress(0); tl.play(); icon.querySelector('path').setAttribute('d',PAUSE); }
+  });
+  tl.eventCallback('onComplete',()=>icon.querySelector('path').setAttribute('d',PLAY));
+  document.querySelectorAll('[data-jump]').forEach(b=>b.addEventListener('click',()=>{
+    tl.pause(); icon.querySelector('path').setAttribute('d',PLAY);
+    gsap.to(tl,{ progress:parseFloat(b.dataset.jump), duration:0.6, ease:'power2.inOut' });
+  }));
+  document.getElementById('t-checker').addEventListener('click',function(){
+    const on=document.body.classList.toggle('checker'); this.dataset.on=on; });
+
+  // Suwak: odległość między płaszczyzną ekranu telefonu a ekranu laptopa (oś Z)
+  const depth=document.getElementById('depth'), dval=document.getElementById('depth-val');
+  function syncDepthTrack(){ depth.style.setProperty('--p',((depth.value-depth.min)/(depth.max-depth.min)*100)+'%'); }
+  depth.addEventListener('input',()=>{ screenGapZ=parseFloat(depth.value);
+    dval.innerHTML=(screenGapZ>0?'+':'')+screenGapZ+'&nbsp;px'; syncDepthTrack(); apply(); });
+  syncDepthTrack();
+
+  // Suwaki: obrót laptopa na Klatce C w trzech osiach (X / Y / Z)
+  function bindAngle(id, set){
+    const el=document.getElementById(id), val=document.getElementById(id+'-val');
+    const track=()=>el.style.setProperty('--p',((el.value-el.min)/(el.max-el.min)*100)+'%');
+    el.addEventListener('input',()=>{ set(parseFloat(el.value));
+      val.textContent=parseFloat(el.value)+'°'; track(); apply(); });
+    track();
+  }
+  bindAngle('angle',  v=>lapYawMax=v);    // oś Y
+  bindAngle('angleX', v=>lapPitchMax=v);  // oś X
+  bindAngle('angleZ', v=>lapRollMax=v);   // oś Z
+})();
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   5) SKALOWANIE DO VIEWPORTU (responsywność desktop/tablet/mobile).
+   ═══════════════════════════════════════════════════════════════════════════ */
+function fit(){
+  const f=document.querySelector('.fit');
+  const margin = STACKED ? 24 : 60;
+  const s=Math.min((window.innerWidth-margin*2)/1180, (window.innerHeight-150)/720, 1.15);
+  f.style.setProperty('--fit', Math.max(0.3, s));
+}
+window.addEventListener('resize',fit); fit();
+</script>
+</body>
+</html>
