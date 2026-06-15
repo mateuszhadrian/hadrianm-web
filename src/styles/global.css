@@ -6,3 +6,20 @@
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
 }
+
+/* ── Design system: tokeny brandowe (jedno źródło prawdy).
+   Dziedziczone przez wszystkie komponenty; lokalne nadpisania tylko gdy
+   element naprawdę odbiega od marki. Wymiary/chassis sceny urządzeń są
+   celowo lokalne w DeviceScene.astro (specyficzne dla komponentu). ── */
+:root {
+  /* foreground / brand */
+  --ink: #f5f0ec;
+  --muted: rgba(245, 240, 236, 0.58);
+  --faint: rgba(245, 240, 236, 0.34);
+  --line: rgba(245, 240, 236, 0.14);
+
+  /* accent */
+  --accent: #ff5a47;
+  --glow: 255, 90, 71; /* składowe RGB → rgba(var(--glow), α) */
+  --accent-gradient: linear-gradient(105deg, #fff6f0 0%, #ffb3a6 100%);
+}
