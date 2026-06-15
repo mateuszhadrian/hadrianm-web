@@ -1,0 +1,303 @@
+---
+// Scena urządzeń 3D (laptop + smartfon) — pierwsza klatka z pliku produkcyjnego.
+// Markup + style sceny; logika (ekstruzja, geometria, fit, klatka C) żyje w
+// device-scene.ts i jest inicjalizowana z Hero.astro (kolejność względem timeline).
+// Hooki selektorów dla GSAP: data-gsap="…" / data-extrude (kontrakt z Hero/timeline).
+---
+
+<div class="device-scene">
+  <div class="fit">
+    <div class="camera" data-gsap="camera">
+      <!-- Poświata „podłogi" pod urządzeniami (czerwona mgła) -->
+      <div class="device-glow"></div>
+
+      <!-- LAPTOP -->
+      <div class="device laptop" data-gsap="laptop">
+        <!-- Poświata pod laptopem — tylko mobile (podąża za laptopem) -->
+        <div class="device-glow--lap"></div>
+        <div class="extrude lid" data-extrude>
+          <div class="face">
+            <div class="screen" data-gsap="screen-laptop">
+              <div class="screen__glass"></div>
+            </div>
+          </div>
+        </div>
+        <div class="laptop-base" data-gsap="laptop-base">
+          <div class="lap-notch"></div>
+        </div>
+      </div>
+
+      <!-- TELEFON -->
+      <div class="device phone" data-gsap="phone">
+        <!-- Poświata pod telefonem — tylko mobile (podąża za telefonem) -->
+        <div class="device-glow--ph"></div>
+        <div class="extrude body" data-extrude>
+          <div class="face">
+            <div class="screen" data-gsap="screen-phone">
+              <div class="punch"></div>
+              <div class="screen__glass"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Tokeny chassis/wymiarów są celowo lokalne dla sceny (specyficzne dla komponentu).
+     Token brandowy --glow dziedziczy z :root (global.css). */
+  .device-scene {
+    --chassis-1: #2b2b30;
+    --chassis-2: #161619;
+    --chassis-3: #0d0d10;
+    --glow-strength: 0.55;
+
+    --lap-w: 840px;
+    --lap-h: 534px;
+    --lap-bezel: 11px;
+    --lap-radius: 16px;
+    --lap-depth: 16px;
+
+    --ph-w: 212px;
+    --ph-h: 432px;
+    --ph-bezel: 8px;
+    --ph-radius: 34px;
+    --ph-depth: 22px;
+
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1900px;
+    perspective-origin: 50% 44%;
+    pointer-events: none;
+  }
+  .fit {
+    --fit: 1; /* skala dopasowania — ustawiana z JS (fit()) */
+    position: relative;
+    width: 1180px;
+    height: 720px;
+    transform: scale(var(--fit, 1));
+    transform-origin: center center;
+  }
+  .camera {
+    /* kąty kamery (--cx/--cy) i wyśrodkowanie grupy (--gx/--gy) — ustawiane z JS */
+    --cx: 0deg;
+    --cy: 0deg;
+    --gx: 0px;
+    --gy: 0px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform-style: preserve-3d;
+    transform: translate(-50%, -50%) rotateX(var(--cx, 0deg))
+      rotateY(var(--cy, 0deg)) translate(var(--gx, 0px), var(--gy, 0px));
+    will-change: transform;
+  }
+
+  .device {
+    position: absolute;
+    left: 0;
+    top: 0;
+    transform-style: preserve-3d;
+  }
+
+  /* Poświata „podłogi" pod urządzeniami — eliptyczny, rozmyty radial-gradient
+     w kolorze akcentu (jak VenaFloorGlow z k4-ref-C). Wewnątrz .camera, więc
+     przesuwa się / skaluje / przechyla razem z grupą (B→C). */
+  .device-glow {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 980px;
+    height: 210px;
+    transform: translate(-50%, -50%) translate3d(0, 330px, -60px);
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(var(--glow), 0.34) 0%,
+      rgba(0, 0, 0, 0) 65%
+    );
+    filter: blur(12px);
+    pointer-events: none;
+  }
+
+  /* Poświata pod laptopem/telefonem — warianty mobilne (dzieci .laptop / .phone,
+     podążają za nimi: wjazd + rozsunięcie). Domyślnie ukryte; włączane w media
+     (max-width: 760px). */
+  .device-glow--lap,
+  .device-glow--ph {
+    display: none;
+  }
+
+  .extrude {
+    /* domyślne; konkretne wartości ustawiają .lid / .body */
+    --r: 0px;
+    --bezel: 0px;
+    position: relative;
+    transform-style: preserve-3d;
+  }
+  .device-scene :global(.extrude__layer) {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r);
+    background: linear-gradient(
+      90deg,
+      var(--chassis-3) 0%,
+      var(--chassis-2) 46%,
+      var(--chassis-1) 100%
+    );
+  }
+  .face {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--r);
+    padding: var(--bezel);
+    box-sizing: border-box;
+    background: linear-gradient(
+      150deg,
+      var(--chassis-1) 0%,
+      var(--chassis-2) 60%,
+      var(--chassis-3) 100%
+    );
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.07),
+      0 40px 70px -34px rgba(0, 0, 0, 0.85),
+      0 18px 55px -24px rgba(var(--glow), var(--glow-strength));
+  }
+  .screen {
+    width: 100%;
+    height: 100%;
+    border-radius: calc(var(--r) - var(--bezel) + 2px);
+    background: #ffffff;
+    overflow: hidden;
+    position: relative;
+  }
+  .screen__glass {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  .laptop {
+    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP */
+    --sl-lap: 0px;
+    --sz-lap: 0px;
+    --apart-lap: 0px; /* rozsunięcie pionowe (mobile: laptop w górę) */
+    --lap-yaw: 0deg; /* dodatkowy skręt laptopa na klatce C (desktop) */
+    --lap-pitch: 0deg; /* odchylenie pokrywy do tyłu na klatce C (desktop) */
+    transform: translate(-50%, -50%);
+  }
+  .laptop .lid {
+    --r: var(--lap-radius);
+    --bezel: var(--lap-bezel);
+    width: var(--lap-w);
+    height: var(--lap-h);
+  }
+  .laptop-base {
+    position: absolute;
+    left: 50%;
+    top: calc(var(--lap-h) - 4px);
+    transform: translateX(-50%);
+    width: calc(var(--lap-w) * 1.05);
+    height: 22px;
+    border-radius: 3px 3px 17px 17px;
+    background: linear-gradient(
+      180deg,
+      var(--chassis-1) 0%,
+      var(--chassis-2) 48%,
+      var(--chassis-3) 100%
+    );
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.07),
+      0 22px 44px -22px rgba(0, 0, 0, 0.8),
+      0 12px 38px -18px rgba(var(--glow), var(--glow-strength));
+  }
+  .lap-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 14%;
+    height: 7px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 0 0 10px 10px;
+  }
+
+  .phone {
+    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP */
+    --sl-ph: 0px;
+    --sz-ph: 0px;
+    --apart-ph: 0px; /* rozsunięcie pionowe (mobile: telefon w dół) */
+    --ph-dx: 0px; /* przejazd prawo→lewo na klatce C (desktop) */
+    --ph-dy: 0px;
+    --ph-dz: 0px; /* wysunięcie do przodu na klatce C (desktop) */
+    transform: translate(-50%, -50%);
+    will-change: transform;
+  }
+  .phone .body {
+    --r: var(--ph-radius);
+    --bezel: var(--ph-bezel);
+    width: var(--ph-w);
+    height: var(--ph-h);
+  }
+  .punch {
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 11px;
+    height: 11px;
+    border-radius: 99px;
+    background: #0a0a0a;
+    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+    z-index: 2;
+  }
+
+  /* ── mobile: większy bazowy telefon (bez scale — treść na ekranie zostaje ostra,
+        a w kolejnym etapie ekrany będą rosły wraz ze scrollowaną treścią) ── */
+  @media (max-width: 760px) {
+    .device-scene {
+      --ph-w: 286px;
+      --ph-h: 584px;
+      --ph-radius: 46px;
+      --ph-bezel: 11px;
+    }
+    /* bazowy kąt kamery (klatka B mobile) — kamera nie obraca się dalej na mobile */
+    .camera {
+      --cx: 4deg;
+    }
+    /* poświata „podłogi" (dziecko .camera) tylko na desktopie (jak k4-ref-C) */
+    .device-glow {
+      display: none;
+    }
+    /* poświata pod laptopem/telefonem — dzieci .laptop / .phone, więc podążają
+       za ich pozycją podczas wjazdu i rozsunięcia */
+    .device-glow--lap,
+    .device-glow--ph {
+      display: block;
+      position: absolute;
+      left: 50%;
+      top: 100%;
+      border-radius: 50%;
+      transform: translate(-50%, -45%) translateZ(-40px);
+      background: radial-gradient(
+        ellipse at center,
+        rgba(var(--glow), 0.34) 0%,
+        rgba(0, 0, 0, 0) 65%
+      );
+      filter: blur(12px);
+      pointer-events: none;
+    }
+    .device-glow--lap {
+      width: calc(var(--lap-w) * 1.15);
+      height: 230px;
+    }
+    .device-glow--ph {
+      width: calc(var(--ph-w) * 1.5);
+      height: calc(var(--ph-w) * 0.42);
+    }
+  }
+</style>
