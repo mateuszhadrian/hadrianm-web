@@ -164,6 +164,17 @@ const accentLetters = [...t("hero.headlineAccent")];
     }
   }
 
+  /* ── niski ekran (telefon w poziomie / krótkie okno) */
+  @media (max-height: 600px) {
+    .hero__eyebrow,
+    .hero__scroll-label {
+      display: none;
+    }
+    .hero__headline {
+      font-size: clamp(2.25rem, 6.4vw, 7.5rem);
+    }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .hero__scroll-line,
     .hero__accent-ltr {
