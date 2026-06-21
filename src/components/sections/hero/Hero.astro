@@ -264,7 +264,7 @@ const accentN = accentLetters.length;
   @media (prefers-reduced-motion: no-preference) {
     .hero {
       /* faza 1 (~1,4 ekr.) + faza 2 (~2,2 ekr.) napędzane scrollem (end +=4×vh)
-         + ~2 ekrany holdu, zanim sekcja się odpina */
+         + ~2 ekrany holdu, zanim sekcja się odpina (mobile — bez fazy 3) */
       min-height: 700svh;
     }
     .hero__stage {
@@ -352,6 +352,15 @@ const accentN = accentLetters.length;
     }
   }
 
+  /* Desktop/tablet: dodatkowy dystans na FAZĘ 3 (strona drewelomet na laptopie).
+     Start fazy 3 nakłada się na morf (klatka C), więc cała oś = ~12 ekranów
+     scrubu + ~2 ekrany holdu przed odpięciem. */
+  @media (prefers-reduced-motion: no-preference) and (min-width: 761px) {
+    .hero {
+      min-height: 1400svh;
+    }
+  }
+
   @keyframes scroll-pulse {
     0%,
     100% {
@@ -397,6 +406,7 @@ const accentN = accentLetters.length;
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { initDeviceScene, FRAME_C } from "./device-scene";
+  import { initLaptopSite, type LaptopSiteApi } from "./laptop-site";
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -416,7 +426,9 @@ const accentN = accentLetters.length;
     document.querySelector<T>(s);
 
   // Wspólny szkielet: refy, pomiary, oś czasu + części niezależne od wariantu.
-  const buildBase = () => {
+  // `screens` = ile ekranów scrolla obejmuje cała oś timeline (desktop dłuższy
+  // o fazę 3 = strona drewelomet na laptopie).
+  const buildBase = (screens: number) => {
     const hero = q("#hero");
     const stage = q(".hero__stage");
     const head = q(".hero__head");
@@ -455,7 +467,7 @@ const accentN = accentLetters.length;
         // faza 1 (przelot słowa + urządzenia na środku) + faza 2 (morph 3D /
         // rozsunięcie + tekst) napędzane scrollem przez ~4 ekrany; potem ~2 ekrany
         // holdu (z min-height: 700svh), zanim sekcja się odpina
-        end: () => "+=" + window.innerHeight * 4,
+        end: () => "+=" + window.innerHeight * screens,
         scrub: true,
         invalidateOnRefresh: true,
         onUpdate: (self) =>
@@ -633,6 +645,31 @@ const accentN = accentLetters.length;
     }
   };
 
+  // FAZA 3 (desktop): laptop stoi w klatce C (bez ruchu), a dalszy scroll napędza
+  // master-timeline strony drewelomet na jego ekranie (sprzężenie 1:1). Po dojściu
+  // do progress=1 dalszy scroll wynosi sekcję (handoff do Problem w Home.astro).
+  const phase3Desktop = (b: Base, site: LaptopSiteApi) => {
+    const { tl } = b;
+    // Start od pojawienia się urządzeń w centrum (urządzenia ostre ~0.88, morf
+    // PH2=0.95) — animacja ekranu biegnie DALEJ równolegle z morfem do klatki C.
+    const PH3_START = 0.9;
+    const DREWELOMET_DUR = 5.0; // przy buildBase(12) ≈ 10 ekranów scrolla
+    const p = { v: 0 };
+    tl.to(
+      p,
+      {
+        v: 1,
+        ease: "none",
+        duration: DREWELOMET_DUR,
+        onUpdate: () => site.master.progress(p.v),
+        onStart: () => site.setActive(true),
+        onComplete: () => site.setActive(false),
+        onReverseComplete: () => site.setActive(false),
+      },
+      PH3_START,
+    );
+  };
+
   // ════════════════════════════ FAZY (mobile) ═════════════════════════════
 
   // FAZA 1 (mobile): ZERO blura. Słowo gaśnie samym opacity; urządzenia widoczne
@@ -739,12 +776,34 @@ const accentN = accentLetters.length;
   mm.add(
     "(prefers-reduced-motion: no-preference) and (min-width: 761px)",
     () => {
-      const b = buildBase();
-      if (!b) return;
+      // Strona drewelomet na ekranie laptopa — inicjalizowana tylko na desktop/tablet.
+      // Owinięte w try/catch: błąd inicjalizacji nie może zamrozić animacji Hero.
+      const laptopRoot = q<HTMLElement>(
+        ".hero__devices .screen--laptop .dw-root",
+      );
+      let site: LaptopSiteApi | null = null;
+      try {
+        if (laptopRoot) site = initLaptopSite(laptopRoot);
+      } catch (e) {
+        console.error("[LaptopSite] init failed:", e);
+        site = null;
+      }
+
+      // 12 ekranów osi (intro ≈ 1,8 ekr., faza 3 ≈ 10 ekr. nakłada się na morf);
+      // bez site — 4 jak dawniej.
+      const b = buildBase(site ? 12 : 4);
+      if (!b) {
+        site?.destroy();
+        return;
+      }
       const refs = deviceRefs();
       phase1Desktop(b);
       phase2Desktop(b, refs);
-      return cleanup(b);
+      if (site) phase3Desktop(b, site);
+      return () => {
+        cleanup(b)();
+        site?.destroy();
+      };
     },
   );
 
@@ -752,7 +811,7 @@ const accentN = accentLetters.length;
   mm.add(
     "(prefers-reduced-motion: no-preference) and (max-width: 760px)",
     () => {
-      const b = buildBase();
+      const b = buildBase(4);
       if (!b) return;
       const refs = deviceRefs();
       const fitEl = q(".hero__devices .fit");
