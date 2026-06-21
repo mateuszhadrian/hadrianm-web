@@ -124,7 +124,11 @@
       </div>
 
       <div class="dw-sec-text">
-        <h2 class="dw-sec-heading">Od wizji do projektu</h2>
+        <!-- Twarde spacje wiążą „Od wizji" i „do projektu" w nierozłączne grupy;
+             jedyna łamliwa spacja jest między nimi → przy zawinięciu zawsze wypada
+             podział „Od wizji" / „do projektu". (Typewriter odtwarza textContent jako
+             czysty tekst, więc <br> by nie zadziałał — nbsp przetrwa.) -->
+        <h2 class="dw-sec-heading">Od&nbsp;wizji do&nbsp;projektu</h2>
         <div class="dw-bullets-window">
           <ul class="dw-bullets">
             <li>Według twojego pomysłu.</li>
@@ -690,22 +694,33 @@
     display: block;
   }
 
+  /* Lewa kolumna tekstu, kotwiczona DOŁEM (nie wyśrodkowana): gdy nagłówek
+     zawinie się do dwóch linii, blok rozpycha się w górę, a scrollowane bullety
+     zostają w tym samym miejscu. Szerokość okna bulletów nadpisana niżej. */
   .dw-sec-text {
     position: absolute;
-    left: 7cqw;
-    top: 50%;
-    width: 45cqw;
+    left: 10cqw;
+    bottom: 20cqh;
+    width: 30cqw;
     opacity: 0;
     color: var(--ink);
     z-index: 10;
   }
   .dw-sec-heading {
     font-family: var(--font-drewelomet-heading), sans-serif;
-    font-weight: 700;
+    font-weight: 600;
     text-transform: uppercase;
-    font-size: 3.8cqw;
+    font-size: 5.8cqw;
     line-height: 1.05;
-    margin: 0 0 5cqh;
+    margin: 0 0 3.5cqh;
+  }
+  /* Nagłówek sekcji 1 zawija się do dwóch wierszy. Blok jest kotwiczony dołem,
+     więc bez rezerwacji wysokości typewriter wypychał już wpisany tekst o linijkę
+     w górę w momencie zawinięcia. min-height: 2lh = zawsze 2 linie → pierwsza
+     linia od startu stoi na docelowej pozycji, druga dopisuje się POD nią.
+     Stan końcowy identyczny; okno bulletów (bottom) nie drgnie. */
+  .dw-sec-text .dw-sec-heading {
+    min-height: 2lh;
   }
   .dw-tw-cursor {
     display: none;
@@ -746,7 +761,8 @@
     align-items: center;
     font-family: var(--font-drewelomet-body), sans-serif;
     font-weight: 600;
-    font-size: 1.9cqw;
+    /* Jednolity rozmiar bulletów dla obu sekcji (węższe kolumny niż reszta strony). */
+    font-size: 1.7cqw;
     letter-spacing: 0.01em;
     color: #241c15;
   }
@@ -754,6 +770,11 @@
     content: "—";
     margin-right: 0.6em;
     color: #b33a2b;
+  }
+  /* Okno bulletów szersze niż kolumna nagłówka (30cqw) — celowo poszerzone tylko
+     tu, by nagłówek dalej zawijał się do 2 linii (rezerwacja min-height: 2lh). */
+  .dw-sec-text .dw-bullets-window {
+    width: 38cqw;
   }
 
   /* ── SEKCJA 2 ── */
@@ -766,12 +787,15 @@
     pointer-events: none;
     contain: layout paint;
   }
+  /* Obraz zajmuje ~58% szerokości od lewej (lewa krawędź lekko poza ekranem).
+     Wysokość 85cqh = 64 × (61/46) — zachowuje proporcje okna sprzed zmiany
+     (aspect ≈1.148), kadr wyśrodkowany w pionie. */
   .dw-s2-frame {
     position: absolute;
     left: -3cqw;
-    top: calc(50% - 36cqh);
-    width: 46cqw;
-    height: 64cqh;
+    top: calc(50% - 42.5cqh);
+    width: 61cqw;
+    height: 85cqh;
     transform-origin: right top;
     overflow: hidden;
     contain: layout paint;
@@ -823,11 +847,13 @@
   .dw-s2-table {
     z-index: 40;
   }
+  /* Prawa kolumna tekstu (obraz po lewej), kotwiczona górą. Wyższe okno bulletów
+     (54cqh, 4 widoczne); rozmiar bulletów dziedziczony z .dw-bullets li. */
   .dw-s2-text {
     position: absolute;
-    right: 7cqw;
+    right: 2cqw;
     top: calc(50% - 32cqh);
-    width: 40cqw;
+    width: 34cqw;
     color: var(--ink);
     z-index: 10;
   }

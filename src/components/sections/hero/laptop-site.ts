@@ -225,8 +225,11 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
 
     const TRANSFORM_START = 1.36;
     const TRANSFORM_DUR = 1.09;
-    const FRAME_W_VW = 40;
-    const FRAME_H_VH = 55;
+    // Kadr osiada na 58% szerokości ekranu z zachowaniem proporcji okna.
+    // Aspect kadru sprzed zmiany ≈1.298 → przy 58% szer. wysokość = 71% (FRAME_H_VH
+    // 64.2 po uwzględnieniu FRAME_STOP). Prawa krawędź zostaje ~96% (MARGIN_VW bez zmian).
+    const FRAME_W_VW = 47.5;
+    const FRAME_H_VH = 64.2;
     const MARGIN_VW = 5;
     const FRAME_STOP = 0.8;
 
@@ -253,9 +256,11 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
     );
 
     gsap.set(qs(".dw-object"), { xPercent: -50, yPercent: -50 });
+    // 0.614 = 0.55 × (58/52): kadr rośnie tym samym współczynnikiem co okno ramki,
+    // więc framing zostaje identyczny — tylko proporcjonalnie większy.
     tl.to(
       qs(".dw-object"),
-      { scale: 0.55, ease: "power2.inOut", duration: TRANSFORM_DUR },
+      { scale: 0.614, ease: "power2.inOut", duration: TRANSFORM_DUR },
       TRANSFORM_START,
     );
     // Krawędzie ramki: macro ma twarde krawędzie (feather 0). Miękną dopiero
@@ -307,7 +312,10 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
       2.2,
     );
 
-    gsap.set(qs(".dw-sec-text"), { yPercent: -50 });
+    // yPercent 0: kontener kotwiczony dołem przez CSS (bottom), nie wyśrodkowany —
+    // dzięki temu rosnący/zawijający się nagłówek rozpycha się do góry, a okno
+    // bulletów zostaje w tym samym miejscu.
+    gsap.set(qs(".dw-sec-text"), { yPercent: 0 });
     tl.fromTo(
       qs(".dw-sec-text"),
       { opacity: 0, x: -40 },
@@ -510,9 +518,11 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
     const wL = RATIO_L * gh;
     const wH = RATIO_P * gh;
     const iw = vw();
-    const cx = iw / 2;
 
-    const tableL = cx - wL / 2;
+    // Pierwszy obraz (stół) przyklejony do lewej krawędzi ekranu — bez wyśrodkowania,
+    // by przy wejściu w galerię nie było przerwy po lewej. Cały rząd (rtv/coffee/door/hs)
+    // i miarki scrolla (b1Max, stopB…) są pochodnymi tableL, więc przesuwa się spójnie.
+    const tableL = 0;
     const rtvL = tableL + wL;
     const coffeeL = rtvL + wL;
     const doorL = coffeeL + wL;
