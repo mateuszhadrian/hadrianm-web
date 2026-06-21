@@ -23,21 +23,15 @@ importers:
       '@fontsource-variable/archivo':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/chakra-petch':
-        specifier: ^5.2.7
-        version: 5.2.7
       '@fontsource/instrument-serif':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/raleway':
+      '@fontsource/saira-condensed':
         specifier: ^5.2.8
         version: 5.2.8
-      '@fontsource/stardos-stencil':
-        specifier: ^5.2.7
-        version: 5.2.7
-      '@fontsource/zilla-slab':
-        specifier: ^5.2.8
-        version: 5.2.8
+      '@fontsource/space-mono':
+        specifier: ^5.2.9
+        version: 5.2.9
       '@tailwindcss/vite':
         specifier: ^4.3.1
         version: 4.3.1(vite@7.3.5(@types/node@24.13.2)(jiti@2.7.0)(lightningcss@1.32.0)(yaml@2.9.0))
@@ -584,20 +578,14 @@ packages:
   '@fontsource-variable/archivo@5.2.8':
     resolution: {integrity: sha512-R8EotpKHEsKv7d7oiUyjyPENRi2gtAlwdTlzDCOs5BfX/LJP7jvUYJ4fF/qyd3rnbgk3r1xp33g1P57bYJfhzQ==}
 
-  '@fontsource/chakra-petch@5.2.7':
-    resolution: {integrity: sha512-GLbun5WZJNAEc8FtWxwcgo+4Kurqdwejvf671l+YfIjyQgPvTjyxXYP7Ffg2HAY89NGnp3oOvKQjRzfm/fBECw==}
-
   '@fontsource/instrument-serif@5.2.8':
     resolution: {integrity: sha512-s+bkz+syj2rO00Rmq9g0P+PwuLig33DR1xDR8pTWmovH1pUjwnncrFk++q9mmOex8fUQ7oW80gPpPDaw7V1MMw==}
 
-  '@fontsource/raleway@5.2.8':
-    resolution: {integrity: sha512-OATNM+J4XniKQRlI1e67v3euOnCUiXwpqgMofomKc5JNYOq0JPE6E5uTXMnFaZejKN1Z7s05JrHpmYB7/tg1Fw==}
+  '@fontsource/saira-condensed@5.2.8':
+    resolution: {integrity: sha512-wRNl7O45JWSB5TUVRhJFXZ4QXD/rATKkM1XMUJvPIZjIqIqIzXdcZs55iAMZ8BV0GMHVpoQ3Oa1W4ydHrRrs3Q==}
 
-  '@fontsource/stardos-stencil@5.2.7':
-    resolution: {integrity: sha512-3hstnI8HOaA4kq+j6Qp9Qam70qiLBHKH2M+HriAEKk2ymNatOOttJgVOpLjFcjt+YS/cuaZuc8gVIYiohALzFw==}
-
-  '@fontsource/zilla-slab@5.2.8':
-    resolution: {integrity: sha512-S4wZ1IpJNMFd+FEcS6lwci3Ine/JivSRaMb0SzhE43b/gOmDKnylNfXjIxc7GmAiqAJlz0jOauxiuy085DQdNw==}
+  '@fontsource/space-mono@5.2.9':
+    resolution: {integrity: sha512-b61faFOHEISQ/pD25G+cfGY9o/WW6lRv6hBQQfpWvEJ4y1V+S4gmth95EVyBE2VL3qDYHeVQ8nBzrplzdXTDDg==}
 
   '@humanfs/core@0.19.2':
     resolution: {integrity: sha512-UhXNm+CFMWcbChXywFwkmhqjs3PRCmcSa/hfBgLIb7oQ5HNb1wS0icWsGtSAUNgefHeI+eBrA8I1fxmbHsGdvA==}
@@ -4405,15 +4393,11 @@ snapshots:
 
   '@fontsource-variable/archivo@5.2.8': {}
 
-  '@fontsource/chakra-petch@5.2.7': {}
-
   '@fontsource/instrument-serif@5.2.8': {}
 
-  '@fontsource/raleway@5.2.8': {}
+  '@fontsource/saira-condensed@5.2.8': {}
 
-  '@fontsource/stardos-stencil@5.2.7': {}
-
-  '@fontsource/zilla-slab@5.2.8': {}
+  '@fontsource/space-mono@5.2.9': {}
 
   '@humanfs/core@0.19.2':
     dependencies:

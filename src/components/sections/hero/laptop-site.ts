@@ -54,6 +54,25 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
   buildRuler(".dw-ruler-1", 36);
   buildRuler(".dw-ruler-2", 36);
 
+  /* ── Odsłanianie miarki przez clip-path wpisywany inline (nie przez maskę na
+     zmiennej --draw): zmiana clip-path per-frame gwarantuje repaint także w
+     skompozytowanym poddrzewie 3D laptopa, gdzie maska na niezarejestrowanej
+     zmiennej CSS zostawała „zamrożona" i miarka nie pojawiała się wcale.
+     frac 0→1; fromBottom=true → rośnie od dołu (lewa miarka), false → od góry. ── */
+  const setRulerClip = (
+    el: HTMLElement | null,
+    frac: number,
+    fromBottom: boolean,
+  ) => {
+    if (!el) return;
+    const hidden = (1 - frac) * 100;
+    const clip = fromBottom
+      ? `inset(${hidden}% 0 0 0)`
+      : `inset(0 0 ${hidden}% 0)`;
+    el.style.clipPath = clip;
+    el.style.setProperty("-webkit-clip-path", clip);
+  };
+
   const CROSSFADE_START = 0.82;
   const FADE_OUT_DUR = 0.14;
   const HIDE_TIME = CROSSFADE_START + FADE_OUT_DUR;
@@ -120,6 +139,7 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
   const cameraZoom = qs(".dw-camera-zoom");
   const camera = qs(".dw-camera");
   const nav = qs(".dw-nav");
+  const brand = qs(".dw-brand");
 
   /* ═══════════════════════ SCENA 1 ═══════════════════════ */
   const buildScene1 = () => {
@@ -166,19 +186,22 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
       { scale: 4, ease: "sine.inOut", duration: 0.52 },
       PAN_START,
     );
-    // Navbar: jeden tani tween koloru (jasny nad ciemną sceną → ink nad jasnym tłem)
-    if (nav)
-      tl.to(
-        nav,
-        { color: "#241710", ease: "sine.inOut", duration: 0.4 },
-        PAN_START,
-      );
 
     tl.to(
       cameraZoom,
       { opacity: 0, ease: "power1.inOut", duration: FADE_OUT_DUR },
       CROSSFADE_START,
     );
+
+    // Logo (znak + logotyp) chowa się za lewą krawędzią ekranu niezależnie od
+    // reszty paska i wcześniej — startuje, gdy zdjęcie loftu zaczyna znikać
+    // i przeistaczać się w róg stołu (macro). Linki znikają dopiero w TYPE_END.
+    if (brand)
+      tl.to(
+        brand,
+        { xPercent: -160, ease: "power2.in", duration: 0.5 },
+        CROSSFADE_START,
+      );
 
     const macro = qs(".dw-macro");
     gsap.set(macro, { transformOrigin: "30% 68%" });
@@ -235,10 +258,26 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
       { scale: 0.55, ease: "power2.inOut", duration: TRANSFORM_DUR },
       TRANSFORM_START,
     );
+    // Krawędzie ramki: macro ma twarde krawędzie (feather 0). Miękną dopiero
+    // dokładnie w oknie crossfade macro→proj1 (start 1.51, dur 0.22), więc zmiana
+    // ginie w przenikaniu. Maskę piszemy inline per-frame — pewny repaint maski
+    // w skompozytowanym poddrzewie 3D laptopa (zmiana zmiennej CSS by nie wystarczyła).
+    const frameEl = qs(".dw-frame");
+    const frameFeather = { f: 0 };
+    const setFrameFeather = () => {
+      if (!frameEl) return;
+      const f = frameFeather.f;
+      const grad =
+        `linear-gradient(to right, transparent 0, #000 ${f}%, #000 ${100 - f}%, transparent 100%),` +
+        `linear-gradient(to bottom, transparent 0, #000 ${f}%, #000 ${100 - f}%, transparent 100%)`;
+      frameEl.style.maskImage = grad;
+      frameEl.style.setProperty("-webkit-mask-image", grad);
+    };
+    setFrameFeather();
     tl.to(
-      qs(".dw-frame"),
-      { "--tb-feather": 6, ease: "sine.inOut", duration: TRANSFORM_DUR },
-      TRANSFORM_START,
+      frameFeather,
+      { f: 6, ease: "sine.inOut", duration: 0.22, onUpdate: setFrameFeather },
+      1.51,
     );
 
     tl.to(
@@ -293,15 +332,31 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
       BULLETS_START,
     );
 
+    // Navbar: chowa się do góry, gdy cały nagłówek „Od wizji do projektu" jest
+    // już dopisany (TYPE_END) — w kolejnych sekcjach (warsztat, galeria) go nie ma.
+    if (nav)
+      tl.to(
+        nav,
+        { yPercent: -130, autoAlpha: 0, ease: "power2.in", duration: 0.32 },
+        TYPE_END,
+      );
+
     const REVERT_DUR = 40 / VH_PER_UNIT;
     const REVERT_START = BULLETS_START + BULLETS_DUR;
     const DETACH_DUR = 100 / VH_PER_UNIT;
     const DETACH_START = REVERT_START + REVERT_DUR;
 
-    tl.fromTo(
-      qs(".dw-ruler-1"),
-      { "--draw": 0 },
-      { "--draw": 1, duration: DETACH_START - TYPE_START },
+    // Miarka lewa — rysuje się od dołu do góry (TYPE_START → DETACH_START).
+    const ruler1 = qs(".dw-ruler-1");
+    const ruler1p = { v: 0 };
+    setRulerClip(ruler1, 0, true);
+    tl.to(
+      ruler1p,
+      {
+        v: 1,
+        duration: DETACH_START - TYPE_START,
+        onUpdate: () => setRulerClip(ruler1, ruler1p.v, true),
+      },
       TYPE_START,
     );
 
@@ -364,10 +419,17 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
       { yPercent: S2_BULLETS_YPCT, duration: S2_MAIN_DUR },
       0,
     );
-    tl.fromTo(
-      qs(".dw-ruler-2"),
-      { "--draw": 0 },
-      { "--draw": 1, duration: S2_MAIN_DUR },
+    // Miarka prawa — rysuje się od góry do dołu przez całą fazę główną sekcji 2.
+    const ruler2 = qs(".dw-ruler-2");
+    const ruler2p = { v: 0 };
+    setRulerClip(ruler2, 0, false);
+    tl.to(
+      ruler2p,
+      {
+        v: 1,
+        duration: S2_MAIN_DUR,
+        onUpdate: () => setRulerClip(ruler2, ruler2p.v, false),
+      },
       0,
     );
 
@@ -436,11 +498,13 @@ export function initLaptopSite(root: HTMLElement): LaptopSiteApi | null {
   let G = {} as GLayout;
 
   const galleryLayout = () => {
-    const navEl = qs(".dw-nav");
-    // offsetHeight = metryka layoutu (odporna na transform 3D laptopa)
-    const navH = navEl ? navEl.offsetHeight : 0;
-    const gh = vh() - navH;
-    root.style.setProperty("--nav-h", navH + "px");
+    // Galeria wypełnia całą widoczną wysokość strony. Navbar w fazie galerii już
+    // nie istnieje (zjechał w scenie 1), więc nie rezerwujemy paska u góry —
+    // kadr = ekran minus realny pasek chrome (.dw-chrome.offsetHeight, odporne na 3D).
+    const chromeEl = qs(".dw-chrome");
+    const chromeH = chromeEl ? chromeEl.offsetHeight : 0;
+    const gh = vh() - chromeH;
+    root.style.setProperty("--nav-h", "0px");
     root.style.setProperty("--gh", gh + "px");
 
     const wL = RATIO_L * gh;
