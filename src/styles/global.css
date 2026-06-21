@@ -5,6 +5,12 @@
   --font-body: "Archivo Variable", system-ui, sans-serif;
   --font-serif: "Instrument Serif", Georgia, serif;
   --font-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Fonty strony drewelomet (tylko wewnątrz LaptopSite — ekran laptopa Hero) */
+  --font-drewelomet-display: "Chakra Petch", sans-serif;
+  --font-drewelomet-wood: "Raleway", sans-serif;
+  --font-drewelomet-steel: "Stardos Stencil", sans-serif;
+  --font-drewelomet-ui: "Zilla Slab", serif;
 }
 
 /* ── Design system: tokeny brandowe (jedno źródło prawdy).

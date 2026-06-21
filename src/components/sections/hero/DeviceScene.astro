@@ -3,6 +3,7 @@
 // Markup + style sceny; logika (ekstruzja, geometria, fit, klatka C) żyje w
 // device-scene.ts i jest inicjalizowana z Hero.astro (kolejność względem timeline).
 // Hooki selektorów dla GSAP: data-gsap="…" / data-extrude (kontrakt z Hero/timeline).
+import LaptopSite from "./LaptopSite.astro";
 ---
 
 <div class="device-scene">
@@ -17,7 +18,8 @@
         <div class="device-glow--lap"></div>
         <div class="extrude lid" data-extrude>
           <div class="face">
-            <div class="screen" data-gsap="screen-laptop">
+            <div class="screen screen--laptop" data-gsap="screen-laptop">
+              <LaptopSite />
               <div class="screen__glass"></div>
             </div>
           </div>
@@ -174,6 +176,11 @@
     background: #ffffff;
     overflow: hidden;
     position: relative;
+  }
+  /* Ekran laptopa hostuje LaptopSite — kontener dla jednostek cqw/cqh strony.
+     container-type: size wymaga definitywnego rozmiaru (ma go z --lap-w/--lap-h). */
+  .screen--laptop {
+    container-type: size;
   }
   .screen__glass {
     position: absolute;
