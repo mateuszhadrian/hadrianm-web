@@ -4,6 +4,7 @@
 // device-scene.ts i jest inicjalizowana z Hero.astro (kolejność względem timeline).
 // Hooki selektorów dla GSAP: data-gsap="…" / data-extrude (kontrakt z Hero/timeline).
 import LaptopSite from "./LaptopSite.astro";
+import PhoneSite from "./PhoneSite.astro";
 ---
 
 <div class="device-scene">
@@ -35,7 +36,8 @@ import LaptopSite from "./LaptopSite.astro";
         <div class="device-glow--ph"></div>
         <div class="extrude body" data-extrude>
           <div class="face">
-            <div class="screen" data-gsap="screen-phone">
+            <div class="screen screen--phone" data-gsap="screen-phone">
+              <PhoneSite />
               <div class="punch"></div>
               <div class="screen__glass"></div>
             </div>
@@ -180,6 +182,9 @@ import LaptopSite from "./LaptopSite.astro";
   /* Ekran laptopa hostuje LaptopSite — kontener dla jednostek cqw/cqh strony.
      container-type: size wymaga definitywnego rozmiaru (ma go z --lap-w/--lap-h). */
   .screen--laptop {
+    container-type: size;
+  }
+  .screen--phone {
     container-type: size;
   }
   .screen__glass {

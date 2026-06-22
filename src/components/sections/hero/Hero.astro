@@ -407,6 +407,7 @@ const accentN = accentLetters.length;
   import { ScrollTrigger } from "gsap/ScrollTrigger";
   import { initDeviceScene, FRAME_C } from "./device-scene";
   import { initLaptopSite, type LaptopSiteApi } from "./laptop-site";
+  import { initPhoneSite, type PhoneSiteApi } from "./phone-site";
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -670,6 +671,26 @@ const accentN = accentLetters.length;
     );
   };
 
+  const phase3PhoneDesktop = (b: Base, phone: PhoneSiteApi) => {
+    const { tl } = b;
+    const PHONE_START = 2.0;
+    const PHONE_END = 5.9;
+    const p = { v: 0 };
+    tl.to(
+      p,
+      {
+        v: 1,
+        ease: "none",
+        duration: PHONE_END - PHONE_START,
+        onUpdate: () => phone.master.progress(p.v),
+        onStart: () => phone.setActive(true),
+        onComplete: () => phone.setActive(false),
+        onReverseComplete: () => phone.setActive(false),
+      },
+      PHONE_START,
+    );
+  };
+
   // ════════════════════════════ FAZY (mobile) ═════════════════════════════
 
   // FAZA 1 (mobile): ZERO blura. Słowo gaśnie samym opacity; urządzenia widoczne
@@ -789,20 +810,34 @@ const accentN = accentLetters.length;
         site = null;
       }
 
+      const phoneRoot = q<HTMLElement>(
+        ".hero__devices .screen--phone .dwm-root",
+      );
+      let phoneSite: PhoneSiteApi | null = null;
+      try {
+        if (phoneRoot) phoneSite = initPhoneSite(phoneRoot);
+      } catch (e) {
+        console.error("[PhoneSite] init failed:", e);
+        phoneSite = null;
+      }
+
       // 12 ekranów osi (intro ≈ 1,8 ekr., faza 3 ≈ 10 ekr. nakłada się na morf);
       // bez site — 4 jak dawniej.
       const b = buildBase(site ? 12 : 4);
       if (!b) {
         site?.destroy();
+        phoneSite?.destroy();
         return;
       }
       const refs = deviceRefs();
       phase1Desktop(b);
       phase2Desktop(b, refs);
       if (site) phase3Desktop(b, site);
+      if (site && phoneSite) phase3PhoneDesktop(b, phoneSite);
       return () => {
         cleanup(b)();
         site?.destroy();
+        phoneSite?.destroy();
       };
     },
   );
