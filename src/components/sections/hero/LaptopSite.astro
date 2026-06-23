@@ -744,14 +744,14 @@
     padding: 0;
   }
   .dw-bullets li {
-    height: 11cqh;
+    height: 9cqh;
     display: flex;
     align-items: center;
     font-family: var(--font-drewelomet-body), sans-serif;
-    font-weight: 600;
-    /* Jednolity rozmiar bulletów dla obu sekcji (węższe kolumny niż reszta strony). */
-    font-size: 1.7cqw;
-    letter-spacing: 0.01em;
+    font-weight: 400;
+    font-size: 1.3cqw;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
     color: #241c15;
   }
   .dw-bullets li::before {
@@ -759,8 +759,6 @@
     margin-right: 0.6em;
     color: #b33a2b;
   }
-  /* Okno bulletów szersze niż kolumna nagłówka (30cqw) — celowo poszerzone tylko
-     tu, by nagłówek dalej zawijał się do 2 linii (rezerwacja min-height: 2lh). */
   .dw-sec-text .dw-bullets-window {
     width: 38cqw;
   }
