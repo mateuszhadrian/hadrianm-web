@@ -95,6 +95,13 @@ export function initPhoneSite(root: HTMLElement): PhoneSiteApi | null {
   const projHeadingEl = qs(".dwm-projects .dwm-type");
   const shopHeadingEl = qs(".dwm-workshop .dwm-type");
   const galHeadingEl = qs(".dwm-gallery .dwm-type");
+  const shopCard = qs(".dwm-shop-card");
+  const SHOP_PARALLAX = [
+    { el: qs(".dwm-shop-bg"), s: 1.15, x: -0.4, y: -0.5 },
+    { el: qs(".dwm-shop-wood"), s: 1.3, x: -0.8, y: -1.0 },
+    { el: qs(".dwm-shop-man"), s: 1.5, x: -1.3, y: -1.6 },
+    { el: qs(".dwm-shop-table"), s: 1.8, x: -2.0, y: -2.4 },
+  ].filter((l) => l.el);
   const projType = projHeadingEl ? makeTypewriter(projHeadingEl) : null;
   const shopType = shopHeadingEl ? makeTypewriter(shopHeadingEl) : null;
   const galType = galHeadingEl ? makeTypewriter(galHeadingEl) : null;
@@ -104,6 +111,9 @@ export function initPhoneSite(root: HTMLElement): PhoneSiteApi | null {
   let projTop = 0;
   let projH = 0;
   let shopTop = 0;
+  let shopCardTop = 0;
+  let shopCardH = 0;
+  let lastShopP = -1;
   let galTop = 0;
   let macroCover = 2.3;
   let cardFullH = 0;
@@ -138,6 +148,8 @@ export function initPhoneSite(root: HTMLElement): PhoneSiteApi | null {
     projTop = projectsEl ? projectsEl.offsetTop : 0;
     projH = projectsEl ? projectsEl.offsetHeight : vh();
     shopTop = workshopEl ? workshopEl.offsetTop : 0;
+    shopCardTop = shopCard ? shopTop + shopCard.offsetTop : 0;
+    shopCardH = shopCard ? shopCard.clientHeight : 0;
     galTop = galleryEl ? galleryEl.offsetTop : 0;
     cards = cardEls.map((el) => ({
       el,
@@ -208,6 +220,20 @@ export function initPhoneSite(root: HTMLElement): PhoneSiteApi | null {
     if (proj2) gsap.set(proj2, { opacity: p12 * (1 - p23) });
     if (proj3) gsap.set(proj3, { opacity: p23 });
 
+    if (shopCardH && SHOP_PARALLAX.length) {
+      const sp = LITE ? 0 : clamp((y - (shopCardTop - VH)) / (shopCardH + VH));
+      if (Math.abs(sp - lastShopP) > 0.002) {
+        lastShopP = sp;
+        for (const l of SHOP_PARALLAX) {
+          gsap.set(l.el, {
+            scale: 1 + (l.s - 1) * sp,
+            xPercent: l.x * sp,
+            yPercent: l.y * sp,
+          });
+        }
+      }
+    }
+
     const range = VH * 0.55;
     for (const c of cards) {
       const enter = clamp((y - (c.top - VH)) / (VH * 0.6));
@@ -261,6 +287,8 @@ export function initPhoneSite(root: HTMLElement): PhoneSiteApi | null {
     duration: 1,
     onUpdate: () => pageRender(proxy.y),
   });
+
+  for (const l of SHOP_PARALLAX) gsap.set(l.el, { transformOrigin: "50% 62%" });
 
   layout();
   pageRender(0);
