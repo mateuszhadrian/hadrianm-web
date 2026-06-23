@@ -21,6 +21,17 @@ import PhoneSite from "./PhoneSite.astro";
           <div class="face">
             <div class="screen screen--laptop" data-gsap="screen-laptop">
               <LaptopSite />
+              <!-- Mobile: nagranie animacji laptopa (desktop nie ładuje — preload=none,
+                   src wpinany z JS w gałęzi mobile). Poster = pierwsza klatka. -->
+              <video
+                class="screen__video"
+                data-gsap="video-laptop"
+                muted
+                playsinline
+                loop
+                preload="none"
+                poster="/drewelomet/video/laptop.webp"
+                data-src="/drewelomet/video/laptop.mp4"></video>
               <div class="screen__glass"></div>
             </div>
           </div>
@@ -38,6 +49,16 @@ import PhoneSite from "./PhoneSite.astro";
           <div class="face">
             <div class="screen screen--phone" data-gsap="screen-phone">
               <PhoneSite />
+              <!-- Mobile: nagranie animacji telefonu (jak wyżej). -->
+              <video
+                class="screen__video"
+                data-gsap="video-phone"
+                muted
+                playsinline
+                loop
+                preload="none"
+                poster="/drewelomet/video/phone.webp"
+                data-src="/drewelomet/video/phone.mp4"></video>
               <div class="punch"></div>
               <div class="screen__glass"></div>
             </div>
@@ -192,6 +213,18 @@ import PhoneSite from "./PhoneSite.astro";
     inset: 0;
     pointer-events: none;
   }
+  /* Warstwa video ekranu — tylko mobile. Aspekt nagrania == aspekt ekranu,
+     więc object-fit:cover nie przycina. Pod .screen__glass / .punch (z-index). */
+  .screen__video {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+    background-color: #c9c1b3; /* tło drewelomet — zanim klatka się zdekoduje */
+    display: none;
+  }
 
   .laptop {
     /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP */
@@ -200,6 +233,7 @@ import PhoneSite from "./PhoneSite.astro";
     --apart-lap: 0px; /* rozsunięcie pionowe (mobile: laptop w górę) */
     --lap-yaw: 0deg; /* dodatkowy skręt laptopa na klatce C (desktop) */
     --lap-pitch: 0deg; /* odchylenie pokrywy do tyłu na klatce C (desktop) */
+    --vid-scale: 1; /* powiększenie ekranu video (mobile, faza 3) — dół przyklejony */
     transform: translate(-50%, -50%);
   }
   .laptop .lid {
@@ -246,6 +280,7 @@ import PhoneSite from "./PhoneSite.astro";
     --ph-dx: 0px; /* przejazd prawo→lewo na klatce C (desktop) */
     --ph-dy: 0px;
     --ph-dz: 0px; /* wysunięcie do przodu na klatce C (desktop) */
+    --vid-scale: 1; /* powiększenie ekranu video (mobile, faza 3) — dół przyklejony */
     transform: translate(-50%, -50%);
     will-change: transform;
   }
@@ -271,6 +306,9 @@ import PhoneSite from "./PhoneSite.astro";
   /* ── mobile: większy bazowy telefon (bez scale — treść na ekranie zostaje ostra,
         a w kolejnym etapie ekrany będą rosły wraz ze scrollowaną treścią) ── */
   @media (max-width: 760px) {
+    .screen__video {
+      display: block;
+    }
     .device-scene {
       --ph-w: 286px;
       --ph-h: 584px;

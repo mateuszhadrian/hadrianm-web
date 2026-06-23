@@ -1,0 +1,110 @@
+---
+// DEV-ONLY harness do nagrania video ekranów urządzeń (laptop + telefon).
+// Renderuje LaptopSite/PhoneSite w płaskich kontenerach o wymiarach ekranu
+// (2× content box) i wystawia window.__cap do sterowania master.progress().
+// NIE jest częścią produkcji — usuwany po wygenerowaniu public/drewelomet/video/*.
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import LaptopSite from "@/components/sections/hero/LaptopSite.astro";
+import PhoneSite from "@/components/sections/hero/PhoneSite.astro";
+---
+
+<BaseLayout title="capture" lang="pl">
+  <!-- 2× content box laptopa: (840-2*11)×(534-2*11)=818×512 → 1636×1024 -->
+  <div id="cap-laptop" class="cap-stage cap-laptop"><LaptopSite /></div>
+  <!-- 2× content box telefonu (mobile): (286-2*11)×(584-2*11)=264×562 → 528×1124 -->
+  <div id="cap-phone" class="cap-stage cap-phone"><PhoneSite /></div>
+</BaseLayout>
+
+<style is:global>
+  html,
+  body {
+    margin: 0;
+    padding: 0;
+    background: #000;
+  }
+  .cap-stage {
+    position: absolute;
+    top: 0;
+    overflow: hidden;
+  }
+  .cap-laptop {
+    left: 0;
+    width: 1636px;
+    height: 1024px;
+  }
+  .cap-phone {
+    left: 1700px;
+    width: 528px;
+    height: 1124px;
+  }
+</style>
+
+<script>
+  import { initLaptopSite } from "@/components/sections/hero/laptop-site";
+  import { initPhoneSite } from "@/components/sections/hero/phone-site";
+
+  const lapRoot = document.querySelector<HTMLElement>(".cap-laptop .dw-root");
+  const phRoot = document.querySelector<HTMLElement>(".cap-phone .dwm-root");
+
+  const lap = lapRoot ? initLaptopSite(lapRoot) : null;
+  const ph = phRoot ? initPhoneSite(phRoot) : null;
+
+  // will-change ON na czas nagrania (faza aktywna), timeline spauzowany.
+  lap?.setActive(true);
+  ph?.setActive(true);
+  lap?.relayout();
+  ph?.relayout();
+  lap?.master.pause();
+  ph?.master.pause();
+
+  // Obrazy strony są loading="lazy" i część leży poza widocznym obszarem
+  // kontenera (przesunięte transformami / przycięte overflow:hidden), więc
+  // nigdy nie wpadają do viewportu lazy-loadera. Wymuszamy eager + decode()
+  // z twardym timeoutem per-obraz, żeby ready() nie wisiał w nieskończoność.
+  const withTimeout = (p: Promise<unknown>, ms: number) =>
+    Promise.race([p, new Promise((r) => setTimeout(r, ms))]);
+
+  const loadImgs = async (root: HTMLElement) => {
+    const imgs = Array.from(root.querySelectorAll("img"));
+    imgs.forEach((im) => {
+      im.loading = "eager";
+      im.setAttribute("decoding", "sync");
+      // szturchnięcie lazy-loadera: re-set src wymusza pobranie offscreen
+      const src = im.getAttribute("src");
+      if (src) {
+        im.removeAttribute("src");
+        im.setAttribute("src", src);
+      }
+    });
+    await Promise.all(
+      imgs.map((im) =>
+        withTimeout(
+          im.decode().catch(() => {}),
+          8000,
+        ),
+      ),
+    );
+  };
+
+  const ready = async () => {
+    if (lapRoot) await loadImgs(lapRoot);
+    if (phRoot) await loadImgs(phRoot);
+    if (document.fonts?.ready) await withTimeout(document.fonts.ready, 8000);
+    // dwie klatki rAF na ustabilizowanie layoutu/container queries
+    await new Promise((r) =>
+      requestAnimationFrame(() => requestAnimationFrame(r)),
+    );
+  };
+
+  (window as Window & { __cap?: unknown }).__cap = {
+    hasLaptop: !!lap,
+    hasPhone: !!ph,
+    ready,
+    seekLaptop: (p: number) => {
+      lap?.master.progress(Math.max(0, Math.min(1, p)));
+    },
+    seekPhone: (p: number) => {
+      ph?.master.progress(Math.max(0, Math.min(1, p)));
+    },
+  };
+</script>

@@ -67,7 +67,6 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
       lay.className = "extrude__layer";
       lay.style.background = `linear-gradient(90deg, ${dim(c3, f)} 0%, ${dim(c2, f)} 46%, ${dim(c1, f)} 100%)`;
       lay.style.transform = `translateZ(${(-i * step).toFixed(2)}px)`;
-      // promień bierze się z CSS (var(--r)) — aktualizuje się ze zmianą rozmiaru
       frag.appendChild(lay);
     }
     el.insertBefore(frag, el.firstChild);
@@ -129,27 +128,20 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
   const applyFrame = () => {
     if (!camera || !laptop || !phone || !base) return;
     const { lap, ph } = geometry();
-    // Pozycje bazowe (klatka B) w px projektu. Morph fazy 2 dokładany przez
-    // zmienne CSS animowane scrollem:
-    //   var(--sl-*)   = poziomy wjazd na mobile (laptop z prawej, telefon z lewej)
-    //   var(--sz-*)   = głębia wjazdu (laptop z tyłu, telefon z przodu)
-    //   var(--apart-*)= rozsunięcie pionowe (mobile: laptop↑, telefon↓)
-    //   var(--lap-yaw)= dodatkowy skręt laptopa na klatce C (desktop)
-    //   var(--ph-d*)  = przejazd prawo→lewo + wysunięcie telefonu na C (desktop)
-    // Kąt kamery (--cx/--cy) i opacity paska bazy są sterowane CSS/GSAP-em.
     laptop.style.transform =
       `translate(-50%, -50%) translate3d(` +
       `calc(${lap.x}px + var(--sl-lap, 0px)), ` +
       `calc(${lap.y}px + var(--apart-lap, 0px)), ` +
-      `var(--sz-lap, 0px)) rotateY(var(--lap-yaw, 0deg)) rotateX(var(--lap-pitch, 0deg))`;
+      `var(--sz-lap, 0px)) rotateY(var(--lap-yaw, 0deg)) rotateX(var(--lap-pitch, 0deg))` +
+      ` translateY(calc((1 - var(--vid-scale, 1)) * (var(--lap-h) / 2))) scale(var(--vid-scale, 1))`;
     phone.style.transform =
       `translate(-50%, -50%) translate3d(` +
       `calc(${ph.x}px + var(--sl-ph, 0px) + var(--ph-dx, 0px)), ` +
       `calc(${ph.y}px + var(--apart-ph, 0px) + var(--ph-dy, 0px)), ` +
-      `calc(${ph.z}px + var(--sz-ph, 0px) + var(--ph-dz, 0px)))`;
+      `calc(${ph.z}px + var(--sz-ph, 0px) + var(--ph-dz, 0px)))` +
+      ` translateY(calc((1 - var(--vid-scale, 1)) * (var(--ph-h) / 2))) scale(var(--vid-scale, 1))`;
   };
 
-  // Skalowanie do realnych wymiarów grupy względem kontenera (stabilne 100svh).
   const fit = () => {
     if (!fitEl) return;
     const { gw, gh, stacked } = geometry();
