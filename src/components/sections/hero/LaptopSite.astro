@@ -68,7 +68,7 @@
           </div>
           <div class="dw-loft-tint"></div>
           <div class="dw-layer dw-layer-text">
-            <span class="dw-wood dw-mat dw-mat--wood" data-text="z drewna"
+            <span class="dw-wood dw-mat--wood" data-text="z drewna"
               >z drewna</span
             >
           </div>
@@ -307,10 +307,8 @@
     --wood-size: 10cqw;
     --wood-left: 14.5cqw;
     --wood-top: 11cqh;
-    --wood-stroke-width: 0.95cqw;
+    --wood-stroke-width: 1.3cqw;
     --wood-stroke-color: rgb(240, 232, 215);
-    --wood-stroke2-width: 0.38cqw;
-    --wood-stroke2-color: var(--wood-color);
 
     --steel-size: 7cqw;
     --steel-left: 58.5cqw;
@@ -581,19 +579,6 @@
     -webkit-text-fill-color: transparent;
     paint-order: stroke fill;
   }
-  .dw-wood::before {
-    content: attr(data-text);
-    position: absolute;
-    left: 0;
-    top: 0;
-    z-index: -1;
-    -webkit-text-stroke: calc(
-        var(--wood-stroke-width) + var(--wood-stroke2-width)
-      )
-      var(--wood-stroke2-color);
-    -webkit-text-fill-color: transparent;
-    paint-order: stroke fill;
-  }
   .dw-mat {
     -webkit-background-clip: text;
     background-clip: text;
@@ -606,9 +591,7 @@
       0 -1px 0 rgba(255, 236, 198, 0.5),
       0 1px 0 #3a2410,
       0 2px 0 #2a1a0a,
-      0 4px 0 #1d1107,
-      0 5px 6px rgba(0, 0, 0, 0.55);
-    filter: drop-shadow(0 10px 13px rgba(0, 0, 0, 0.45));
+      0 4px 6px rgba(0, 0, 0, 0.55);
   }
   .dw-mat--steel {
     text-shadow:
