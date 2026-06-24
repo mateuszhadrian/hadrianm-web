@@ -22,7 +22,7 @@ const accentN = accentLetters.length;
           {
             accentLetters.map((ch, i) => (
               <span class="hero__accent-ltr" style={`--i:${i}`}>
-                {ch}
+                {ch === " " ? " " : ch}
               </span>
             ))
           }
@@ -46,7 +46,7 @@ const accentN = accentLetters.length;
       {
         accentLetters.map((ch, i) => (
           <span class="hero__accent-ltr" style={`--i:${i}`}>
-            {ch}
+            {ch === " " ? " " : ch}
           </span>
         ))
       }
@@ -382,6 +382,8 @@ const accentN = accentLetters.length;
     /* Odcinek odtwarzania wideo (akcent) — nakładany na track między play↔stop.
        --seg-top/--seg-h ∈ [0,1] ustawia JS z tych samych stałych co strefy. */
     .hero__progress-seg {
+      --seg-top: 0; /* [0,1] — ustawia JS (setProperty) */
+      --seg-h: 0;
       position: absolute;
       left: 50%;
       top: calc(var(--seg-top) * 100%);
@@ -396,6 +398,7 @@ const accentN = accentLetters.length;
        neutralny — znaczenie niesie kształt; ikonę przełącza JS (.is-play/.is-stop).
        --mark ∈ [0,1] = pozycja w pionie. */
     .hero__progress-mark {
+      --mark: 0; /* [0,1] — ustawia JS (setProperty) */
       position: absolute;
       left: 50%;
       top: calc(var(--mark) * 100%);
