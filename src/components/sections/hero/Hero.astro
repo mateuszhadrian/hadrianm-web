@@ -898,6 +898,11 @@ const accentN = accentLetters.length;
       const lapVideo = setupVideo("[data-gsap='video-laptop']");
       const phVideo = setupVideo("[data-gsap='video-phone']");
 
+      // Autoplay zablokowany przez system (np. iOS Low Power Mode / Low Data Mode):
+      // po pierwszym odrzuceniu play() przestajemy próbować dla OBU wideo i
+      // zostawiamy plakat — bez ponawiania play() przy każdej klatce scrolla.
+      let autoplayBlocked = false;
+
       const VID_MAX = 1.5; // docelowe powiększenie w szczycie strefy
       // Strefa = 4 ekrany: powiększanie ~1 ekr. (1→MAX), przytrzymanie w MAX ~2 ekr.
       // (z grającym video), zmniejszanie ~1 ekr. (MAX→1, wciąż grając). Odtwarzanie
@@ -915,6 +920,8 @@ const accentN = accentLetters.length;
         if (!hero || !video || !el) return null;
         // pomijaj redundantne zapisy (faza hold = stała skala przez ~2 ekrany)
         let lastScale = -1;
+        // play()/currentTime=0 raz na wejście w strefę graną, nie co klatkę scrolla
+        let playRequested = false;
         const setScale = (s: number) => {
           if (s === lastScale) return;
           lastScale = s;
@@ -935,20 +942,30 @@ const accentN = accentLetters.length;
             setScale(s);
             // odtwarzanie od szczytu (koniec powiększania) do bazy: [GROW_END, 1)
             if (p >= GROW_END && p < 1) {
-              if (video.paused) {
+              if (!playRequested && !autoplayBlocked) {
+                playRequested = true; // próbuj raz na wejście, nie co klatkę
                 video.currentTime = 0;
-                video.play()?.catch(() => {}); // autoplay zablokowany → zostaje poster
+                video.play()?.catch(() => {
+                  // autoplay zablokowany (np. iOS Low Power Mode) → plakat,
+                  // bez ponawiania dla obu wideo
+                  autoplayBlocked = true;
+                });
               }
-            } else if (!video.paused) {
-              video.pause();
-              video.currentTime = 0;
+            } else {
+              playRequested = false;
+              if (!video.paused) {
+                video.pause();
+                video.currentTime = 0;
+              }
             }
           },
           onLeave: () => {
+            playRequested = false;
             setScale(1);
             stopReset(video);
           },
           onLeaveBack: () => {
+            playRequested = false;
             setScale(1);
             stopReset(video);
           },
