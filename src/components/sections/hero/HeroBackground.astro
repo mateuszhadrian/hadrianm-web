@@ -185,4 +185,50 @@
   :global(.bg-layer.is-inactive) .hero-bg__cloud-d {
     animation-play-state: paused;
   }
+
+  /* sRGB fallback for browsers without oklch() support (e.g. iOS Safari < 15.4) */
+  @supports not (color: oklch(0 0 0)) {
+    .hero-bg__clouds::before {
+      background:
+        radial-gradient(55% 65% at 35% 65%, rgb(130, 20, 32), transparent 72%),
+        radial-gradient(
+          50% 45% at 62% 40%,
+          rgba(75, 29, 35, 0.5),
+          transparent 78%
+        ),
+        radial-gradient(
+          34% 42% at 18% 88%,
+          rgba(118, 54, 58, 0.65),
+          transparent 68%
+        );
+    }
+    .hero-bg__clouds::after {
+      background:
+        radial-gradient(62% 55% at 65% 38%, rgb(255, 90, 71), transparent 74%),
+        radial-gradient(
+          48% 50% at 38% 58%,
+          rgba(75, 29, 29, 0.45),
+          transparent 80%
+        ),
+        radial-gradient(
+          30% 38% at 85% 18%,
+          rgba(122, 58, 50, 0.6),
+          transparent 66%
+        );
+    }
+    .hero-bg__cloud-c {
+      background: radial-gradient(
+        closest-side,
+        rgba(156, 44, 52, 0.85),
+        transparent 70%
+      );
+    }
+    .hero-bg__cloud-d {
+      background: radial-gradient(
+        closest-side,
+        rgba(119, 55, 50, 0.68),
+        transparent 70%
+      );
+    }
+  }
 </style>
