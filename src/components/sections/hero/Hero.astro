@@ -79,6 +79,25 @@ const accentN = accentLetters.length;
     <div class="hero__devices" aria-hidden="true">
       <DeviceScene />
     </div>
+
+    <!-- Wskaźnik postępu (mobile): cienki pasek przy prawej krawędzi z kuleczką
+         odwzorowującą scroll przez strefy wideo urządzeń. Pojawia się dokładnie,
+         gdy oba urządzenia stoją na pozycjach startowych (tuż przed powiększaniem
+         laptopa), znika, gdy telefon w pełni się zmniejszy. Sterowany z mobilnej
+         gałęzi matchMedia w <script>. Tylko wskaźnik — pointer-events: none. -->
+    <div class="hero__progress" aria-hidden="true">
+      <span class="hero__progress-track"></span>
+      <!-- odcinki odtwarzania + symbole play/stop (laptop, telefon) — pozycje i
+           ikony ustawia mobilna gałąź <script> z tych samych stałych co strefy
+           wideo. Statycznie w markupie, by objął je scoped CSS Astro. -->
+      <span class="hero__progress-seg"></span>
+      <span class="hero__progress-seg"></span>
+      <span class="hero__progress-mark"></span>
+      <span class="hero__progress-mark"></span>
+      <span class="hero__progress-mark"></span>
+      <span class="hero__progress-mark"></span>
+      <span class="hero__progress-dot"></span>
+    </div>
   </div>
 </section>
 
@@ -318,9 +337,104 @@ const accentN = accentLetters.length;
     }
   }
 
+  /* ─────────────────────── WSKAŹNIK POSTĘPU (mobile) ───────────────────────
+     Domyślnie ukryty; odsłaniany wyłącznie w mobilnej gałęzi ruchu poniżej. */
+  .hero__progress {
+    display: none;
+  }
+
   @media (prefers-reduced-motion: no-preference) and (max-width: 760px) {
     .hero {
       min-height: 1500svh;
+    }
+
+    /* Cienki pasek przy prawej krawędzi sticky stage'u (absolutny — nie fixed,
+       bo fixed dryfuje przy chowaniu paska adresu). Kuleczka jedzie liniowo ze
+       scrollem; --p ∈ [0,1] ustawia JS. Fade in/out przez .is-active. */
+    .hero__progress {
+      --p: 0;
+      display: block;
+      position: absolute;
+      top: 50%;
+      right: 12px;
+      height: 72svh;
+      width: 14px;
+      transform: translateY(-50%);
+      z-index: 6;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease;
+    }
+    .hero__progress.is-active {
+      opacity: 1;
+    }
+    .hero__progress-track {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-50%);
+      background: var(--line);
+      border-radius: 1px;
+      z-index: 0;
+    }
+    /* Odcinek odtwarzania wideo (akcent) — nakładany na track między play↔stop.
+       --seg-top/--seg-h ∈ [0,1] ustawia JS z tych samych stałych co strefy. */
+    .hero__progress-seg {
+      position: absolute;
+      left: 50%;
+      top: calc(var(--seg-top) * 100%);
+      height: calc(var(--seg-h) * 100%);
+      width: 2px;
+      transform: translateX(-50%);
+      background: var(--accent);
+      border-radius: 1px;
+      z-index: 1;
+    }
+    /* Symbole play (trójkąt ▶) / stop (kwadrat) na granicach odcinka. Kolor
+       neutralny — znaczenie niesie kształt; ikonę przełącza JS (.is-play/.is-stop).
+       --mark ∈ [0,1] = pozycja w pionie. */
+    .hero__progress-mark {
+      position: absolute;
+      left: 50%;
+      top: calc(var(--mark) * 100%);
+      width: 9px;
+      height: 9px;
+      transform: translate(-50%, -50%);
+      background: var(--ink);
+      /* ciemna otoczka — czytelność i na jasnym, i na ciemnym tle hero */
+      filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.55));
+      z-index: 2;
+    }
+    .hero__progress-mark.is-stop {
+      border-radius: 1px; /* kwadrat */
+      clip-path: none;
+    }
+    .hero__progress-mark.is-play {
+      border-radius: 0;
+      /* trójkąt skierowany w prawo */
+      clip-path: polygon(0 0, 100% 50%, 0 100%);
+    }
+    .hero__progress-dot {
+      position: absolute;
+      left: 50%;
+      top: calc(var(--p) * 100%);
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--ink);
+      box-shadow: 0 0 6px 1px rgba(245, 240, 236, 0.22);
+      transform: translate(-50%, -50%);
+      z-index: 3;
+      transition:
+        background-color 0.15s ease,
+        box-shadow 0.15s ease;
+    }
+    /* na odcinku odtwarzania kulka przejmuje kolor akcentu */
+    .hero__progress-dot.is-on-seg {
+      background: var(--accent);
+      box-shadow: 0 0 8px 1px rgba(var(--glow), 0.55);
     }
     .hero__copy {
       position: absolute;
@@ -972,14 +1086,101 @@ const accentN = accentLetters.length;
         });
       };
 
+      // Granice stref wideo (jednostki = wysokość viewportu od górnej krawędzi
+      // #hero). Współdzielone ze wskaźnikiem postępu poniżej, żeby pasek i strefy
+      // nie mogły się rozjechać. LAP_ZONE.start = moment, w którym oba urządzenia
+      // stoją na pozycjach startowych (tuż przed powiększaniem laptopa);
+      // PH_ZONE.end = moment pełnego zmniejszenia telefonu (powrót do startu).
+      const LAP_ZONE = { start: 4.4, end: 8.4 };
+      const PH_ZONE = { start: 8.8, end: 12.8 };
       const zoneTriggers = [
-        makeVideoZone(lapVideo, refs.laptop, 4.4, 8.4),
-        makeVideoZone(phVideo, refs.phone, 8.8, 12.8),
+        makeVideoZone(lapVideo, refs.laptop, LAP_ZONE.start, LAP_ZONE.end),
+        makeVideoZone(phVideo, refs.phone, PH_ZONE.start, PH_ZONE.end),
       ].filter(Boolean) as ScrollTrigger[];
+
+      // ── Wskaźnik postępu: kuleczka jedzie liniowo ze scrollem przez cały zakres
+      // [LAP_ZONE.start, PH_ZONE.end]. Pasek pojawia się/znika na granicach tego
+      // zakresu (onToggle → .is-active = fade); pozycja kulki przez --p ∈ [0,1].
+      const progressEl = q(".hero__progress");
+      const progressDot = q(".hero__progress-dot");
+
+      // Odcinki odtwarzania + symbole play/stop. Pozycje z tych samych stałych co
+      // strefy wideo: wideo gra od szczytu powiększenia (GROW_END) do końca strefy.
+      // barP() mapuje jednostki vh na ułamek paska [0,1].
+      const BAR_SPAN = PH_ZONE.end - LAP_ZONE.start;
+      const barP = (vh: number) => (vh - LAP_ZONE.start) / BAR_SPAN;
+      const playStartVh = (z: { start: number; end: number }) =>
+        z.start + GROW_END * (z.end - z.start);
+      const segs = [LAP_ZONE, PH_ZONE].map((z) => ({
+        play: barP(playStartVh(z)),
+        stop: barP(z.end),
+      }));
+
+      // Symbol 'start' (play-start) i 'end' (play-end) każdego odcinka. Ikona zależy
+      // od strony kulki: start → play, gdy kulka NAD nim (zjazd uruchomi wideo);
+      // end → play, gdy kulka POD nim (wjazd w górę wznowi). Stan startowy: ▶ ■ ▶ ■.
+      // Elementy są statyczne w markupie (kolejność: 2× seg, potem 4× mark =
+      // lap-start, lap-end, ph-start, ph-end) — tu tylko ustawiamy pozycje/ikony.
+      type Mark = { pos: number; kind: "start" | "end"; el: HTMLElement };
+      const marks: Mark[] = [];
+      const segEls = progressEl
+        ? [...progressEl.querySelectorAll<HTMLElement>(".hero__progress-seg")]
+        : [];
+      const markEls = progressEl
+        ? [...progressEl.querySelectorAll<HTMLElement>(".hero__progress-mark")]
+        : [];
+      segs.forEach((s, i) => {
+        segEls[i]?.style.setProperty("--seg-top", s.play.toFixed(4));
+        segEls[i]?.style.setProperty("--seg-h", (s.stop - s.play).toFixed(4));
+        const startEl = markEls[i * 2];
+        const endEl = markEls[i * 2 + 1];
+        if (startEl) {
+          startEl.style.setProperty("--mark", s.play.toFixed(4));
+          marks.push({ pos: s.play, kind: "start", el: startEl });
+        }
+        if (endEl) {
+          endEl.style.setProperty("--mark", s.stop.toFixed(4));
+          marks.push({ pos: s.stop, kind: "end", el: endEl });
+        }
+      });
+
+      const updateMarks = (p: number) => {
+        for (const m of marks) {
+          const isPlay = m.kind === "start" ? p <= m.pos : p > m.pos;
+          m.el.classList.toggle("is-play", isPlay);
+          m.el.classList.toggle("is-stop", !isPlay);
+        }
+        // kulka przejmuje kolor akcentu, gdy jest na którymś odcinku odtwarzania
+        const onSeg = segs.some((s) => p >= s.play && p <= s.stop);
+        progressDot?.classList.toggle("is-on-seg", onSeg);
+      };
+      updateMarks(0);
+
+      const progressTrigger =
+        hero && progressEl
+          ? ScrollTrigger.create({
+              trigger: hero,
+              start: () =>
+                "top+=" + LAP_ZONE.start * window.innerHeight + " top",
+              end: () => "top+=" + PH_ZONE.end * window.innerHeight + " top",
+              scrub: true,
+              onUpdate: (self) => {
+                progressEl.style.setProperty("--p", self.progress.toFixed(4));
+                updateMarks(self.progress);
+              },
+              onToggle: (self) =>
+                progressEl.classList.toggle("is-active", self.isActive),
+            })
+          : null;
 
       return () => {
         cleanup(b)();
         zoneTriggers.forEach((t) => t.kill());
+        progressTrigger?.kill();
+        progressEl?.classList.remove("is-active");
+        progressEl?.style.removeProperty("--p");
+        progressDot?.classList.remove("is-on-seg");
+        marks.forEach((m) => m.el.classList.remove("is-play", "is-stop"));
         stopReset(lapVideo);
         stopReset(phVideo);
         refs.laptop?.style.setProperty("--vid-scale", "1");
