@@ -414,6 +414,14 @@ const accentN = accentLetters.length;
       background: var(--accent);
       box-shadow: 0 0 8px 1px rgba(var(--glow), 0.55);
     }
+    /* Android: brak play/stop → cały pasek czerwony, kulka stale czerwona
+       (.is-on-seg na stałe z JS). Odcinki play/stop są tu zbędne. */
+    .hero__progress.is-android .hero__progress-track {
+      background: var(--accent);
+    }
+    .hero__progress.is-android .hero__progress-seg {
+      display: none;
+    }
     .hero__copy {
       position: absolute;
       inset: 0;
@@ -501,6 +509,7 @@ const accentN = accentLetters.length;
   import { initDeviceScene, FRAME_C } from "./device-scene";
   import { initLaptopSite, type LaptopSiteApi } from "./laptop-site";
   import { initPhoneSite, type PhoneSiteApi } from "./phone-site";
+  import { IS_ANDROID, initAndroidPhase3 } from "./android-mobile";
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -990,11 +999,6 @@ const accentN = accentLetters.length;
       const lapVideo = setupVideo("[data-gsap='video-laptop']");
       const phVideo = setupVideo("[data-gsap='video-phone']");
 
-      // Autoplay zablokowany przez system (np. iOS Low Power Mode / Low Data Mode):
-      // po pierwszym odrzuceniu play() przestajemy próbować dla OBU wideo i
-      // zostawiamy plakat — bez ponawiania play() przy każdej klatce scrolla.
-      let autoplayBlocked = false;
-
       const VID_MAX = 1.5; // docelowe powiększenie w szczycie strefy
       // Strefa = 4 ekrany: powiększanie ~1 ekr. (1→MAX), przytrzymanie w MAX ~2 ekr.
       // (z grającym video), zmniejszanie ~1 ekr. (MAX→1, wciąż grając). Odtwarzanie
@@ -1003,6 +1007,59 @@ const accentN = accentLetters.length;
       // bufor 0.4 między strefami).
       const GROW_END = 1 / 4; // szczyt — koniec powiększania, start przytrzymania
       const HOLD_END = 3 / 4; // koniec przytrzymania (~2 ekrany) — start zmniejszania
+
+      // Granice stref wideo (jednostki = wysokość viewportu od górnej krawędzi
+      // #hero). Współdzielone ze wskaźnikiem postępu poniżej, żeby pasek i strefy
+      // nie mogły się rozjechać. LAP_ZONE.start = moment, w którym oba urządzenia
+      // stoją na pozycjach startowych (tuż przed powiększaniem laptopa);
+      // PH_ZONE.end = moment pełnego zmniejszenia telefonu (powrót do startu).
+      const LAP_ZONE = { start: 4.4, end: 8.4 };
+      const PH_ZONE = { start: 8.8, end: 12.8 };
+
+      // ── Wskaźnik postępu (kuleczka + pasek) — wspólne refy dla obu wariantów.
+      const progressEl = q(".hero__progress");
+      const progressDot = q(".hero__progress-dot");
+
+      // ── Android: osobny wariant (android-mobile.ts). Ekrany grają w pętli bez
+      // przerwy (bez play/stop wyzwalanego scrollem — przypięta scena na Androidzie
+      // nie repaintuje niezawodnie takich zmian), a pasek postępu jest cały
+      // czerwony z kulką stale czerwoną. Skalowanie urządzeń pozostaje wspólne.
+      if (IS_ANDROID) {
+        const androidCleanup = initAndroidPhase3({
+          hero,
+          vidMax: VID_MAX,
+          growEnd: GROW_END,
+          holdEnd: HOLD_END,
+          videos: [
+            { video: lapVideo, el: refs.laptop, zone: LAP_ZONE },
+            { video: phVideo, el: refs.phone, zone: PH_ZONE },
+          ],
+          progressEl,
+          progressDot,
+          barStartVh: LAP_ZONE.start,
+          barEndVh: PH_ZONE.end,
+        });
+
+        return () => {
+          cleanup(b)();
+          androidCleanup();
+          stopReset(lapVideo);
+          stopReset(phVideo);
+          refs.laptop?.style.setProperty("--vid-scale", "1");
+          refs.phone?.style.setProperty("--vid-scale", "1");
+          refs.laptop?.style.setProperty("--sl-lap", "0px");
+          refs.phone?.style.setProperty("--sl-ph", "0px");
+          refs.laptop?.style.setProperty("--sz-lap", "0px");
+          refs.phone?.style.setProperty("--sz-ph", "0px");
+        };
+      }
+
+      // ── Wariant domyślny (iOS itd.): play/stop wideo wyzwalany pozycją scrolla.
+      // Autoplay zablokowany przez system (np. iOS Low Power Mode / Low Data Mode):
+      // po pierwszym odrzuceniu play() przestajemy próbować dla OBU wideo i
+      // zostawiamy plakat — bez ponawiania play() przy każdej klatce scrolla.
+      let autoplayBlocked = false;
+
       const makeVideoZone = (
         video: HTMLVideoElement | null,
         el: HTMLElement | null,
@@ -1064,13 +1121,6 @@ const accentN = accentLetters.length;
         });
       };
 
-      // Granice stref wideo (jednostki = wysokość viewportu od górnej krawędzi
-      // #hero). Współdzielone ze wskaźnikiem postępu poniżej, żeby pasek i strefy
-      // nie mogły się rozjechać. LAP_ZONE.start = moment, w którym oba urządzenia
-      // stoją na pozycjach startowych (tuż przed powiększaniem laptopa);
-      // PH_ZONE.end = moment pełnego zmniejszenia telefonu (powrót do startu).
-      const LAP_ZONE = { start: 4.4, end: 8.4 };
-      const PH_ZONE = { start: 8.8, end: 12.8 };
       const zoneTriggers = [
         makeVideoZone(lapVideo, refs.laptop, LAP_ZONE.start, LAP_ZONE.end),
         makeVideoZone(phVideo, refs.phone, PH_ZONE.start, PH_ZONE.end),
@@ -1079,9 +1129,6 @@ const accentN = accentLetters.length;
       // ── Wskaźnik postępu: kuleczka jedzie liniowo ze scrollem przez cały zakres
       // [LAP_ZONE.start, PH_ZONE.end]. Pasek pojawia się/znika na granicach tego
       // zakresu (onToggle → .is-active = fade); pozycja kulki przez --p ∈ [0,1].
-      const progressEl = q(".hero__progress");
-      const progressDot = q(".hero__progress-dot");
-
       // Odcinki odtwarzania + symbole play/stop. Pozycje z tych samych stałych co
       // strefy wideo: wideo gra od szczytu powiększenia (GROW_END) do końca strefy.
       // barP() mapuje jednostki vh na ułamek paska [0,1].
