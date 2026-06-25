@@ -72,12 +72,18 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
     el.insertBefore(frag, el.firstChild);
   };
 
-  scene
-    .querySelectorAll<HTMLElement>(".lid[data-extrude]")
-    .forEach((el) => buildExtrude(el, dvar("--lap-depth")));
-  scene
-    .querySelectorAll<HTMLElement>(".body[data-extrude]")
-    .forEach((el) => buildExtrude(el, dvar("--ph-depth")));
+  // Na mobile scena jest PŁASKA (bez perspektywy / preserve-3d) — warstwy
+  // ekstruzji byłyby i tak niewidoczne, a ich rasteryzacja głodzi GPU i powoduje
+  // mruganie napisów + paska na Androidzie. Dlatego budujemy ekstruzję wyłącznie
+  // poza wariantem mobilnym (patrz docs/analiza-android-obudowy-3d-...md).
+  if (!window.matchMedia("(max-width: 760px)").matches) {
+    scene
+      .querySelectorAll<HTMLElement>(".lid[data-extrude]")
+      .forEach((el) => buildExtrude(el, dvar("--lap-depth")));
+    scene
+      .querySelectorAll<HTMLElement>(".body[data-extrude]")
+      .forEach((el) => buildExtrude(el, dvar("--ph-depth")));
+  }
 
   /* ── 2) Pierwsza klatka sceny + skalowanie do viewportu ── */
   const camera = scene.querySelector<HTMLElement>('[data-gsap="camera"]');
