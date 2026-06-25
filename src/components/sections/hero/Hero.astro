@@ -87,15 +87,11 @@ const accentN = accentLetters.length;
          gałęzi matchMedia w <script>. Tylko wskaźnik — pointer-events: none. -->
     <div class="hero__progress" aria-hidden="true">
       <span class="hero__progress-track"></span>
-      <!-- odcinki odtwarzania + symbole play/stop (laptop, telefon) — pozycje i
-           ikony ustawia mobilna gałąź <script> z tych samych stałych co strefy
-           wideo. Statycznie w markupie, by objął je scoped CSS Astro. -->
+      <!-- odcinki odtwarzania (laptop, telefon) — pozycje ustawia mobilna gałąź
+           <script> z tych samych stałych co strefy wideo. Statycznie w markupie,
+           by objął je scoped CSS Astro. -->
       <span class="hero__progress-seg"></span>
       <span class="hero__progress-seg"></span>
-      <span class="hero__progress-mark"></span>
-      <span class="hero__progress-mark"></span>
-      <span class="hero__progress-mark"></span>
-      <span class="hero__progress-mark"></span>
       <span class="hero__progress-dot"></span>
     </div>
   </div>
@@ -353,13 +349,17 @@ const accentN = accentLetters.length;
        scrollem; --p ∈ [0,1] ustawia JS. Fade in/out przez .is-active. */
     .hero__progress {
       --p: 0;
+      /* ── REGULACJA WYSOKOŚCI TIMELINE'A ──
+         Pionowe przesunięcie całego paska względem środka stage'u.
+         Ujemne wartości = wyżej, dodatnie = niżej. Zmień samą tę liczbę. */
+      --bar-shift-y: -6svh;
       display: block;
       position: absolute;
       top: 50%;
       right: 12px;
       height: 72svh;
       width: 14px;
-      transform: translateY(-50%);
+      transform: translateY(calc(-50% + var(--bar-shift-y)));
       z-index: 6;
       opacity: 0;
       pointer-events: none;
@@ -393,31 +393,6 @@ const accentN = accentLetters.length;
       background: var(--accent);
       border-radius: 1px;
       z-index: 1;
-    }
-    /* Symbole play (trójkąt ▶) / stop (kwadrat) na granicach odcinka. Kolor
-       neutralny — znaczenie niesie kształt; ikonę przełącza JS (.is-play/.is-stop).
-       --mark ∈ [0,1] = pozycja w pionie. */
-    .hero__progress-mark {
-      --mark: 0; /* [0,1] — ustawia JS (setProperty) */
-      position: absolute;
-      left: 50%;
-      top: calc(var(--mark) * 100%);
-      width: 9px;
-      height: 9px;
-      transform: translate(-50%, -50%);
-      background: var(--ink);
-      /* ciemna otoczka — czytelność i na jasnym, i na ciemnym tle hero */
-      filter: drop-shadow(0 0 1.5px rgba(0, 0, 0, 0.55));
-      z-index: 2;
-    }
-    .hero__progress-mark.is-stop {
-      border-radius: 1px; /* kwadrat */
-      clip-path: none;
-    }
-    .hero__progress-mark.is-play {
-      border-radius: 0;
-      /* trójkąt skierowany w prawo */
-      clip-path: polygon(0 0, 100% 50%, 0 100%);
     }
     .hero__progress-dot {
       position: absolute;
@@ -1119,45 +1094,21 @@ const accentN = accentLetters.length;
         stop: barP(z.end),
       }));
 
-      // Symbol 'start' (play-start) i 'end' (play-end) każdego odcinka. Ikona zależy
-      // od strony kulki: start → play, gdy kulka NAD nim (zjazd uruchomi wideo);
-      // end → play, gdy kulka POD nim (wjazd w górę wznowi). Stan startowy: ▶ ■ ▶ ■.
-      // Elementy są statyczne w markupie (kolejność: 2× seg, potem 4× mark =
-      // lap-start, lap-end, ph-start, ph-end) — tu tylko ustawiamy pozycje/ikony.
-      type Mark = { pos: number; kind: "start" | "end"; el: HTMLElement };
-      const marks: Mark[] = [];
+      // Odcinki są statyczne w markupie (2× seg) — tu tylko ustawiamy pozycje.
       const segEls = progressEl
         ? [...progressEl.querySelectorAll<HTMLElement>(".hero__progress-seg")]
-        : [];
-      const markEls = progressEl
-        ? [...progressEl.querySelectorAll<HTMLElement>(".hero__progress-mark")]
         : [];
       segs.forEach((s, i) => {
         segEls[i]?.style.setProperty("--seg-top", s.play.toFixed(4));
         segEls[i]?.style.setProperty("--seg-h", (s.stop - s.play).toFixed(4));
-        const startEl = markEls[i * 2];
-        const endEl = markEls[i * 2 + 1];
-        if (startEl) {
-          startEl.style.setProperty("--mark", s.play.toFixed(4));
-          marks.push({ pos: s.play, kind: "start", el: startEl });
-        }
-        if (endEl) {
-          endEl.style.setProperty("--mark", s.stop.toFixed(4));
-          marks.push({ pos: s.stop, kind: "end", el: endEl });
-        }
       });
 
-      const updateMarks = (p: number) => {
-        for (const m of marks) {
-          const isPlay = m.kind === "start" ? p <= m.pos : p > m.pos;
-          m.el.classList.toggle("is-play", isPlay);
-          m.el.classList.toggle("is-stop", !isPlay);
-        }
+      const updateDot = (p: number) => {
         // kulka przejmuje kolor akcentu, gdy jest na którymś odcinku odtwarzania
         const onSeg = segs.some((s) => p >= s.play && p <= s.stop);
         progressDot?.classList.toggle("is-on-seg", onSeg);
       };
-      updateMarks(0);
+      updateDot(0);
 
       const progressTrigger =
         hero && progressEl
@@ -1169,7 +1120,7 @@ const accentN = accentLetters.length;
               scrub: true,
               onUpdate: (self) => {
                 progressEl.style.setProperty("--p", self.progress.toFixed(4));
-                updateMarks(self.progress);
+                updateDot(self.progress);
               },
               onToggle: (self) =>
                 progressEl.classList.toggle("is-active", self.isActive),
@@ -1183,7 +1134,6 @@ const accentN = accentLetters.length;
         progressEl?.classList.remove("is-active");
         progressEl?.style.removeProperty("--p");
         progressDot?.classList.remove("is-on-seg");
-        marks.forEach((m) => m.el.classList.remove("is-play", "is-stop"));
         stopReset(lapVideo);
         stopReset(phVideo);
         refs.laptop?.style.setProperty("--vid-scale", "1");
