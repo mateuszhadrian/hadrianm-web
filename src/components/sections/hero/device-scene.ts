@@ -96,31 +96,26 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
 
   const GROUP_SCALE = 0.72; // ogólne zmniejszenie całej grupy urządzeń
 
-  // Połówkowe wymiary brył (px, układ projektowy) — do policzenia bbox grupy.
+  const K = () => (isStacked() ? 0.6 : 1);
   const LAP_HW = 441; // pokrywa + szerszy pasek bazy (1.05×)
   const LAP_TOP = -267; // górna krawędź pokrywy względem środka laptopa
   const LAP_BOT = 285; // dolna krawędź (pokrywa + pasek bazy)
   const PH_TOP_MOBILE = 144; // górna krawędź telefonu na mobile — zachowywana niezależnie od rozmiaru
 
-  // Geometria klatki B + bounding box CAŁEJ grupy (laptop+telefon).
   const geometry = () => {
     const stacked = isStacked();
-    // realne połowy wymiarów telefonu z CSS (na mobile --ph-w/--ph-h są nadpisane większe;
-    // BEZ scale — treść na ekranie zostaje ostra i w docelowych pikselach pod przyszłą animację)
+    const k = K();
     const phHW = dvar("--ph-w") / 2;
     const phHH = dvar("--ph-h") / 2;
-    // desktop/tablet: laptop centralnie, telefon po prawej (klatka B z pliku)
-    // mobile: laptop u góry, telefon niżej — środek dobrany tak, by górna krawędź
-    // została na PH_TOP_MOBILE (rośnie w dół → odstęp na tekst zachowany)
-    const lap = stacked ? { x: 0, y: -250 } : { x: 0, y: 0 };
+    const lap = stacked ? { x: 0, y: -250 * k } : { x: 0, y: 0 };
     const ph = stacked
-      ? { x: 0, y: PH_TOP_MOBILE + phHH, z: 60 }
+      ? { x: 0, y: PH_TOP_MOBILE * k + phHH, z: 60 * k }
       : { x: 470, y: 130, z: 40 };
     const cam = stacked ? { cx: 4, cy: 0 } : { cx: 0, cy: 0 };
-    const left = Math.min(lap.x - LAP_HW, ph.x - phHW);
-    const right = Math.max(lap.x + LAP_HW, ph.x + phHW);
-    const top = Math.min(lap.y + LAP_TOP, ph.y - phHH);
-    const bottom = Math.max(lap.y + LAP_BOT, ph.y + phHH);
+    const left = Math.min(lap.x - LAP_HW * k, ph.x - phHW);
+    const right = Math.max(lap.x + LAP_HW * k, ph.x + phHW);
+    const top = Math.min(lap.y + LAP_TOP * k, ph.y - phHH);
+    const bottom = Math.max(lap.y + LAP_BOT * k, ph.y + phHH);
     return {
       stacked,
       lap,
@@ -203,9 +198,6 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
     );
   };
 
-  // Zmierz bbox grupy w klatce C (przy neutralnym wrapperze .hero__devices),
-  // żeby policzyć adaptacyjne dopasowanie do prawej strefy. Stan po pomiarze
-  // wraca do spoczynku (klatka B).
   const measureCBbox = () => {
     const sx = (gsap.getProperty(devicesEl, "x") as number) || 0;
     const ssc = (gsap.getProperty(devicesEl, "scaleX") as number) || 1;

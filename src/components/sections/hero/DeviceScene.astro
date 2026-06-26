@@ -1,8 +1,4 @@
 ---
-// Scena urządzeń 3D (laptop + smartfon) — pierwsza klatka z pliku produkcyjnego.
-// Markup + style sceny; logika (ekstruzja, geometria, fit, klatka C) żyje w
-// device-scene.ts i jest inicjalizowana z Hero.astro (kolejność względem timeline).
-// Hooki selektorów dla GSAP: data-gsap="…" / data-extrude (kontrakt z Hero/timeline).
 import LaptopSite from "./LaptopSite.astro";
 import PhoneSite from "./PhoneSite.astro";
 ---
@@ -77,33 +73,34 @@ import PhoneSite from "./PhoneSite.astro";
     --chassis-2: #161619;
     --chassis-3: #0d0d10;
     --glow-strength: 0.55;
+    --k: 1;
 
-    --lap-w: 840px;
-    --lap-h: 534px;
-    --lap-bezel: 11px;
-    --lap-radius: 16px;
-    --lap-depth: 16px;
+    --lap-w: calc(840px * var(--k));
+    --lap-h: calc(534px * var(--k));
+    --lap-bezel: calc(11px * var(--k));
+    --lap-radius: calc(16px * var(--k));
+    --lap-depth: calc(16px * var(--k));
 
-    --ph-w: 212px;
-    --ph-h: 432px;
-    --ph-bezel: 8px;
-    --ph-radius: 34px;
-    --ph-depth: 22px;
+    --ph-w: calc(212px * var(--k));
+    --ph-h: calc(432px * var(--k));
+    --ph-bezel: calc(8px * var(--k));
+    --ph-radius: calc(34px * var(--k));
+    --ph-depth: calc(22px * var(--k));
 
     position: absolute;
     inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
-    perspective: 1900px;
+    perspective: calc(1900px * var(--k));
     perspective-origin: 50% 44%;
     pointer-events: none;
   }
   .fit {
     --fit: 1; /* skala dopasowania — ustawiana z JS (fit()) */
     position: relative;
-    width: 1180px;
-    height: 720px;
+    width: calc(1180px * var(--k));
+    height: calc(720px * var(--k));
     transform: scale(var(--fit, 1));
     transform-origin: center center;
   }
@@ -136,22 +133,20 @@ import PhoneSite from "./PhoneSite.astro";
     position: absolute;
     left: 0;
     top: 0;
-    width: 980px;
-    height: 210px;
-    transform: translate(-50%, -50%) translate3d(0, 330px, -60px);
+    width: calc(980px * var(--k));
+    height: calc(210px * var(--k));
+    transform: translate(-50%, -50%)
+      translate3d(0, calc(330px * var(--k)), calc(-60px * var(--k)));
     border-radius: 50%;
     background: radial-gradient(
       ellipse at center,
       rgba(var(--glow), 0.34) 0%,
       rgba(0, 0, 0, 0) 65%
     );
-    filter: blur(12px);
+    filter: blur(calc(12px * var(--k)));
     pointer-events: none;
   }
 
-  /* Poświata pod laptopem/telefonem — warianty mobilne (dzieci .laptop / .phone,
-     podążają za nimi: wjazd + rozsunięcie). Domyślnie ukryte; włączane w media
-     (max-width: 760px). */
   .device-glow--lap,
   .device-glow--ph {
     display: none;
@@ -189,19 +184,19 @@ import PhoneSite from "./PhoneSite.astro";
     );
     box-shadow:
       inset 0 0 0 1px rgba(255, 255, 255, 0.07),
-      0 40px 70px -34px rgba(0, 0, 0, 0.85),
-      0 18px 55px -24px rgba(var(--glow), var(--glow-strength));
+      0 calc(40px * var(--k)) calc(70px * var(--k)) calc(-34px * var(--k))
+        rgba(0, 0, 0, 0.85),
+      0 calc(18px * var(--k)) calc(55px * var(--k)) calc(-24px * var(--k))
+        rgba(var(--glow), var(--glow-strength));
   }
   .screen {
     width: 100%;
     height: 100%;
-    border-radius: calc(var(--r) - var(--bezel) + 2px);
+    border-radius: calc(var(--r) - var(--bezel) + 2px * var(--k));
     background: #ffffff;
     overflow: hidden;
     position: relative;
   }
-  /* Ekran laptopa hostuje LaptopSite — kontener dla jednostek cqw/cqh strony.
-     container-type: size wymaga definitywnego rozmiaru (ma go z --lap-w/--lap-h). */
   .screen--laptop {
     container-type: size;
   }
@@ -213,8 +208,6 @@ import PhoneSite from "./PhoneSite.astro";
     inset: 0;
     pointer-events: none;
   }
-  /* Warstwa video ekranu — tylko mobile. Aspekt nagrania == aspekt ekranu,
-     więc object-fit:cover nie przycina. Pod .screen__glass / .punch (z-index). */
   .screen__video {
     position: absolute;
     inset: 0;
@@ -245,11 +238,12 @@ import PhoneSite from "./PhoneSite.astro";
   .laptop-base {
     position: absolute;
     left: 50%;
-    top: calc(var(--lap-h) - 4px);
+    top: calc(var(--lap-h) - 4px * var(--k));
     transform: translateX(-50%);
     width: calc(var(--lap-w) * 1.05);
-    height: 22px;
-    border-radius: 3px 3px 17px 17px;
+    height: calc(22px * var(--k));
+    border-radius: calc(3px * var(--k)) calc(3px * var(--k))
+      calc(17px * var(--k)) calc(17px * var(--k));
     background: linear-gradient(
       180deg,
       var(--chassis-1) 0%,
@@ -258,8 +252,10 @@ import PhoneSite from "./PhoneSite.astro";
     );
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.07),
-      0 22px 44px -22px rgba(0, 0, 0, 0.8),
-      0 12px 38px -18px rgba(var(--glow), var(--glow-strength));
+      0 calc(22px * var(--k)) calc(44px * var(--k)) calc(-22px * var(--k))
+        rgba(0, 0, 0, 0.8),
+      0 calc(12px * var(--k)) calc(38px * var(--k)) calc(-18px * var(--k))
+        rgba(var(--glow), var(--glow-strength));
   }
   .lap-notch {
     position: absolute;
@@ -267,9 +263,9 @@ import PhoneSite from "./PhoneSite.astro";
     left: 50%;
     transform: translateX(-50%);
     width: 14%;
-    height: 7px;
+    height: calc(7px * var(--k));
     background: rgba(0, 0, 0, 0.45);
-    border-radius: 0 0 10px 10px;
+    border-radius: 0 0 calc(10px * var(--k)) calc(10px * var(--k));
   }
 
   .phone {
@@ -292,14 +288,14 @@ import PhoneSite from "./PhoneSite.astro";
   }
   .punch {
     position: absolute;
-    top: 11px;
+    top: calc(11px * var(--k));
     left: 50%;
     transform: translateX(-50%);
-    width: 11px;
-    height: 11px;
+    width: calc(11px * var(--k));
+    height: calc(11px * var(--k));
     border-radius: 99px;
     background: #0a0a0a;
-    box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.06);
+    box-shadow: inset 0 0 0 calc(2px * var(--k)) rgba(255, 255, 255, 0.06);
     z-index: 2;
   }
 
@@ -310,48 +306,40 @@ import PhoneSite from "./PhoneSite.astro";
       display: block;
     }
     .device-scene {
-      --ph-w: 286px;
-      --ph-h: 584px;
-      --ph-radius: 46px;
-      --ph-bezel: 11px;
-      /* PŁASKA SCENA: bez perspektywy. Ciężki CSS 3D (perspective/preserve-3d/
-         ekstruzja/blur) zarzyna kompozytor Androida i głodzi rasteryzację napisów
-         (.hero__copy) + paska (.hero__progress) w tej sekcji — wtedy mrugają/znikają.
-         Patrz docs/analiza-android-obudowy-3d-glodza-rasteryzacje.md. */
+      /* Zmniejsz rozmiar PROJEKTOWY całej sceny — fit() kompensuje ×1/--k, więc
+         wygląd zostaje identyczny, a rasteryzowana warstwa jest ~K× mniejsza
+         (zapas pod limitem tekstury GPU na Androidzie — Problem 2). */
+      --k: 0.6;
+      --ph-w: calc(286px * var(--k));
+      --ph-h: calc(584px * var(--k));
+      --ph-radius: calc(46px * var(--k));
+      --ph-bezel: calc(11px * var(--k));
       perspective: none;
     }
-    /* zdejmij 3D z grupy — wszystko płaszczyzny 2D (ekstruzja nie jest budowana
-       w device-scene.ts na mobile, więc nie ma czego spłaszczać poza wrapperami) */
     .camera,
     .device,
     .extrude {
       transform-style: flat;
     }
-    /* po spłaszczeniu warstwy nie są przemalowywane jak w 3D — hint zbędny */
     .camera,
     .phone {
       will-change: auto;
     }
-    /* bazowy kąt kamery (klatka B mobile) — kamera nie obraca się dalej na mobile */
     .camera {
       --cx: 4deg;
     }
-    /* minimum cieni: jeden tani drop-shadow + hairline, BEZ warstwy poświaty
-       z rozmyciem (rgba(--glow) blur) — to ona dokładała pracy kompozytorowi */
     .face {
       box-shadow:
         inset 0 0 0 1px rgba(255, 255, 255, 0.06),
-        0 12px 30px -18px rgba(0, 0, 0, 0.7);
+        0 calc(12px * var(--k)) calc(30px * var(--k)) calc(-18px * var(--k))
+          rgba(0, 0, 0, 0.7);
     }
     .laptop-base {
       box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
     }
-    /* poświata „podłogi" (dziecko .camera) tylko na desktopie (jak k4-ref-C) */
     .device-glow {
       display: none;
     }
-    /* poświata pod laptopem/telefonem — dzieci .laptop / .phone, więc podążają
-       za ich pozycją podczas wjazdu i rozsunięcia */
     .device-glow--lap,
     .device-glow--ph {
       display: block;
@@ -371,11 +359,33 @@ import PhoneSite from "./PhoneSite.astro";
     }
     .device-glow--lap {
       width: calc(var(--lap-w) * 1.15);
-      height: 230px;
+      height: calc(230px * var(--k));
     }
     .device-glow--ph {
       width: calc(var(--ph-w) * 1.5);
       height: calc(var(--ph-w) * 0.42);
     }
+  }
+</style>
+<style is:global>
+  @property --ph-w {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+  }
+  @property --ph-h {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+  }
+  @property --lap-depth {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
+  }
+  @property --ph-depth {
+    syntax: "<length>";
+    inherits: true;
+    initial-value: 0px;
   }
 </style>
