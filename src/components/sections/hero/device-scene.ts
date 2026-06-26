@@ -1,4 +1,5 @@
 import { gsap } from "gsap";
+import { IS_ANDROID } from "./android-mobile";
 
 // ── Docelowa poza urządzeń w klatce C (desktop) — jedno źródło prawdy:
 //    używane i przy pomiarze adaptacyjnym (computeFrameC), i w timeline (Hero). ──
@@ -96,7 +97,14 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
 
   const GROUP_SCALE = 0.72; // ogólne zmniejszenie całej grupy urządzeń
 
-  const K = () => (isStacked() ? 0.6 : 1);
+  // Współczynnik rozmiaru PROJEKTOWEGO sceny — MUSI być spójny z tokenem --k w
+  // DeviceScene.astro. Aktywny (0.6) WYŁĄCZNIE na Androidzie (Problem 2 = limit
+  // warstwy GPU Androida); iPhone/iOS i desktop = 1 → zachowanie sprzed fixu.
+  // Bramka IS_ANDROID musi być zgodna z CSS (--k:0.6 tylko pod html.is-android),
+  // inaczej JS skalowałby bbox, a CSS nie (rozjazd geometrii). Stałe px poniżej są
+  // w przestrzeni projektowej laptopa (jego --lap-w/--lap-h też ×--k), więc mnożymy
+  // je przez k. --ph-w/--ph-h czytamy z CSS (już z --k) → NIE skalujemy ponownie.
+  const K = () => (isStacked() && IS_ANDROID ? 0.6 : 1);
   const LAP_HW = 441; // pokrywa + szerszy pasek bazy (1.05×)
   const LAP_TOP = -267; // górna krawędź pokrywy względem środka laptopa
   const LAP_BOT = 285; // dolna krawędź (pokrywa + pasek bazy)

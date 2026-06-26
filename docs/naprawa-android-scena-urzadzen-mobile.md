@@ -84,8 +84,14 @@ mocniejsze ucinanie; zmniejszenie rozmiaru projektowego → ucinanie znika.
 pozostaje pikselowo identyczny**, a rasteryzowana warstwa jest ~K× mniejsza, z dużym
 zapasem pod sufitem GPU (nawet ze wzrostem laptopa).
 
-Zakres: stosować `K` **tylko na mobile** (`max-width: 760px`) — to tam jest problem, a
-desktop ma inny layout (klatka C / `FRAME_C`), którego ta zmiana nie powinna ruszać.
+Zakres: stosować `K` **tylko na Androidzie** (mobile + `html.is-android`). Pierwotnie
+fix wszedł na całe mobile (`max-width: 760px`) i **spowodował regres na iOS** (iPhone
+SE 2020): starszy Safari (<16.4) nie wspiera `@property`, więc tokeny `calc(*var(--k))`
+czytane przez `getComputedStyle` zwracały NaN i rozwalały geometrię. Dlatego: tokeny
+czytane z JS są **gołe px** domyślnie, a `--k:0.6` + ich warianty `calc` włącza się
+dopiero pod `html.is-android` (klasę ustawia `Hero.astro` PRZED `initDeviceScene`).
+Bramki w JS muszą być spójne: `device-scene.ts` `K()` i `Hero.astro` `APART`/dividery
+liczą `K` z `IS_ANDROID`. Desktop ma inny layout (klatka C / `FRAME_C`) — bez zmian.
 
 Co przemnożyć przez `K` (wszystko, co jest w **px PRZESTRZENI PROJEKTOWEJ**):
 
@@ -111,8 +117,10 @@ viewportu), `GAP_LAP_DIV/GAP_PH_DIV` z Problemu 1 (px viewportu), `GROUP_SCALE`,
 `getComputedStyle(scene).getPropertyValue(name)` + `parseFloat` (funkcja `dvar`). Jeśli te
 tokeny staną się `calc(... * var(--k))`, to **niezarejestrowana custom property zwraca
 NIEROZWIĄZANY string** (np. `"calc(286px * var(--k))"`) → `parseFloat = NaN` → rozwala
-geometrię telefonu i `fit`. Trzeba je **zarejestrować przez `@property`**, żeby
-`getComputedStyle` zwracał obliczoną długość:
+geometrię telefonu i `fit`. **To był właśnie regres iOS** — Safari <16.4 nie zna
+`@property`, więc nawet zarejestrowane tokeny pozostają nierozwiązane. Rozwiązanie po
+bramkowaniu do Androida: `calc(*var(--k))` mają **tylko `--ph-w`/`--ph-h` i tylko pod
+`html.is-android`** (Chrome wspiera `@property`); rejestrujemy więc **dwa** tokeny:
 
 ```css
 @property --ph-w {
@@ -125,19 +133,12 @@ geometrię telefonu i `fit`. Trzeba je **zarejestrować przez `@property`**, że
   inherits: true;
   initial-value: 0px;
 }
-@property --lap-depth {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
-@property --ph-depth {
-  syntax: "<length>";
-  inherits: true;
-  initial-value: 0px;
-}
 ```
 
-(`@property` to at-rule globalna — w Astro dać ją w `<style is:global>`.)
+`--lap-depth`/`--ph-depth` zostają **gołe px** (czytane wyłącznie na desktopie, gdzie
+`--k=1`; mobile nie buduje ekstruzji) → nie wymagają `@property`. Na iPhone wszystkie
+cztery są gołe → `dvar` działa bez `@property`. (`@property` to at-rule globalna — w
+Astro dać ją w `<style is:global>`.)
 
 ### Weryfikacja
 

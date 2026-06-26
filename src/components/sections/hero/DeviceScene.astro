@@ -73,19 +73,32 @@ import PhoneSite from "./PhoneSite.astro";
     --chassis-2: #161619;
     --chassis-3: #0d0d10;
     --glow-strength: 0.55;
+    /* Współczynnik rozmiaru PROJEKTOWEGO sceny. Domyślnie 1; nadpisywany na 0.6
+       WYŁĄCZNIE na Androidzie (html.is-android, blok mobile niżej), bo Problem 2
+       to limit warstwy GPU Androida. iPhone/iOS NIE jest ruszany — m.in. dlatego,
+       że starszy Safari (<16.4, np. iPhone SE 2020 na iOS 15/16) nie wspiera
+       @property → tokeny calc(*var(--k)) czytane przez getComputedStyle dawałyby
+       NaN i rozwalały geometrię. Patrz docs/naprawa-android-scena-urzadzen-mobile.md. */
     --k: 1;
 
+    /* Tokeny tylko-CSS (rozwiązywane przy użyciu, więc bezpieczne bez @property
+       na każdej przeglądarce). Na iPhone --k=1 → wartości identyczne jak dawniej. */
     --lap-w: calc(840px * var(--k));
     --lap-h: calc(534px * var(--k));
     --lap-bezel: calc(11px * var(--k));
     --lap-radius: calc(16px * var(--k));
-    --lap-depth: calc(16px * var(--k));
-
-    --ph-w: calc(212px * var(--k));
-    --ph-h: calc(432px * var(--k));
     --ph-bezel: calc(8px * var(--k));
     --ph-radius: calc(34px * var(--k));
-    --ph-depth: calc(22px * var(--k));
+
+    /* Tokeny czytane z JS (device-scene.ts: dvar → getComputedStyle). GOŁE px po
+       to, by działały na Safari bez @property. Na Androidzie blok html.is-android
+       niżej nadpisuje --ph-w/--ph-h na calc(*var(--k)) (Chrome wspiera @property).
+       --*-depth są czytane TYLKO na desktopie (mobile nie buduje ekstruzji), gdzie
+       --k=1, więc zostają gołe i nie wymagają @property. */
+    --ph-w: 212px;
+    --ph-h: 432px;
+    --lap-depth: 16px;
+    --ph-depth: 22px;
 
     position: absolute;
     inset: 0;
@@ -306,15 +319,25 @@ import PhoneSite from "./PhoneSite.astro";
       display: block;
     }
     .device-scene {
-      /* Zmniejsz rozmiar PROJEKTOWY całej sceny — fit() kompensuje ×1/--k, więc
-         wygląd zostaje identyczny, a rasteryzowana warstwa jest ~K× mniejsza
-         (zapas pod limitem tekstury GPU na Androidzie — Problem 2). */
-      --k: 0.6;
-      --ph-w: calc(286px * var(--k));
-      --ph-h: calc(584px * var(--k));
+      /* Bazowy telefon mobile. --ph-w/--ph-h GOŁE px (czytane z JS; działa bez
+         @property, np. iPhone SE 2020 / starszy Safari). --ph-radius/--ph-bezel
+         to tokeny tylko-CSS → mogą zostać calc(*var(--k)); na iPhone --k=1 daje
+         oryginał, na Androidzie skalują się razem z resztą. */
+      --ph-w: 286px;
+      --ph-h: 584px;
       --ph-radius: calc(46px * var(--k));
       --ph-bezel: calc(11px * var(--k));
       perspective: none;
+    }
+    /* ── ANDROID ONLY (Problem 2): zmniejsz rozmiar PROJEKTOWY sceny — fit()
+       kompensuje ×1/--k, więc wygląd identyczny, a rasteryzowana warstwa jest
+       ~K× mniejsza (zapas pod limitem tekstury GPU). Klasę is-android ustawia
+       Hero.astro PRZED initDeviceScene, więc dvar czyta już skalowane --ph-w/--ph-h
+       (Chrome wspiera @property). iPhone/iOS nie wchodzi tu nigdy. */
+    html.is-android .device-scene {
+      --k: 0.6;
+      --ph-w: calc(286px * var(--k));
+      --ph-h: calc(584px * var(--k));
     }
     .camera,
     .device,
@@ -367,6 +390,15 @@ import PhoneSite from "./PhoneSite.astro";
     }
   }
 </style>
+
+<!-- Rejestracja tokenów, które na ANDROIDZIE stają się calc(*var(--k)) a są czytane
+     przez device-scene.ts (dvar → getComputedStyle + parseFloat). Bez @property
+     niezarejestrowana custom property zwraca nierozwiązany string ("calc(286px *
+     var(--k))") → parseFloat=NaN. @property z syntax:<length> wymusza obliczoną
+     długość. Tylko --ph-w/--ph-h, bo tylko one są skalowane (czytane na mobile);
+     --*-depth zostają gołe (czytane wyłącznie na desktopie, --k=1). Wspierane na
+     Androidzie (Chrome≥85); iPhone używa gołych px, więc @property tam nie jest
+     potrzebne. (at-rule globalna → is:global.) -->
 <style is:global>
   @property --ph-w {
     syntax: "<length>";
@@ -374,16 +406,6 @@ import PhoneSite from "./PhoneSite.astro";
     initial-value: 0px;
   }
   @property --ph-h {
-    syntax: "<length>";
-    inherits: true;
-    initial-value: 0px;
-  }
-  @property --lap-depth {
-    syntax: "<length>";
-    inherits: true;
-    initial-value: 0px;
-  }
-  @property --ph-depth {
     syntax: "<length>";
     inherits: true;
     initial-value: 0px;

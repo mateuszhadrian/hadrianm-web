@@ -516,6 +516,12 @@ const accentN = accentLetters.length;
   ScrollTrigger.config({ ignoreMobileResize: true });
   ScrollTrigger.normalizeScroll(true);
 
+  // Marker Androida na <html> — włącza CSS-ową gałąź zmniejszania sceny (--k:0.6,
+  // tokeny calc(*var(--k))) z DeviceScene.astro. MUSI być ustawiony PRZED
+  // initDeviceScene, żeby dvar() czytał już skalowane --ph-w/--ph-h. iPhone/iOS bez
+  // tej klasy → tokeny gołe, --k=1, zachowanie sprzed fixu (Problem 2 = android-only).
+  if (IS_ANDROID) document.documentElement.classList.add("is-android");
+
   // ── Scena urządzeń: budowa brył 3D, geometria klatki B, fit do viewportu i
   //    adaptacyjna klatka C — całość w device-scene.ts. Timeline poniżej tylko
   //    animuje zmienne CSS sceny i czyta `scene.getFrameC()` (klatka C). ──
@@ -853,11 +859,11 @@ const accentN = accentLetters.length;
     const { tl, copy, devices } = b;
     const { laptop, phone } = refs;
     const APART_START = 1.3; // start rozsunięcia (po zakończeniu wjazdu)
-    // px PRZESTRZENI PROJEKTOWEJ → skalowane współczynnikiem --k (mobile 0.6),
-    // zgodnym z DeviceScene.astro / device-scene.ts. Bez tego rozsunięcie byłoby
-    // ×1/K za duże na ekranie (fit() urósł ×1/K). Patrz Problem 2 w
-    // docs/naprawa-android-scena-urzadzen-mobile.md.
-    const K = 0.6;
+    // px PRZESTRZENI PROJEKTOWEJ → na Androidzie skalowane przez --k (0.6), bo tam
+    // fit() urósł ×1/K (Problem 2); bez tego rozsunięcie byłoby ×1/K za duże.
+    // iPhone/iOS: K=1 → wartości jak sprzed fixu. Spójne z device-scene.ts (K()) i
+    // CSS (--k). Patrz docs/naprawa-android-scena-urzadzen-mobile.md.
+    const K = IS_ANDROID ? 0.6 : 1;
     const APART_LAP = -150 * K; // laptop w górę (px projektu)
     const APART_PH = 170 * K; // telefon w dół (px projektu)
     const MOB_END_SCALE = 0.82; // pomniejszenie grupy (miejsce na tekst góra/dół)
@@ -1021,14 +1027,15 @@ const accentN = accentLetters.length;
       const LAP_ZONE = { start: 4.4, end: 8.4 };
       const PH_ZONE = { start: 8.8, end: 12.8 };
 
-      // ── PROBLEM 1: dolne dividery tekstu (02 między laptopem a telefonem, 03 pod
-      // telefonem) kotwiczone do ZMIERZONYCH dolnych krawędzi urządzeń ze stałym
-      // małym odstępem (jak na iOS), zamiast top:45svh/82svh z CSS. Dividery svh
-      // skalowały się z wysokością viewportu, a dolne krawędzie urządzeń wynikają z
-      // fit() (ograniczony szerokością) — na wysokich ekranach (Android) GAP rósł.
-      // Urządzenia w fazie 3 rosną z DOŁEM PRZYKLEJONYM → ich dolne krawędzie są
-      // stałe, więc wystarczy mierzyć przez dojazd (fazy 1-2) + na refresh (resize),
-      // bez per-klatkowego reflow w fazie 3. Patrz
+      // ── PROBLEM 1 (ANDROID ONLY): dolne dividery tekstu (02 między laptopem a
+      // telefonem, 03 pod telefonem) kotwiczone do ZMIERZONYCH dolnych krawędzi
+      // urządzeń ze stałym małym odstępem (jak na iOS), zamiast top:45svh/82svh z
+      // CSS. Dividery svh skalowały się z wysokością viewportu, a dolne krawędzie
+      // urządzeń wynikają z fit() (ograniczony szerokością) — na wysokich ekranach
+      // (Android) GAP rósł. Na iPhone (m.in. SE 2020, niski ekran) svh-owe dividery
+      // były OK, więc BRAMKUJEMY do Androida, by nie ruszać iOS. Urządzenia w fazie 3
+      // rosną z DOŁEM PRZYKLEJONYM → krawędzie stałe, więc mierzymy tylko przez
+      // dojazd (fazy 1-2) + na refresh (resize). Patrz
       // docs/naprawa-android-scena-urzadzen-mobile.md.
       const stageEl = q(".hero__stage");
       const div02 = q<HTMLElement>(".hero__copy-row--2");
@@ -1049,19 +1056,23 @@ const accentN = accentLetters.length;
         }
       };
       // Trigger obejmuje dojazd urządzeń (fazy 1-2): dividery płynnie podążają w
-      // onUpdate, a onLeave/onLeaveBack domyka pozycję po wejściu w fazę 3.
-      const dividerTrigger = hero
-        ? ScrollTrigger.create({
-            trigger: hero,
-            start: "top top",
-            end: () => "top+=" + LAP_ZONE.start * window.innerHeight + " top",
-            onUpdate: placeDividers,
-            onLeave: placeDividers,
-            onLeaveBack: placeDividers,
-          })
-        : null;
-      ScrollTrigger.addEventListener("refresh", placeDividers);
-      placeDividers();
+      // onUpdate, a onLeave/onLeaveBack domyka pozycję po wejściu w fazę 3. Tylko
+      // Android — na iOS zostają CSS-owe top:svh (niezmienione zachowanie).
+      const dividerTrigger =
+        IS_ANDROID && hero
+          ? ScrollTrigger.create({
+              trigger: hero,
+              start: "top top",
+              end: () => "top+=" + LAP_ZONE.start * window.innerHeight + " top",
+              onUpdate: placeDividers,
+              onLeave: placeDividers,
+              onLeaveBack: placeDividers,
+            })
+          : null;
+      if (IS_ANDROID) {
+        ScrollTrigger.addEventListener("refresh", placeDividers);
+        placeDividers();
+      }
       const cleanupDividers = () => {
         dividerTrigger?.kill();
         ScrollTrigger.removeEventListener("refresh", placeDividers);
