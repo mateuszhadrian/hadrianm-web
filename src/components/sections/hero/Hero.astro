@@ -10,6 +10,26 @@ const t = useTranslations(lang);
 
 const accentLetters = [...t("hero.headlineAccent")];
 const accentN = accentLetters.length;
+
+const s1LeadLines = t("hero.s1Lead").split("\n");
+const s1Accent = t("hero.s1Accent");
+const copyRows = [
+  t("hero.s2"),
+  t("hero.s3"),
+  t("hero.s4"),
+  t("hero.s6"),
+  t("hero.s7"),
+].map((s, idx) => ({
+  num: String(idx + 2).padStart(2, "0"),
+  lines: s.split("\n"),
+}));
+
+const splitAccent = (line: string) =>
+  line.split("*").map((part, j) => ({
+    text: part.replace(/^!/, ""),
+    em: j % 2 === 1,
+    lg: j % 2 === 1 && part.startsWith("!"),
+  }));
 ---
 
 <section id="hero" class="hero">
@@ -35,9 +55,6 @@ const accentN = accentLetters.length;
       </div>
     </div>
 
-    <!-- Animowana kopia słowa "inna": nakładana JS-em na ghost, jedzie do środka
-         viewportu, skaluje się ku użytkownikowi i rozmywa. aria-hidden, bo treść
-         niesie ghost w <h1> powyżej. -->
     <span
       class="hero__accent hero__accent--live"
       aria-hidden="true"
@@ -52,44 +69,63 @@ const accentN = accentLetters.length;
       }
     </span>
 
-    <!-- Tekst (placeholder) — faza 2. Desktop: lewa kolumna; mobile: 3 pasma
-         interleaved z urządzeniami (dividery nad 02 i 03). Pojawia się przy
-         przesuwaniu urządzeń w prawo (desktop) / rozsuwaniu (mobile). -->
     <div class="hero__copy">
       <div class="hero__copy-row hero__copy-row--1">
         <span class="hero__copy-num">01</span>
         <p class="hero__copy-text">
-          {t("hero.s1Lead")}
-          <em>{t("hero.s1Accent")}</em>
+          {
+            s1LeadLines.map((line, i) => (
+              <Fragment>
+                {i > 0 && <br />}
+                {line}
+                {i === s1LeadLines.length - 1 && (
+                  <Fragment>
+                    {" "}
+                    <em>{s1Accent}</em>
+                  </Fragment>
+                )}
+              </Fragment>
+            ))
+          }
         </p>
       </div>
-      <div class="hero__copy-row hero__copy-row--2">
-        <span class="hero__copy-num">02</span>
-        <p class="hero__copy-text">{t("hero.s2")}</p>
-      </div>
-      <div class="hero__copy-row hero__copy-row--3">
-        <span class="hero__copy-num">03</span>
-        <p class="hero__copy-text">{t("hero.s3")}</p>
-      </div>
+      {
+        copyRows.map((row, idx) => (
+          <div class={`hero__copy-row hero__copy-row--${idx + 2}`}>
+            <span class="hero__copy-num">{row.num}</span>
+            <p class="hero__copy-text">
+              {row.lines.map((line, i) => (
+                <Fragment>
+                  {i > 0 && <br />}
+                  <span
+                    class={
+                      i === 0
+                        ? "hero__copy-ln"
+                        : "hero__copy-ln hero__copy-ln--cont"
+                    }
+                  >
+                    {splitAccent(line).map((p) =>
+                      p.em ? (
+                        <em class={p.lg ? "is-lg" : undefined}>{p.text}</em>
+                      ) : (
+                        p.text
+                      ),
+                    )}
+                  </span>
+                </Fragment>
+              ))}
+            </p>
+          </div>
+        ))
+      }
     </div>
 
-    <!-- Scena urządzeń (laptop + smartfon). Wrapper .hero__devices to „slot" w
-         stage'u: pozycjonowany i animowany przez timeline (opacity/blur/scale/x).
-         Wnętrze sceny + jej logika żyją w DeviceScene.astro / device-scene.ts. -->
     <div class="hero__devices" aria-hidden="true">
       <DeviceScene />
     </div>
 
-    <!-- Wskaźnik postępu (mobile): cienki pasek przy prawej krawędzi z kuleczką
-         odwzorowującą scroll przez strefy wideo urządzeń. Pojawia się dokładnie,
-         gdy oba urządzenia stoją na pozycjach startowych (tuż przed powiększaniem
-         laptopa), znika, gdy telefon w pełni się zmniejszy. Sterowany z mobilnej
-         gałęzi matchMedia w <script>. Tylko wskaźnik — pointer-events: none. -->
     <div class="hero__progress" aria-hidden="true">
       <span class="hero__progress-track"></span>
-      <!-- odcinki odtwarzania (laptop, telefon) — pozycje ustawia mobilna gałąź
-           <script> z tych samych stałych co strefy wideo. Statycznie w markupie,
-           by objął je scoped CSS Astro. -->
       <span class="hero__progress-seg"></span>
       <span class="hero__progress-seg"></span>
       <span class="hero__progress-dot"></span>
@@ -101,7 +137,6 @@ const accentN = accentLetters.length;
   .hero {
     position: relative;
 
-    /* tokeny brandowe (--ink/--muted/--faint/--line/--accent/--glow) dziedziczą z :root */
     --headline-size: clamp(2.75rem, 7.9vw, 9.4rem);
   }
 
@@ -151,7 +186,6 @@ const accentN = accentLetters.length;
     letter-spacing: 0;
     white-space: nowrap;
   }
-  /* Ghost: rozmiar względem <h1>; live: ten sam rozmiar liczony bezpośrednio. */
   .hero__headline .hero__accent {
     font-size: 1.06em;
   }
@@ -209,9 +243,6 @@ const accentN = accentLetters.length;
     animation: scroll-pulse 2.4s ease-in-out infinite;
   }
 
-  /* ─────────────────────────── TEKST (placeholder) ─────────────────────────
-     Bazowo: zwykły blok w przepływie (fallback reduced-motion / brak JS).
-     W trybie ruchu (no-preference) pozycjonowany absolutnie i odsłaniany GSAP-em. */
   .hero__copy {
     max-width: 40rem;
     margin: 0 auto;
@@ -264,22 +295,25 @@ const accentN = accentLetters.length;
     -webkit-text-fill-color: transparent;
     color: transparent;
   }
+  .hero__copy-text em.is-lg {
+    font-size: 1.5em;
+  }
+  .hero__copy:not(.is-carousel) .hero__copy-row--4,
+  .hero__copy:not(.is-carousel) .hero__copy-row--5,
+  .hero__copy:not(.is-carousel) .hero__copy-row--6,
+  .hero__copy:not(.is-carousel) .hero__copy-row--7 {
+    display: none;
+  }
 
-  /* ─────────────────────────── SCENA URZĄDZEŃ (slot) ───────────────────────
-     Wrapper sceny — pozycja w przepływie + animacja przez timeline. Wnętrze
-     sceny (3D, tokeny chassis/wymiary) jest w DeviceScene.astro. */
+  /* ─────────────────────────── SCENA URZĄDZEŃ (slot) ─────────────────────── */
   .hero__devices {
     position: relative;
     min-height: 100svh;
   }
 
-  /* ───────────────── TRYB ANIMACJI (ruch dozwolony) ─────────────────
-     Stage przykleja się (sticky), a head + urządzenia leżą na sobie w
-     centrum — różnicę robi timeline GSAP. ── */
+  /* ───────────────── TRYB ANIMACJI (ruch dozwolony) ───────────────── */
   @media (prefers-reduced-motion: no-preference) {
     .hero {
-      /* faza 1 (~1,4 ekr.) + faza 2 (~2,2 ekr.) napędzane scrollem (end +=4×vh)
-         + ~2 ekrany holdu, zanim sekcja się odpina (mobile — bez fazy 3) */
       min-height: 700svh;
     }
     .hero__stage {
@@ -303,8 +337,6 @@ const accentN = accentLetters.length;
     }
     .hero__accent--live {
       display: block;
-      /* absolute względem przyklejonego stage'u (nie fixed — fixed dryfuje na
-         mobile przy chowaniu paska adresu) */
       position: absolute;
       left: 0;
       top: 0;
@@ -315,8 +347,6 @@ const accentN = accentLetters.length;
       will-change: transform, opacity;
     }
 
-    /* ── DESKTOP/TABLET: lewa kolumna, wyśrodkowana w pionie, odsłaniana GSAP-em.
-       Odstęp tekst↔urządzenia steruje `left` + `width` (clamp → nigdy zerowy). ── */
     .hero__copy {
       position: absolute;
       top: 50%;
@@ -331,6 +361,27 @@ const accentN = accentLetters.length;
       pointer-events: none;
       will-change: transform, opacity;
     }
+
+    .hero__copy.is-carousel {
+      overflow-x: visible;
+      overflow-y: clip;
+    }
+    .hero__copy.is-carousel .hero__copy-row {
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      will-change: transform;
+    }
+    .hero__copy.is-carousel .hero__copy-row:not(.hero__copy-row--1) {
+      border-top: 1px solid var(--line);
+    }
+    .hero__copy.is-carousel .hero__copy-text {
+      color: var(--ink);
+      white-space: nowrap;
+    }
   }
 
   /* ─────────────────────── WSKAŹNIK POSTĘPU (mobile) ───────────────────────
@@ -344,14 +395,8 @@ const accentN = accentLetters.length;
       min-height: 1500svh;
     }
 
-    /* Cienki pasek przy prawej krawędzi sticky stage'u (absolutny — nie fixed,
-       bo fixed dryfuje przy chowaniu paska adresu). Kuleczka jedzie liniowo ze
-       scrollem; --p ∈ [0,1] ustawia JS. Fade in/out przez .is-active. */
     .hero__progress {
       --p: 0;
-      /* ── REGULACJA WYSOKOŚCI TIMELINE'A ──
-         Pionowe przesunięcie całego paska względem środka stage'u.
-         Ujemne wartości = wyżej, dodatnie = niżej. Zmień samą tę liczbę. */
       --bar-shift-y: -6svh;
       display: block;
       position: absolute;
@@ -379,8 +424,6 @@ const accentN = accentLetters.length;
       border-radius: 1px;
       z-index: 0;
     }
-    /* Odcinek odtwarzania wideo (akcent) — nakładany na track między play↔stop.
-       --seg-top/--seg-h ∈ [0,1] ustawia JS z tych samych stałych co strefy. */
     .hero__progress-seg {
       --seg-top: 0; /* [0,1] — ustawia JS (setProperty) */
       --seg-h: 0;
@@ -414,8 +457,6 @@ const accentN = accentLetters.length;
       background: var(--accent);
       box-shadow: 0 0 8px 1px rgba(var(--glow), 0.55);
     }
-    /* Android: brak play/stop → cały pasek czerwony, kulka stale czerwona
-       (.is-on-seg na stałe z JS). Odcinki play/stop są tu zbędne. */
     .hero__progress.is-android .hero__progress-track {
       background: var(--accent);
     }
@@ -454,11 +495,23 @@ const accentN = accentLetters.length;
     .hero__copy-row--3 {
       top: 82svh;
     }
+    .hero__copy-row--3 .hero__copy-text br {
+      display: none;
+    }
+    .hero__copy-row--3 .hero__copy-ln--cont {
+      text-transform: lowercase;
+    }
+    .hero__copy-row--3 .hero__copy-ln--cont::before {
+      content: " ";
+    }
+    .hero__copy-row--4,
+    .hero__copy-row--5,
+    .hero__copy-row--6,
+    .hero__copy-row--7 {
+      display: none;
+    }
   }
 
-  /* Desktop/tablet: dodatkowy dystans na FAZĘ 3 (strona drewelomet na laptopie).
-     Start fazy 3 nakłada się na morf (klatka C), więc cała oś = ~12 ekranów
-     scrubu + ~2 ekrany holdu przed odpięciem. */
   @media (prefers-reduced-motion: no-preference) and (min-width: 761px) {
     .hero {
       min-height: 1400svh;
@@ -487,7 +540,6 @@ const accentN = accentLetters.length;
     }
   }
 
-  /* ── niski ekran (telefon w poziomie / krótkie okno) */
   @media (max-height: 600px) {
     .hero__eyebrow,
     .hero__scroll-label {
@@ -519,15 +571,7 @@ const accentN = accentLetters.length;
   ScrollTrigger.config({ ignoreMobileResize: true });
   ScrollTrigger.normalizeScroll(true);
 
-  // Marker Androida na <html> — włącza CSS-ową gałąź zmniejszania sceny (--k:0.6,
-  // tokeny calc(*var(--k))) z DeviceScene.astro. MUSI być ustawiony PRZED
-  // initDeviceScene, żeby dvar() czytał już skalowane --ph-w/--ph-h. iPhone/iOS bez
-  // tej klasy → tokeny gołe, --k=1, zachowanie sprzed fixu (Problem 2 = android-only).
   if (IS_ANDROID) document.documentElement.classList.add("is-android");
-
-  // ── Scena urządzeń: budowa brył 3D, geometria klatki B, fit do viewportu i
-  //    adaptacyjna klatka C — całość w device-scene.ts. Timeline poniżej tylko
-  //    animuje zmienne CSS sceny i czyta `scene.getFrameC()` (klatka C). ──
   const devicesEl = document.querySelector<HTMLElement>(".hero__devices");
   const scene = devicesEl ? initDeviceScene(devicesEl) : null;
 
@@ -536,10 +580,6 @@ const accentN = accentLetters.length;
 
   const q = <T extends HTMLElement = HTMLElement>(s: string) =>
     document.querySelector<T>(s);
-
-  // Wspólny szkielet: refy, pomiary, oś czasu + części niezależne od wariantu.
-  // `screens` = ile ekranów scrolla obejmuje cała oś timeline (desktop dłuższy
-  // o fazę 3 = strona drewelomet na laptopie).
   const buildBase = (screens: number) => {
     const hero = q("#hero");
     const stage = q(".hero__stage");
@@ -551,8 +591,6 @@ const accentN = accentLetters.length;
     const scroll = q(".hero__scroll");
     if (!hero || !stage || !head || !ghost || !live || !devices) return null;
 
-    // Pozycja słowa mierzona WZGLĘDEM .hero__head — różnica ghost−head kasuje
-    // przesunięcie głowy, pozycję viewportu i chowający się pasek adresu (brak przeskoków).
     const rect = () => {
       const g = ghost.getBoundingClientRect();
       const h = head.getBoundingClientRect();
@@ -576,9 +614,6 @@ const accentN = accentLetters.length;
       scrollTrigger: {
         trigger: hero,
         start: "top top",
-        // faza 1 (przelot słowa + urządzenia na środku) + faza 2 (morph 3D /
-        // rozsunięcie + tekst) napędzane scrollem przez ~4 ekrany; potem ~2 ekrany
-        // holdu (z min-height: 700svh), zanim sekcja się odpina
         end: () => "+=" + window.innerHeight * screens,
         scrub: true,
         invalidateOnRefresh: true,
@@ -587,7 +622,6 @@ const accentN = accentLetters.length;
       },
     });
 
-    // część nieanimowana odjeżdża w górę (≈ tempo scrolla)
     tl.to(head, { yPercent: -110, duration: 0.6 }, 0);
     if (scroll) tl.to(scroll, { autoAlpha: 0, duration: 0.12 }, 0);
 
@@ -626,7 +660,6 @@ const accentN = accentLetters.length;
     gsap.set([b.ghost, b.live, b.devices, b.copy, b.scroll].filter(Boolean), {
       clearProps: "all",
     });
-    // zdejmij morph z urządzeń (zmienne CSS) + przywróć pasek bazy
     const { laptop: lp, phone: ph, camera: cam, base: bs } = deviceRefs();
     lp?.style.removeProperty("--lap-yaw");
     lp?.style.removeProperty("--lap-pitch");
@@ -642,8 +675,8 @@ const accentN = accentLetters.length;
 
   // ════════════════════════════ FAZY (desktop) ════════════════════════════
 
-  // FAZA 1: słowo "inna" jedzie do środka viewportu, skaluje się ku użytkownikowi
-  // i rozmywa → zanik; urządzenia wyostrzają się z rozmycia w centrum.
+  const PH3_START = 0.9;
+  const DREWELOMET_DUR = 5.0;
   const phase1Desktop = (b: Base) => {
     const { tl, live, devices, startX, startY, endX, endY } = b;
     tl.fromTo(
@@ -661,7 +694,6 @@ const accentN = accentLetters.length;
     );
     tl.to(live, { autoAlpha: 0, duration: 0.13 }, 0.56);
 
-    // urządzenia: rozmyte chwilę przed zanikiem słowa → wyostrzenie w centrum
     tl.fromTo(
       devices,
       { autoAlpha: 0, filter: "blur(26px)", scale: 1.22 },
@@ -676,16 +708,11 @@ const accentN = accentLetters.length;
     );
   };
 
-  // FAZA 2 (desktop): morph 3D wg produkcja.html + przesuw grupy w prawo + wjazd
-  // tekstu z lewej. Wszystko równolegle, napędzane scrollem.
   const phase2Desktop = (b: Base, refs: DeviceRefs) => {
     const { tl, copy, devices } = b;
     const { laptop, phone, camera, base } = refs;
     const PH2 = 0.95; // start fazy 2 na osi timeline (po wejściu urządzeń)
-    // Pozycja/skala grupy w klatce C są adaptacyjne (scene.getFrameC(), liczone
-    // w layout): grupa dopasowuje się do prawej strefy — może rosnąć lub maleć.
 
-    // (a) telefon: przejazd prawo→lewo + wysunięcie do przodu + niżej (klatka B→C)
     if (phone) {
       tl.to(
         phone,
@@ -699,8 +726,6 @@ const accentN = accentLetters.length;
         PH2,
       );
     }
-    // (b) zanik paska bazy laptopa (klawiatury) — gdy laptop staje pod kątem,
-    //     pasek nie może być widoczny
     if (base) {
       tl.to(
         base,
@@ -733,8 +758,6 @@ const accentN = accentLetters.length;
         PH2 + 0.45,
       );
     }
-    // (d) cała grupa dopasowuje się do prawej strefy (adaptacyjnie: rośnie lub
-    //     maleje) i jedzie w prawo, robiąc miejsce na tekst z lewej
     tl.to(
       devices,
       {
@@ -746,7 +769,6 @@ const accentN = accentLetters.length;
       },
       PH2,
     );
-    // (e) tekst po lewej: fade + slide od lewej (kończy razem z dojściem do C)
     if (copy) {
       tl.fromTo(
         copy,
@@ -757,15 +779,8 @@ const accentN = accentLetters.length;
     }
   };
 
-  // FAZA 3 (desktop): laptop stoi w klatce C (bez ruchu), a dalszy scroll napędza
-  // master-timeline strony drewelomet na jego ekranie (sprzężenie 1:1). Po dojściu
-  // do progress=1 dalszy scroll wynosi sekcję (handoff do Problem w Home.astro).
   const phase3Desktop = (b: Base, site: LaptopSiteApi) => {
     const { tl } = b;
-    // Start od pojawienia się urządzeń w centrum (urządzenia ostre ~0.88, morf
-    // PH2=0.95) — animacja ekranu biegnie DALEJ równolegle z morfem do klatki C.
-    const PH3_START = 0.9;
-    const DREWELOMET_DUR = 5.0; // przy buildBase(12) ≈ 10 ekranów scrolla
     const p = { v: 0 };
     tl.to(
       p,
@@ -802,11 +817,193 @@ const accentN = accentLetters.length;
     );
   };
 
+  const initCaptionCarousel = (b: Base) => {
+    const copy = b.copy;
+    if (!copy) return () => {};
+    const rows = Array.from(
+      copy.querySelectorAll<HTMLElement>(".hero__copy-row"),
+    );
+    const maybeTexts = rows.map((r) =>
+      r.querySelector<HTMLElement>(".hero__copy-text"),
+    );
+    if (rows.length < 3 || maybeTexts.some((t) => !t)) return () => {};
+    const texts = maybeTexts as HTMLElement[];
+
+    copy.classList.add("is-carousel");
+
+    const CAP_START = 1.95;
+    const DOG_PROGRESS = 0.934;
+    const CAP_END = PH3_START + DREWELOMET_DUR * DOG_PROGRESS;
+    const PHASE_A_FRAC = 0.14;
+    const REST_BIG_SCALE = 0.9;
+    const REST_SMALL_SCALE = 1;
+    const MIN_GROW = 0.98;
+    const LOW_OPACITY = 0.15;
+    const MORPH_A0 = 1;
+    const MORPH_A1 = 2;
+    const CONTAINER_EXTRA = 50;
+
+    const N = rows.length;
+    let smallPx = 16;
+    let bigPx = 40;
+    let bigPxRest = 34;
+    let GAP = 18;
+    let Cy = 0;
+    let big0H = 0;
+    let p1MinH = 0;
+
+    const bigOf = (i: number) => (i === 0 ? bigPx : bigPxRest);
+    const smallOf = (i: number) =>
+      i === 0 ? smallPx : smallPx * REST_SMALL_SCALE;
+
+    const smallH = new Array<number>(N).fill(0);
+    const bigH = new Array<number>(N).fill(0);
+    const g = new Array<number>(N).fill(0);
+    const h = new Array<number>(N).fill(0);
+    const center = new Array<number>(N).fill(0);
+    const lastFont = new Array<string>(N).fill("");
+    const lastWeight = new Array<string>(N).fill("");
+    const lastOpacity = new Array<string>(N).fill("");
+    const lastTransform = new Array<string>(N).fill("");
+
+    const measure = () => {
+      const t0 = texts[0];
+      const t1 = texts[1];
+      const p0 = t0.style.fontSize;
+      const p1 = t1.style.fontSize;
+      t0.style.fontSize = "";
+      t1.style.fontSize = "";
+      bigPx = parseFloat(getComputedStyle(t0).fontSize) || 40;
+      bigPxRest = bigPx * REST_BIG_SCALE;
+      smallPx = parseFloat(getComputedStyle(t1).fontSize) || 16;
+      t0.style.fontSize = p0;
+      t1.style.fontSize = p1;
+      const rootPx =
+        parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+      const rowSpace = Math.max(
+        1.1 * rootPx,
+        Math.min(0.02 * window.innerWidth, 1.65 * rootPx),
+      );
+      GAP = Math.round(2 * rowSpace);
+      for (let i = 0; i < N; i++) {
+        const tx = texts[i];
+        const prev = tx.style.fontSize;
+        tx.style.fontSize = smallOf(i) + "px";
+        smallH[i] = rows[i].offsetHeight;
+        tx.style.fontSize = bigOf(i) + "px";
+        bigH[i] = rows[i].offsetHeight;
+        tx.style.fontSize = prev;
+        lastFont[i] = lastWeight[i] = lastOpacity[i] = lastTransform[i] = "";
+      }
+      big0H = bigH[0];
+      p1MinH =
+        smallH[0] +
+        (bigH[0] - smallH[0]) * ((bigPxRest - smallPx) / (bigPx - smallPx));
+      const H = bigH[0] + 2 * GAP + smallH[1] + smallH[2] + CONTAINER_EXTRA;
+      Cy = H / 2;
+      copy.style.height = H + "px";
+    };
+
+    const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
+    const smoother = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
+
+    const render = (u: number) => {
+      let A =
+        u <= PHASE_A_FRAC
+          ? u / PHASE_A_FRAC
+          : 1 + ((u - PHASE_A_FRAC) / (1 - PHASE_A_FRAC)) * (N - 2);
+      if (A < 0) A = 0;
+      else if (A > N - 1) A = N - 1;
+
+      const m = smoother(clamp01((A - MORPH_A0) / (MORPH_A1 - MORPH_A0)));
+      const grow = MIN_GROW * m;
+      const minOp = 0.58 + (LOW_OPACITY - 0.58) * m;
+
+      let top = 0;
+      for (let i = 0; i < N; i++) {
+        g[i] = smoother(clamp01(1 - Math.abs(i - A)));
+        const sH = i === 0 ? p1MinH : smallH[i] + (bigH[i] - smallH[i]) * grow;
+        h[i] = sH + (bigH[i] - sH) * g[i];
+        center[i] = top + h[i] / 2;
+        top += h[i] + GAP;
+      }
+
+      const lo = Math.floor(A);
+      const hi = lo + 1 < N ? lo + 1 : N - 1;
+      const anchorRaw = center[lo] + (center[hi] - center[lo]) * (A - lo);
+      const anchorY = A <= 1 ? big0H / 2 + (Cy - big0H / 2) * A : Cy;
+      const offset = anchorY - anchorRaw;
+
+      for (let i = 0; i < N; i++) {
+        const gi = g[i];
+        const sPx =
+          i === 0 ? bigPxRest : smallOf(i) + (bigOf(i) - smallOf(i)) * grow;
+
+        const font = (sPx + (bigOf(i) - sPx) * gi).toFixed(2) + "px";
+        if (font !== lastFont[i]) {
+          texts[i].style.fontSize = font;
+          lastFont[i] = font;
+        }
+        const weight = "" + Math.round(600 + 200 * gi);
+        if (weight !== lastWeight[i]) {
+          texts[i].style.fontWeight = weight;
+          lastWeight[i] = weight;
+        }
+        const opacity = (minOp + (1 - minOp) * gi).toFixed(3);
+        if (opacity !== lastOpacity[i]) {
+          rows[i].style.opacity = opacity;
+          lastOpacity[i] = opacity;
+        }
+        const transform =
+          "translateY(" + (center[i] + offset - h[i] / 2).toFixed(2) + "px)";
+        if (transform !== lastTransform[i]) {
+          rows[i].style.transform = transform;
+          lastTransform[i] = transform;
+        }
+      }
+    };
+
+    measure();
+    render(0);
+
+    const capProxy = { u: 0 };
+    b.tl.to(
+      capProxy,
+      {
+        u: 1,
+        ease: "none",
+        duration: CAP_END - CAP_START,
+        onUpdate: () => render(capProxy.u),
+      },
+      CAP_START,
+    );
+
+    const onRefresh = () => {
+      measure();
+      render(capProxy.u);
+    };
+    ScrollTrigger.addEventListener("refresh", onRefresh);
+    document.fonts?.ready.then(() => {
+      measure();
+      render(capProxy.u);
+      ScrollTrigger.refresh();
+    });
+
+    return () => {
+      ScrollTrigger.removeEventListener("refresh", onRefresh);
+      copy.classList.remove("is-carousel");
+      copy.style.removeProperty("height");
+      rows.forEach((r, i) => {
+        r.style.removeProperty("opacity");
+        r.style.removeProperty("transform");
+        texts[i].style.removeProperty("font-size");
+        texts[i].style.removeProperty("font-weight");
+      });
+    };
+  };
+
   // ════════════════════════════ FAZY (mobile) ═════════════════════════════
 
-  // FAZA 1 (mobile): ZERO blura. Słowo gaśnie samym opacity; urządzenia widoczne
-  // i ostre wjeżdżają ŁUKIEM w płaszczyźnie XZ (laptop z prawej+tyłu, telefon z
-  // lewej+przodu). Różne ease na X i Z wyginają tor. Wszystko to sam transform.
   const phase1Mobile = (
     b: Base,
     refs: DeviceRefs,
@@ -855,17 +1052,10 @@ const accentN = accentLetters.length;
     }
   };
 
-  // FAZA 2 (mobile): urządzenia rozsuwają się (laptop↑, telefon↓) i grupa
-  // pomniejsza się, robiąc miejsce na dividery + tekst (01 góra, 02 między,
-  // 03 pod telefonem). Tekst pojawia się równolegle.
   const phase2Mobile = (b: Base, refs: DeviceRefs) => {
     const { tl, copy, devices } = b;
     const { laptop, phone } = refs;
     const APART_START = 1.3; // start rozsunięcia (po zakończeniu wjazdu)
-    // px PRZESTRZENI PROJEKTOWEJ → na Androidzie skalowane przez --k (0.6), bo tam
-    // fit() urósł ×1/K (Problem 2); bez tego rozsunięcie byłoby ×1/K za duże.
-    // iPhone/iOS: K=1 → wartości jak sprzed fixu. Spójne z device-scene.ts (K()) i
-    // CSS (--k). Patrz docs/naprawa-android-scena-urzadzen-mobile.md.
     const K = IS_ANDROID ? 0.6 : 1;
     const APART_LAP = -150 * K; // laptop w górę (px projektu)
     const APART_PH = 170 * K; // telefon w dół (px projektu)
@@ -937,8 +1127,6 @@ const accentN = accentLetters.length;
         phoneSite = null;
       }
 
-      // 12 ekranów osi (intro ≈ 1,8 ekr., faza 3 ≈ 10 ekr. nakłada się na morf);
-      // bez site — 4 jak dawniej.
       const b = buildBase(site ? 12 : 4);
       if (!b) {
         site?.destroy();
@@ -946,11 +1134,13 @@ const accentN = accentLetters.length;
         return;
       }
       const refs = deviceRefs();
+      const captionCleanup = site ? initCaptionCarousel(b) : null;
       phase1Desktop(b);
       phase2Desktop(b, refs);
       if (site) phase3Desktop(b, site);
       if (site && phoneSite) phase3PhoneDesktop(b, phoneSite);
       return () => {
+        captionCleanup?.();
         cleanup(b)();
         site?.destroy();
         phoneSite?.destroy();
@@ -984,12 +1174,6 @@ const accentN = accentLetters.length;
       phase1Mobile(b, refs, slide, zDepth);
       phase2Mobile(b, refs);
 
-      // ── FAZA 3 (mobile): powiększanie urządzenia + autonomiczne video ──
-      // Po dojechaniu urządzeń na finalne pozycje (koniec scrubu ≈ 4 ekrany) scena
-      // zostaje przypięta (sticky stage). Każda strefa scrolla: urządzenie rośnie
-      // (dół przyklejony, w górę i symetrycznie na boki) → w szczycie startuje
-      // odtwarzanie (pętla) → przy dalszym scrollu zmniejsza się (wciąż grając) →
-      // po powrocie do bazy stop + reset do 1. klatki. Symetrycznie przy scrollu w górę.
       const hero = q("#hero");
       const setupVideo = (sel: string) => {
         const v = q<HTMLVideoElement>(sel);
@@ -1014,32 +1198,11 @@ const accentN = accentLetters.length;
       const phVideo = setupVideo("[data-gsap='video-phone']");
 
       const VID_MAX = 1.5; // docelowe powiększenie w szczycie strefy
-      // Strefa = 4 ekrany: powiększanie ~1 ekr. (1→MAX), przytrzymanie w MAX ~2 ekr.
-      // (z grającym video), zmniejszanie ~1 ekr. (MAX→1, wciąż grając). Odtwarzanie
-      // od szczytu (koniec powiększania) do bazy: p ∈ [GROW_END, 1). startVh/endVh =
-      // jednostki wysokości viewportu od górnej krawędzi #hero (morf kończy ≈ 4.0;
-      // bufor 0.4 między strefami).
       const GROW_END = 1 / 4; // szczyt — koniec powiększania, start przytrzymania
       const HOLD_END = 3 / 4; // koniec przytrzymania (~2 ekrany) — start zmniejszania
 
-      // Granice stref wideo (jednostki = wysokość viewportu od górnej krawędzi
-      // #hero). Współdzielone ze wskaźnikiem postępu poniżej, żeby pasek i strefy
-      // nie mogły się rozjechać. LAP_ZONE.start = moment, w którym oba urządzenia
-      // stoją na pozycjach startowych (tuż przed powiększaniem laptopa);
-      // PH_ZONE.end = moment pełnego zmniejszenia telefonu (powrót do startu).
       const LAP_ZONE = { start: 4.4, end: 8.4 };
       const PH_ZONE = { start: 8.8, end: 12.8 };
-
-      // ── PROBLEM 1 (ANDROID ONLY): dolne dividery tekstu (02 między laptopem a
-      // telefonem, 03 pod telefonem) kotwiczone do ZMIERZONYCH dolnych krawędzi
-      // urządzeń ze stałym małym odstępem (jak na iOS), zamiast top:45svh/82svh z
-      // CSS. Dividery svh skalowały się z wysokością viewportu, a dolne krawędzie
-      // urządzeń wynikają z fit() (ograniczony szerokością) — na wysokich ekranach
-      // (Android) GAP rósł. Na iPhone (m.in. SE 2020, niski ekran) svh-owe dividery
-      // były OK, więc BRAMKUJEMY do Androida, by nie ruszać iOS. Urządzenia w fazie 3
-      // rosną z DOŁEM PRZYKLEJONYM → krawędzie stałe, więc mierzymy tylko przez
-      // dojazd (fazy 1-2) + na refresh (resize). Patrz
-      // docs/naprawa-android-scena-urzadzen-mobile.md.
       const stageEl = q(".hero__stage");
       const div02 = q<HTMLElement>(".hero__copy-row--2");
       const div03 = q<HTMLElement>(".hero__copy-row--3");
@@ -1058,9 +1221,6 @@ const accentN = accentLetters.length;
           div03.style.top = phBottom + GAP_PH_DIV + "px";
         }
       };
-      // Trigger obejmuje dojazd urządzeń (fazy 1-2): dividery płynnie podążają w
-      // onUpdate, a onLeave/onLeaveBack domyka pozycję po wejściu w fazę 3. Tylko
-      // Android — na iOS zostają CSS-owe top:svh (niezmienione zachowanie).
       const dividerTrigger =
         IS_ANDROID && hero
           ? ScrollTrigger.create({
@@ -1086,11 +1246,6 @@ const accentN = accentLetters.length;
       // ── Wskaźnik postępu (kuleczka + pasek) — wspólne refy dla obu wariantów.
       const progressEl = q(".hero__progress");
       const progressDot = q(".hero__progress-dot");
-
-      // ── Android: osobny wariant (android-mobile.ts). Ekrany grają w pętli bez
-      // przerwy (bez play/stop wyzwalanego scrollem — przypięta scena na Androidzie
-      // nie repaintuje niezawodnie takich zmian), a pasek postępu jest cały
-      // czerwony z kulką stale czerwoną. Skalowanie urządzeń pozostaje wspólne.
       if (IS_ANDROID) {
         const androidCleanup = initAndroidPhase3({
           hero,
@@ -1121,11 +1276,6 @@ const accentN = accentLetters.length;
           refs.phone?.style.setProperty("--sz-ph", "0px");
         };
       }
-
-      // ── Wariant domyślny (iOS itd.): play/stop wideo wyzwalany pozycją scrolla.
-      // Autoplay zablokowany przez system (np. iOS Low Power Mode / Low Data Mode):
-      // po pierwszym odrzuceniu play() przestajemy próbować dla OBU wideo i
-      // zostawiamy plakat — bez ponawiania play() przy każdej klatce scrolla.
       let autoplayBlocked = false;
 
       const makeVideoZone = (
@@ -1135,9 +1285,7 @@ const accentN = accentLetters.length;
         endVh: number,
       ) => {
         if (!hero || !video || !el) return null;
-        // pomijaj redundantne zapisy (faza hold = stała skala przez ~2 ekrany)
         let lastScale = -1;
-        // play()/currentTime=0 raz na wejście w strefę graną, nie co klatkę scrolla
         let playRequested = false;
         const setScale = (s: number) => {
           if (s === lastScale) return;
@@ -1193,13 +1341,6 @@ const accentN = accentLetters.length;
         makeVideoZone(lapVideo, refs.laptop, LAP_ZONE.start, LAP_ZONE.end),
         makeVideoZone(phVideo, refs.phone, PH_ZONE.start, PH_ZONE.end),
       ].filter(Boolean) as ScrollTrigger[];
-
-      // ── Wskaźnik postępu: kuleczka jedzie liniowo ze scrollem przez cały zakres
-      // [LAP_ZONE.start, PH_ZONE.end]. Pasek pojawia się/znika na granicach tego
-      // zakresu (onToggle → .is-active = fade); pozycja kulki przez --p ∈ [0,1].
-      // Odcinki odtwarzania + symbole play/stop. Pozycje z tych samych stałych co
-      // strefy wideo: wideo gra od szczytu powiększenia (GROW_END) do końca strefy.
-      // barP() mapuje jednostki vh na ułamek paska [0,1].
       const BAR_SPAN = PH_ZONE.end - LAP_ZONE.start;
       const barP = (vh: number) => (vh - LAP_ZONE.start) / BAR_SPAN;
       const playStartVh = (z: { start: number; end: number }) =>
