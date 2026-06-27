@@ -516,7 +516,14 @@ const splitAccent = (line: string) =>
 
   @media (prefers-reduced-motion: no-preference) and (min-width: 761px) {
     .hero {
-      min-height: 1400svh;
+      /* Pin (CSS-sticky) jest rozłączony od scrubu GSAP (ScrollTrigger end =
+         innerHeight*12 ≈ 1200svh). Dystans przypięcia = min-height − stage(100svh).
+         Chcemy odpiąć dokładnie gdy napis "…najlepszy przedstawiciel" osiada na
+         finalnej pozycji: timeline CAP_END=5.57 / długość 5.9 = 0.944 scrubu →
+         0.944·1200svh ≈ 1133svh przypięcia + 100svh stage = 1233svh.
+         Scrub leci dalej do 1.0, więc resztka animacji urządzeń dogrywa się już po
+         odpięciu (sekcja zjeżdża w górę „w trakcie" animacji). */
+      min-height: 1233svh;
     }
   }
 
