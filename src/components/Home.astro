@@ -3,8 +3,8 @@ import BaseLayout from "@/layouts/BaseLayout.astro";
 import Navbar from "@/components/navbar/Navbar.astro";
 import Hero from "@/components/sections/hero/Hero.astro";
 import HeroBackground from "@/components/sections/hero/HeroBackground.astro";
-import Problem from "@/components/sections/problem/Problem.astro";
-import ProblemBackground from "@/components/sections/problem/ProblemBackground.astro";
+import Audience from "@/components/sections/audience/Audience.astro";
+import AudienceBackground from "@/components/sections/audience/AudienceBackground.astro";
 import LowPowerNotice from "@/components/LowPowerNotice.astro";
 import { useTranslations, type Lang } from "@/i18n/utils";
 
@@ -20,8 +20,8 @@ const t = useTranslations(lang);
     <div class="bg-layer" data-bg="hero">
       <HeroBackground />
     </div>
-    <div class="bg-layer is-inactive" data-bg="problem">
-      <ProblemBackground />
+    <div class="bg-layer is-inactive" data-bg="audience">
+      <AudienceBackground />
     </div>
   </div>
 
@@ -29,7 +29,7 @@ const t = useTranslations(lang);
 
   <main class="page">
     <Hero lang={lang} />
-    <Problem />
+    <Audience lang={lang} />
   </main>
 
   <LowPowerNotice lang={lang} />
@@ -51,7 +51,7 @@ const t = useTranslations(lang);
   .bg-layer[data-bg="hero"] {
     opacity: 1;
   }
-  .bg-layer[data-bg="problem"] {
+  .bg-layer[data-bg="audience"] {
     opacity: 0;
   }
 
@@ -77,12 +77,12 @@ const t = useTranslations(lang);
 
   // — pełna animacja (scrub) —
   mm.add("(prefers-reduced-motion: no-preference)", () => {
-    const problem = document.querySelector<HTMLElement>("#problem");
+    const audience = document.querySelector<HTMLElement>("#audience");
     const heroBg = document.querySelector<HTMLElement>('[data-bg="hero"]');
-    const problemBg = document.querySelector<HTMLElement>(
-      '[data-bg="problem"]',
+    const audienceBg = document.querySelector<HTMLElement>(
+      '[data-bg="audience"]',
     );
-    if (!problem || !heroBg || !problemBg) return;
+    if (!audience || !heroBg || !audienceBg) return;
 
     const o = OVERLAP / 2;
 
@@ -92,25 +92,25 @@ const t = useTranslations(lang);
         "is-inactive",
         parseFloat(getComputedStyle(heroBg).opacity) < 0.01,
       );
-      problemBg.classList.toggle(
+      audienceBg.classList.toggle(
         "is-inactive",
-        parseFloat(getComputedStyle(problemBg).opacity) < 0.01,
+        parseFloat(getComputedStyle(audienceBg).opacity) < 0.01,
       );
     };
 
     const tl = gsap.timeline({
       defaults: { ease: "none" }, // liniowo — postęp 1:1 ze scrollem
       scrollTrigger: {
-        trigger: problem, //sekcja zakotwiczona do sekcji problem
-        start: "top bottom", // start, gdy góra problem wjeżdża od dołu okna (= koniec hero)
-        end: "top top", // koniec, gdy góra problem dojedzie do góry okna (≈ 1 ekran przejścia)
+        trigger: audience, // tło zakotwiczone do sekcji „Dla kogo"
+        start: "top bottom", // start, gdy góra sekcji wjeżdża od dołu okna (= koniec hero)
+        end: "top top", // koniec, gdy góra sekcji dojedzie do góry okna (≈ 1 ekran przejścia)
         scrub: true,
         onUpdate: syncActive,
       },
     });
 
     tl.to(heroBg, { opacity: 0, duration: 0.5 + o }, 0).to(
-      problemBg,
+      audienceBg,
       { opacity: 1, duration: 0.5 + o },
       0.5 - o,
     );
@@ -123,21 +123,21 @@ const t = useTranslations(lang);
 
   // — reduced motion: bez przenikania, twardy swap teł na granicy sekcji —
   mm.add("(prefers-reduced-motion: reduce)", () => {
-    const problem = document.querySelector<HTMLElement>("#problem");
+    const audience = document.querySelector<HTMLElement>("#audience");
     const heroBg = document.querySelector<HTMLElement>('[data-bg="hero"]');
-    const problemBg = document.querySelector<HTMLElement>(
-      '[data-bg="problem"]',
+    const audienceBg = document.querySelector<HTMLElement>(
+      '[data-bg="audience"]',
     );
-    if (!problem || !heroBg || !problemBg) return;
+    if (!audience || !heroBg || !audienceBg) return;
 
     const st = ScrollTrigger.create({
-      trigger: problem,
+      trigger: audience,
       start: "top center",
       onToggle: ({ isActive }) => {
         gsap.set(heroBg, { opacity: isActive ? 0 : 1 });
-        gsap.set(problemBg, { opacity: isActive ? 1 : 0 });
+        gsap.set(audienceBg, { opacity: isActive ? 1 : 0 });
         heroBg.classList.toggle("is-inactive", isActive);
-        problemBg.classList.toggle("is-inactive", !isActive);
+        audienceBg.classList.toggle("is-inactive", !isActive);
       },
     });
 

@@ -9,6 +9,15 @@ import "lenis/dist/lenis.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
+// Instancja Lenis wystawiona globalnie, by Navbar mógł użyć jej do płynnego
+// scrollTo (kliknięcie pozycji menu / brandu). Gdy null — fallback na natywny
+// scroll (mobile bez Lenis lub reduced-motion).
+declare global {
+  interface Window {
+    __lenis?: Lenis | null;
+  }
+}
+
 // Wygładzanie: 0.1 = klasyczny Lenis; wyżej (0.12–0.15) = bardziej responsywnie.
 const LERP = 0.1;
 
@@ -26,6 +35,7 @@ function start() {
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add(tick);
   gsap.ticker.lagSmoothing(0);
+  window.__lenis = lenis;
 }
 
 function tick(time: number) {
@@ -37,6 +47,7 @@ function stop() {
   gsap.ticker.remove(tick);
   lenis.destroy();
   lenis = null;
+  window.__lenis = null;
 }
 
 if (!reduceMQ.matches) start();

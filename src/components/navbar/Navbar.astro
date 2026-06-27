@@ -660,10 +660,65 @@ const t = {
     burger.addEventListener("click", () =>
       isOpen ? closeMenu(true) : openMenu(),
     );
-    // klik w pozycję menu zamyka panel (gdy linki zaczną nawigować)
-    menu
-      .querySelectorAll("[data-menu-link]")
-      .forEach((a) => a.addEventListener("click", () => closeMenu()));
+
+    // ── płynne przewijanie do sekcji / na górę ──
+    // Używa Lenis (window.__lenis) na desktopie; w innym wypadku natywny scroll.
+    // Reduced-motion lub mobile bez Lenis → skok natychmiastowy ("auto").
+    function scrollToTarget(target: HTMLElement | number) {
+      const lenis = window.__lenis;
+      // Płynnie WYŁĄCZNIE na desktopie (Lenis). Bez Lenisa (mobile / reduced-
+      // motion) — skok natychmiastowy ("auto"), bo na mobile smooth wygląda źle.
+      if (lenis) {
+        lenis.scrollTo(target, { offset: 0 });
+        return;
+      }
+      if (typeof target === "number") {
+        window.scrollTo({ top: target, behavior: "auto" });
+      } else {
+        target.scrollIntoView({ behavior: "auto", block: "start" });
+      }
+    }
+
+    // Przechwytuje klik w kotwicę (#sekcja) i przewija do niej zamiast skoku.
+    function handleAnchorClick(e: MouseEvent, href: string | null) {
+      if (!href || !href.startsWith("#")) return;
+      const el = document.getElementById(href.slice(1));
+      if (!el) return;
+      e.preventDefault();
+      scrollToTarget(el);
+      history.replaceState(null, "", href); // odśwież URL bez dodatkowego skoku
+    }
+
+    // desktop / tablet: linki w pasku
+    links
+      .querySelectorAll<HTMLAnchorElement>("a.nav-link")
+      .forEach((a) =>
+        a.addEventListener("click", (e) =>
+          handleAnchorClick(e, a.getAttribute("href")),
+        ),
+      );
+
+    // mobile: pozycje w panelu — najpierw zamknij panel (odblokuj scroll body),
+    // potem przewiń do sekcji.
+    menu.querySelectorAll<HTMLAnchorElement>("[data-menu-link]").forEach((a) =>
+      a.addEventListener("click", (e) => {
+        const href = a.getAttribute("href");
+        closeMenu();
+        handleAnchorClick(e, href);
+      }),
+    );
+
+    // brand (logo): zawsze płynnie na samą górę bieżącej strony
+    brand.addEventListener("click", (e) => {
+      e.preventDefault();
+      closeMenu();
+      scrollToTarget(0);
+      history.replaceState(
+        null,
+        "",
+        brand.getAttribute("href") || location.pathname,
+      );
+    });
 
     // ── focus trap + Esc ──
     document.addEventListener("keydown", (e) => {

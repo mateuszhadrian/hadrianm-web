@@ -1,0 +1,37 @@
+---
+import type { Lang } from "@/i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const heading = lang === "en" ? "Who it's for" : "Dla kogo";
+---
+
+<section id="audience" class="audience">
+  <div class="audience__content">
+    <h2>{heading}</h2>
+  </div>
+</section>
+
+<style>
+  .audience {
+    position: relative;
+    min-height: 150svh;
+  }
+
+  .audience__content {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: system-ui, sans-serif;
+  }
+
+  .audience__content h2 {
+    font-size: clamp(1.25rem, 4vw, 2.25rem);
+    font-weight: 700;
+  }
+</style>

@@ -1,9 +1,9 @@
-<div class="problem-bg" aria-hidden="true">
-  <span class="problem-bg__glow"></span>
+<div class="audience-bg" aria-hidden="true">
+  <span class="audience-bg__glow"></span>
 </div>
 
 <style>
-  .problem-bg {
+  .audience-bg {
     position: absolute;
     inset: 0;
     background: linear-gradient(160deg, #000 0%, #000 55%, #000 100%);
@@ -11,7 +11,7 @@
     isolation: isolate;
   }
 
-  .problem-bg__glow {
+  .audience-bg__glow {
     position: absolute;
     inset: -20%;
     filter: blur(55px);
@@ -32,7 +32,7 @@
 
   /* sRGB fallback for browsers without oklch() support (e.g. iOS Safari < 15.4) */
   @supports not (color: oklch(0 0 0)) {
-    .problem-bg__glow {
+    .audience-bg__glow {
       background:
         radial-gradient(
           50% 50% at 30% 35%,
@@ -53,12 +53,12 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .problem-bg__glow {
+    .audience-bg__glow {
       animation: none;
     }
   }
 
-  :global(.bg-layer.is-inactive) .problem-bg__glow {
+  :global(.bg-layer.is-inactive) .audience-bg__glow {
     animation-play-state: paused;
   }
 </style>
