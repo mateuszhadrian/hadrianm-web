@@ -1010,6 +1010,13 @@ const splitAccent = (line: string) =>
 
   // ════════════════════════════ FAZY (mobile) ═════════════════════════════
 
+  // Wspólne okno "osadzania" urządzeń: wjazd z boków ORAZ rozsunięcie/pomniejszenie
+  // dzielą ten sam start i czas, więc całość to jeden ciągły ruch (zero martwego
+  // punktu — urządzenia już w trakcie wjazdu zmierzają do finalnej pozycji i skali).
+  const MOB_SETTLE_START = 0.5; // start po zaniku słowa "Ciebie"
+  const MOB_SETTLE_DUR = 0.9; // krócej niż dawne 1.4 (wjazd 0.7 + przerwa + 0.6)
+  const MOB_SETTLE_EASE = "power3.out"; // snappy dolot, wspólny dla wszystkich torów
+
   const phase1Mobile = (
     b: Base,
     refs: DeviceRefs,
@@ -1032,28 +1039,28 @@ const splitAccent = (line: string) =>
       tl.fromTo(
         laptop,
         { "--sl-lap": () => slide() + "px" },
-        { "--sl-lap": "0px", duration: 0.7, ease: "power4.out" },
-        0.5,
+        { "--sl-lap": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
+        MOB_SETTLE_START,
       );
       tl.fromTo(
         laptop,
         { "--sz-lap": () => -zDepth() + "px" },
-        { "--sz-lap": "0px", duration: 0.7, ease: "power2.out" },
-        0.5,
+        { "--sz-lap": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
+        MOB_SETTLE_START,
       );
     }
     if (phone) {
       tl.fromTo(
         phone,
         { "--sl-ph": () => -slide() + "px" },
-        { "--sl-ph": "0px", duration: 0.7, ease: "power4.out" },
-        0.5,
+        { "--sl-ph": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
+        MOB_SETTLE_START,
       );
       tl.fromTo(
         phone,
         { "--sz-ph": () => zDepth() + "px" },
-        { "--sz-ph": "0px", duration: 0.7, ease: "power2.out" },
-        0.5,
+        { "--sz-ph": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
+        MOB_SETTLE_START,
       );
     }
   };
@@ -1061,7 +1068,9 @@ const splitAccent = (line: string) =>
   const phase2Mobile = (b: Base, refs: DeviceRefs) => {
     const { tl, copy, devices } = b;
     const { laptop, phone } = refs;
-    const APART_START = 1.3; // start rozsunięcia (po zakończeniu wjazdu)
+    // Scalone z wjazdem: rozsunięcie + pomniejszenie biegną RAZEM z fazą 1
+    // (ten sam start/czas/ease) → jeden ciągły ruch, bez etapu pośredniego.
+    const APART_START = MOB_SETTLE_START;
     const K = IS_ANDROID ? 0.6 : 1;
     const APART_LAP = -150 * K; // laptop w górę (px projektu)
     const APART_PH = 170 * K; // telefon w dół (px projektu)
@@ -1072,8 +1081,8 @@ const splitAccent = (line: string) =>
         laptop,
         {
           "--apart-lap": APART_LAP + "px",
-          duration: 0.6,
-          ease: "power2.inOut",
+          duration: MOB_SETTLE_DUR,
+          ease: MOB_SETTLE_EASE,
         },
         APART_START,
       );
@@ -1081,7 +1090,11 @@ const splitAccent = (line: string) =>
     if (phone) {
       tl.to(
         phone,
-        { "--apart-ph": APART_PH + "px", duration: 0.6, ease: "power2.inOut" },
+        {
+          "--apart-ph": APART_PH + "px",
+          duration: MOB_SETTLE_DUR,
+          ease: MOB_SETTLE_EASE,
+        },
         APART_START,
       );
     }
@@ -1090,17 +1103,18 @@ const splitAccent = (line: string) =>
       {
         scale: MOB_END_SCALE,
         transformOrigin: "50% 50%",
-        duration: 0.6,
-        ease: "power2.inOut",
+        duration: MOB_SETTLE_DUR,
+        ease: MOB_SETTLE_EASE,
       },
       APART_START,
     );
     if (copy) {
+      // copy wjeżdża wraz z dolotem urządzeń i domyka się tuż po osadzeniu
       tl.fromTo(
         copy,
         { autoAlpha: 0 },
         { autoAlpha: 1, duration: 0.5, ease: "power2.out" },
-        APART_START + 0.25,
+        APART_START + MOB_SETTLE_DUR - 0.4,
       );
     }
   };
