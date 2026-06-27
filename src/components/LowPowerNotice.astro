@@ -1,0 +1,421 @@
+---
+import { type Lang } from "@/i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const isEn = lang === "en";
+
+// Teksty PL / EN — wybór po `lang` (spójne z resztą i18n strony, np. Navbar).
+const t = {
+  label: "LOW POWER MODE",
+  title: isEn ? "Get the full experience" : "Włącz pełnię wrażeń",
+  text: isEn
+    ? "Low Power Mode is on. Turn it off in Settings, then restart your browser to see the animations and full smoothness of the site."
+    : "Masz włączony tryb niskiego zużycia energii. Wyłącz go w Ustawieniach, a następnie zrestartuj przeglądarkę, aby zobaczyć animacje i pełną płynność strony.",
+  dismiss: isEn ? "Dismiss" : "Zamknij",
+};
+---
+
+<!-- Komunikat „Low Power Mode" — pokazywany WYŁĄCZNIE na iPhone i tylko gdy
+     ten tryb jest faktycznie włączony (wykrycie w <script> niżej). Stan
+     spoczynkowy = WIDOCZNY (opacity:1); ukryty atrybutem [hidden] aż do
+     pokazania przez JS, żeby był widoczny nawet przy wstrzymanym renderze. -->
+<div class="lpm-notice" id="lpmNotice" role="alert" aria-live="polite" hidden>
+  <div class="lpm-notice__icon" aria-hidden="true">
+    <div class="lpm-bat"><i></i></div>
+  </div>
+  <div class="lpm-notice__body">
+    <div class="lpm-notice__label">{t.label}</div>
+    <div class="lpm-notice__title">{t.title}</div>
+    <div class="lpm-notice__text">{t.text}</div>
+  </div>
+  <button
+    class="lpm-notice__close"
+    id="lpmClose"
+    type="button"
+    aria-label={t.dismiss}
+  >
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      aria-hidden="true"
+    >
+      <path d="M6 6l12 12M18 6L6 18"></path>
+    </svg>
+  </button>
+</div>
+
+<style>
+  /* tokeny brandowe (--ink/--muted/--faint/--accent/--glow/--font-*) dziedziczą z :root */
+  .lpm-notice {
+    position: fixed;
+    z-index: 60; /* nad navbarem (z-index:50) */
+    left: 14px;
+    right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 16px 16px 17px;
+    border-radius: 18px;
+    color: var(--ink);
+    background: linear-gradient(
+      180deg,
+      rgba(40, 22, 19, 0.92) 0%,
+      rgba(20, 12, 11, 0.94) 100%
+    );
+    border: 1px solid rgba(var(--glow), 0.28);
+    box-shadow:
+      0 1px 0 rgba(255, 255, 255, 0.05) inset,
+      0 18px 50px -16px rgba(0, 0, 0, 0.8),
+      0 0 60px -22px rgba(var(--glow), 0.55);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    backdrop-filter: blur(16px) saturate(1.1);
+    font-family: var(--font-body), system-ui, sans-serif;
+    /* stan SPOCZYNKOWY = widoczny (bezpieczne przy zamrożonym renderze /
+       reduced-motion). [hidden] trzyma element schowany aż do pokazania. */
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* animacja wejścia — WYŁĄCZNIE transform (opacity zostaje 1, więc komunikat
+     jest widoczny nawet gdy animacje/render są wstrzymane przez LPM) */
+  @keyframes lpm-in {
+    from {
+      transform: translateY(20px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+  .lpm-notice[data-show="true"] {
+    animation: lpm-in 0.5s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .lpm-notice[data-closing="true"] {
+    opacity: 0;
+    transform: translateY(18px);
+    animation: none;
+    transition:
+      opacity 0.38s cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 0.38s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lpm-notice[data-show="true"] {
+      animation: none;
+    }
+    .lpm-notice[data-closing="true"] {
+      transition: none;
+    }
+  }
+
+  /* górna koralowa nitka */
+  .lpm-notice::before {
+    content: "";
+    position: absolute;
+    left: 18px;
+    right: 18px;
+    top: 0;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(var(--glow), 0.7),
+      transparent
+    );
+  }
+
+  .lpm-notice__icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .lpm-bat {
+    width: 26px;
+    height: 14px;
+    border: 1.5px solid var(--accent);
+    border-radius: 3.5px;
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 2px;
+  }
+  .lpm-bat::after {
+    content: "";
+    position: absolute;
+    right: -4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2.5px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 0 2px 2px 0;
+  }
+  .lpm-bat > i {
+    display: block;
+    height: 100%;
+    width: 30%;
+    background: var(--accent);
+    border-radius: 1.5px;
+    animation: lpm-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes lpm-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.45;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lpm-bat > i {
+      animation: none;
+    }
+  }
+
+  .lpm-notice__body {
+    flex: 1;
+    min-width: 0;
+  }
+  .lpm-notice__label {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.26em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+  }
+  .lpm-notice__title {
+    font-size: 15.5px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+  .lpm-notice__text {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--muted);
+    margin-top: 4px;
+    text-wrap: pretty;
+  }
+
+  .lpm-notice__close {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    margin: -4px -4px 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 50%;
+    color: var(--faint);
+    transition:
+      color 0.2s,
+      background 0.2s;
+  }
+  .lpm-notice__close:hover,
+  .lpm-notice__close:focus-visible {
+    color: var(--ink);
+    background: rgba(255, 255, 255, 0.06);
+  }
+  .lpm-notice__close svg {
+    width: 15px;
+    height: 15px;
+  }
+</style>
+
+<script>
+  /* ─────────────────────────────────────────────────────────────────────
+     Wykrywanie iOS Low Power Mode + obsługa komunikatu.
+
+     UWAGA: iOS NIE udostępnia żadnego API trybu Low Power Mode. Poniższe to
+     HEURYSTYKA: przy włączonym LPM iOS blokuje autoodtwarzanie nawet
+     wyciszonego wideo inline. Tworzymy więc malutką sondę <video> i próbujemy
+     ją odtworzyć:
+       • play() resolved                       → tryb NORMALNY → NIE pokazuj
+       • play() rejected, a wideo się załadowało (readyState>=1) → LPM → POKAŻ
+       • błąd / brak załadowania / timeout 1500 ms → „nie wiem" → NIE pokazuj
+     Fail-safe: lepiej nie pokazać niż pokazać błędnie.
+
+     Sondę warto przetestować na REALNYM iPhonie; w razie potrzeby podmień
+     /lpm-probe.mp4 na inny malutki, wyciszony klip H.264 baseline.
+     ───────────────────────────────────────────────────────────────────── */
+  (function () {
+    const notice = document.getElementById("lpmNotice");
+    if (!notice) return;
+    const closeBtn = document.getElementById("lpmClose");
+    const STORAGE_KEY = "hm_lpm_notice_dismissed";
+
+    // sessionStorage (NIE localStorage) — po zamknięciu nie wracaj w tej sesji.
+    function isDismissed() {
+      try {
+        return sessionStorage.getItem(STORAGE_KEY) === "1";
+      } catch {
+        return false;
+      }
+    }
+
+    function showNotice(force = false) {
+      if (!force && isDismissed()) return;
+      notice!.removeAttribute("data-closing");
+      notice!.hidden = false;
+      notice!.setAttribute("data-show", "true");
+    }
+
+    function hideNotice() {
+      notice!.removeAttribute("data-show");
+      notice!.setAttribute("data-closing", "true");
+      try {
+        sessionStorage.setItem(STORAGE_KEY, "1");
+      } catch {
+        /* sessionStorage niedostępny — pomijamy zapamiętanie */
+      }
+      setTimeout(() => {
+        notice!.hidden = true;
+        notice!.removeAttribute("data-closing");
+      }, 420);
+    }
+
+    closeBtn?.addEventListener("click", hideNotice);
+
+    // Komunikat dotyczy WYŁĄCZNIE iPhone/iPod (zgodnie z założeniem).
+    function isIPhone() {
+      return /iPhone|iPod/.test(navigator.userAgent || "");
+    }
+
+    // Sonda LPM: wyciszone, inline wideo. Realny plik (NIE data-URI), żeby błąd
+    // dekodowania nie dał false-positive (odrzucenie z innego powodu niż LPM).
+    const PROBE_SRC = "/lpm-probe.mp4";
+
+    type DetectResult = {
+      lpm: boolean;
+      reason: string;
+      readyState: number;
+      errorName?: string;
+    };
+
+    function detectLowPowerMode(): Promise<DetectResult> {
+      return new Promise((resolve) => {
+        const v = document.createElement("video");
+        v.muted = true;
+        v.defaultMuted = true;
+        v.setAttribute("muted", "");
+        v.playsInline = true;
+        v.setAttribute("playsinline", "");
+        v.setAttribute("webkit-playsinline", "");
+        v.preload = "auto";
+        v.style.cssText =
+          "position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px;";
+        v.src = PROBE_SRC;
+
+        let settled = false;
+        let errored = false;
+        function done(result: DetectResult) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(guard);
+          try {
+            v.remove();
+          } catch {
+            /* element już usunięty */
+          }
+          resolve(result);
+        }
+
+        // Fail-safe: wideo się nie wczyta / nic nie wiemy → NIE pokazuj.
+        const guard = setTimeout(
+          () =>
+            done({ lpm: false, reason: "timeout", readyState: v.readyState }),
+          1500,
+        );
+        // Błąd dekodowania/ładowania → to NIE jest sygnał LPM.
+        v.addEventListener("error", () => {
+          errored = true;
+          done({ lpm: false, reason: "error", readyState: v.readyState });
+        });
+
+        document.body.appendChild(v);
+        const p = v.play();
+        if (p && typeof p.then === "function") {
+          p.then(() =>
+            done({ lpm: false, reason: "played", readyState: v.readyState }),
+          ).catch((err: unknown) => {
+            const errorName = (err as { name?: string } | undefined)?.name;
+            // play() odrzucone. Na iPhonie wyciszone, inline, dekodowalne wideo
+            // odtwarza się BEZ gestu — odmowa = polityka zasilania (Low Power
+            // Mode). Świadomie NIE wymagamy tu readyState>=1: pod LPM odrzucenie
+            // często wyprzedza buforowanie na zdławionym CPU (to był powód, dla
+            // którego komunikat się nie pokazywał). Czekamy tylko chwilę na
+            // ewentualny błąd dekodowania (→ NIE LPM); brak błędu = LPM.
+            setTimeout(() => {
+              if (errored) return; // 'error' już rozstrzygnął na false
+              done({
+                lpm: true,
+                reason: "play-rejected",
+                readyState: v.readyState,
+                errorName,
+              });
+            }, 300);
+          });
+        } else {
+          done({ lpm: false, reason: "no-promise", readyState: v.readyState });
+        }
+      });
+    }
+
+    // ── Tryb diagnostyczny on-device (komunikat nie da się debugować bez
+    //    konsoli na iPhonie). Doklej do URL:
+    //      ?lpm=show   → wymuś render toasta (sprawdzenie samego UI)
+    //      ?lpm=debug  → uruchom sondę i wypisz wynik na ekranie
+    //    W normalnym ruchu (bez parametru) ten kod nie działa. ──
+    function renderDebug(r: DetectResult, extra: Record<string, unknown>) {
+      const box = document.createElement("div");
+      box.style.cssText =
+        "position:fixed;left:8px;right:8px;top:8px;z-index:9999;padding:10px 12px;" +
+        "background:rgba(0,0,0,.88);color:#5dff8f;border:1px solid #5dff8f;border-radius:8px;" +
+        "font:12px/1.45 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;";
+      box.textContent = [
+        "LPM DEBUG",
+        "isIPhone:  " + extra.isIPhone,
+        "dismissed: " + extra.dismissed,
+        "result:    " + JSON.stringify(r),
+        "decision:  " + (r.lpm ? "SHOW" : "hide"),
+        "ua: " + extra.ua,
+      ].join("\n");
+      document.body.appendChild(box);
+    }
+
+    const mode = new URLSearchParams(location.search).get("lpm");
+
+    if (mode === "show") {
+      showNotice(true); // wymuszony podgląd UI, bez sondy/sesji
+      return;
+    }
+
+    if (mode === "debug") {
+      detectLowPowerMode().then((r) => {
+        renderDebug(r, {
+          isIPhone: isIPhone(),
+          dismissed: isDismissed(),
+          ua: navigator.userAgent,
+        });
+        if (r.lpm) showNotice(true);
+      });
+      return;
+    }
+
+    // ── Ścieżka produkcyjna ──
+    if (!isIPhone()) return; // tylko iPhone
+    if (isDismissed()) return; // zamknięty w tej sesji
+    detectLowPowerMode().then((r) => {
+      if (r.lpm) showNotice();
+    });
+  })();
+</script>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Komunikat — Low Power Mode · hadrianm</title>
+
+<!--
+  ════════════════════════════════════════════════════════════════════
+  KOMUNIKAT „LOW POWER MODE"  ·  do wklejenia na stronę hadrianm
+  ════════════════════════════════════════════════════════════════════
+  Co to robi:
+    • Pokazuje subtelny komunikat sugerujący wyłączenie trybu
+      niskiego zużycia energii (Low Power Mode) — TYLKO na iPhone
+      i TYLKO gdy ten tryb jest faktycznie włączony.
+    • Wersje językowe PL / EN (sterowane atrybutem <html lang>).
+
+  Jak działa wykrywanie (iOS nie udostępnia API trybu LPM):
+    • Przy włączonym Low Power Mode iOS BLOKUJE autoodtwarzanie nawet
+      wyciszonego wideo inline. Tworzymy więc malutkie wideo-sondę
+      i próbujemy je odtworzyć:
+        – play() zadziała  →  tryb NORMALNY  (komunikat ukryty)
+        – play() odrzucone, a wideo się załadowało  →  LOW POWER MODE
+        – wideo nie wczytało się / błąd  →  nie wiemy → NIE pokazujemy
+      (Bezpieczne domyślnie: na zwykłym telefonie komunikat się nie pojawi.)
+
+  Do wdrożenia skopiuj 3 fragmenty oznaczone „⟦ COPY ⟧" niżej:
+    1) <style> .lpm-notice { … }
+    2) <div class="lpm-notice"> … </div>
+    3) <script> (wykrywanie + i18n)
+  ════════════════════════════════════════════════════════════════════
+-->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --k4-bg:      #0A0709;
+    --k4-ink:     #F5F0EC;
+    --k4-muted:   rgba(245,240,236,0.58);
+    --k4-faint:   rgba(245,240,236,0.34);
+    --k4-accent:  #FF5A47;
+    --k4-blob-1: rgba(214, 38, 38, 0.66);
+    --k4-blob-2: rgba(255, 90, 71, 0.32);
+    --k4-blob-3: rgba(130, 20, 32, 0.50);
+    --k4-mesh-step: 10.41px;
+    --k4-mesh-core: 2.17px;
+    --k4-mesh-fade: 3.69px;
+    --vmono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body { background: var(--k4-bg); font-family: 'Archivo', system-ui, sans-serif; }
+
+  /* ───────────────────────── TŁO HERO (rekonstrukcja) ───────────────────────── */
+  .hero {
+    position: relative; width: 100%; min-height: 100svh;
+    overflow: hidden; background: var(--k4-bg); isolation: isolate;
+  }
+  .hero__blobs { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+  .hero__blobs span { position: absolute; border-radius: 50%; filter: blur(14vw); }
+  .hero__blobs .b1 { left: 60%; top: -22%; width: 130vw; height: 130vw; transform: translate(-50%,-50%);
+    background: radial-gradient(closest-side, var(--k4-blob-1) 0%, transparent 72%); }
+  .hero__blobs .b2 { left: 92%; top: 14%; width: 86vw; height: 86vw; transform: translate(-50%,-50%);
+    background: radial-gradient(closest-side, var(--k4-blob-2) 0%, transparent 72%); }
+  .hero__blobs .b3 { left: 2%; top: 70%; width: 96vw; height: 96vw; transform: translate(-50%,-50%);
+    background: radial-gradient(closest-side, var(--k4-blob-3) 0%, transparent 72%); }
+  .hero__vignette { position: absolute; inset: 0; z-index: 1; pointer-events: none;
+    background: radial-gradient(135% 100% at 50% 45%, transparent 50%, rgba(0,0,0,0.55) 100%); }
+  .hero__mesh { position: absolute; inset: 0; z-index: 2; pointer-events: none; mix-blend-mode: multiply;
+    background-image: radial-gradient(circle at center, rgba(0,0,0,0.96) var(--k4-mesh-core), rgba(0,0,0,0) var(--k4-mesh-fade));
+    background-size: var(--k4-mesh-step) var(--k4-mesh-step); }
+
+  .hero__top { position: absolute; z-index: 4; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px 24px; color: var(--k4-ink); }
+  .hero__brand { font-weight: 800; font-size: 22px; letter-spacing: 0.01em; }
+  .hero__brand b { font-weight: 800; }
+  .hero__brand span { color: var(--k4-muted); }
+  .hero__menu { display: flex; flex-direction: column; gap: 6px; align-items: flex-end; }
+  .hero__menu i { display: block; height: 2px; background: var(--k4-ink); border-radius: 2px; }
+  .hero__menu i:nth-child(1) { width: 30px; }
+  .hero__menu i:nth-child(2) { width: 30px; }
+
+  .hero__content { position: relative; z-index: 3; min-height: 100svh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 30px; padding: 120px 28px; text-align: center; color: var(--k4-ink); }
+  .hero__kicker { font-family: var(--vmono); font-size: 12px; letter-spacing: 0.42em; color: var(--k4-faint); }
+  .hero__h1 { margin: 0; font-weight: 800; font-size: clamp(46px, 16vw, 90px);
+    line-height: 1.02; letter-spacing: -0.035em; text-wrap: balance; }
+  .hero__h1 em { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400;
+    background: linear-gradient(105deg, #FFF6F0 10%, #FFB3A6 90%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+  .hero__scroll { position: absolute; z-index: 3; left: 50%; bottom: 46px; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .hero__scroll span { font-family: var(--vmono); font-size: 11px; letter-spacing: 0.34em; color: var(--k4-faint); }
+  .hero__scroll i { width: 1px; height: 46px; background: linear-gradient(180deg, var(--k4-accent) 0%, transparent 100%); }
+
+  /* ═══════════════════ ⟦ COPY 1 ⟧ — STYL KOMUNIKATU LOW POWER MODE ═══════════════════ */
+  .lpm-notice {
+    position: fixed; z-index: 50;
+    left: 14px; right: 14px;
+    bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+    display: flex; align-items: flex-start; gap: 14px;
+    padding: 16px 16px 17px;
+    border-radius: 18px;
+    color: var(--k4-ink);
+    background:
+      linear-gradient(180deg, rgba(40,22,19,0.92) 0%, rgba(20,12,11,0.94) 100%);
+    border: 1px solid rgba(255,90,71,0.28);
+    box-shadow:
+      0 1px 0 rgba(255,255,255,0.05) inset,
+      0 18px 50px -16px rgba(0,0,0,0.8),
+      0 0 60px -22px rgba(255,90,71,0.55);
+    -webkit-backdrop-filter: blur(16px) saturate(1.1);
+    backdrop-filter: blur(16px) saturate(1.1);
+    font-family: 'Archivo', system-ui, sans-serif;
+    /* stan SPOCZYNKOWY = widoczny (bezpieczne dla PDF / reduced-motion / zamrożonego renderu).
+       Element jest ukryty atrybutem [hidden] aż do momentu pokazania przez JS. */
+    opacity: 1; transform: translateY(0);
+  }
+  /* animacja wejścia — sam transform (opacity zostaje 1, więc widoczny nawet przy zamrożonym renderze) */
+  @keyframes lpm-in { from { transform: translateY(20px); } to { transform: translateY(0); } }
+  .lpm-notice[data-show="true"] { animation: lpm-in .5s cubic-bezier(.2,.7,.2,1); }
+  .lpm-notice[data-closing="true"] {
+    opacity: 0; transform: translateY(18px); animation: none;
+    transition: opacity .38s cubic-bezier(.2,.7,.2,1), transform .38s cubic-bezier(.2,.7,.2,1);
+  }
+  @media (prefers-reduced-motion: reduce) { .lpm-notice[data-show="true"] { animation: none; } }
+  /* górna koralowa nitka */
+  .lpm-notice::before {
+    content: ""; position: absolute; left: 18px; right: 18px; top: 0; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,90,71,0.7), transparent);
+  }
+
+  .lpm-notice__icon { flex-shrink: 0; margin-top: 2px; }
+  .lpm-bat {
+    width: 26px; height: 14px; border: 1.5px solid var(--k4-accent); border-radius: 3.5px;
+    position: relative; display: flex; align-items: center; padding: 2px;
+  }
+  .lpm-bat::after {
+    content: ""; position: absolute; right: -4px; top: 50%; transform: translateY(-50%);
+    width: 2.5px; height: 6px; background: var(--k4-accent); border-radius: 0 2px 2px 0;
+  }
+  .lpm-bat > i {
+    display: block; height: 100%; width: 30%; background: var(--k4-accent); border-radius: 1.5px;
+    animation: lpm-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes lpm-pulse { 0%,100% { opacity: 1; } 50% { opacity: .45; } }
+  @media (prefers-reduced-motion: reduce) { .lpm-bat > i { animation: none; } }
+
+  .lpm-notice__body { flex: 1; min-width: 0; }
+  .lpm-notice__label {
+    font-family: var(--vmono); font-size: 10px; letter-spacing: 0.26em;
+    color: var(--k4-accent); text-transform: uppercase; margin-bottom: 5px;
+  }
+  .lpm-notice__title { font-size: 15.5px; font-weight: 700; line-height: 1.25; letter-spacing: -0.01em; }
+  .lpm-notice__text { font-size: 13px; line-height: 1.45; color: var(--k4-muted); margin-top: 4px; text-wrap: pretty; }
+
+  .lpm-notice__close {
+    flex-shrink: 0; width: 30px; height: 30px; margin: -4px -4px 0 0;
+    display: flex; align-items: center; justify-content: center;
+    border: none; background: transparent; cursor: pointer; border-radius: 50%;
+    color: var(--k4-faint); transition: color .2s, background .2s;
+  }
+  .lpm-notice__close:hover { color: var(--k4-ink); background: rgba(255,255,255,0.06); }
+  .lpm-notice__close svg { width: 15px; height: 15px; }
+
+  /* ═══════════════════════ panel podglądu (TYLKO DEMO — nie kopiować) ══════════════════════ */
+  .demo-bar {
+    position: fixed; z-index: 80; top: 0; left: 0; right: 0;
+    display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+    padding: 9px 14px; background: rgba(10,7,9,0.72); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(245,240,236,0.10);
+    font-family: var(--vmono); font-size: 11px; letter-spacing: 0.04em; color: var(--k4-faint);
+  }
+  .demo-bar .tag { letter-spacing: 0.24em; }
+  .demo-seg { display: flex; border: 1px solid rgba(245,240,236,0.16); border-radius: 999px; overflow: hidden; }
+  .demo-seg button { font-family: var(--vmono); font-size: 11px; letter-spacing: 0.12em; padding: 6px 14px;
+    border: none; background: transparent; color: var(--k4-muted); cursor: pointer; }
+  .demo-seg button[aria-pressed="true"] { background: var(--k4-ink); color: #14100F; }
+  .demo-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; color: var(--k4-muted); margin-left: auto; }
+  .demo-toggle input { appearance: none; width: 34px; height: 19px; border-radius: 999px;
+    background: rgba(245,240,236,0.16); position: relative; cursor: pointer; transition: background .2s; }
+  .demo-toggle input::after { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px;
+    border-radius: 50%; background: var(--k4-ink); transition: transform .2s; }
+  .demo-toggle input:checked { background: var(--k4-accent); }
+  .demo-toggle input:checked::after { transform: translateX(15px); }
+</style>
+</head>
+<body>
+
+<!-- ───────────── panel podglądu — TYLKO DEMO ───────────── -->
+<div class="demo-bar">
+  <span class="tag">PODGLĄD</span>
+  <div class="demo-seg">
+    <button id="langPL" aria-pressed="true">PL</button>
+    <button id="langEN" aria-pressed="false">EN</button>
+  </div>
+  <label class="demo-toggle">
+    <span>Symuluj Low Power Mode</span>
+    <input type="checkbox" id="simLPM" checked>
+  </label>
+</div>
+
+<!-- ───────────── HERO (rekonstrukcja widoku po wejściu na stronę) ───────────── -->
+<div class="hero">
+  <div class="hero__blobs"><span class="b1"></span><span class="b2"></span><span class="b3"></span></div>
+  <div class="hero__vignette"></div>
+  <div class="hero__mesh"></div>
+
+  <div class="hero__top">
+    <div class="hero__brand"><b>hadrian</b><span>m</span></div>
+    <div class="hero__menu"><i></i><i></i></div>
+  </div>
+
+  <div class="hero__content">
+    <div class="hero__kicker" data-i18n="kicker">PRACOWNIA STRON I APLIKACJI</div>
+    <h1 class="hero__h1" data-i18n-html="headline">strona, która mówi <em>za Ciebie</em></h1>
+  </div>
+
+  <div class="hero__scroll"><span>SCROLL</span><i></i></div>
+</div>
+
+<!-- ═══════════════════ ⟦ COPY 2 ⟧ — STRUKTURA KOMUNIKATU ═══════════════════ -->
+<div class="lpm-notice" id="lpmNotice" role="alert" aria-live="polite" hidden>
+  <div class="lpm-notice__icon"><div class="lpm-bat"><i></i></div></div>
+  <div class="lpm-notice__body">
+    <div class="lpm-notice__label" data-i18n="lpmLabel">Low Power Mode</div>
+    <div class="lpm-notice__title" data-i18n="lpmTitle">Włącz pełnię wrażeń</div>
+    <div class="lpm-notice__text" data-i18n="lpmText">Masz włączony tryb niskiego zużycia energii. Wyłącz go w Ustawieniach, aby zobaczyć animacje i pełną płynność strony.</div>
+  </div>
+  <button class="lpm-notice__close" id="lpmClose" aria-label="Zamknij">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  </button>
+</div>
+
+<script>
+/* ═══════════════════ ⟦ COPY 3 ⟧ — i18n + wykrywanie Low Power Mode ═══════════════════ */
+(function () {
+  // ── Teksty PL / EN ──
+  var I18N = {
+    pl: {
+      kicker:   "PRACOWNIA STRON I APLIKACJI",
+      headline: 'strona, która mówi <em>za Ciebie</em>',
+      lpmLabel: "Low Power Mode",
+      lpmTitle: "Włącz pełnię wrażeń",
+      lpmText:  "Masz włączony tryb niskiego zużycia energii. Wyłącz go w Ustawieniach, aby zobaczyć animacje i pełną płynność strony.",
+      close:    "Zamknij"
+    },
+    en: {
+      kicker:   "WEB & APP STUDIO",
+      headline: 'a website that speaks <em>for you</em>',
+      lpmLabel: "Low Power Mode",
+      lpmTitle: "Get the full experience",
+      lpmText:  "Low Power Mode is on. Turn it off in Settings to see the animations and full smoothness of the site.",
+      close:    "Dismiss"
+    }
+  };
+
+  var notice = document.getElementById('lpmNotice');
+  var STORAGE_KEY = 'hm_lpm_notice_dismissed';
+
+  function applyLang(lang) {
+    var d = I18N[lang] || I18N.pl;
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-i18n]').forEach(function (el) {
+      var k = el.getAttribute('data-i18n'); if (d[k] != null) el.textContent = d[k];
+    });
+    document.querySelectorAll('[data-i18n-html]').forEach(function (el) {
+      var k = el.getAttribute('data-i18n-html'); if (d[k] != null) el.innerHTML = d[k];
+    });
+    var close = document.getElementById('lpmClose');
+    if (close) close.setAttribute('aria-label', d.close);
+  }
+
+  function showNotice() {
+    if (sessionStorage.getItem(STORAGE_KEY) === '1') return; // zamknięty w tej sesji
+    notice.removeAttribute('data-closing');
+    notice.hidden = false;
+    notice.setAttribute('data-show', 'true');
+  }
+  function hideNotice(remember) {
+    notice.removeAttribute('data-show');
+    notice.setAttribute('data-closing', 'true');
+    if (remember) { try { sessionStorage.setItem(STORAGE_KEY, '1'); } catch (e) {} }
+    setTimeout(function () { notice.hidden = true; notice.removeAttribute('data-closing'); }, 420);
+  }
+  document.getElementById('lpmClose').addEventListener('click', function () { hideNotice(true); });
+
+  // ── Czy to iPhone? (komunikat tylko dla iPhone, zgodnie z założeniem) ──
+  function isIPhone() {
+    var ua = navigator.userAgent || '';
+    return /iPhone|iPod/.test(ua);
+  }
+
+  // ── Sonda Low Power Mode: wyciszone wideo inline ──
+  // iOS przy włączonym LPM nie pozwala na autoodtwarzanie nawet wyciszonego wideo.
+  // Malutkie wideo (czarna klatka). Możesz podmienić na własny plik /lpm-probe.mp4.
+  var PROBE_SRC = "data:video/mp4;base64,AAAAHGZ0eXBpc29tAAACAGlzb21pc28ybXA0MQAAAAhmcmVlAAAALG1kYXQAAAAfTgEFGkdWStxcTEM/lO/FETzwypBmZJYnzHpasVPxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+
+  function detectLowPowerMode() {
+    return new Promise(function (resolve) {
+      var v = document.createElement('video');
+      v.muted = true; v.defaultMuted = true; v.setAttribute('muted', '');
+      v.playsInline = true; v.setAttribute('playsinline', '');
+      v.setAttribute('webkit-playsinline', '');
+      v.preload = 'auto'; v.loop = true;
+      v.style.cssText = 'position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;left:-9999px;';
+      v.src = PROBE_SRC;
+
+      var settled = false;
+      function done(result) {
+        if (settled) return; settled = true;
+        try { v.remove(); } catch (e) {}
+        resolve(result);
+      }
+      // Bezpiecznik: jeśli wideo się nie wczyta / nic nie wiemy → NIE pokazuj.
+      var guard = setTimeout(function () { done(false); }, 1500);
+      v.addEventListener('error', function () { clearTimeout(guard); done(false); });
+
+      document.body.appendChild(v);
+      var p = v.play();
+      if (p && typeof p.then === 'function') {
+        p.then(function () {
+          clearTimeout(guard); done(false);              // odtworzyło się → tryb normalny
+        }).catch(function () {
+          clearTimeout(guard);
+          // odrzucone — jeśli wideo zdążyło się załadować, to najpewniej LPM
+          done(v.readyState >= 1 || true);
+        });
+      } else {
+        clearTimeout(guard); done(false);
+      }
+    });
+  }
+
+  // ── Logika produkcyjna ──
+  function runProduction() {
+    if (!isIPhone()) return;                 // tylko iPhone
+    detectLowPowerMode().then(function (isLPM) {
+      if (isLPM) showNotice();
+    });
+  }
+
+  /* ─────────────────────────────────────────────────────────────────
+     PONIŻEJ: sterowanie z panelu PODGLĄDU (PL/EN + symulacja).
+     W docelowym wdrożeniu usuń ten blok i zostaw samo:  applyLang('pl'); runProduction();
+     ───────────────────────────────────────────────────────────────── */
+  var DEMO = !!document.querySelector('.demo-bar');
+  if (DEMO) {
+    var lang = 'pl';
+    applyLang('pl');
+    var bPL = document.getElementById('langPL'), bEN = document.getElementById('langEN');
+    function setLang(l) {
+      lang = l;
+      bPL.setAttribute('aria-pressed', l === 'pl');
+      bEN.setAttribute('aria-pressed', l === 'en');
+      applyLang(l);
+    }
+    bPL.addEventListener('click', function () { setLang('pl'); });
+    bEN.addEventListener('click', function () { setLang('en'); });
+
+    var sim = document.getElementById('simLPM');
+    function syncSim() {
+      try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
+      if (sim.checked) showNotice(); else hideNotice(false);
+    }
+    sim.addEventListener('change', syncSim);
+    syncSim(); // start z włączoną symulacją, by od razu pokazać kompozycję
+  } else {
+    applyLang(document.documentElement.lang === 'en' ? 'en' : 'pl');
+    runProduction();
+  }
+})();
+</script>
+</body>
+</html>

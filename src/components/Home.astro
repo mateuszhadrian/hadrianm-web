@@ -5,6 +5,7 @@ import Hero from "@/components/sections/hero/Hero.astro";
 import HeroBackground from "@/components/sections/hero/HeroBackground.astro";
 import Problem from "@/components/sections/problem/Problem.astro";
 import ProblemBackground from "@/components/sections/problem/ProblemBackground.astro";
+import LowPowerNotice from "@/components/LowPowerNotice.astro";
 import { useTranslations, type Lang } from "@/i18n/utils";
 
 interface Props {
@@ -30,6 +31,8 @@ const t = useTranslations(lang);
     <Hero lang={lang} />
     <Problem />
   </main>
+
+  <LowPowerNotice lang={lang} />
 </BaseLayout>
 
 <style>
