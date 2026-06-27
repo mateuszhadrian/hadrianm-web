@@ -289,6 +289,8 @@ const splitAccent = (line: string) =>
     font-weight: 400;
     font-size: 1.06em;
     letter-spacing: 0;
+    padding-inline: 0.12em;
+    margin-inline: -0.12em;
     background: var(--accent-gradient);
     -webkit-background-clip: text;
     background-clip: text;
@@ -835,13 +837,15 @@ const splitAccent = (line: string) =>
     const DOG_PROGRESS = 0.934;
     const CAP_END = PH3_START + DREWELOMET_DUR * DOG_PROGRESS;
     const PHASE_A_FRAC = 0.14;
-    const REST_BIG_SCALE = 0.9;
+    const REST_BIG_SCALE = 0.53;
     const REST_SMALL_SCALE = 1;
     const MIN_GROW = 0.98;
-    const LOW_OPACITY = 0.15;
+    const LOW_OPACITY = 0.05;
     const MORPH_A0 = 1;
     const MORPH_A1 = 2;
-    const CONTAINER_EXTRA = 50;
+    const CONTAINER_EXTRA = 110;
+    const FIRST_GAP_EXTRA = 110;
+    const LAST_BIG_SCALE = 1;
 
     const N = rows.length;
     let smallPx = 16;
@@ -852,7 +856,8 @@ const splitAccent = (line: string) =>
     let big0H = 0;
     let p1MinH = 0;
 
-    const bigOf = (i: number) => (i === 0 ? bigPx : bigPxRest);
+    const bigOf = (i: number) =>
+      i === 0 ? bigPx : i === N - 1 ? bigPx * LAST_BIG_SCALE : bigPxRest;
     const smallOf = (i: number) =>
       i === 0 ? smallPx : smallPx * REST_SMALL_SCALE;
 
@@ -917,7 +922,8 @@ const splitAccent = (line: string) =>
 
       const m = smoother(clamp01((A - MORPH_A0) / (MORPH_A1 - MORPH_A0)));
       const grow = MIN_GROW * m;
-      const minOp = 0.58 + (LOW_OPACITY - 0.58) * m;
+      const lastFade = smoother(clamp01(A - (N - 2)));
+      const minOp = (0.58 + (LOW_OPACITY - 0.58) * m) * (1 - lastFade);
 
       let top = 0;
       for (let i = 0; i < N; i++) {
@@ -925,7 +931,7 @@ const splitAccent = (line: string) =>
         const sH = i === 0 ? p1MinH : smallH[i] + (bigH[i] - smallH[i]) * grow;
         h[i] = sH + (bigH[i] - sH) * g[i];
         center[i] = top + h[i] / 2;
-        top += h[i] + GAP;
+        top += h[i] + GAP + (i === 0 ? FIRST_GAP_EXTRA : 0);
       }
 
       const lo = Math.floor(A);
