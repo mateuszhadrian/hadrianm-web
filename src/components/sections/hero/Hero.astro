@@ -1209,6 +1209,90 @@ const splitAccent = (line: string) =>
 
       const LAP_ZONE = { start: 4.4, end: 8.4 };
       const PH_ZONE = { start: 8.8, end: 12.8 };
+
+      // ── Wzrost tekstów 02/03 (mobile, wspólny iOS + Android) ──────────────
+      // Spójnie z desktopową karuzelą: powiększenie + szary→biały + 600→800.
+      // Geometria przez transform: scale z origin lewo-środek → tekst rośnie
+      // w prawo i równomiernie w górę/dół, lewa krawędź stoi, zero reflow
+      // (nic innego się nie przesuwa). Sterowane scrubem → w pełni odwracalne.
+      const initCaptionGrowth = () => {
+        if (!hero) return () => {};
+        const t1 = q<HTMLElement>(".hero__copy-row--1 .hero__copy-text");
+        const t2 = q<HTMLElement>(".hero__copy-row--2 .hero__copy-text");
+        const t3 = q<HTMLElement>(".hero__copy-row--3 .hero__copy-text");
+        if (!t1 || !t2 || !t3) return () => {};
+
+        const muted = getComputedStyle(t2).color; // bazowy szary 02/03
+        const ink = getComputedStyle(t1).color; // biel tekstu 01
+
+        // Docelowa "część drogi" z rozmiaru bazowego do rozmiaru 01.
+        // 02 rośnie w połowę drogi; 03 ("Płynnie…") mniej, bo dłuższy tekst
+        // wystawałby poza kontener z prawej.
+        const REACH_02 = 0.5;
+        const REACH_03 = 0.3;
+        // transform nie zmienia computed font-size, więc odczyt jest zawsze
+        // rozmiarem bazowym niezależnie od bieżącej skali (bezpieczne przy refresh).
+        const targetScale = (base: HTMLElement, reach: number) => {
+          const s0 = parseFloat(getComputedStyle(t1).fontSize) || 32;
+          const sb = parseFloat(getComputedStyle(base).fontSize) || 16;
+          return 1 + reach * (s0 / sb - 1);
+        };
+
+        // Czerwony odcinek = faza odtwarzania wideo [play, end] na pasku postępu.
+        const playStart = (z: { start: number; end: number }) =>
+          z.start + GROW_END * (z.end - z.start);
+        // Okno wzrostu = pierwsze GROW_FRACTION długości czerwonego odcinka.
+        // Mniejsza wartość = teksty szybciej osiągają maksymalny rozmiar.
+        const GROW_FRACTION = 0.18;
+        const growEndVh = (z: { start: number; end: number }) => {
+          const p = playStart(z);
+          return p + GROW_FRACTION * (z.end - p);
+        };
+
+        const make = (
+          text: HTMLElement,
+          z: { start: number; end: number },
+          reach: number,
+        ) =>
+          gsap.fromTo(
+            text,
+            { scale: 1, color: muted, fontWeight: 600 },
+            {
+              scale: () => targetScale(text, reach),
+              color: ink,
+              fontWeight: 800,
+              transformOrigin: "0% 50%",
+              ease: "none",
+              scrollTrigger: {
+                trigger: hero,
+                start: () =>
+                  "top+=" + playStart(z) * window.innerHeight + " top",
+                end: () => "top+=" + growEndVh(z) * window.innerHeight + " top",
+                scrub: true,
+                invalidateOnRefresh: true,
+              },
+            },
+          );
+
+        const tweens = [
+          make(t2, LAP_ZONE, REACH_02),
+          make(t3, PH_ZONE, REACH_03),
+        ];
+
+        return () => {
+          tweens.forEach((tw) => {
+            tw.scrollTrigger?.kill();
+            tw.kill();
+          });
+          [t2, t3].forEach((t) => {
+            t.style.removeProperty("transform");
+            t.style.removeProperty("color");
+            t.style.removeProperty("font-weight");
+          });
+        };
+      };
+      const captionGrowthCleanup = initCaptionGrowth();
+
       const stageEl = q(".hero__stage");
       const div02 = q<HTMLElement>(".hero__copy-row--2");
       const div03 = q<HTMLElement>(".hero__copy-row--3");
@@ -1271,6 +1355,7 @@ const splitAccent = (line: string) =>
         return () => {
           cleanup(b)();
           androidCleanup();
+          captionGrowthCleanup();
           cleanupDividers();
           stopReset(lapVideo);
           stopReset(phVideo);
@@ -1391,6 +1476,7 @@ const splitAccent = (line: string) =>
 
       return () => {
         cleanup(b)();
+        captionGrowthCleanup();
         cleanupDividers();
         zoneTriggers.forEach((t) => t.kill());
         progressTrigger?.kill();
