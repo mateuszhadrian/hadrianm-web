@@ -60,19 +60,63 @@ export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
     return 1 + (vidMax - 1) * ((1 - prog) / (1 - holdEnd));
   };
 
-  // Wideo gra w pętli od startu — atrybut `loop` w markupie domyka zapętlenie,
-  // a brak gatingu play/stop oznacza, że obraz nigdy się nie zatrzymuje.
-  const startLoop = (v: HTMLVideoElement | null) => {
-    if (!v) return;
-    v.play()?.catch(() => {
-      /* autoplay zablokowany (np. tryb oszczędzania danych) → plakat */
+  // Wideo gra w pętli (atrybut `loop`), ale TYLKO gdy scena #hero jest na
+  // ekranie i karta jest aktywna. Wcześniej grało CAŁY CZAS — także po
+  // przewinięciu do dalszych sekcji — co niepotrzebnie obciążało CPU/GPU na
+  // Androidzie. Pauzujemy więc dekodowanie, gdy użytkownik nie patrzy na
+  // urządzenia, a wznawiamy po powrocie (bez resetu klatki → brak skoku).
+  //
+  // Świadomie NIE używamy tu gatingu wg postępu scrolla (jak wariant iOS) —
+  // na Androidzie bywał niestabilny. IntersectionObserver i visibilitychange
+  // działają poza ścieżką repaintu GSAP, więc są na Androidzie niezawodne.
+  const vids = videos
+    .map((v) => v.video)
+    .filter((v): v is HTMLVideoElement => v != null);
+
+  let heroOnScreen = true;
+  let docVisible = typeof document === "undefined" || !document.hidden;
+
+  const syncPlayback = () => {
+    const shouldPlay = heroOnScreen && docVisible;
+    vids.forEach((v) => {
+      if (shouldPlay) {
+        if (v.paused) {
+          v.play()?.catch(() => {
+            /* autoplay zablokowany (np. tryb oszczędzania danych) → plakat */
+          });
+        }
+      } else if (!v.paused) {
+        v.pause();
+      }
     });
   };
 
+  let observer: IntersectionObserver | null = null;
+  if (hero && typeof IntersectionObserver !== "undefined") {
+    observer = new IntersectionObserver(
+      (entries) => {
+        heroOnScreen = entries[0]?.isIntersecting ?? true;
+        syncPlayback();
+      },
+      { threshold: 0 },
+    );
+    observer.observe(hero);
+  }
+
+  const onVisibility = () => {
+    docVisible = !document.hidden;
+    syncPlayback();
+  };
+  if (typeof document !== "undefined") {
+    document.addEventListener("visibilitychange", onVisibility);
+  }
+
+  // Pierwszy strzał — IntersectionObserver skoryguje stan asynchronicznie.
+  syncPlayback();
+
   const triggers: ScrollTrigger[] = [];
 
-  videos.forEach(({ video, el, zone }) => {
-    startLoop(video);
+  videos.forEach(({ el, zone }) => {
     if (!hero || !el) return;
     // pomijaj redundantne zapisy (faza hold = stała skala przez ~2 ekrany)
     let lastScale = -1;
@@ -114,6 +158,10 @@ export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
       : null;
 
   return () => {
+    observer?.disconnect();
+    if (typeof document !== "undefined") {
+      document.removeEventListener("visibilitychange", onVisibility);
+    }
     triggers.forEach((t) => t.kill());
     progressTrigger?.kill();
     progressEl?.classList.remove("is-active", "is-android");
