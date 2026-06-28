@@ -1,0 +1,50 @@
+---
+// Generyczne, animowane tło-„glow" (jak AudienceBackground). Kolory wstrzykiwane
+// przez --g1/--g2, wiązane per-warstwa w Home.astro z tokenów --sec-* (global.css).
+---
+
+<div class="sec-bg" aria-hidden="true">
+  <span class="sec-bg__glow"></span>
+</div>
+
+<style>
+  .sec-bg {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    overflow: clip;
+    isolation: isolate;
+  }
+
+  .sec-bg__glow {
+    position: absolute;
+    inset: -20%;
+    filter: blur(55px);
+    will-change: transform;
+    background:
+      radial-gradient(50% 50% at 30% 35%, var(--g1), transparent 70%),
+      radial-gradient(45% 45% at 75% 70%, var(--g2), transparent 72%);
+    animation: sb-drift 9s ease-in-out infinite alternate;
+  }
+
+  @keyframes sb-drift {
+    from {
+      transform: translate3d(-3%, -2%, 0) scale(1.05);
+    }
+    to {
+      transform: translate3d(4%, 3%, 0) scale(1.18);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sec-bg__glow {
+      animation: none;
+    }
+  }
+
+  /* gdy warstwa jest niewidoczna: pauza animacji + zwolnienie warstwy GPU */
+  :global(.bg-layer.is-inactive) .sec-bg__glow {
+    animation-play-state: paused;
+    will-change: auto;
+  }
+</style>

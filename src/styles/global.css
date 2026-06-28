@@ -30,3 +30,34 @@
   --glow: 255, 90, 71; /* składowe RGB → rgba(var(--glow), α) */
   --accent-gradient: linear-gradient(105deg, #fff6f0 0%, #ffb3a6 100%);
 }
+
+/* ── Glow sekcji-placeholderów (po „Dla kogo"): po dwa kolory na sekcję.
+   Konsumowane przez SectionBackground.astro przez --g1/--g2 (wiązane per-warstwa
+   w Home.astro). Fallback sRGB niżej dla przeglądarek bez oklch() (iOS < 15.4). ── */
+:root {
+  --sec-services-1: oklch(0.55 0.13 68 / 0.85); /* amber */
+  --sec-services-2: oklch(0.46 0.12 65);
+  --sec-work-1: oklch(0.52 0.13 152 / 0.85); /* zieleń */
+  --sec-work-2: oklch(0.42 0.12 150);
+  --sec-about-1: oklch(0.52 0.12 205 / 0.85); /* teal */
+  --sec-about-2: oklch(0.42 0.11 205);
+  --sec-faq-1: oklch(0.5 0.15 264 / 0.85); /* indygo */
+  --sec-faq-2: oklch(0.4 0.14 264);
+  --sec-contact-1: oklch(0.52 0.16 322 / 0.85); /* magenta */
+  --sec-contact-2: oklch(0.42 0.15 322);
+}
+
+@supports not (color: oklch(0 0 0)) {
+  :root {
+    --sec-services-1: rgba(150, 105, 35, 0.85);
+    --sec-services-2: rgb(120, 80, 25);
+    --sec-work-1: rgba(20, 125, 78, 0.85);
+    --sec-work-2: rgb(15, 100, 62);
+    --sec-about-1: rgba(12, 120, 138, 0.85);
+    --sec-about-2: rgb(10, 95, 110);
+    --sec-faq-1: rgba(60, 88, 182, 0.85);
+    --sec-faq-2: rgb(42, 62, 145);
+    --sec-contact-1: rgba(162, 62, 150, 0.85);
+    --sec-contact-2: rgb(130, 45, 120);
+  }
+}
