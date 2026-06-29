@@ -31,9 +31,9 @@
   --accent-gradient: linear-gradient(105deg, #fff6f0 0%, #ffb3a6 100%);
 }
 
-/* ── Glow sekcji-placeholderów (po „Dla kogo"): po dwa kolory na sekcję.
-   Konsumowane przez SectionBackground.astro przez --g1/--g2 (wiązane per-warstwa
-   w Home.astro). Fallback sRGB niżej dla przeglądarek bez oklch() (iOS < 15.4). ── */
+/* ── Glow sekcji (po „Dla kogo"): po dwa kolory na sekcję. Konsumowane przez
+   tła poszczególnych sekcji ({Section}Background.astro), np. ServicesBackground
+   przez --sec-services-*. Fallback sRGB niżej dla przeglądarek bez oklch() (iOS < 15.4). ── */
 :root {
   --sec-services-1: oklch(0.55 0.13 68 / 0.85); /* amber */
   --sec-services-2: oklch(0.46 0.12 65);

@@ -1,0 +1,39 @@
+---
+import { navItems, navLabel } from "@/i18n/nav";
+import type { Lang } from "@/i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const item = navItems.find((n) => n.id === "about");
+const heading = item ? navLabel(item, lang) : "about";
+---
+
+<section id="about" class="about">
+  <div class="about__content">
+    <h2>{heading}</h2>
+  </div>
+</section>
+
+<style>
+  .about {
+    position: relative;
+    min-height: 150svh;
+  }
+
+  .about__content {
+    position: sticky;
+    top: 0;
+    height: 100svh;
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-family: system-ui, sans-serif;
+  }
+
+  .about__content h2 {
+    font-size: clamp(1.25rem, 4vw, 2.25rem);
+    font-weight: 700;
+  }
+</style>

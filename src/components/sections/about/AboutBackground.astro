@@ -1,0 +1,50 @@
+---
+// Tło sekcji „O mnie" (about). Animowany glow z tokenów --sec-about-*
+// (global.css), które mają fallback sRGB dla przeglądarek bez oklch().
+---
+
+<div class="about-bg" aria-hidden="true">
+  <span class="about-bg__glow"></span>
+</div>
+
+<style>
+  .about-bg {
+    position: absolute;
+    inset: 0;
+    background: #000;
+    overflow: clip;
+    isolation: isolate;
+  }
+
+  .about-bg__glow {
+    position: absolute;
+    inset: -20%;
+    filter: blur(55px);
+    will-change: transform;
+    background:
+      radial-gradient(50% 50% at 30% 35%, var(--sec-about-1), transparent 70%),
+      radial-gradient(45% 45% at 75% 70%, var(--sec-about-2), transparent 72%);
+    animation: about-drift 9s ease-in-out infinite alternate;
+  }
+
+  @keyframes about-drift {
+    from {
+      transform: translate3d(-3%, -2%, 0) scale(1.05);
+    }
+    to {
+      transform: translate3d(4%, 3%, 0) scale(1.18);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .about-bg__glow {
+      animation: none;
+    }
+  }
+
+  /* gdy warstwa jest niewidoczna: pauza animacji + zwolnienie warstwy GPU */
+  :global(.bg-layer.is-inactive) .about-bg__glow {
+    animation-play-state: paused;
+    will-change: auto;
+  }
+</style>

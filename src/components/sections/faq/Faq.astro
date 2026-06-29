@@ -3,27 +3,26 @@ import { navItems, navLabel } from "@/i18n/nav";
 import type { Lang } from "@/i18n/utils";
 
 interface Props {
-  id: string;
   lang: Lang;
 }
-const { id, lang } = Astro.props;
-const item = navItems.find((n) => n.id === id);
-const heading = item ? navLabel(item, lang) : id;
+const { lang } = Astro.props;
+const item = navItems.find((n) => n.id === "faq");
+const heading = item ? navLabel(item, lang) : "faq";
 ---
 
-<section id={id} class="placeholder">
-  <div class="placeholder__content">
+<section id="faq" class="faq">
+  <div class="faq__content">
     <h2>{heading}</h2>
   </div>
 </section>
 
 <style>
-  .placeholder {
+  .faq {
     position: relative;
     min-height: 150svh;
   }
 
-  .placeholder__content {
+  .faq__content {
     position: sticky;
     top: 0;
     height: 100svh;
@@ -33,7 +32,7 @@ const heading = item ? navLabel(item, lang) : id;
     font-family: system-ui, sans-serif;
   }
 
-  .placeholder__content h2 {
+  .faq__content h2 {
     font-size: clamp(1.25rem, 4vw, 2.25rem);
     font-weight: 700;
   }

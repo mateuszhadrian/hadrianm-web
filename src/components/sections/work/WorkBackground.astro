@@ -1,14 +1,14 @@
 ---
-// Generyczne, animowane tło-„glow" (jak AudienceBackground). Kolory wstrzykiwane
-// przez --g1/--g2, wiązane per-warstwa w Home.astro z tokenów --sec-* (global.css).
+// Tło sekcji „Realizacje" (work). Animowany glow z tokenów --sec-work-*
+// (global.css), które mają fallback sRGB dla przeglądarek bez oklch().
 ---
 
-<div class="sec-bg" aria-hidden="true">
-  <span class="sec-bg__glow"></span>
+<div class="work-bg" aria-hidden="true">
+  <span class="work-bg__glow"></span>
 </div>
 
 <style>
-  .sec-bg {
+  .work-bg {
     position: absolute;
     inset: 0;
     background: #000;
@@ -16,18 +16,18 @@
     isolation: isolate;
   }
 
-  .sec-bg__glow {
+  .work-bg__glow {
     position: absolute;
     inset: -20%;
     filter: blur(55px);
     will-change: transform;
     background:
-      radial-gradient(50% 50% at 30% 35%, var(--g1), transparent 70%),
-      radial-gradient(45% 45% at 75% 70%, var(--g2), transparent 72%);
-    animation: sb-drift 9s ease-in-out infinite alternate;
+      radial-gradient(50% 50% at 30% 35%, var(--sec-work-1), transparent 70%),
+      radial-gradient(45% 45% at 75% 70%, var(--sec-work-2), transparent 72%);
+    animation: work-drift 9s ease-in-out infinite alternate;
   }
 
-  @keyframes sb-drift {
+  @keyframes work-drift {
     from {
       transform: translate3d(-3%, -2%, 0) scale(1.05);
     }
@@ -37,13 +37,13 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .sec-bg__glow {
+    .work-bg__glow {
       animation: none;
     }
   }
 
   /* gdy warstwa jest niewidoczna: pauza animacji + zwolnienie warstwy GPU */
-  :global(.bg-layer.is-inactive) .sec-bg__glow {
+  :global(.bg-layer.is-inactive) .work-bg__glow {
     animation-play-state: paused;
     will-change: auto;
   }

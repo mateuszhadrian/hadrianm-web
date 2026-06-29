@@ -5,10 +5,17 @@ import Hero from "@/components/sections/hero/Hero.astro";
 import HeroBackground from "@/components/sections/hero/HeroBackground.astro";
 import Audience from "@/components/sections/audience/Audience.astro";
 import AudienceBackground from "@/components/sections/audience/AudienceBackground.astro";
-import SectionPlaceholder from "@/components/sections/placeholder/SectionPlaceholder.astro";
-import SectionBackground from "@/components/sections/placeholder/SectionBackground.astro";
+import Services from "@/components/sections/services/Services.astro";
+import ServicesBackground from "@/components/sections/services/ServicesBackground.astro";
+import Work from "@/components/sections/work/Work.astro";
+import WorkBackground from "@/components/sections/work/WorkBackground.astro";
+import About from "@/components/sections/about/About.astro";
+import AboutBackground from "@/components/sections/about/AboutBackground.astro";
+import Faq from "@/components/sections/faq/Faq.astro";
+import FaqBackground from "@/components/sections/faq/FaqBackground.astro";
+import Contact from "@/components/sections/contact/Contact.astro";
+import ContactBackground from "@/components/sections/contact/ContactBackground.astro";
 import LowPowerNotice from "@/components/LowPowerNotice.astro";
-import { navItems } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
 
 interface Props {
@@ -16,13 +23,6 @@ interface Props {
 }
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-
-// Sekcje renderowane generycznie jako placeholdery, w kolejności scrolla.
-// „Dla kogo" (audience) ma własne, bespoke tło, więc je pomijamy. Nagłówki biorą
-// się z navItems (PL/EN); kolory glow z tokenów --sec-* (global.css).
-const placeholderIds = navItems
-  .map((n) => n.id)
-  .filter((id) => id !== "audience");
 ---
 
 <BaseLayout title={t("meta.title")} lang={lang}>
@@ -33,17 +33,21 @@ const placeholderIds = navItems
     <div class="bg-layer is-inactive" data-bg="audience">
       <AudienceBackground />
     </div>
-    {
-      placeholderIds.map((id) => (
-        <div
-          class="bg-layer is-inactive"
-          data-bg={id}
-          style={`--g1:var(--sec-${id}-1);--g2:var(--sec-${id}-2)`}
-        >
-          <SectionBackground />
-        </div>
-      ))
-    }
+    <div class="bg-layer is-inactive" data-bg="services">
+      <ServicesBackground />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="work">
+      <WorkBackground />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="about">
+      <AboutBackground />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="faq">
+      <FaqBackground />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="contact">
+      <ContactBackground />
+    </div>
   </div>
 
   <Navbar lang={lang} />
@@ -51,7 +55,11 @@ const placeholderIds = navItems
   <main class="page">
     <Hero lang={lang} />
     <Audience lang={lang} />
-    {placeholderIds.map((id) => <SectionPlaceholder id={id} lang={lang} />)}
+    <Services lang={lang} />
+    <Work lang={lang} />
+    <About lang={lang} />
+    <Faq lang={lang} />
+    <Contact lang={lang} />
   </main>
 
   <LowPowerNotice lang={lang} />
