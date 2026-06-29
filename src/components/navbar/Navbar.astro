@@ -591,6 +591,7 @@ const t = {
     const DELTA = 8; // próg ruchu zanim zmienimy kierunek (anty-migotanie)
     let lastY = window.scrollY;
     let ticking = false;
+    let hoverReveal = false; // kursor przy górnej krawędzi wymusza pokazanie
 
     function onScroll() {
       if (ticking) return;
@@ -609,6 +610,12 @@ const t = {
           lastY = y;
           return;
         }
+        // kursor trzymany u góry — pasek zostaje widoczny mimo scrolla w dół
+        if (hoverReveal) {
+          root!.removeAttribute("data-hidden");
+          lastY = y;
+          return;
+        }
         const dy = y - lastY;
         if (Math.abs(dy) < DELTA) return; // za mały ruch — trzymaj kotwicę
         if (dy > 0) root!.setAttribute("data-hidden", "");
@@ -617,6 +624,23 @@ const t = {
       });
     }
     addEventListener("scroll", onScroll, { passive: true });
+
+    // ── pokazanie po najechaniu kursorem na górną krawędź (desktop) ──
+    // Gdy pasek jest schowany scrollem, a kursor wejdzie w górny pas
+    // (wysokość TOP_ZONE), pasek się pojawia. Po zjeździe kursora wraca
+    // normalna logika scrolla (kolejny scroll w dół chowa pasek).
+    function onPointerMove(e: PointerEvent) {
+      if (reduceMQ.matches || root!.dataset.state === "mobile" || isOpen)
+        return;
+      const inZone = e.clientY <= TOP_ZONE;
+      if (inZone === hoverReveal) return; // brak zmiany — nic nie rób
+      hoverReveal = inZone;
+      if (inZone && window.scrollY > TOP_ZONE) {
+        root!.removeAttribute("data-hidden");
+        lastY = window.scrollY; // kotwica, by kolejny scroll w dół znów chował
+      }
+    }
+    addEventListener("pointermove", onPointerMove, { passive: true });
 
     // ── panel mobilny: otwieranie / zamykanie + a11y ──
     let isOpen = false;
