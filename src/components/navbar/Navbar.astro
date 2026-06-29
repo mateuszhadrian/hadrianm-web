@@ -685,15 +685,14 @@ const t = {
       isOpen ? closeMenu(true) : openMenu(),
     );
 
-    // ── płynne przewijanie do sekcji / na górę ──
-    // Używa Lenis (window.__lenis) na desktopie; w innym wypadku natywny scroll.
-    // Reduced-motion lub mobile bez Lenis → skok natychmiastowy ("auto").
+    // ── przewijanie do sekcji / na górę ──
+    // Klik w nawigację = skok natychmiastowy na każdym urządzeniu (desktop też).
+    // Na desktopie Lenis nadal obsługuje płynny scroll kółkiem, ale skok z menu
+    // robimy bez animacji (immediate), żeby nie przewijać przez całą sekcję.
     function scrollToTarget(target: HTMLElement | number) {
       const lenis = window.__lenis;
-      // Płynnie WYŁĄCZNIE na desktopie (Lenis). Bez Lenisa (mobile / reduced-
-      // motion) — skok natychmiastowy ("auto"), bo na mobile smooth wygląda źle.
       if (lenis) {
-        lenis.scrollTo(target, { offset: 0 });
+        lenis.scrollTo(target, { offset: 0, immediate: true });
         return;
       }
       if (typeof target === "number") {
