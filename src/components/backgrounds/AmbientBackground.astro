@@ -1,13 +1,17 @@
-<div class="hero-bg" aria-hidden="true">
-  <div class="hero-bg__clouds">
-    <span class="hero-bg__cloud-c"></span>
-    <span class="hero-bg__cloud-d"></span>
+---
+
+---
+
+<div class="ambient-bg" aria-hidden="true">
+  <div class="ambient-bg__clouds">
+    <span class="ambient-bg__cloud-c"></span>
+    <span class="ambient-bg__cloud-d"></span>
   </div>
-  <div class="hero-bg__dots"></div>
+  <div class="ambient-bg__dots"></div>
 </div>
 
 <style>
-  .hero-bg {
+  .ambient-bg {
     position: absolute;
     inset: 0;
     background: #000000;
@@ -15,7 +19,7 @@
     isolation: isolate;
   }
 
-  .hero-bg::after {
+  .ambient-bg::after {
     content: "";
     position: absolute;
     inset: 0;
@@ -24,14 +28,14 @@
     box-shadow: inset 0 0 90px 14px #070506;
   }
 
-  .hero-bg__clouds {
+  .ambient-bg__clouds {
     position: absolute;
     inset: 0;
     z-index: 1;
     pointer-events: none;
   }
-  .hero-bg__clouds::before,
-  .hero-bg__clouds::after {
+  .ambient-bg__clouds::before,
+  .ambient-bg__clouds::after {
     content: "";
     position: absolute;
     width: 65%;
@@ -39,7 +43,7 @@
     filter: blur(55px);
     will-change: transform;
   }
-  .hero-bg__clouds::before {
+  .ambient-bg__clouds::before {
     bottom: -10%;
     left: -15%;
     background:
@@ -61,7 +65,7 @@
     animation: drift-a 2s ease-in-out infinite alternate;
   }
 
-  .hero-bg__clouds::after {
+  .ambient-bg__clouds::after {
     top: -25%;
     right: -25%;
     width: 80%;
@@ -85,7 +89,7 @@
     animation: drift-b 2s ease-in-out infinite alternate;
   }
 
-  .hero-bg__cloud-c {
+  .ambient-bg__cloud-c {
     position: absolute;
     top: 20%;
     right: -28%;
@@ -101,7 +105,7 @@
     animation: drift-c 3s ease-in-out infinite alternate;
   }
 
-  .hero-bg__cloud-d {
+  .ambient-bg__cloud-d {
     position: absolute;
     top: -20%;
     left: 28%;
@@ -142,7 +146,7 @@
     }
   }
 
-  .hero-bg__dots {
+  .ambient-bg__dots {
     position: absolute;
     inset: 0;
     z-index: 2;
@@ -162,33 +166,33 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .hero-bg__clouds::before,
-    .hero-bg__clouds::after,
-    .hero-bg__cloud-c,
-    .hero-bg__cloud-d {
+    .ambient-bg__clouds::before,
+    .ambient-bg__clouds::after,
+    .ambient-bg__cloud-c,
+    .ambient-bg__cloud-d {
       animation: none;
     }
   }
 
   @media (max-width: 768px) {
-    .hero-bg__clouds::before {
-      animation-duration: 80s;
-    }
-    .hero-bg__clouds::after {
-      animation-duration: 105s;
+    .ambient-bg__clouds::before,
+    .ambient-bg__clouds::after,
+    .ambient-bg__cloud-c,
+    .ambient-bg__cloud-d {
+      animation: none;
+      will-change: auto;
     }
   }
 
-  :global(.bg-layer.is-inactive) .hero-bg__clouds::before,
-  :global(.bg-layer.is-inactive) .hero-bg__clouds::after,
-  :global(.bg-layer.is-inactive) .hero-bg__cloud-c,
-  :global(.bg-layer.is-inactive) .hero-bg__cloud-d {
+  :global(.bg-layer.is-inactive) .ambient-bg__clouds::before,
+  :global(.bg-layer.is-inactive) .ambient-bg__clouds::after,
+  :global(.bg-layer.is-inactive) .ambient-bg__cloud-c,
+  :global(.bg-layer.is-inactive) .ambient-bg__cloud-d {
     animation-play-state: paused;
   }
 
-  /* sRGB fallback for browsers without oklch() support (e.g. iOS Safari < 15.4) */
   @supports not (color: oklch(0 0 0)) {
-    .hero-bg__clouds::before {
+    .ambient-bg__clouds::before {
       background:
         radial-gradient(55% 65% at 35% 65%, rgb(130, 20, 32), transparent 72%),
         radial-gradient(
@@ -202,7 +206,7 @@
           transparent 68%
         );
     }
-    .hero-bg__clouds::after {
+    .ambient-bg__clouds::after {
       background:
         radial-gradient(62% 55% at 65% 38%, rgb(255, 90, 71), transparent 74%),
         radial-gradient(
@@ -216,14 +220,14 @@
           transparent 66%
         );
     }
-    .hero-bg__cloud-c {
+    .ambient-bg__cloud-c {
       background: radial-gradient(
         closest-side,
         rgba(156, 44, 52, 0.85),
         transparent 70%
       );
     }
-    .hero-bg__cloud-d {
+    .ambient-bg__cloud-d {
       background: radial-gradient(
         closest-side,
         rgba(119, 55, 50, 0.68),

@@ -2,13 +2,12 @@
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Navbar from "@/components/navbar/Navbar.astro";
 import Hero from "@/components/sections/hero/Hero.astro";
-import HeroBackground from "@/components/sections/hero/HeroBackground.astro";
+import AmbientBackground from "@/components/backgrounds/AmbientBackground.astro";
 import Audience from "@/components/sections/audience/Audience.astro";
 import AudienceBackground from "@/components/sections/audience/AudienceBackground.astro";
 import Services from "@/components/sections/services/Services.astro";
 import ServicesBackground from "@/components/sections/services/ServicesBackground.astro";
 import Work from "@/components/sections/work/Work.astro";
-import WorkBackground from "@/components/sections/work/WorkBackground.astro";
 import About from "@/components/sections/about/About.astro";
 import AboutBackground from "@/components/sections/about/AboutBackground.astro";
 import Faq from "@/components/sections/faq/Faq.astro";
@@ -28,7 +27,7 @@ const t = useTranslations(lang);
 <BaseLayout title={t("meta.title")} lang={lang}>
   <div class="bg-stage" aria-hidden="true">
     <div class="bg-layer" data-bg="hero">
-      <HeroBackground />
+      <AmbientBackground />
     </div>
     <div class="bg-layer is-inactive" data-bg="audience">
       <AudienceBackground />
@@ -37,7 +36,7 @@ const t = useTranslations(lang);
       <ServicesBackground />
     </div>
     <div class="bg-layer is-inactive" data-bg="work">
-      <WorkBackground />
+      <AmbientBackground />
     </div>
     <div class="bg-layer is-inactive" data-bg="about">
       <AboutBackground />

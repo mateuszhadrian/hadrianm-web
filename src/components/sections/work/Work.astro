@@ -1,39 +1,158 @@
 ---
-import { navItems, navLabel } from "@/i18n/nav";
-import type { Lang } from "@/i18n/utils";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import { workProjects, localizeProject } from "./work-data";
+import { siteConfig } from "@/config/site";
+import WorkCard from "./WorkCard.astro";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
-const item = navItems.find((n) => n.id === "work");
-const heading = item ? navLabel(item, lang) : "work";
+const t = useTranslations(lang);
+
+const projects = workProjects.map((p) => localizeProject(p, lang));
+const showComingSoon = siteConfig.work.showComingSoonTile;
 ---
 
 <section id="work" class="work">
-  <div class="work__content">
-    <h2>{heading}</h2>
+  <header class="work__head">
+    <p class="work__eyebrow">{t("work.eyebrow")}</p>
+    <h2 class="work__title">
+      {t("work.headlineLead")}{" "}
+      <span class="work__accent">{t("work.headlineAccent")}</span>
+    </h2>
+    <p class="work__intro">{t("work.intro")}</p>
+  </header>
+
+  <div class="work__gallery">
+    {
+      projects.map((project, i) => (
+        <WorkCard project={project} index={i} cta={t("work.cta")} />
+      ))
+    }
+    {
+      showComingSoon && (
+        <div class="work__soon" aria-hidden="true">
+          <span class="work__soon-plus">+</span>
+          <span class="work__soon-label">{t("work.soon")}</span>
+        </div>
+      )
+    }
   </div>
 </section>
 
 <style>
   .work {
     position: relative;
-    min-height: 150svh;
+    padding-bottom: clamp(72px, 9vw, 120px);
+    color: var(--ink);
   }
 
-  .work__content {
-    position: sticky;
-    top: 0;
-    height: 100svh;
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: system-ui, sans-serif;
+  .work__head {
+    text-align: center;
+    padding: clamp(48px, 7vw, 90px) 5vw 8px;
+  }
+  .work__eyebrow {
+    margin: 0 0 22px;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .work__title {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    font-size: clamp(46px, 8vw, 104px);
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .work__accent {
+    display: block;
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .work__intro {
+    max-width: 560px;
+    margin: 24px auto 0;
+    font-family: var(--font-body), sans-serif;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--muted);
+    text-wrap: pretty;
   }
 
-  .work__content h2 {
-    font-size: clamp(1.25rem, 4vw, 2.25rem);
-    font-weight: 700;
+  .work__gallery {
+    display: flex;
+    flex-direction: column;
+    gap: 80px;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: clamp(48px, 6vw, 90px) 6vw 0;
+  }
+
+  .work__soon {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    min-height: 150px;
+    border: 1.5px dashed rgba(245, 240, 236, 0.18);
+    border-radius: 18px;
+    color: var(--faint);
+  }
+  .work__soon-plus {
+    font-size: 26px;
+    font-weight: 300;
+    line-height: 1;
+  }
+  .work__soon-label {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  @media (max-width: 760px) {
+    .work__head {
+      padding: 48px 24px 6px;
+    }
+    .work__eyebrow {
+      margin-bottom: 16px;
+      font-size: 10.5px;
+      letter-spacing: 0.34em;
+      text-indent: 0.34em;
+    }
+    .work__title {
+      font-size: 42px;
+      letter-spacing: -0.03em;
+      line-height: 1.02;
+    }
+    .work__accent {
+      display: inline;
+    }
+    .work__intro {
+      max-width: 340px;
+      margin-top: 18px;
+      font-size: 15px;
+    }
+    .work__gallery {
+      --work-gap: 200px;
+      --work-head-gap: 140px;
+      gap: var(--work-gap);
+      padding: var(--work-head-gap) 22px 0;
+    }
   }
 </style>

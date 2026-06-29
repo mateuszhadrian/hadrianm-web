@@ -1,0 +1,228 @@
+---
+interface Props {
+  desktop: string;
+  mobile: string;
+  altDesktop: string;
+  altMobile: string;
+  showPhone?: boolean;
+}
+const {
+  desktop,
+  mobile,
+  altDesktop,
+  altMobile,
+  showPhone = true,
+} = Astro.props;
+---
+
+<div class="wd">
+  <span class="wd__floor" aria-hidden="true"></span>
+
+  <div class="wd__laptop">
+    <div class="wd__lid">
+      <div class="wd__screen">
+        <img
+          class="wd__img"
+          src={desktop}
+          alt={altDesktop}
+          loading="lazy"
+          decoding="async"
+          draggable="false"
+        />
+        <span class="wd__reflection" aria-hidden="true"></span>
+      </div>
+    </div>
+    <div class="wd__base"><span class="wd__notch"></span></div>
+  </div>
+
+  {
+    showPhone && (
+      <div class="wd__phone">
+        <div class="wd__phone-screen">
+          <img
+            class="wd__img"
+            src={mobile}
+            alt={altMobile}
+            loading="lazy"
+            decoding="async"
+            draggable="false"
+          />
+          <span class="wd__punch" aria-hidden="true" />
+          <span class="wd__reflection" aria-hidden="true" />
+        </div>
+      </div>
+    )
+  }
+</div>
+
+<style>
+  .wd {
+    --lap-w: clamp(320px, 42vw, 540px);
+    --phone-w: calc(var(--lap-w) * 0.255);
+    position: relative;
+    width: var(--lap-w);
+    margin: 0 auto;
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  @media (hover: hover) {
+    .wd {
+      will-change: transform;
+    }
+  }
+
+  .wd__floor {
+    position: absolute;
+    z-index: 0;
+    left: 50%;
+    bottom: calc(var(--lap-w) * -0.07);
+    width: calc(var(--lap-w) * 1.28);
+    height: calc(var(--lap-w) * 0.22);
+    transform: translateX(-50%);
+    border-radius: 50%;
+    background: radial-gradient(
+      ellipse at center,
+      rgba(var(--accent-gold-rgb), 0.2) 0%,
+      rgba(0, 0, 0, 0) 65%
+    );
+    filter: blur(10px);
+    pointer-events: none;
+  }
+
+  .wd__laptop {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+  }
+  .wd__lid {
+    padding: 13px;
+    border-radius: 20px 20px 6px 6px;
+    background: linear-gradient(
+      180deg,
+      hsl(240 5% 28.6%) 0%,
+      hsl(240 5% 13.6%) 55%,
+      hsl(240 5% 9.6%) 100%
+    );
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+      0 80px 160px -40px rgba(0, 0, 0, 0.85),
+      0 40px 130px -30px rgba(var(--accent-gold-rgb), 0.2);
+  }
+  .wd__screen {
+    position: relative;
+    height: calc((var(--lap-w) - 26px) * 0.625);
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+  }
+  .wd__base {
+    position: relative;
+    width: 114%;
+    margin-left: -7%;
+    height: calc(var(--lap-w) * 0.0216);
+    border-radius: 3px 3px 16px 16px;
+    background: linear-gradient(
+      180deg,
+      hsl(240 5% 35.4%) 0%,
+      hsl(240 5% 17.7%) 45%,
+      hsl(240 5% 7%) 100%
+    );
+    box-shadow: 0 26px 60px -16px rgba(0, 0, 0, 0.8);
+  }
+  .wd__notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(var(--lap-w) * 0.16);
+    height: 7px;
+    background: rgba(0, 0, 0, 0.45);
+    border-radius: 0 0 10px 10px;
+  }
+
+  .wd__phone {
+    position: absolute;
+    z-index: 2;
+    right: calc(var(--phone-w) * -0.34);
+    bottom: calc(var(--phone-w) * -0.18);
+    box-sizing: border-box;
+    width: var(--phone-w);
+    padding: 6px;
+    border-radius: calc(var(--phone-w) * 0.165);
+    background: linear-gradient(
+      180deg,
+      hsl(240 5% 30.4%) 0%,
+      hsl(240 5% 15.4%) 60%,
+      hsl(240 5% 11.4%) 100%
+    );
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+      0 60px 120px -30px rgba(0, 0, 0, 0.85),
+      0 30px 100px -20px rgba(var(--accent-gold-rgb), 0.2);
+  }
+  .wd__phone-screen {
+    position: relative;
+    height: calc((var(--phone-w) - 12px) * 2.0513);
+    border-radius: calc(var(--phone-w) * 0.165 - 6px);
+    overflow: hidden;
+    background: #000;
+  }
+  .wd__punch {
+    position: absolute;
+    z-index: 2;
+    top: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 99px;
+    background: #0a0a0a;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  }
+
+  .wd__img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top;
+  }
+  .wd__reflection {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      112deg,
+      rgba(255, 255, 255, 0.1) 0%,
+      rgba(255, 255, 255, 0.035) 26%,
+      rgba(255, 255, 255, 0) 45%
+    );
+  }
+
+  @media (max-width: 760px) {
+    .wd {
+      --lap-w: clamp(240px, 74vw, 300px);
+    }
+    .wd__lid {
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 22px 44px -18px rgba(0, 0, 0, 0.8);
+    }
+    .wd__base {
+      box-shadow: 0 12px 26px -12px rgba(0, 0, 0, 0.8);
+    }
+    .wd__phone {
+      box-shadow:
+        inset 0 0 0 1px rgba(255, 255, 255, 0.1),
+        0 16px 34px -14px rgba(0, 0, 0, 0.8);
+    }
+    .wd__floor {
+      filter: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wd {
+      transition: none;
+    }
+  }
+</style>

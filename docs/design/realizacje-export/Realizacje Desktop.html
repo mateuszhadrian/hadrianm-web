@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="pl">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Realizacje — Desktop (zygzak)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --rz-accent: #e3be7f;
+        --rz-ring: rgba(227, 190, 127, 0.5);
+        --rz-ring-bg: rgba(227, 190, 127, 0.06);
+        --rz-glow: rgba(227, 190, 127, 0.45);
+        --rz-cta-ink: #160a08;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+      }
+      body {
+        background: #0a0709;
+        font-family: "Archivo", system-ui, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      button {
+        font: inherit;
+      }
+
+      .rz-card {
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        border: none;
+        padding: 0;
+        margin: 0;
+        color: inherit;
+        font: inherit;
+        cursor: pointer;
+        position: relative;
+        text-align: left;
+        outline: none;
+      }
+      .rz-card::before {
+        content: "";
+        position: absolute;
+        inset: -22px -26px;
+        border-radius: 26px;
+        border: 1px solid transparent;
+        background: transparent;
+        box-shadow: 0 0 0 0 transparent;
+        transition:
+          border-color 0.35s cubic-bezier(0.2, 0.7, 0.2, 1),
+          background 0.35s,
+          box-shadow 0.4s;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .rz-card > * {
+        position: relative;
+        z-index: 1;
+      }
+      .rz-card:focus-visible::before {
+        border-color: var(--rz-ring);
+      }
+
+      .rz-media-inner {
+        transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+      .rz-cta {
+        transition:
+          background 0.25s,
+          color 0.25s,
+          border-color 0.25s;
+      }
+      .rz-cta-arrow {
+        transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+      }
+
+      .rz-card:hover .rz-cta {
+        background: var(--rz-accent);
+        color: var(--rz-cta-ink) !important;
+        border-color: var(--rz-accent) !important;
+      }
+      .rz-card:hover .rz-cta-arrow {
+        transform: translateX(4px);
+      }
+
+      /* hover = "wszystko": powiększenie + ramka + poświata */
+      .rz-card:hover .rz-media-inner {
+        transform: scale(1.045);
+      }
+      .rz-card:hover::before {
+        border-color: var(--rz-ring);
+        background: var(--rz-ring-bg);
+        box-shadow: 0 0 90px -8px var(--rz-glow);
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        .rz-media-inner,
+        .rz-cta-arrow {
+          transition: none;
+        }
+        .rz-card:hover .rz-media-inner {
+          transform: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <template id="__bundler_thumbnail">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+        <rect width="100" height="100" fill="#0A0709"></rect>
+        <rect
+          x="22"
+          y="34"
+          width="44"
+          height="30"
+          rx="3"
+          fill="#1a1418"
+          stroke="#E3BE7F"
+          stroke-width="1.4"
+        ></rect>
+        <rect
+          x="56"
+          y="44"
+          width="14"
+          height="26"
+          rx="3"
+          fill="#1a1418"
+          stroke="#E3BE7F"
+          stroke-width="1.4"
+        ></rect>
+        <text
+          x="50"
+          y="24"
+          font-family="Georgia, serif"
+          font-style="italic"
+          font-size="11"
+          fill="#E3BE7F"
+          text-anchor="middle"
+        >
+          realizacje
+        </text>
+      </svg>
+    </template>
+    <div id="root"></div>
+
+    <script
+      src="https://unpkg.com/react@18.3.1/umd/react.development.js"
+      integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js"
+      integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js"
+      integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y"
+      crossorigin="anonymous"
+    ></script>
+
+    <script type="text/babel" src="realizacje-data.jsx"></script>
+    <script type="text/babel" src="realizacje-devices.jsx"></script>
+    <script type="text/babel" src="realizacje-card.jsx"></script>
+
+    <script type="text/babel">
+      const t = {
+        ...RZ_THEME,
+        accent: "#E3BE7F",
+        glow: "rgba(227,190,127,0.20)",
+        glowRGB: "227,190,127",
+      };
+
+      function DesktopRealizacje() {
+        const openModal = (r) => {
+          /* hook na modal — do podpięcia później */
+        };
+        return (
+          <div
+            style={{ position: "relative", minHeight: "100vh", color: t.ink }}
+          >
+            <RzBg t={t}></RzBg>
+            <div style={{ position: "relative", zIndex: 2 }}>
+              <section
+                style={{
+                  textAlign: "center",
+                  padding: "clamp(48px,7vw,90px) 5vw 8px",
+                }}
+              >
+                <div
+                  style={{
+                    fontFamily: t.mono,
+                    fontSize: 12,
+                    letterSpacing: "0.42em",
+                    color: t.faint,
+                    marginBottom: 22,
+                  }}
+                >
+                  ZREALIZOWANE ZLECENIA
+                </div>
+                <h2
+                  style={{
+                    margin: 0,
+                    fontFamily: t.display,
+                    fontWeight: 800,
+                    letterSpacing: "-0.035em",
+                    lineHeight: 1.0,
+                    fontSize: "clamp(46px,8vw,104px)",
+                  }}
+                >
+                  zobacz wybrane{" "}
+                  <span
+                    style={{
+                      fontFamily: t.serif,
+                      fontStyle: "italic",
+                      fontWeight: 400,
+                      background:
+                        "linear-gradient(105deg,#FFF6F0 10%,#FFB3A6 90%)",
+                      WebkitBackgroundClip: "text",
+                      backgroundClip: "text",
+                      WebkitTextFillColor: "transparent",
+                    }}
+                  >
+                    realizacje
+                  </span>
+                </h2>
+                <p
+                  style={{
+                    maxWidth: 560,
+                    margin: "24px auto 0",
+                    fontSize: 17,
+                    lineHeight: 1.5,
+                    color: t.muted,
+                    textWrap: "pretty",
+                  }}
+                >
+                  Wybrane projekty z ostatnich miesięcy. Każdy w wersji desktop
+                  i mobilnej — kliknij, by zobaczyć szczegóły.
+                </p>
+              </section>
+
+              <main style={{ padding: "clamp(48px,6vw,90px) 0 120px" }}>
+                <div
+                  data-hover="all"
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 80,
+                    maxWidth: 1240,
+                    margin: "0 auto",
+                    padding: "0 6vw",
+                  }}
+                >
+                  {REALIZACJE.map((r, i) => (
+                    <RzCard
+                      key={r.id}
+                      t={t}
+                      r={r}
+                      layout="horizontal"
+                      laptopW={540}
+                      flip={i % 2 === 1}
+                      showPhone={true}
+                      onOpen={openModal}
+                    ></RzCard>
+                  ))}
+                </div>
+              </main>
+            </div>
+          </div>
+        );
+      }
+
+      ReactDOM.createRoot(document.getElementById("root")).render(
+        <DesktopRealizacje></DesktopRealizacje>,
+      );
+    </script>
+  </body>
+</html>

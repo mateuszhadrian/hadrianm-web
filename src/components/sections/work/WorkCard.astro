@@ -1,0 +1,280 @@
+---
+import WorkDeviceDuo from "./WorkDeviceDuo.astro";
+
+interface LocalizedProject {
+  slug: string;
+  name: string;
+  year: string;
+  category: string;
+  blurb: string;
+  tags: string[];
+  img: { desktop: string; mobile: string };
+  href?: string;
+}
+
+interface Props {
+  project: LocalizedProject;
+  index: number;
+  cta: string;
+}
+const { project, index, cta } = Astro.props;
+const flip = index % 2 === 1;
+---
+
+<button
+  type="button"
+  class="rz-card"
+  data-flip={flip}
+  data-work-slug={project.slug}
+  aria-label={`${project.name} — ${cta}`}
+>
+  <div class="rz-card__media">
+    <WorkDeviceDuo
+      desktop={project.img.desktop}
+      mobile={project.img.mobile}
+      altDesktop={`${project.name} — desktop`}
+      altMobile={`${project.name} — mobile`}
+    />
+  </div>
+
+  <div class="rz-card__meta">
+    <div class="rz-card__tagline">
+      <span class="rz-card__category">{project.category}</span>
+      <span class="rz-card__year">{project.year}</span>
+    </div>
+
+    <div>
+      <h3 class="rz-card__name">{project.name}</h3>
+      <p class="rz-card__blurb">{project.blurb}</p>
+    </div>
+
+    <div class="rz-card__tags">
+      {project.tags.map((tag) => <span class="rz-card__tag">{tag}</span>)}
+    </div>
+
+    <span class="rz-card__cta">
+      <span>{cta}</span>
+      <svg
+        class="rz-card__arrow"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h13M13 6l6 6-6 6"></path>
+      </svg>
+    </span>
+  </div>
+</button>
+
+<style>
+  .rz-card {
+    appearance: none;
+    -webkit-appearance: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    outline: none;
+    position: relative;
+    width: 100%;
+    display: grid;
+    align-items: center;
+    gap: clamp(28px, 5vw, 90px);
+  }
+  .rz-card > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .rz-card::before {
+    content: "";
+    position: absolute;
+    inset: -22px -26px;
+    border-radius: 26px;
+    border: 1px solid rgba(var(--accent-gold-rgb), 0.5);
+    background: rgba(var(--accent-gold-rgb), 0.06);
+    box-shadow: 0 0 90px -8px rgba(var(--accent-gold-rgb), 0.45);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .rz-card:focus-visible::before {
+    opacity: 1;
+  }
+
+  @media (hover: hover) {
+    .rz-card:hover::before {
+      opacity: 1;
+    }
+    .rz-card:hover :global(.wd) {
+      transform: scale(1.045);
+    }
+    .rz-card:hover .rz-card__cta {
+      background: var(--accent-gold);
+      color: #160a08;
+      border-color: var(--accent-gold);
+    }
+    .rz-card:hover .rz-card__arrow {
+      transform: translateX(4px);
+    }
+  }
+
+  .rz-card__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+  .rz-card__tagline {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .rz-card__category {
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+    border: 1px solid rgba(var(--accent-gold-rgb), 0.45);
+    border-radius: 999px;
+    padding: 5px 11px;
+  }
+  .rz-card__year {
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.16em;
+    color: var(--faint);
+  }
+  .rz-card__name {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.02;
+    font-size: 34px;
+    color: var(--ink);
+  }
+  .rz-card__blurb {
+    margin: 8px 0 0;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 1.45;
+    color: var(--muted);
+    max-width: 440px;
+    text-wrap: pretty;
+  }
+  .rz-card__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .rz-card__tag {
+    font-family: var(--font-body), sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: rgba(245, 240, 236, 0.78);
+    background: rgba(245, 240, 236, 0.06);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 6px 10px;
+  }
+  .rz-card__cta {
+    margin-top: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    border: 1px solid rgba(var(--accent-gold-rgb), 0.4);
+    border-radius: 999px;
+    padding: 9px 16px;
+    transition:
+      background 0.25s,
+      color 0.25s,
+      border-color 0.25s;
+  }
+  .rz-card__arrow {
+    display: block;
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @media (min-width: 761px) {
+    .rz-card {
+      grid-template-columns: 1.15fr 1fr;
+    }
+    .rz-card[data-flip="true"] {
+      grid-template-columns: 1fr 1.15fr;
+    }
+    .rz-card[data-flip="true"] .rz-card__media {
+      order: 2;
+    }
+    .rz-card[data-flip="true"] .rz-card__meta {
+      order: 1;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .rz-card {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      gap: 22px;
+    }
+    .rz-card__media {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+    .rz-card__meta {
+      align-items: center;
+      text-align: center;
+    }
+    .rz-card__tagline,
+    .rz-card__tags {
+      justify-content: center;
+    }
+    .rz-card__name {
+      font-size: 26px;
+    }
+    .rz-card__blurb {
+      font-size: 14px;
+    }
+    .rz-card::before {
+      inset: -18px -20px;
+      border-radius: 22px;
+      box-shadow: 0 0 48px -8px rgba(var(--accent-gold-rgb), 0.45);
+      opacity: 1;
+    }
+    .rz-card__cta {
+      background: var(--accent-gold);
+      color: #160a08;
+      border-color: var(--accent-gold);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rz-card::before,
+    .rz-card__cta,
+    .rz-card__arrow {
+      transition: none;
+    }
+    .rz-card:hover :global(.wd) {
+      transform: none;
+    }
+  }
+</style>

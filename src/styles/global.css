@@ -29,6 +29,9 @@
   --accent: #ff5a47;
   --glow: 255, 90, 71; /* składowe RGB → rgba(var(--glow), α) */
   --accent-gradient: linear-gradient(105deg, #fff6f0 0%, #ffb3a6 100%);
+
+  --accent-gold: #e3be7f;
+  --accent-gold-rgb: 227, 190, 127;
 }
 
 /* ── Glow sekcji (po „Dla kogo"): po dwa kolory na sekcję. Konsumowane przez
