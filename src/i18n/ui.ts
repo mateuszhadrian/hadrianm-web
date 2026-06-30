@@ -29,6 +29,11 @@ export const ui = {
       "Wybrane projekty z ostatnich miesięcy. Każdy w wersji desktop i mobilnej — kliknij, by zobaczyć szczegóły.",
     "work.cta": "Zobacz realizację",
     "work.soon": "Kolejne realizacje wkrótce",
+    "work.preview": "Podgląd strony",
+    "work.results": "Liczby i wyniki",
+    "work.scope": "Zakres prac",
+    "work.live": "Zobacz stronę na żywo",
+    "work.close": "Zamknij",
   },
   en: {
     "meta.title": "hadrianm — GSAP demo",
@@ -53,5 +58,10 @@ export const ui = {
       "Selected projects from recent months. Each in a desktop and mobile version — click to see the details.",
     "work.cta": "View project",
     "work.soon": "More projects coming soon",
+    "work.preview": "Page preview",
+    "work.results": "Numbers & results",
+    "work.scope": "Scope of work",
+    "work.live": "View live site",
+    "work.close": "Close",
   },
 } as const;

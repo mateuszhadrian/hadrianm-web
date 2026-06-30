@@ -1,0 +1,166 @@
+---
+// Generyczny bottom sheet (mobile). Reużywalny szkielet — treść przez <slot/>.
+// Sterowany przez window.overlay.open(id) / .close(id) (scripts/overlay.ts).
+interface Props {
+  id: string;
+  closeLabel?: string;
+  panelClass?: string;
+}
+const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
+---
+
+<div
+  class="ov ov--sheet"
+  id={id}
+  data-overlay
+  data-overlay-kind="sheet"
+  role="dialog"
+  aria-modal="true"
+  data-lenis-prevent
+  hidden
+>
+  <div class:list={["ov-sheet", panelClass]} data-overlay-panel>
+    <div class="ov-sheet__head">
+      <span class="ov-sheet__grip" aria-hidden="true"></span>
+      <button
+        type="button"
+        class="ov-sheet__close"
+        data-overlay-close
+        data-overlay-autofocus
+        aria-label={closeLabel}
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M18 6L6 18M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    <div class="ov-sheet__scroll" data-overlay-scroll>
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .ov {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    background: rgba(6, 4, 5, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    transition: opacity 0.26s ease;
+  }
+  .ov[hidden] {
+    display: none;
+  }
+  .ov.is-open {
+    opacity: 1;
+  }
+
+  .ov-sheet {
+    position: relative;
+    width: 100%;
+    max-width: 520px;
+    /* Obniżony na tyle, by górna część (grip + X) zawsze była widoczna — z
+       zapasem na notch/Dynamic Island (safe-area-inset-top). svh chroni przed
+       dynamicznym paskiem przeglądarki na mobile; vh jako fallback. */
+    max-height: 90vh;
+    max-height: min(90svh, calc(100svh - env(safe-area-inset-top, 0px) - 20px));
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(180deg, #17110f 0%, #0c0809 100%);
+    border-top: 1px solid var(--line);
+    border-top-left-radius: 26px;
+    border-top-right-radius: 26px;
+    overflow: hidden;
+    box-shadow:
+      0 -30px 90px -20px rgba(0, 0, 0, 0.85),
+      0 0 120px -40px rgba(var(--accent-gold-rgb), 0.25);
+    transform: translateY(100%);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .ov-sheet::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      70% 40% at 80% 0%,
+      rgba(var(--accent-gold-rgb), 0.16),
+      rgba(0, 0, 0, 0) 70%
+    );
+  }
+  .ov.is-open .ov-sheet {
+    transform: none;
+  }
+
+  .ov-sheet__head {
+    position: relative;
+    z-index: 2;
+    flex: 0 0 auto;
+    padding-top: 12px;
+  }
+  .ov-sheet__grip {
+    display: block;
+    width: 44px;
+    height: 5px;
+    border-radius: 99px;
+    background: rgba(245, 240, 236, 0.28);
+    margin: 0 auto;
+  }
+  .ov-sheet__close {
+    position: absolute;
+    top: 8px;
+    right: 14px;
+    width: 38px;
+    height: 38px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    background: rgba(245, 240, 236, 0.08);
+    border: 1px solid var(--line);
+    color: var(--ink);
+  }
+  .ov-sheet__close:focus-visible {
+    outline: 2px solid rgba(var(--accent-gold-rgb), 0.7);
+    outline-offset: 2px;
+  }
+
+  .ov-sheet__scroll {
+    position: relative;
+    z-index: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    padding: 18px 22px calc(30px + env(safe-area-inset-bottom, 0px));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ov,
+    .ov-sheet {
+      transition: none;
+    }
+    .ov-sheet {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import "@/scripts/overlay";
+</script>

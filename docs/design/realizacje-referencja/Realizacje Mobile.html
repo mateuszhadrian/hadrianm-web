@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Realizacje — Mobile (stos)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rz-accent: #E3BE7F;
+    --rz-ring: rgba(227,190,127,0.50);
+    --rz-ring-bg: rgba(227,190,127,0.06);
+    --rz-glow: rgba(227,190,127,0.45);
+    --rz-cta-ink: #160a08;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0A0709; font-family: 'Archivo', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; }
+
+  .rz-card {
+    appearance: none; -webkit-appearance: none; background: transparent; border: none;
+    padding: 0; margin: 0; color: inherit; font: inherit; cursor: pointer; position: relative;
+    text-align: left; outline: none;
+  }
+  .rz-card::before {
+    content: ''; position: absolute; inset: -18px -20px; border-radius: 22px;
+    border: 1px solid transparent; background: transparent; box-shadow: 0 0 0 0 transparent;
+    transition: border-color .35s cubic-bezier(.2,.7,.2,1), background .35s, box-shadow .4s;
+    pointer-events: none; z-index: 0;
+  }
+  .rz-card > * { position: relative; z-index: 1; }
+  .rz-card:focus-visible::before { border-color: var(--rz-ring); }
+
+  .rz-media-inner { transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+  .rz-cta { transition: background .25s, color .25s, border-color .25s; }
+  .rz-cta-arrow { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+
+  .rz-card:active .rz-cta { background: var(--rz-accent); color: var(--rz-cta-ink) !important; border-color: var(--rz-accent) !important; }
+  .rz-card:hover .rz-cta { background: var(--rz-accent); color: var(--rz-cta-ink) !important; border-color: var(--rz-accent) !important; }
+  .rz-card:hover .rz-cta-arrow { transform: translateX(4px); }
+  .rz-card:hover .rz-media-inner { transform: scale(1.035); }
+  .rz-card:hover::before { border-color: var(--rz-ring); background: var(--rz-ring-bg); box-shadow: 0 0 70px -8px var(--rz-glow); }
+
+  .rz-ghost {
+    border: 1.5px dashed rgba(245,240,236,0.18); border-radius: 18px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px;
+    color: rgba(245,240,236,0.4); min-height: 150px; width: 100%;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rz-media-inner, .rz-cta-arrow { transition: none; }
+    .rz-card:hover .rz-media-inner { transform: none; }
+  }
+
+  /* — Bottom sheet (mobile) — */
+  @keyframes rzOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes rzSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .rz-sheet-overlay { animation: rzOverlayIn .25s ease both; }
+  .rz-sheet { animation: rzSheetUp .34s cubic-bezier(.22,.61,.27,1) both; }
+  .rz-sheet-overlay--out { animation: rzOverlayIn .24s ease reverse both; }
+  .rz-sheet--out { animation: rzSheetUp .26s ease-in reverse both; }
+  .rz-modal-x { transition: background .2s; }
+  .rz-modal-cta { transition: transform .2s, filter .2s; }
+  .rz-sheet-scroll::-webkit-scrollbar { width: 8px; }
+  .rz-sheet-scroll::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 99px; }
+  @media (prefers-reduced-motion: reduce) {
+    .rz-sheet-overlay, .rz-sheet, .rz-sheet-overlay--out, .rz-sheet--out { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#0A0709"></rect>
+    <rect x="40" y="32" width="20" height="38" rx="4" fill="#1a1418" stroke="#E3BE7F" stroke-width="1.4"></rect>
+    <text x="50" y="24" font-family="Georgia, serif" font-style="italic" font-size="11" fill="#E3BE7F" text-anchor="middle">realizacje</text>
+  </svg>
+</template>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="realizacje-data.jsx"></script>
+<script type="text/babel" src="realizacje-devices.jsx"></script>
+<script type="text/babel" src="realizacje-card.jsx"></script>
+<script type="text/babel" src="realizacje-mobile.jsx"></script>
+<script type="text/babel" src="realizacje-modal.jsx"></script>
+
+<script type="text/babel">
+const tMob = { ...RZ_THEME, accent: '#E3BE7F', glow: 'rgba(227,190,127,0.20)', glowRGB: '227,190,127' };
+const twMob = { showPhone: true, cardGap: 24 };
+
+function MobileRealizacje() {
+  const [active, setActive] = React.useState(null);
+  const openModal = (r) => setActive(r);
+  return (
+    <div style={{ position: 'relative', minHeight: '100vh', color: tMob.ink }}>
+      <RzBg t={tMob}></RzBg>
+      <div style={{ position: 'relative', zIndex: 2, maxWidth: 460, margin: '0 auto' }}>
+        <section style={{ textAlign: 'center', padding: '48px 24px 6px' }}>
+          <div style={{ fontFamily: tMob.mono, fontSize: 10.5, letterSpacing: '0.34em', color: tMob.faint, marginBottom: 16 }}>ZREALIZOWANE ZLECENIA</div>
+          <h2 style={{ margin: 0, fontFamily: tMob.display, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.02, fontSize: 42 }}>
+            zobacz wybrane <span style={{ fontFamily: tMob.serif, fontStyle: 'italic', fontWeight: 400, background: 'linear-gradient(105deg,#FFF6F0 10%,#FFB3A6 90%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>realizacje</span>
+          </h2>
+          <p style={{ margin: '18px auto 0', fontSize: 15, lineHeight: 1.5, color: tMob.muted, maxWidth: 340, textWrap: 'pretty' }}>
+            Wybrane projekty z ostatnich miesięcy. Każdy w wersji desktop i mobilnej — kliknij, by zobaczyć szczegóły.
+          </p>
+        </section>
+
+        <main style={{ padding: '34px 0 90px' }}>
+          <MobileGallery t={tMob} tw={twMob} variant="stos" hover="all" onOpen={openModal}></MobileGallery>
+        </main>
+      </div>
+      <RzModalSheet t={tMob} r={active} onClose={() => setActive(null)}></RzModalSheet>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<MobileRealizacje></MobileRealizacje>);
+</script>
+</body>
+</html>

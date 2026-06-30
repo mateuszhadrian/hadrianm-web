@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>hadrianm — Realizacje (galeria)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rz-accent: #FF5A47;
+    --rz-ring: rgba(255,90,71,0.50);
+    --rz-ring-bg: rgba(255,90,71,0.05);
+    --rz-glow: rgba(255,90,71,0.45);
+    --rz-cta-ink: #1C0B08;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: #0A0709; font-family: 'Archivo', system-ui, sans-serif; -webkit-font-smoothing: antialiased; }
+  button { font: inherit; }
+
+  /* ── Karta (button reset) ── */
+  .rz-card {
+    appearance: none; -webkit-appearance: none; background: transparent; border: none;
+    padding: 0; margin: 0; color: inherit; font: inherit; cursor: pointer; position: relative;
+    text-align: left; outline: none;
+  }
+  .rz-card::before {
+    content: ''; position: absolute; inset: -22px -26px; border-radius: 26px;
+    border: 1px solid transparent; background: transparent; box-shadow: 0 0 0 0 transparent;
+    transition: border-color .35s cubic-bezier(.2,.7,.2,1), background .35s, box-shadow .4s;
+    pointer-events: none; z-index: 0;
+  }
+  .rz-card > * { position: relative; z-index: 1; }
+  .rz-card:focus-visible::before { border-color: var(--rz-ring); }
+
+  .rz-media-inner { transition: transform .45s cubic-bezier(.2,.7,.2,1); }
+  .rz-cta { transition: background .25s, color .25s, border-color .25s; }
+  .rz-cta-arrow { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
+
+  /* CTA zawsze reaguje na hover karty */
+  .rz-card:hover .rz-cta { background: var(--rz-accent); color: var(--rz-cta-ink) !important; border-color: var(--rz-accent) !important; }
+  .rz-card:hover .rz-cta-arrow { transform: translateX(4px); }
+
+  /* Tryby hover (sterowane atrybutem data-hover na kontenerze galerii) */
+  [data-hover="zoom"]      .rz-card:hover .rz-media-inner,
+  [data-hover="frameZoom"] .rz-card:hover .rz-media-inner { transform: scale(1.045); }
+  [data-hover="glow"]      .rz-card:hover .rz-media-inner { transform: scale(1.02); }
+
+  [data-hover="frame"]     .rz-card:hover::before,
+  [data-hover="frameZoom"] .rz-card:hover::before { border-color: var(--rz-ring); background: var(--rz-ring-bg); }
+
+  [data-hover="glow"] .rz-card:hover::before { border-color: var(--rz-ring); box-shadow: 0 0 90px -8px var(--rz-glow); }
+
+  /* "Wszystko" = powiększenie + ramka + poświata */
+  [data-hover="all"] .rz-card:hover .rz-media-inner { transform: scale(1.045); }
+  [data-hover="all"] .rz-card:hover::before { border-color: var(--rz-ring); background: var(--rz-ring-bg); box-shadow: 0 0 90px -8px var(--rz-glow); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rz-media-inner, .rz-cta-arrow { transition: none; }
+  }
+
+  /* ── Ghost card (kolejne realizacje) ── */
+  .rz-ghost {
+    border: 1.5px dashed rgba(245,240,236,0.18); border-radius: 20px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
+    color: rgba(245,240,236,0.4); min-height: 260px; width: 100%;
+    transition: border-color .3s, color .3s, background .3s; cursor: default;
+  }
+
+  /* ── Poziomy scroller ── */
+  .rz-hscroll { display: flex; gap: 64px; overflow-x: auto; overflow-y: visible;
+    padding: 30px 6vw 46px; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: rgba(255,90,71,0.4) transparent; }
+  .rz-hscroll::-webkit-scrollbar { height: 8px; }
+  .rz-hscroll::-webkit-scrollbar-thumb { background: rgba(255,90,71,0.4); border-radius: 99px; }
+  .rz-hscroll > * { scroll-snap-align: center; flex: 0 0 auto; }
+
+  /* ── Segmented switcher ── */
+  .rz-seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px;
+    background: rgba(245,240,236,0.05); border: 1px solid rgba(245,240,236,0.12); }
+  .rz-seg button { border: none; background: transparent; color: rgba(245,240,236,0.6);
+    font-weight: 600; font-size: 13px; padding: 8px 16px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    transition: background .2s, color .2s; }
+  .rz-seg button:hover { color: #F5F0EC; }
+  .rz-seg button[aria-pressed="true"] { background: #F5F0EC; color: #14100F; }
+
+  .rz-toast { position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px);
+    background: rgba(28,16,14,0.94); color: #F5F0EC; border: 1px solid rgba(255,90,71,0.4);
+    border-radius: 12px; padding: 12px 18px; font-size: 13.5px; font-weight: 600;
+    box-shadow: 0 18px 50px -16px rgba(0,0,0,0.8); opacity: 0; pointer-events: none;
+    transition: opacity .35s, transform .35s; z-index: 60; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+  .rz-toast[data-show="true"] { opacity: 1; transform: translate(-50%, 0); }
+
+  /* — Modal — */
+  @keyframes rzOverlayIn { from { opacity: 0; } to { opacity: 1; } }
+  @keyframes rzCardIn { from { opacity: 0; transform: translateY(22px) scale(.985); } to { opacity: 1; transform: none; } }
+  .rz-modal-overlay { animation: rzOverlayIn .25s ease both; }
+  .rz-modal-card { animation: rzCardIn .34s cubic-bezier(.2,.7,.2,1) both; }
+  .rz-modal-overlay--out { animation: rzOverlayIn .2s ease reverse both; }
+  .rz-modal-card--out { animation: rzCardIn .2s ease reverse both; }
+  .rz-modal-x { transition: background .2s, transform .2s; }
+  .rz-modal-x:hover { background: rgba(245,240,236,0.16) !important; transform: rotate(90deg); }
+  .rz-modal-cta { transition: transform .2s, box-shadow .25s, filter .2s; }
+  .rz-modal-cta:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 40px -12px var(--rz-glow); }
+  .rz-modal-overlay::-webkit-scrollbar { width: 10px; }
+  .rz-modal-overlay::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 99px; }
+
+  @media (max-width: 1024px) {
+    .rz-modal-grid { grid-template-columns: 1fr !important; }
+    .rz-modal-media { border-right: none !important; border-bottom: 1px solid rgba(245,240,236,0.14); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .rz-modal-overlay, .rz-modal-card, .rz-modal-overlay--out, .rz-modal-card--out { animation: none !important; }
+    .rz-modal-x:hover { transform: none; }
+  }
+
+  /* — Bottom sheet (mobile) — */
+  @keyframes rzSheetUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .rz-sheet-overlay { animation: rzOverlayIn .25s ease both; }
+  .rz-sheet { animation: rzSheetUp .34s cubic-bezier(.22,.61,.27,1) both; }
+  .rz-sheet-overlay--out { animation: rzOverlayIn .24s ease reverse both; }
+  .rz-sheet--out { animation: rzSheetUp .26s ease-in reverse both; }
+  .rz-sheet-scroll::-webkit-scrollbar { width: 8px; }
+  .rz-sheet-scroll::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 99px; }
+  @media (prefers-reduced-motion: reduce) {
+    .rz-sheet-overlay, .rz-sheet, .rz-sheet-overlay--out, .rz-sheet--out { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="realizacje-data.jsx"></script>
+<script type="text/babel" src="realizacje-devices.jsx"></script>
+<script type="text/babel" src="realizacje-card.jsx"></script>
+<script type="text/babel" src="realizacje-mobile.jsx"></script>
+<script type="text/babel" src="realizacje-modal.jsx"></script>
+
+<script type="text/babel">
+const { useState } = React;
+
+const LAYOUTS = [
+  { id: 'grid2',   label: 'Grid 2' },
+  { id: 'grid3',   label: 'Grid 3' },
+  { id: 'stack',   label: 'Lista' },
+  { id: 'zigzag',  label: 'Zygzak' },
+  { id: 'hscroll', label: 'Poziomo' },
+];
+
+const HOVER_MAP = { 'Powiększenie': 'zoom', 'Ramka': 'frame', 'Oba': 'frameZoom', 'Poświata': 'glow', 'Wszystko': 'all' };
+
+const MOBILE_VARIANTS = [
+  { id: 'stos',   label: 'Stos' },
+  { id: 'zwarty', label: 'Zwarty' },
+  { id: 'panel',  label: 'Karty' },
+];
+
+function useIsNarrow(bp = 760) {
+  const [n, setN] = React.useState(typeof window !== 'undefined' && window.innerWidth < bp);
+  React.useEffect(() => {
+    const onR = () => setN(window.innerWidth < bp);
+    window.addEventListener('resize', onR);
+    return () => window.removeEventListener('resize', onR);
+  }, [bp]);
+  return n;
+}
+
+function hexToRgb(hex) {
+  const m = hex.replace('#', '');
+  const n = parseInt(m.length === 3 ? m.split('').map(c => c + c).join('') : m, 16);
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+
+function GhostCard({ t, minH = 260 }) {
+  return (
+    <div className="rz-ghost" style={{ minHeight: minH }}>
+      <div style={{ fontSize: 30, fontWeight: 300, lineHeight: 1 }}>+</div>
+      <div style={{ fontFamily: t.mono, fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase' }}>Kolejne realizacje wkrótce</div>
+    </div>
+  );
+}
+
+function Gallery({ t, mode, tw, hover, onOpen }) {
+  const ds = tw.deviceScale / 100;
+  const gap = tw.cardGap;
+  const showPhone = tw.showPhone;
+  const items = REALIZACJE;
+
+  if (mode === 'grid2' || mode === 'grid3') {
+    const cols = mode === 'grid2' ? 2 : 3;
+    const baseW = mode === 'grid2' ? 460 : 330;
+    return (
+      <div data-hover={hover} style={{ display: 'grid', gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: `${gap + 24}px ${gap}px`, maxWidth: mode === 'grid2' ? 1180 : 1320, margin: '0 auto', padding: '0 5vw' }}>
+        {items.map(r => <RzCard key={r.id} t={t} r={r} layout="vertical" laptopW={baseW * ds} showPhone={showPhone} onOpen={onOpen}></RzCard>)}
+        <GhostCard t={t} minH={mode === 'grid2' ? 300 : 230}></GhostCard>
+      </div>
+    );
+  }
+
+  if (mode === 'stack') {
+    return (
+      <div data-hover={hover} style={{ display: 'flex', flexDirection: 'column', gap: gap + 40, maxWidth: 720, margin: '0 auto', padding: '0 5vw' }}>
+        {items.map(r => (
+          <button key={r.id} type="button" className="rz-card rz-card--v" onClick={() => onOpen(r)} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 30, width: '100%' }}>
+            <div className="rz-media"><RzDeviceDuo t={t} r={r} laptopW={600 * ds} showPhone={showPhone}></RzDeviceDuo></div>
+            <RzMeta t={t} r={r} align="center"></RzMeta>
+          </button>
+        ))}
+      </div>
+    );
+  }
+
+  if (mode === 'zigzag') {
+    return (
+      <div data-hover={hover} style={{ display: 'flex', flexDirection: 'column', gap: gap + 56, maxWidth: 1240, margin: '0 auto', padding: '0 6vw' }}>
+        {items.map((r, i) => <RzCard key={r.id} t={t} r={r} layout="horizontal" laptopW={540 * ds} flip={i % 2 === 1} showPhone={showPhone} onOpen={onOpen}></RzCard>)}
+      </div>
+    );
+  }
+
+  // hscroll
+  return (
+    <div data-hover={hover} className="rz-hscroll">
+      {items.map(r => (
+        <div key={r.id} style={{ width: 470 * ds }}>
+          <RzCard t={t} r={r} layout="vertical" laptopW={440 * ds} showPhone={showPhone} onOpen={onOpen}></RzCard>
+        </div>
+      ))}
+      <div style={{ width: 360 * ds, alignSelf: 'stretch', display: 'flex' }}><GhostCard t={t} minH={'100%'}></GhostCard></div>
+    </div>
+  );
+}
+
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accent": "#E3BE7F",
+  "hover": "Wszystko",
+  "showPhone": true,
+  "deviceScale": 100,
+  "cardGap": 24
+}/*EDITMODE-END*/;
+
+function RealizacjeApp() {
+  const [tw, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const [mode, setMode] = useState('zigzag');
+  const [preview, setPreview] = useState('desktop');
+  const [mvar, setMvar] = useState('stos');
+  const [active, setActive] = useState(null);
+  const isNarrow = useIsNarrow();
+  const mobileView = isNarrow || preview === 'mobile';
+
+  const [r, g, b] = hexToRgb(tw.accent);
+  const t = { ...RZ_THEME, accent: tw.accent, glow: `rgba(${r},${g},${b},0.20)`, glowRGB: `${r},${g},${b}` };
+  const hover = HOVER_MAP[tw.hover] || 'frameZoom';
+
+  // zmienne CSS dla ramki / poświaty / CTA
+  const rootVars = {
+    '--rz-accent': tw.accent,
+    '--rz-ring': `rgba(${r},${g},${b},0.5)`,
+    '--rz-ring-bg': `rgba(${r},${g},${b},0.06)`,
+    '--rz-glow': `rgba(${r},${g},${b},0.45)`,
+    '--rz-cta-ink': '#160a08',
+  };
+
+  const openModal = (r) => setActive(r);
+
+  return (
+    <div style={{ ...rootVars, position: 'relative', minHeight: '100vh', color: t.ink }}>
+      <RzBg t={t}></RzBg>
+
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        {/* Pasek górny */}
+        <header style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16, padding: '26px clamp(20px,5vw,64px)' }}>
+          <div style={{ fontFamily: t.display, fontWeight: 800, fontSize: 20, letterSpacing: '0.01em' }}>hadrian<span style={{ color: t.muted }}>m</span></div>
+          <div style={{ fontFamily: t.mono, fontSize: 11, letterSpacing: '0.3em', color: t.faint }}>REALIZACJE · PROCES · KONTAKT</div>
+        </header>
+
+        {/* Nagłówek sekcji */}
+        <section style={{ textAlign: 'center', padding: 'clamp(28px,5vw,60px) 5vw 8px' }}>
+          <div style={{ fontFamily: t.mono, fontSize: 12, letterSpacing: '0.42em', color: t.faint, marginBottom: 22 }}>ZREALIZOWANE ZLECENIA</div>
+          <h1 style={{ margin: 0, fontFamily: t.display, fontWeight: 800, letterSpacing: '-0.035em', lineHeight: 1.0, fontSize: 'clamp(46px,8vw,104px)' }}>
+            zobacz wybrane <span style={{ fontFamily: t.serif, fontStyle: 'italic', fontWeight: 400, background: 'linear-gradient(105deg,#FFF6F0 10%,#FFB3A6 90%)', WebkitBackgroundClip: 'text', backgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>realizacje</span>
+          </h1>
+          <p style={{ maxWidth: 560, margin: '24px auto 0', fontSize: 17, lineHeight: 1.5, color: t.muted, textWrap: 'pretty' }}>
+            Wybrane projekty z ostatnich miesięcy. Każdy w wersji desktop i mobilnej — kliknij, by zobaczyć szczegóły.
+          </p>
+        </section>
+
+        {/* Przełączniki: widok + układ/wariant */}
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 18, padding: '34px 5vw 12px' }}>
+          {!isNarrow ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.24em', color: t.faint }}>WIDOK</span>
+              <div className="rz-seg" role="group" aria-label="Widok">
+                <button aria-pressed={!mobileView} onClick={() => setPreview('desktop')}>Desktop</button>
+                <button aria-pressed={mobileView} onClick={() => setPreview('mobile')}>Mobile</button>
+              </div>
+            </div>
+          ) : null}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.24em', color: t.faint }}>{mobileView ? 'WARIANT MOBILNY' : 'PODGLĄD UKŁADU'}</span>
+            <div className="rz-seg" role="group" aria-label={mobileView ? 'Wariant mobilny' : 'Układ galerii'}>
+              {(mobileView ? MOBILE_VARIANTS : LAYOUTS).map(l => (
+                <button key={l.id} aria-pressed={(mobileView ? mvar : mode) === l.id} onClick={() => (mobileView ? setMvar(l.id) : setMode(l.id))}>{l.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Galeria */}
+        <main style={{ padding: '30px 0 120px' }}>
+          {mobileView
+            ? (isNarrow
+                ? <MobileGallery t={t} tw={tw} variant={mvar} hover={hover} onOpen={openModal}></MobileGallery>
+                : <PhoneShell t={t}><MobilePage t={t} tw={tw} variant={mvar} hover={hover} onOpen={openModal}></MobilePage></PhoneShell>)
+            : <Gallery t={t} mode={mode} tw={tw} hover={hover} onOpen={openModal}></Gallery>}
+        </main>
+      </div>
+
+      {mobileView
+        ? <RzModalSheet t={t} r={active} onClose={() => setActive(null)}></RzModalSheet>
+        : <RzModal t={t} r={active} onClose={() => setActive(null)}></RzModal>}
+
+      <TweaksPanel title="Tweaks">
+        <TweakSection label="Galeria"></TweakSection>
+        <TweakSelect label="Efekt hover" value={tw.hover} options={['Powiększenie', 'Ramka', 'Oba', 'Poświata', 'Wszystko']} onChange={(v) => setTweak('hover', v)}></TweakSelect>
+        <TweakToggle label="Pokaż telefon" value={tw.showPhone} onChange={(v) => setTweak('showPhone', v)}></TweakToggle>
+        <TweakSlider label="Wielkość urządzeń" value={tw.deviceScale} min={80} max={120} unit="%" onChange={(v) => setTweak('deviceScale', v)}></TweakSlider>
+        <TweakSlider label="Odstęp kart" value={tw.cardGap} min={24} max={96} unit="px" onChange={(v) => setTweak('cardGap', v)}></TweakSlider>
+        <TweakSection label="Marka"></TweakSection>
+        <TweakColor label="Akcent" value={tw.accent} options={['#FF5A47', '#E3BE7F', '#FF54C0', '#C9C6BD']} onChange={(v) => setTweak('accent', v)}></TweakColor>
+      </TweaksPanel>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<RealizacjeApp></RealizacjeApp>);
+</script>
+</body>
+</html>

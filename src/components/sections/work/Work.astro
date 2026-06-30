@@ -3,6 +3,9 @@ import { useTranslations, type Lang } from "@/i18n/utils";
 import { workProjects, localizeProject } from "./work-data";
 import { siteConfig } from "@/config/site";
 import WorkCard from "./WorkCard.astro";
+import WorkDetail from "./WorkDetail.astro";
+import Modal from "@/components/ui/Modal.astro";
+import BottomSheet from "@/components/ui/BottomSheet.astro";
 
 interface Props {
   lang: Lang;
@@ -39,7 +42,100 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
       )
     }
   </div>
+
+  {/* Treść szczegółów per realizacja — klonowana do nakładki po kliknięciu. */}
+  {
+    projects.map((project) => (
+      <template data-work-detail={project.slug}>
+        <WorkDetail
+          project={project}
+          previewLabel={t("work.preview")}
+          resultsLabel={t("work.results")}
+          scopeLabel={t("work.scope")}
+          liveLabel={t("work.live")}
+        />
+      </template>
+    ))
+  }
+
+  <Modal id="work-modal" closeLabel={t("work.close")}>
+    <div data-work-host></div>
+  </Modal>
+  <BottomSheet id="work-sheet" closeLabel={t("work.close")}>
+    <div data-work-host></div>
+  </BottomSheet>
 </section>
+
+<script>
+  // Podpięcie kafelków galerii do modala (desktop) / bottom sheeta (mobile).
+  // Treść jest klonowana z <template data-work-detail> do hosta nakładki tuż
+  // przed otwarciem i czyszczona po zamknięciu (zwalnia obrazy/DOM).
+  const gallery = document.querySelector<HTMLElement>(".work__gallery");
+  const sheetMQ = matchMedia("(max-width: 760px)");
+
+  // „Strona w ruchu": dopóki trwa scroll (pęd), dotknięcie ma najpierw zatrzymać
+  // przewijanie, a nie otwierać nakładkę. Po ~110 ms od ostatniego scrolla
+  // uznajemy stronę za nieruchomą i pozwalamy otworzyć.
+  let scrolling = false;
+  let scrollTimer = 0;
+  addEventListener(
+    "scroll",
+    () => {
+      scrolling = true;
+      clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        scrolling = false;
+      }, 110);
+    },
+    { passive: true },
+  );
+
+  function hostOf(id: string) {
+    return document
+      .getElementById(id)
+      ?.querySelector<HTMLElement>("[data-work-host]");
+  }
+
+  function openDetail(slug: string, name: string) {
+    const tpl = document.querySelector<HTMLTemplateElement>(
+      `template[data-work-detail="${slug}"]`,
+    );
+    if (!tpl || !window.overlay) return;
+
+    const id = sheetMQ.matches ? "work-sheet" : "work-modal";
+    const host = hostOf(id);
+    if (!host) return;
+
+    host.replaceChildren(tpl.content.cloneNode(true));
+    window.overlay.open(id, {
+      label: name,
+      onClose: () => host.replaceChildren(),
+    });
+  }
+
+  gallery?.addEventListener("click", (e) => {
+    const targetEl = e.target as HTMLElement;
+    const card = targetEl.closest<HTMLElement>("[data-work-slug]");
+    if (!card) return;
+    // Na mobile otwieraj wyłącznie przyciskiem CTA „Zobacz realizację",
+    // nie dotknięciem całego kafelka.
+    if (sheetMQ.matches && !targetEl.closest(".rz-card__cta")) return;
+    // Tylko mobile: nie otwieraj, gdy strona jeszcze pędzi scrollem — pozwól ją
+    // najpierw zatrzymać tym dotknięciem. Na desktopie klik działa zawsze.
+    if (sheetMQ.matches && scrolling) return;
+    const slug = card.dataset.workSlug;
+    if (!slug) return;
+    openDetail(slug, card.dataset.workName ?? "");
+  });
+
+  // Zmiana progu (modal ↔ sheet) przy otwartej nakładce: zamknij, by nie
+  // zostawić niespójnego stanu między wariantami.
+  sheetMQ.addEventListener("change", () => {
+    if (!window.overlay?.isOpen()) return;
+    window.overlay.close("work-modal");
+    window.overlay.close("work-sheet");
+  });
+</script>
 
 <style>
   .work {

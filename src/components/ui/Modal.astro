@@ -1,0 +1,156 @@
+---
+// Generyczny modal (desktop). Reużywalny szkielet — treść przez <slot/>.
+// Sterowany przez window.overlay.open(id) / .close(id) (scripts/overlay.ts):
+// Esc, klik w tło, przycisk ×, focus-trap i blokada scrolla obsługiwane wspólnie.
+interface Props {
+  id: string;
+  closeLabel?: string;
+  /** Dodatkowa klasa na panelu (karcie) — np. szerszy/węższy wariant. */
+  panelClass?: string;
+}
+const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
+---
+
+<div
+  class="ov ov--modal"
+  id={id}
+  data-overlay
+  data-overlay-kind="modal"
+  role="dialog"
+  aria-modal="true"
+  data-lenis-prevent
+  hidden
+>
+  <div class:list={["ov-card", panelClass]} data-overlay-panel>
+    <button
+      type="button"
+      class="ov-card__close"
+      data-overlay-close
+      data-overlay-autofocus
+      aria-label={closeLabel}
+    >
+      <svg
+        width="20"
+        height="20"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M18 6L6 18M6 6l12 12"></path>
+      </svg>
+    </button>
+    <div class="ov-card__content">
+      <slot />
+    </div>
+  </div>
+</div>
+
+<style>
+  .ov {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: clamp(12px, 4vw, 56px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    background: rgba(6, 4, 5, 0.72);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.24s ease;
+  }
+  .ov[hidden] {
+    display: none;
+  }
+  .ov.is-open {
+    opacity: 1;
+  }
+
+  .ov-card {
+    position: relative;
+    width: min(1180px, 100%);
+    /* bez margin:auto — centrowanie pionowe ucinałoby górę przy treści
+       wyższej niż ekran i blokowało scroll (poziomo centruje justify-content) */
+    background: linear-gradient(180deg, #16100f 0%, #0c0809 100%);
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    box-shadow:
+      0 60px 140px -30px rgba(0, 0, 0, 0.85),
+      0 0 120px -40px rgba(var(--accent-gold-rgb), 0.25);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+    transition:
+      opacity 0.26s ease,
+      transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* delikatna smuga w narożniku karty */
+  .ov-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: radial-gradient(
+      60% 50% at 80% 0%,
+      rgba(var(--accent-gold-rgb), 0.16),
+      rgba(0, 0, 0, 0) 70%
+    );
+  }
+  .ov.is-open .ov-card {
+    opacity: 1;
+    transform: none;
+  }
+
+  .ov-card__close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    z-index: 5;
+    width: 42px;
+    height: 42px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    background: rgba(245, 240, 236, 0.08);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    transition:
+      background 0.2s,
+      transform 0.2s;
+  }
+  .ov-card__close:hover {
+    background: rgba(245, 240, 236, 0.16);
+  }
+  .ov-card__close:focus-visible {
+    outline: 2px solid rgba(var(--accent-gold-rgb), 0.7);
+    outline-offset: 2px;
+  }
+
+  .ov-card__content {
+    position: relative;
+    z-index: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .ov,
+    .ov-card,
+    .ov-card__close {
+      transition: none;
+    }
+    .ov-card {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  import "@/scripts/overlay";
+</script>
