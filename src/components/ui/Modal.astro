@@ -21,6 +21,7 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
   data-lenis-prevent
   hidden
 >
+  <div class="ov__backdrop" aria-hidden="true"></div>
   <div class:list={["ov-card", panelClass]} data-overlay-panel>
     <button
       type="button"
@@ -60,9 +61,6 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
     padding: clamp(12px, 4vw, 56px);
     overflow-y: auto;
     overscroll-behavior: contain;
-    background: rgba(6, 4, 5, 0.72);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
     opacity: 0;
     transition: opacity 0.24s ease;
   }
@@ -73,8 +71,21 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
     opacity: 1;
   }
 
+  /* Osobna, nieruchoma warstwa tła — position:fixed względem okna, więc
+     rubber-band scrolla (.ov) nie odrywa jej od krawędzi na macOS. */
+  .ov__backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background: rgba(6, 4, 5, 0.72);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+  }
+
   .ov-card {
     position: relative;
+    z-index: 1;
     width: min(1180px, 100%);
     /* bez margin:auto — centrowanie pionowe ucinałoby górę przy treści
        wyższej niż ekran i blokowało scroll (poziomo centruje justify-content) */
