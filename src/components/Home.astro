@@ -4,16 +4,11 @@ import Navbar from "@/components/navbar/Navbar.astro";
 import Hero from "@/components/sections/hero/Hero.astro";
 import AmbientBackground from "@/components/backgrounds/AmbientBackground.astro";
 import Audience from "@/components/sections/audience/Audience.astro";
-import AudienceBackground from "@/components/sections/audience/AudienceBackground.astro";
 import Services from "@/components/sections/services/Services.astro";
-import ServicesBackground from "@/components/sections/services/ServicesBackground.astro";
 import Work from "@/components/sections/work/Work.astro";
 import About from "@/components/sections/about/About.astro";
-import AboutBackground from "@/components/sections/about/AboutBackground.astro";
 import Faq from "@/components/sections/faq/Faq.astro";
-import FaqBackground from "@/components/sections/faq/FaqBackground.astro";
 import Contact from "@/components/sections/contact/Contact.astro";
-import ContactBackground from "@/components/sections/contact/ContactBackground.astro";
 import LowPowerNotice from "@/components/LowPowerNotice.astro";
 import { useTranslations, type Lang } from "@/i18n/utils";
 
@@ -29,23 +24,8 @@ const t = useTranslations(lang);
     <div class="bg-layer" data-bg="hero">
       <AmbientBackground />
     </div>
-    <div class="bg-layer is-inactive" data-bg="audience">
-      <AudienceBackground />
-    </div>
-    <div class="bg-layer is-inactive" data-bg="services">
-      <ServicesBackground />
-    </div>
     <div class="bg-layer is-inactive" data-bg="work">
       <AmbientBackground />
-    </div>
-    <div class="bg-layer is-inactive" data-bg="about">
-      <AboutBackground />
-    </div>
-    <div class="bg-layer is-inactive" data-bg="faq">
-      <FaqBackground />
-    </div>
-    <div class="bg-layer is-inactive" data-bg="contact">
-      <ContactBackground />
     </div>
   </div>
 

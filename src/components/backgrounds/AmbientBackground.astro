@@ -174,13 +174,20 @@
     }
   }
 
+  /* Mobile: zamiast czterech rozmytych, kompozytowanych warstw (blur 40–55px)
+     + maski kropek — jedna płaska, statyczna tekstura. Zero animacji, zero
+     filtrów: minimalne GPU/CPU. Wygląd identyczny (grafika = render tych warstw).
+     Regeneracja: node scripts/capture-ambient-bg.mjs */
   @media (max-width: 768px) {
-    .ambient-bg__clouds::before,
-    .ambient-bg__clouds::after,
-    .ambient-bg__cloud-c,
-    .ambient-bg__cloud-d {
-      animation: none;
-      will-change: auto;
+    .ambient-bg {
+      background:
+        center / cover no-repeat url("/ambient-bg-mobile.webp"),
+        #000000;
+    }
+    .ambient-bg::after,
+    .ambient-bg__clouds,
+    .ambient-bg__dots {
+      display: none;
     }
   }
 
