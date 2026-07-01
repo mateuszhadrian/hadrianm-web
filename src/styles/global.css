@@ -14,6 +14,16 @@
   --font-drewelomet-mono: "Space Mono", ui-monospace, Menlo, monospace;
 }
 
+/* ── Rezerwacja miejsca na pasek scrolla (root scroller).
+   Na Windows/Linux pasek jest klasyczny — zajmuje szerokość i „spycha" treść.
+   `stable` rezerwuje tę szerokość ZAWSZE, także gdy paska chwilowo nie ma
+   (np. modal ustawia body:fixed → html traci przewijalną treść → pasek znika).
+   Bez tego obszar treści rozszerzałby się o szerokość paska i strona skakała
+   przy każdym otwarciu nakładki. Na macOS paski są nakładkowe → bez efektu. ── */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* ── Design system: tokeny brandowe (jedno źródło prawdy).
    Dziedziczone przez wszystkie komponenty; lokalne nadpisania tylko gdy
    element naprawdę odbiega od marki. Wymiary/chassis sceny urządzeń są
