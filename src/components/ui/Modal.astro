@@ -22,7 +22,7 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
   hidden
 >
   <div class="ov__backdrop" aria-hidden="true"></div>
-  <div class:list={["ov-card", panelClass]} data-overlay-panel>
+  <div class:list={["ov-card", panelClass]} data-overlay-panel tabindex="-1">
     <button
       type="button"
       class="ov-card__close"
@@ -101,6 +101,11 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
     transition:
       opacity 0.26s ease,
       transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  /* Panel bywa programowo fokusowany przy otwarciu dotykiem (tabindex=-1) —
+     bez widocznego pierścienia; to kontener, nie kontrolka. */
+  .ov-card:focus {
+    outline: none;
   }
   /* delikatna smuga w narożniku karty */
   .ov-card::before {

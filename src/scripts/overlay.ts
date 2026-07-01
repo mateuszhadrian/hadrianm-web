@@ -36,6 +36,27 @@ const onCloseMap = new WeakMap<HTMLElement, () => void>();
 
 const reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
 
+// Modalność ostatniej interakcji. Decyduje, czy po otwarciu nakładki pokazać
+// pierścień fokusu na przycisku X: klawiatura → tak (pożądany), dotyk/mysz →
+// nie (programowy focus i tak wywołałby heurystykę :focus-visible, przez co X
+// wyglądałby jak "zaznaczony" do kolejnego tapnięcia). Patrz open().
+let keyboardIntent = false;
+document.addEventListener(
+  "keydown",
+  (e) => {
+    if (e.key === "Tab" || e.key === "Enter" || e.key === " ")
+      keyboardIntent = true;
+  },
+  true,
+);
+document.addEventListener(
+  "pointerdown",
+  () => {
+    keyboardIntent = false;
+  },
+  true,
+);
+
 const FOCUSABLE =
   'a[href],button:not([disabled]),textarea,input,select,[tabindex]:not([tabindex="-1"])';
 
@@ -94,10 +115,14 @@ function open(id: string, opts: OpenOpts = {}) {
 
   lockScroll();
 
-  const focusTarget =
-    el.querySelector<HTMLElement>("[data-overlay-autofocus]") ??
-    el.querySelector<HTMLElement>("[data-overlay-close]") ??
-    panelOf(el);
+  // Autofocus na przycisk X tylko przy otwarciu klawiaturą (pierścień pożądany).
+  // Dotyk/mysz → fokusujemy panel (tabindex=-1, bez pierścienia): dialog dostaje
+  // fokus dla dostępności, ale X nie wygląda na "zaznaczony".
+  const focusTarget = keyboardIntent
+    ? (el.querySelector<HTMLElement>("[data-overlay-autofocus]") ??
+      el.querySelector<HTMLElement>("[data-overlay-close]") ??
+      panelOf(el))
+    : panelOf(el);
   focusTarget?.focus({ preventScroll: true });
 }
 
