@@ -20,7 +20,7 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
   hidden
 >
   <div class:list={["ov-sheet", panelClass]} data-overlay-panel>
-    <div class="ov-sheet__head">
+    <div class="ov-sheet__head" data-overlay-drag>
       <span class="ov-sheet__grip" aria-hidden="true"></span>
       <button
         type="button"
@@ -112,7 +112,14 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
     position: relative;
     z-index: 2;
     flex: 0 0 auto;
-    padding-top: 12px;
+    /* Strefa chwytu gestu — powiększona, by łatwo złapać ją palcem.
+       touch-action:none blokuje natywny scroll przeglądarki podczas gestu. */
+    padding: 14px 0 10px;
+    touch-action: none;
+    cursor: grab;
+  }
+  .ov-sheet__head:active {
+    cursor: grabbing;
   }
   .ov-sheet__grip {
     display: block;
@@ -121,6 +128,13 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
     border-radius: 99px;
     background: rgba(245, 240, 236, 0.28);
     margin: 0 auto;
+    transition:
+      background 0.2s ease,
+      width 0.2s ease;
+  }
+  .ov-sheet__head:active .ov-sheet__grip {
+    background: rgba(245, 240, 236, 0.45);
+    width: 52px;
   }
   .ov-sheet__close {
     position: absolute;
