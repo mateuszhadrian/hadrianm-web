@@ -648,6 +648,7 @@ const t = {
 
     function lockBody() {
       savedScroll = window.scrollY;
+      window.__lenis?.stop();
       document.body.style.position = "fixed";
       document.body.style.top = `-${savedScroll}px`;
       document.body.style.left = "0";
@@ -658,7 +659,15 @@ const t = {
       document.body.style.top = "";
       document.body.style.left = "";
       document.body.style.right = "";
-      window.scrollTo(0, savedScroll);
+      // resize() przed scrollTo: odświeża limit Lenisa po zdjęciu body:fixed,
+      // inaczej scrollTo przycięłoby savedScroll do 0 (skok na górę).
+      if (window.__lenis) {
+        window.__lenis.start();
+        window.__lenis.resize();
+        window.__lenis.scrollTo(savedScroll, { immediate: true, force: true });
+      } else {
+        window.scrollTo(0, savedScroll);
+      }
     }
 
     function openMenu() {

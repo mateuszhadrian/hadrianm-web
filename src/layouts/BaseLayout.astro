@@ -31,15 +31,8 @@ const { title = "hadrianm — web", lang = "pl" } = Astro.props;
   <body>
     <slot />
     <script>
-      // Lenis (płynny scroll) tylko na desktopie — ładowany dynamicznie.
-      // Bramka przez `maxTouchPoints === 0`: media queries hover/pointer są
-      // zawodne na realnych telefonach (raportują hover/fine), maxTouchPoints nie.
-      if (
-        navigator.maxTouchPoints === 0 &&
-        matchMedia(
-          "(prefers-reduced-motion: no-preference) and (pointer: fine)",
-        ).matches
-      ) {
+      // Lenis ładowany dynamicznie przy dozwolonym ruchu (config dobiera sam).
+      if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
         import("@/scripts/smooth-scroll");
       }
     </script>

@@ -3,23 +3,23 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
 import "lenis/dist/lenis.css";
 
-// Płynny scroll (Lenis) na desktopie: wygładza skokowy scroll kółka myszy, by
-// animacje scroll-driven nie klatkowały. Ładowany tylko bez dotyku — bramka
-// `navigator.maxTouchPoints === 0` jest w BaseLayout.astro.
+// Płynny scroll (Lenis) — desktop: kółko; mobile: dotyk z długim wybiegiem.
+// Ładowany przy no-preference (bramka w BaseLayout). Navbar używa go do scrollTo.
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Instancja Lenis wystawiona globalnie, by Navbar mógł użyć jej do płynnego
-// scrollTo (kliknięcie pozycji menu / brandu). Gdy null — fallback na natywny
-// scroll (mobile bez Lenis lub reduced-motion).
 declare global {
   interface Window {
     __lenis?: Lenis | null;
   }
 }
 
-// Wygładzanie: 0.1 = klasyczny Lenis; wyżej (0.12–0.15) = bardziej responsywnie.
 const LERP = 0.1;
+const TOUCH_MULTIPLIER = 0.8; // <1 = wolniej (Hero kompensuje przez SCROLL_SCALE)
+const SYNC_TOUCH_LERP = 0.03; // wybieg po machnięciu; niżej = dłuższy
+const TOUCH_INERTIA_EXPONENT = 1.9; // zasięg machnięcia; wyżej = dalej
+
+const isTouch = navigator.maxTouchPoints > 0;
 
 const reduceMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
 
@@ -28,10 +28,17 @@ let lenis: Lenis | null = null;
 function start() {
   if (lenis) return;
 
-  // Kółko obsługuje Lenis — zdejmij normalizację ScrollTriggera z Hero.
-  ScrollTrigger.normalizeScroll(false);
-
-  lenis = new Lenis({ lerp: LERP, smoothWheel: true, syncTouch: false });
+  lenis = new Lenis(
+    isTouch
+      ? {
+          lerp: LERP,
+          syncTouch: true,
+          touchMultiplier: TOUCH_MULTIPLIER,
+          syncTouchLerp: SYNC_TOUCH_LERP,
+          touchInertiaExponent: TOUCH_INERTIA_EXPONENT,
+        }
+      : { lerp: LERP, smoothWheel: true, syncTouch: false },
+  );
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add(tick);
   gsap.ticker.lagSmoothing(0);

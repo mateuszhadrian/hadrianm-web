@@ -13,9 +13,6 @@
 declare global {
   interface Window {
     overlay?: OverlayApi;
-    // Normalizer ScrollTrigger z Hero (mobile). Wyłączany na czas otwarcia
-    // nakładki, by globalne przechwytywanie touch nie blokowało scrolla treści.
-    __normalizer?: { enable: () => unknown; disable: () => unknown } | null;
   }
 }
 
@@ -35,7 +32,6 @@ const CLOSE_FALLBACK_MS = 360; // bezpiecznik, gdyby transitionend nie zaszedł
 let activeEl: HTMLElement | null = null;
 let lastFocused: HTMLElement | null = null;
 let savedScroll = 0;
-let normalizerDisabled = false;
 const onCloseMap = new WeakMap<HTMLElement, () => void>();
 
 const reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
@@ -50,12 +46,6 @@ function panelOf(el: HTMLElement): HTMLElement {
 function lockScroll() {
   savedScroll = window.scrollY;
   window.__lenis?.stop();
-  // Mobile (brak Lenis): zdejmij globalne przechwytywanie touch z Hero
-  // (ScrollTrigger.normalizeScroll), inaczej treść nakładki nie scrolluje palcem.
-  if (!window.__lenis && window.__normalizer) {
-    window.__normalizer.disable();
-    normalizerDisabled = true;
-  }
   const b = document.body.style;
   b.position = "fixed";
   b.top = `-${savedScroll}px`;
@@ -69,12 +59,15 @@ function unlockScroll() {
   b.top = "";
   b.left = "";
   b.right = "";
-  if (normalizerDisabled) {
-    window.__normalizer?.enable();
-    normalizerDisabled = false;
+  // resize() przed scrollTo: odświeża limit Lenisa po zdjęciu body:fixed,
+  // inaczej scrollTo przycięłoby savedScroll do 0 (skok na górę).
+  if (window.__lenis) {
+    window.__lenis.start();
+    window.__lenis.resize();
+    window.__lenis.scrollTo(savedScroll, { immediate: true, force: true });
+  } else {
+    window.scrollTo(0, savedScroll);
   }
-  window.__lenis?.start();
-  window.scrollTo(0, savedScroll);
 }
 
 function open(id: string, opts: OpenOpts = {}) {

@@ -393,6 +393,7 @@ const splitAccent = (line: string) =>
   }
 
   @media (prefers-reduced-motion: no-preference) and (max-width: 760px) {
+    /* Wartość wstępna (przed hydracją); finalną, krótszą ustawia <script>. */
     .hero {
       min-height: 1500svh;
     }
@@ -578,9 +579,6 @@ const splitAccent = (line: string) =>
   gsap.registerPlugin(ScrollTrigger);
 
   ScrollTrigger.config({ ignoreMobileResize: true });
-  // Zachowaj referencję do normalizera — nakładki (modal/sheet) wyłączają go na
-  // czas otwarcia, by globalne przechwytywanie touch nie blokowało ich scrolla.
-  window.__normalizer = ScrollTrigger.normalizeScroll(true) ?? null;
 
   if (IS_ANDROID) document.documentElement.classList.add("is-android");
   const devicesEl = document.querySelector<HTMLElement>(".hero__devices");
@@ -1186,7 +1184,10 @@ const splitAccent = (line: string) =>
       q(".hero__devices .screen--laptop .dw-root")?.remove();
       q(".hero__devices .screen--phone .dwm-root")?.remove();
 
-      const b = buildBase(4);
+      // Skraca scenę Hero (Lenis spowalnia scroll globalnie); niżej = krótsze.
+      const SCROLL_SCALE = 0.3;
+
+      const b = buildBase(4 * SCROLL_SCALE);
       if (!b) return;
       const refs = deviceRefs();
       const fitEl = q(".hero__devices .fit");
@@ -1230,8 +1231,17 @@ const splitAccent = (line: string) =>
       const GROW_END = 1 / 4; // szczyt — koniec powiększania, start przytrzymania
       const HOLD_END = 3 / 4; // koniec przytrzymania (~2 ekrany) — start zmniejszania
 
-      const LAP_ZONE = { start: 4.4, end: 8.4 };
-      const PH_ZONE = { start: 8.8, end: 12.8 };
+      // Strefy (w jednostkach innerHeight) skalowane tak jak długość sceny.
+      const LAP_ZONE = { start: 4.4 * SCROLL_SCALE, end: 8.4 * SCROLL_SCALE };
+      const PH_ZONE = { start: 8.8 * SCROLL_SCALE, end: 12.8 * SCROLL_SCALE };
+
+      // Wysokość sekcji tak, by odpięcie wypadło tuż po dojechaniu kulki
+      // (PH_ZONE.end); sticky puszcza przy scrollu = min-height − stage(100svh).
+      const HERO_END_BUFFER = 0.2; // ekrany od końca kulki do odpięcia
+      if (hero) {
+        hero.style.minHeight =
+          (PH_ZONE.end + 1 + HERO_END_BUFFER) * 100 + "svh";
+      }
 
       // ── Wzrost tekstów 02/03 (mobile, wspólny iOS + Android) ──────────────
       // Spójnie z desktopową karuzelą: powiększenie + szary→biały + 600→800.
@@ -1503,6 +1513,7 @@ const splitAccent = (line: string) =>
         cleanupDividers();
         zoneTriggers.forEach((t) => t.kill());
         progressTrigger?.kill();
+        hero?.style.removeProperty("min-height");
         progressEl?.classList.remove("is-active");
         progressEl?.style.removeProperty("--p");
         progressDot?.classList.remove("is-on-seg");
