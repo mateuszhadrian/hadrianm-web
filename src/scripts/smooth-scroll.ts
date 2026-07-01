@@ -14,10 +14,10 @@ declare global {
   }
 }
 
-const LERP = 0.1;
-const TOUCH_MULTIPLIER = 0.8; // <1 = wolniej (Hero kompensuje przez SCROLL_SCALE)
-const SYNC_TOUCH_LERP = 0.03; // wybieg po machnięciu; niżej = dłuższy
-const TOUCH_INERTIA_EXPONENT = 1.9; // zasięg machnięcia; wyżej = dalej
+const LERP = 1;
+const TOUCH_MULTIPLIER = 1; // <1 = wolniej (Hero kompensuje przez SCROLL_SCALE)
+const SYNC_TOUCH_LERP = 0.06; // wybieg po machnięciu; niżej = dłuższy
+const TOUCH_INERTIA_EXPONENT = 1.95; // zasięg machnięcia; wyżej = dalej
 
 const isTouch = navigator.maxTouchPoints > 0;
 
