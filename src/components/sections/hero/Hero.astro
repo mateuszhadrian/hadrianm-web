@@ -1401,6 +1401,7 @@ const splitAccent = (line: string) =>
         };
       }
       let autoplayBlocked = false;
+      const zoneCleanups: Array<() => void> = [];
 
       const makeVideoZone = (
         video: HTMLVideoElement | null,
@@ -1410,12 +1411,54 @@ const splitAccent = (line: string) =>
       ) => {
         if (!hero || !video || !el) return null;
         let lastScale = -1;
-        let playRequested = false;
+        // Czy w bieżącym stanie wideo POWINNO grać (dot w czerwonym odcinku).
+        // Zastępuje dawny zatrzask `playRequested`, przez który mimowolna
+        // pauza iOS (Safari wstrzymuje dekoder wideo pod obciążeniem przypiętej
+        // sceny — pamięć/termika/Low Power) zostawała nieodwrócona: klatka
+        // zamarzała, bo `onUpdate` w oknie odtwarzania już nic nie robił, a
+        // wideo ruszało dopiero po wyjściu i powrocie do strefy — stąd objaw
+        // „zacina się, a po chwili startuje od nowa” (reset do 0 robi nasz kod,
+        // nie iOS). Teraz to tylko intencja: dopóki gra grać, samonaprawiamy.
+        let wantPlaying = false;
         const setScale = (s: number) => {
           if (s === lastScale) return;
           lastScale = s;
           el.style.setProperty("--vid-scale", s.toFixed(4));
         };
+
+        const startPlay = () => {
+          wantPlaying = true;
+          video.currentTime = 0; // świeże wejście w odcinek → od początku
+          video.play()?.catch(() => {
+            // autoplay zablokowany (np. iOS Low Power Mode) → plakat,
+            // bez ponawiania dla obu wideo
+            autoplayBlocked = true;
+          });
+        };
+        // Wznów po MIMOWOLNEJ pauzie (iOS ubił dekoder, choć wideo ma grać):
+        // od bieżącej klatki, bez resetu → brak skoku i brak zamrożenia.
+        const resume = () => {
+          if (!wantPlaying || !video.paused || autoplayBlocked) return;
+          video.play()?.catch(() => {
+            /* przejściowo zablokowane — kolejny scroll/pause ponowi */
+          });
+        };
+        const stop = () => {
+          wantPlaying = false; // MUSI być przed pause() — patrz onPause
+          if (!video.paused) video.pause();
+          try {
+            video.currentTime = 0;
+          } catch {
+            /* noop */
+          }
+        };
+        // Zdarzenie `pause` inne niż nasze celowe (wantPlaying wciąż true)
+        // ⇒ iOS wstrzymał dekoder mimowolnie → natychmiast wznów. Działa też
+        // gdy użytkownik NIE scrolluje (wtedy onUpdate nie odpala).
+        const onPause = () => resume();
+        video.addEventListener("pause", onPause);
+        zoneCleanups.push(() => video.removeEventListener("pause", onPause));
+
         return ScrollTrigger.create({
           trigger: hero,
           start: () => "top+=" + startVh * window.innerHeight + " top",
@@ -1430,33 +1473,22 @@ const splitAccent = (line: string) =>
             else s = 1 + (VID_MAX - 1) * ((1 - p) / (1 - HOLD_END));
             setScale(s);
             // odtwarzanie od szczytu (koniec powiększania) do bazy: [GROW_END, 1)
-            if (p >= GROW_END && p < 1) {
-              if (!playRequested && !autoplayBlocked) {
-                playRequested = true; // próbuj raz na wejście, nie co klatkę
-                video.currentTime = 0;
-                video.play()?.catch(() => {
-                  // autoplay zablokowany (np. iOS Low Power Mode) → plakat,
-                  // bez ponawiania dla obu wideo
-                  autoplayBlocked = true;
-                });
-              }
-            } else {
-              playRequested = false;
-              if (!video.paused) {
-                video.pause();
-                video.currentTime = 0;
-              }
+            const inWindow = p >= GROW_END && p < 1;
+            if (inWindow && !autoplayBlocked) {
+              if (!wantPlaying)
+                startPlay(); // świeże wejście → od 0
+              else if (video.paused) resume(); // mimowolna pauza → wznów
+            } else if (wantPlaying) {
+              stop();
             }
           },
           onLeave: () => {
-            playRequested = false;
             setScale(1);
-            stopReset(video);
+            stop();
           },
           onLeaveBack: () => {
-            playRequested = false;
             setScale(1);
-            stopReset(video);
+            stop();
           },
         });
       };
@@ -1511,6 +1543,7 @@ const splitAccent = (line: string) =>
         cleanup(b)();
         captionGrowthCleanup();
         cleanupDividers();
+        zoneCleanups.forEach((fn) => fn());
         zoneTriggers.forEach((t) => t.kill());
         progressTrigger?.kill();
         hero?.style.removeProperty("min-height");
