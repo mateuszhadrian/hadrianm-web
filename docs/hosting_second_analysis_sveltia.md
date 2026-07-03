@@ -790,24 +790,39 @@ trafi na `main` kod, który nie przeszedł bramki.
 > **Ważne — dlaczego NIE Cloudflare Registrar.** Cloudflare Registrar **nie
 > sprzedaje domen z końcówką `.pl`** (obsługuje tylko wybrane rozszerzenia, a
 > `.pl` należy do polskiego rejestru NASK, którego Cloudflare nie oferuje). Domenę
-> `hadrianm.pl` **kupujesz więc u polskiego rejestratora** (np. `nazwa.pl` albo
-> `home.pl` — u obu `.pl` bywa na pierwszy rok w promocji za grosze, rzędu 1–2 zł),
-> a **DNS delegujesz do Cloudflare przez zmianę serwerów nazw (nameserwerów)**.
-> Domena zostaje zarejestrowana u polskiego rejestratora; Cloudflare tylko
-> zarządza DNS-em, hostingiem (Pages) i transformacjami — dokładnie to, czego
-> potrzebujemy. To standardowy, w pełni wspierany scenariusz.
+> `hadrianm.pl` kupujesz więc u zewnętrznego rejestratora, a **DNS delegujesz do
+> Cloudflare przez zmianę serwerów nazw (nameserwerów)**. Domena zostaje
+> zarejestrowana u rejestratora; Cloudflare tylko zarządza DNS-em, hostingiem
+> (Pages) i transformacjami — dokładnie to, czego potrzebujemy. To standardowy,
+> w pełni wspierany scenariusz.
 
-> **Uwaga o cenie odnowienia.** Promocja „1–2 zł" dotyczy zwykle **pierwszego
-> roku**. Sprawdź **cenę odnowienia** (drugi rok potrafi kosztować ~60–100 zł
-> brutto) — to ona jest realnym kosztem długoterminowym. Nie ma to wpływu na
-> resztę architektury (hosting/CMS zostają za 0 zł).
+> **Wybrany rejestrator: OVHcloud** (`ovhcloud.com/pl`) — decyzja z 2026-07-03,
+> po porównaniu z `nazwa.pl` i `home.pl`. Powody:
+>
+> 1. **Cena odnowienia** — to ona jest realnym kosztem długoterminowym, nie
+>    promocja pierwszego roku. Stan 2026-07: OVH rejestracja `.pl` ~16,69 zł
+>    netto (~20,50 zł brutto), **odnowienie 58,99 zł netto (~72,50 zł brutto)** —
+>    jedna z najniższych na rynku. Dla porównania `nazwa.pl`: pierwszy rok 0 zł,
+>    ale **odnowienie 240 zł netto (~295 zł brutto!)**; `home.pl`: 0,99 zł netto
+>    pierwszy rok, odnowienia nie publikuje wprost przy produkcie. Tanie „0 zł na
+>    start" u polskich rejestratorów to haczyk odbijany ceną odnowienia.
+> 2. **Darmowa skrzynka e-mail w cenie domeny** (patrz 7.5) — realna skrzynka
+>    z IMAP/SMTP, czego nie daje ani `nazwa.pl`, ani `home.pl`.
+> 3. Nameserwery zewnętrzne (Cloudflare) w pełni wspierane, panel po polsku.
+>
+> **Haczyk OVH — DNSSEC domyślnie WŁĄCZONY.** OVH aktywuje DNSSEC automatycznie
+> dla domen na swoim DNS, więc krok 3 (wyłączenie DNSSEC przed zmianą
+> nameserwerów) jest u OVH **obowiązkowy**, nie „zwykle nic do zrobienia".
 
 Kolejność jest ważna, bo `.pl` ma jedną pułapkę (DNSSEC — patrz krok 3). Rób
 **dokładnie w tej kolejności**, żeby strona/e-mail nie przestały działać.
 
 #### Krok 1 — dodaj domenę do Cloudflare (jeszcze przed zmianą nameserwerów)
 
-1. Kup `hadrianm.pl` u wybranego rejestratora (`nazwa.pl` lub `home.pl`).
+1. Kup `hadrianm.pl` w **OVHcloud** (<https://www.ovhcloud.com/pl/domains/>) —
+   w koszyku pomiń płatne dodatki (hosting, opcje premium); **darmowa skrzynka
+   e-mail i tak jest w cenie domeny** (7.5). Przy pierwszym zakupie założysz
+   konto klienta OVH.
 2. W panelu Cloudflare kliknij **Add a site / Add a domain**, wpisz gołą domenę
    `hadrianm.pl`, wybierz plan **Free**.
 3. Cloudflare **zeskanuje istniejące rekordy DNS** i pokaże je do zatwierdzenia.
@@ -825,7 +840,7 @@ Kolejność jest ważna, bo `.pl` ma jedną pułapkę (DNSSEC — patrz krok 3).
 Nie musisz nic dodawać ręcznie — po podpięciu domeny do Pages (krok 5) Cloudflare
 sam utworzy potrzebne rekordy. Przejdź dalej.
 
-#### Krok 3 — WYŁĄCZ DNSSEC u rejestratora (pułapka `.pl`)
+#### Krok 3 — WYŁĄCZ DNSSEC w OVH (pułapka — u OVH obowiązkowa)
 
 **To najczęstsza przyczyna „domena nie działa po przeniesieniu".** Jeśli domena
 ma włączony **DNSSEC** (podpisywanie DNS), w rejestrze NASK istnieje tzw. **rekord
@@ -833,43 +848,35 @@ DS**. Gdy zmienisz nameserwery na Cloudflare, a stary rekord DS zostanie,
 resolvery nadal będą oczekiwać starego podpisu → domena zwróci **SERVFAIL** i
 będzie niedostępna.
 
-- **Świeżo kupiona domena** zwykle **nie ma** włączonego DNSSEC — wtedy ten krok
-  po prostu potwierdzasz jako „nic do zrobienia".
-- Jeśli DNSSEC jest włączony: **wyłącz go / usuń rekord DS u rejestratora**
-  (`nazwa.pl` i `home.pl` mają opcję DNSSEC w panelu domeny) i **odczekaj**, aż
-  zmiana się rozejdzie, zanim zmienisz nameserwery. Cloudflare nie nadpisze
-  cudzego rekordu DS — musi zniknąć po stronie rejestratora.
-- DNSSEC możesz **później włączyć ponownie już w Cloudflare** (Cloudflare wygeneruje
-  nowy rekord DS, który wklejasz u rejestratora). To opcjonalne — na start
-  spokojnie zostaw wyłączony.
+**U OVH ten krok jest obowiązkowy** — inaczej niż u większości rejestratorów
+OVH **włącza DNSSEC automatycznie** dla świeżo kupionej domeny na swoim DNS.
+Co więcej, OVH deklaruje, że zmiana serwerów DNS zostanie przeprowadzona
+**dopiero po wyłączeniu DNSSEC**.
 
-> _Dokładnej ścieżki „gdzie kliknąć, by wyłączyć DNSSEC" nie podaję jako pewnej —
-> zweryfikuj przełącznik na żywo w panelu domeny (szukaj hasła **DNSSEC**)._
+1. Panel klienta OVH (<https://www.ovh.com/manager/>) → **Web Cloud → Domeny**
+   → `hadrianm.pl` → zakładka **„Informacje ogólne"**.
+2. Znajdź pozycję **„Zabezpieczenie DNS (DNSSEC)"** i **wyłącz suwak**.
+3. **Odczekaj do 24 h**, aż wyłączenie się rozejdzie (rekord DS musi zniknąć z
+   rejestru NASK), i dopiero potem przejdź do kroku 4. Cloudflare nie nadpisze
+   cudzego rekordu DS — musi zniknąć po stronie rejestratora.
+4. DNSSEC możesz **później włączyć ponownie już w Cloudflare** (Cloudflare
+   wygeneruje nowy rekord DS, który wklejasz w panelu OVH). To opcjonalne — na
+   start spokojnie zostaw wyłączony.
 
-#### Krok 4 — ustaw nameserwery Cloudflare u rejestratora
+> _Etykiety w panelu OVH mogą się nieznacznie różnić po aktualizacjach —
+> szukaj hasła **DNSSEC** w widoku domeny._
 
-**Jeśli kupiłeś w `nazwa.pl`:**
+#### Krok 4 — ustaw nameserwery Cloudflare w OVH
 
-1. Zaloguj się do **Panel Klienta** → menu **Usługi → Domeny**.
-2. Znajdź `hadrianm.pl` na liście i kliknij **„konfiguruj"** (po prawej stronie
-   nazwy).
-3. Wejdź w sekcję/zakładkę **„Zewnętrzne serwery DNS"**.
-4. Wpisz **oba** nameserwery Cloudflare z kroku 1.4 (minimum 2; dla `.pl` można
-   podać do 9) i zatwierdź przyciskiem **„ZMIEŃ"**.
-   - Wybór „zewnętrznych serwerów DNS" **zastępuje** domyślny DNS `nazwa.pl` —
-     od tej chwili DNS domeny prowadzi Cloudflare.
-5. Propagacja: `nazwa.pl` deklaruje **do 72 h** (zwykle znacznie szybciej).
-
-**Jeśli kupiłeś w `home.pl`:**
-
-1. Zaloguj się do **Panel Klienta** (panel.home.pl) → menu **Domeny** (po lewej).
-2. Wybierz `hadrianm.pl` z listy (status w kolumnie „Status operacji" musi być
-   **„Aktywna"**).
-3. Kliknij **„Działania"** → **„Ustaw zewnętrzne serwery DNS"**.
-4. Wpisz **oba** nameserwery Cloudflare z kroku 1.4 (minimum 2) i zatwierdź
-   **„OK"**, by uruchomić delegację.
-5. Delegacja trwa **do ~30 h**; w tym oknie strona/poczta pod domeną może chwilowo
-   nie działać, dopóki rekordy nie ustawią się po stronie Cloudflare.
+1. Panel klienta OVH → **Web Cloud → Domeny** → `hadrianm.pl` → zakładka
+   **„Serwery DNS"**.
+2. Kliknij **„Zmień serwery DNS"** — pola staną się edytowalne.
+3. Wpisz **oba** nameserwery Cloudflare z kroku 1.4 (pola na adresy IP zostaw
+   puste — IP podaje się tylko dla własnych serwerów w tej samej domenie).
+4. Zatwierdź przyciskiem **„Zastosuj konfigurację"**.
+5. Propagacja: zwykle godziny, formalnie **do ~24–48 h** (a jeśli DNSSEC był
+   wyłączany tuż przedtem — OVH deklaruje łącznie nawet 48–72 h). W tym oknie
+   domena może chwilowo nie działać.
 
 #### Krok 5 — poczekaj na „Active" i podłącz domenę do Pages
 
@@ -930,25 +937,30 @@ zaczniesz obsługiwać rynek zagraniczny — dokupisz `.com` i przekierujesz go 
 > aliasy do tej samej skrzynki (patrz „Jak nazwać adres" niżej). W przykładach
 > poniżej `kontakt@` bywa użyte poglądowo — działa tak samo dla `info@`.
 
-**Krótka odpowiedź:** **odbieranie** poczty na `info@hadrianm.pl` dostajesz
-**za darmo i od ręki** (Cloudflare Email Routing — skoro DNS masz już w Cloudflare).
-Ale samo Cloudflare **tylko przekierowuje pocztę, nie wysyła**. Żeby móc też
-**wysyłać** jako `kontakt@hadrianm.pl`, dokładasz jeden darmowy element (przekaźnik
-SMTP) albo wybierasz osobną skrzynkę. Nie jest to część zakupu domeny — to osobna
-konfiguracja (poniżej).
+**Krótka odpowiedź:** pełną pocztę (odbiór **i** wysyłka) na `info@hadrianm.pl`
+masz **za 0 zł** na dwa sposoby: **(a2) skrzynka OVH dołączona do domeny**
+(realne konto z IMAP/SMTP — tworzysz w panelu OVH po zakupie) albo
+**(a) Cloudflare Email Routing** (darmowe przekierowanie odbioru do Twojego
+Gmaila; samo Cloudflare **nie wysyła**, więc do wysyłki dokładasz darmowy
+przekaźnik SMTP). Żadna z opcji nie wymaga nic dokupywać przy zakupie domeny —
+to konfiguracja po fakcie (poniżej).
 
 > **Najważniejsza zasada — jeden zestaw MX.** Rekord **MX** („gdzie leci poczta
 > dla domeny") jest **tylko jeden**. Dlatego opcje poczty poniżej **wykluczają
-> się** — albo poczta idzie przez Cloudflare Email Routing, albo przez Zoho, albo
-> przez Google — nie da się dwóch naraz na tej samej domenie. Wybierasz **jeden**
-> wariant.
+> się** — albo poczta idzie przez skrzynkę OVH, albo przez Cloudflare Email
+> Routing, albo przez Zoho/Google — nie da się dwóch naraz na tej samej domenie.
+> Wybierasz **jeden** wariant.
 
-> **Ważne — czy poczta u rejestratora „w cenie domeny"?** Nie licz na to:
-> u **nazwa.pl** sama domena daje tylko funkcje DNS (SPF/DKIM/DNSSEC), **realna
-> skrzynka to osobny płatny produkt** (CloudMail). U **home.pl** jest odwrotnie —
-> darmowa domena w 1. roku jest **dodatkiem do płatnego pakietu poczty**. Tak czy
-> siak: **darmowej skrzynki „przy okazji domeny" nie ma**. Dlatego rekomendujemy
-> pocztę spiąć z Cloudflare (gdzie i tak jest już DNS), a nie z rejestratorem.
+> **Ważne — poczta u rejestratora „w cenie domeny": u OVH JEST.** To jeden z
+> powodów wyboru OVH (7.3): **do każdej domeny OVH dodaje darmową skrzynkę
+> e-mail** — realną, z **IMAP/SMTP** (stan 2026-07: strona domen OVH mówi o
+> skrzynce „Starter" 15 GB, starsze materiały o koncie 5 GB — pojemność
+> zweryfikuj w panelu po zakupie; skrzynkę tworzysz sam: panel OVH → Web Cloud
+> → E-maile). U polskich rejestratorów tego nie ma: w `nazwa.pl` skrzynka to
+> osobny płatny produkt (CloudMail), w `home.pl` — dodatek do płatnego pakietu.
+> Uwaga architektoniczna: jeśli użyjesz skrzynki OVH, jej rekordy **MX (OVH)
+> wpisujesz w DNS Cloudflare** i wtedy **nie włączasz** Cloudflare Email
+> Routing (zasada „jeden zestaw MX" powyżej).
 
 #### Jak nazwać adres (i dlaczego można mieć kilka naraz)
 
@@ -981,17 +993,21 @@ Najbardziej uniwersalne słówka:
 > pójdziesz w prawdziwą skrzynkę (Zoho/rejestrator), zrób `info@` kontem głównym,
 > a resztę dodaj jako **aliasy** tego konta.
 
-#### Trzy warianty — wybierz jeden
+#### Cztery warianty — wybierz jeden
 
 | Wariant                                         | Koszt        | Odbiór | Wysyłka jako `kontakt@` | Gdzie czytasz pocztę        |
 | ----------------------------------------------- | ------------ | ------ | ----------------------- | --------------------------- |
 | **(a) Cloudflare Routing + Brevo (SMTP w Gmailu)** | **0 zł**  | ✅ (przekierowanie do Twojego Gmaila) | ✅ (przez darmowy przekaźnik) | W Twoim zwykłym Gmailu |
-| **(b) Zoho Mail Forever Free**                  | **0 zł**     | ✅ (własna skrzynka) | ✅ (z webmaila/apki Zoho) | W panelu/apce Zoho (osobno) |
+| **(a2) Skrzynka OVH (w cenie domeny)**          | **0 zł**     | ✅ (własna skrzynka) | ✅ (IMAP/SMTP — natywnie) | Webmail OVH **lub dowolny klient** (Outlook, apka mobilna, Gmail „Wyślij jako") |
+| **(b) Zoho Mail Forever Free**                  | **0 zł**     | ✅ (własna skrzynka) | ✅ (z webmaila/apki Zoho) | W panelu/apce Zoho (osobno; **brak IMAP**) |
 | **(c) Google Workspace**                        | ~25–31 zł/mies. | ✅ | ✅ (natywnie) | Firmowy Gmail na własnej domenie |
 
-**Rekomendacja:** dla Ciebie **wariant (a)** — najtaniej (0 zł) i najwygodniej,
-bo całą pocztę firmową masz w **jednym, znajomym Gmailu**. Poniżej pełna
-konfiguracja (a) oraz skrót (b) i (c).
+**Rekomendacja:** jeśli chcesz mieć wszystko **w jednym, znajomym Gmailu** —
+**wariant (a)**. Jeśli wolisz **osobną, prawdziwą skrzynkę firmową** (np. w
+Outlooku/apce) — **wariant (a2)**: masz ją już w cenie domeny OVH, z pełnym
+IMAP/SMTP, bez sklejania trzech usług. Wariant (b) stracił rację bytu przy
+OVH (darmowy Zoho nie ma IMAP, skrzynka OVH ma). Poniżej pełna konfiguracja
+(a) oraz skróty (a2), (b) i (c).
 
 #### Wariant (a) — 0 zł: odbiór przez Cloudflare + wysyłka przez Brevo
 
@@ -1038,7 +1054,29 @@ korespondencji z zapasem).
 > podpisuje się jako `gmail.com`, odbiorca widzi „via gmail.com" i częściej trafia
 > to do spamu. Własny przekaźnik (Brevo) rozwiązuje ten problem.
 
-#### Wariant (b) — 0 zł: Zoho Mail Forever Free (osobna, „prawdziwa" skrzynka)
+#### Wariant (a2) — 0 zł: skrzynka OVH w cenie domeny (osobna, „prawdziwa" skrzynka)
+
+Skrzynka jest już opłacona razem z domeną — wystarczy ją utworzyć i wpiąć MX:
+
+1. Panel klienta OVH → **Web Cloud → E-maile** → domena `hadrianm.pl` → utwórz
+   konto **`info@hadrianm.pl`** (to tu zobaczysz faktyczną pojemność darmowego
+   planu). Dodaj **aliasy** `mateusz@`, `contact@`, `kontakt@` (w OVH:
+   przekierowania/aliasy na to samo konto).
+2. W DNS Cloudflare **nie włączaj Email Routing**, tylko dodaj rekordy poczty
+   OVH jako **DNS only**: **MX** (`mx1.mail.ovh.net`, `mx2.mail.ovh.net`, …—
+   dokładne wartości pokaże panel OVH przy koncie e-mail) oraz **TXT (SPF)**
+   z `include:mx.ovh.com`; DKIM włącz w panelu OVH, jeśli oferowany.
+3. Czytasz/wysyłasz: **webmail OVH** (`mail.ovh.net`), aplikacja mobilna albo
+   dowolny klient przez **IMAP/SMTP** (hosty typu `ssl0.ovh.net` — dokładne dane
+   pokaże panel). Możesz też podpiąć konto pod Gmaila („Wyślij jako" przez SMTP
+   OVH + odbiór przekierowaniem/POP) — wtedy masz efekt wariantu (a) bez Brevo.
+
+> Parametry darmowej skrzynki (pojemność, limity wysyłki) **zweryfikuj w panelu
+> po zakupie domeny** — OVH podaje na stronie domen „Starter 15 GB", w starszych
+> materiałach 5 GB. Dla korespondencji portfolio każda z tych wartości wystarcza
+> z ogromnym zapasem.
+
+#### Wariant (b) — 0 zł: Zoho Mail Forever Free (osobna skrzynka bez IMAP — przy OVH bez sensu)
 
 Jeśli wolisz **jedną, klasyczną skrzynkę** (osobny login, bez przekaźników) zamiast
 spinania z Gmailem:
@@ -1072,10 +1110,12 @@ przekaźnikami i z najlepszą dostarczalnością:
 
 #### Chcesz OSOBNĄ skrzynkę — w Outlooku na Macu albo jako osobny Gmail?
 
-To zmienia rekomendację, bo **Outlook (i każdy klient desktopowy) potrzebuje
-IMAP + SMTP** — a tego **darmowy Zoho ani samo Cloudflare Routing NIE dają**
-(Routing tylko przekierowuje, darmowy Zoho działa wyłącznie przez własny webmail).
-Masz dwie realne drogi:
+Outlook (i każdy klient desktopowy) potrzebuje **IMAP + SMTP** — darmowy Zoho
+ani samo Cloudflare Routing tego nie dają (Routing tylko przekierowuje, darmowy
+Zoho działa wyłącznie przez własny webmail). **Ale skrzynka OVH z wariantu (a2)
+IMAP/SMTP MA** — więc odpowiedź jest prosta: **użyj (a2) i podepnij ją pod
+Outlooka jak zwykłe konto IMAP.** Poniższe dwie ścieżki zostają jako
+alternatywy — gdybyś kiedyś odszedł od OVH albo chciał innego dostawcy:
 
 **Ścieżka 1 — dedykowany darmowy Gmail jako skrzynka (0 zł).**
 
@@ -1116,23 +1156,25 @@ Routing** (bo MX może być tylko jeden). Aktualne (2026) tanie opcje:
 | **Zoho Mail — Mail Lite**    | ~$1/mies. (~4 zł), rocznie  | ✅ (płatny plan przywraca IMAP/SMTP) | **Rekomendacja** — najtaniej za realne konto; wybierz DC „EU". Hosty: `imappro.zoho.eu:993` / `smtp.zoho.eu:465` |
 | **Migadu (Micro)**           | ~$19/rok (~6 zł/mies.)      | ✅ | Płaska cena, wiele adresów; limit **20 wysłanych/dzień** (dla korespondencji OK). `imap.migadu.com` / `smtp.migadu.com` |
 | **Purelymail**               | ~$10/rok (~3 zł/mies.)      | ✅ | Najtaniej, ale mały jednoosobowy dostawca i **sami zapowiadają podwyżkę** — traktuj cenę jako zmienną |
-| **Poczta u rejestratora**    | home.pl ~9 zł netto/1. rok (odnowienie ~49 zł/rok); nazwa.pl CloudMail ~60 zł netto/rok | ✅ | Kupujesz sam produkt poczty, a **MX wpisujesz do DNS Cloudflare** (DNS-only); strona zostaje na Pages |
+| **Skrzynka OVH (w cenie domeny)** | **0 zł** (masz z domeną `hadrianm.pl`) | ✅ | **Pierwsza do rozważenia** — wariant (a2) wyżej; MX OVH wpisujesz do DNS Cloudflare (DNS-only), strona zostaje na Pages |
 | **iCloud+ własna domena**    | od ~0,99 €/mies.            | ⚠️ | **Słabo współpracuje z Outlookiem na Macu** (nowy Outlook nie obsługuje własnych domen iCloud natywnie, From potrafi pokazywać `@icloud.com`) — odradzam do Outlooka |
 
 > **Outlook na Macu — dobra wiadomość:** nowy Outlook **obsługuje dowolne konta
-> IMAP** (w kreatorze jest opcja „inne/IMAP"), więc Zoho / Migadu / Purelymail /
-> poczta rejestratora wchodzą natywnie. Wyjątki: konta osobiste (Gmail) wymagają
+> IMAP** (w kreatorze jest opcja „inne/IMAP"), więc skrzynka OVH / Zoho / Migadu /
+> Purelymail wchodzą natywnie. Wyjątki: konta osobiste (Gmail) wymagają
 > **hasła aplikacji**, a własne domeny iCloud są problematyczne (patrz tabela).
 
-**Co polecam:** zapłać **~4 zł/mies. za Zoho Mail Lite** (albo Migadu). Jedna
-realna skrzynka, natywnie w Outlooku, najlepsza dostarczalność i zero grzebania
-przy aliasach — te kilka złotych kupuje Ci spokój. Darmową ścieżkę 1 (dedykowany
-Gmail + Brevo) wybierz tylko, jeśli zależy Ci wyłącznie na „0 zł".
+**Co polecam:** zacznij od **skrzynki OVH (0 zł, wariant a2)** — realne konto
+IMAP/SMTP, natywnie w Outlooku, bez żadnej dopłaty. Jeśli kiedyś zabraknie Ci
+jej możliwości (pojemność, filtry, dostarczalność), przesiadka na **Zoho Mail
+Lite (~4 zł/mies.)** albo Migadu to tylko wymiana rekordów MX w Cloudflare.
+Darmową ścieżkę 1 (dedykowany Gmail + Brevo) wybierz tylko, jeśli chcesz
+czytać pocztę w interfejsie Gmaila zamiast w Outlooku/webmailu.
 
 #### Pułapki wspólne dla poczty (przeczytaj przy każdym wariancie)
 
-- **Tylko jeden zestaw MX** — Cloudflare Routing, Zoho i Google **wykluczają się**.
-  Zmiana poczty = wymiana rekordów MX na inne.
+- **Tylko jeden zestaw MX** — skrzynka OVH, Cloudflare Routing, Zoho i Google
+  **wykluczają się**. Zmiana poczty = wymiana rekordów MX na inne.
 - **Rekordy poczty zawsze „DNS only" (szara chmurka), nigdy „Proxied"
   (pomarańczowa).** Proxy Cloudflare obsługuje tylko HTTP(S); przez pomarańczową
   chmurkę poczta (SMTP/IMAP) nie przejdzie.
@@ -1327,8 +1369,8 @@ realizacje wyłącznie z panelu, a strona się aktualizuje.
 | GitHub Actions (bramka)     | **0 zł** (repo prywatne: 2000 min/mies.)                 |
 | Sveltia CMS                 | **0 zł** (open source)                                   |
 | Cloudflare Stream (wideo)   | ~0–kilka USD, tylko jeśli włączysz                       |
-| Domena `hadrianm.pl`        | 1. rok często ~1–2 zł (promo); odnowienie ~60–100 zł/rok (nazwa.pl/home.pl) |
-| Poczta `info@hadrianm.pl` (+ aliasy) | **0 zł** (Routing + Brevo); osobna skrzynka IMAP (Outlook) ~4 zł/mies. (Zoho Mail Lite); ~25–31 zł/mies. (Google Workspace) |
+| Domena `hadrianm.pl` (OVH)  | 1. rok ~20,50 zł brutto; odnowienie ~72,50 zł brutto/rok (58,99 zł netto; stan 2026-07) |
+| Poczta `info@hadrianm.pl` (+ aliasy) | **0 zł** — skrzynka OVH w cenie domeny (IMAP/SMTP) albo Routing + Brevo; opcje płatne: ~4 zł/mies. (Zoho Mail Lite), ~25–31 zł/mies. (Google Workspace) |
 | **Razem recurring**         | **~0 zł/mies.** + domena rocznie                         |
 
 ---
