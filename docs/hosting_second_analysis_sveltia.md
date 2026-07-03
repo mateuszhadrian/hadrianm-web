@@ -635,22 +635,360 @@ nie trafi kod, który nie przeszedł bramki.
 
 ### 7.3 Domena `hadrianm.pl`
 
-1. **Kup domenę.** Rekomendacja: **Cloudflare Registrar** (sprzedaje po cenie
-   kosztowej). W panelu Cloudflare: **Domain Registration → Register Domains** →
-   wpisz `hadrianm.pl`. (Jeśli `.pl` nie jest tam dostępne, kup u taniego
-   rejestratora i przenieś DNS na Cloudflare — patrz krok 2.)
-2. **DNS na Cloudflare.** Jeśli kupiłeś gdzie indziej: w Cloudflare **Add a site
-   → hadrianm.pl**, a u rejestratora ustaw serwery nazw (nameservery) podane
-   przez Cloudflare.
-3. **Podłącz domenę do Pages.** Pages → Twój projekt → **Custom domains → Set up
-   a custom domain** → `hadrianm.pl`, powtórz dla `www.hadrianm.pl`. SSL
-   (certyfikat HTTPS) załatwi się automatycznie.
-4. Zaktualizuj w GitHubie **Homepage URL** aplikacji OAuth na `https://hadrianm.pl`
-   (nie jest krytyczne, ale porządkuje).
+> **Ważne — dlaczego NIE Cloudflare Registrar.** Cloudflare Registrar **nie
+> sprzedaje domen z końcówką `.pl`** (obsługuje tylko wybrane rozszerzenia, a
+> `.pl` należy do polskiego rejestru NASK, którego Cloudflare nie oferuje). Domenę
+> `hadrianm.pl` **kupujesz więc u polskiego rejestratora** (np. `nazwa.pl` albo
+> `home.pl` — u obu `.pl` bywa na pierwszy rok w promocji za grosze, rzędu 1–2 zł),
+> a **DNS delegujesz do Cloudflare przez zmianę serwerów nazw (nameserwerów)**.
+> Domena zostaje zarejestrowana u polskiego rejestratora; Cloudflare tylko
+> zarządza DNS-em, hostingiem (Pages) i transformacjami — dokładnie to, czego
+> potrzebujemy. To standardowy, w pełni wspierany scenariusz.
+
+> **Uwaga o cenie odnowienia.** Promocja „1–2 zł" dotyczy zwykle **pierwszego
+> roku**. Sprawdź **cenę odnowienia** (drugi rok potrafi kosztować ~60–100 zł
+> brutto) — to ona jest realnym kosztem długoterminowym. Nie ma to wpływu na
+> resztę architektury (hosting/CMS zostają za 0 zł).
+
+Kolejność jest ważna, bo `.pl` ma jedną pułapkę (DNSSEC — patrz krok 3). Rób
+**dokładnie w tej kolejności**, żeby strona/e-mail nie przestały działać.
+
+#### Krok 1 — dodaj domenę do Cloudflare (jeszcze przed zmianą nameserwerów)
+
+1. Kup `hadrianm.pl` u wybranego rejestratora (`nazwa.pl` lub `home.pl`).
+2. W panelu Cloudflare kliknij **Add a site / Add a domain**, wpisz gołą domenę
+   `hadrianm.pl`, wybierz plan **Free**.
+3. Cloudflare **zeskanuje istniejące rekordy DNS** i pokaże je do zatwierdzenia.
+   Dla świeżo kupionej domeny (bez poczty, bez starej strony) lista będzie
+   praktycznie pusta — to normalne. Kliknij dalej.
+   - _Gdybyś kiedyś przenosił domenę, która MA już pocztę_ — najpierw upewnij się,
+     że rekordy **MX/TXT/A** są po stronie Cloudflare, zanim ruszysz nameserwery,
+     inaczej poczta padnie. Tu (nowa domena) nie dotyczy.
+4. Cloudflare przydzieli Ci **dokładnie 2 serwery nazw**, np.
+   `xxx.ns.cloudflare.com` i `yyy.ns.cloudflare.com`. **Zapisz je** — wklejasz je
+   u rejestratora w kroku 4.
+
+#### Krok 2 — (opcjonalnie, na przyszłość) rekordy zostaw Cloudflare
+
+Nie musisz nic dodawać ręcznie — po podpięciu domeny do Pages (krok 5) Cloudflare
+sam utworzy potrzebne rekordy. Przejdź dalej.
+
+#### Krok 3 — WYŁĄCZ DNSSEC u rejestratora (pułapka `.pl`)
+
+**To najczęstsza przyczyna „domena nie działa po przeniesieniu".** Jeśli domena
+ma włączony **DNSSEC** (podpisywanie DNS), w rejestrze NASK istnieje tzw. **rekord
+DS**. Gdy zmienisz nameserwery na Cloudflare, a stary rekord DS zostanie,
+resolvery nadal będą oczekiwać starego podpisu → domena zwróci **SERVFAIL** i
+będzie niedostępna.
+
+- **Świeżo kupiona domena** zwykle **nie ma** włączonego DNSSEC — wtedy ten krok
+  po prostu potwierdzasz jako „nic do zrobienia".
+- Jeśli DNSSEC jest włączony: **wyłącz go / usuń rekord DS u rejestratora**
+  (`nazwa.pl` i `home.pl` mają opcję DNSSEC w panelu domeny) i **odczekaj**, aż
+  zmiana się rozejdzie, zanim zmienisz nameserwery. Cloudflare nie nadpisze
+  cudzego rekordu DS — musi zniknąć po stronie rejestratora.
+- DNSSEC możesz **później włączyć ponownie już w Cloudflare** (Cloudflare wygeneruje
+  nowy rekord DS, który wklejasz u rejestratora). To opcjonalne — na start
+  spokojnie zostaw wyłączony.
+
+> _Dokładnej ścieżki „gdzie kliknąć, by wyłączyć DNSSEC" nie podaję jako pewnej —
+> zweryfikuj przełącznik na żywo w panelu domeny (szukaj hasła **DNSSEC**)._
+
+#### Krok 4 — ustaw nameserwery Cloudflare u rejestratora
+
+**Jeśli kupiłeś w `nazwa.pl`:**
+
+1. Zaloguj się do **Panel Klienta** → menu **Usługi → Domeny**.
+2. Znajdź `hadrianm.pl` na liście i kliknij **„konfiguruj"** (po prawej stronie
+   nazwy).
+3. Wejdź w sekcję/zakładkę **„Zewnętrzne serwery DNS"**.
+4. Wpisz **oba** nameserwery Cloudflare z kroku 1.4 (minimum 2; dla `.pl` można
+   podać do 9) i zatwierdź przyciskiem **„ZMIEŃ"**.
+   - Wybór „zewnętrznych serwerów DNS" **zastępuje** domyślny DNS `nazwa.pl` —
+     od tej chwili DNS domeny prowadzi Cloudflare.
+5. Propagacja: `nazwa.pl` deklaruje **do 72 h** (zwykle znacznie szybciej).
+
+**Jeśli kupiłeś w `home.pl`:**
+
+1. Zaloguj się do **Panel Klienta** (panel.home.pl) → menu **Domeny** (po lewej).
+2. Wybierz `hadrianm.pl` z listy (status w kolumnie „Status operacji" musi być
+   **„Aktywna"**).
+3. Kliknij **„Działania"** → **„Ustaw zewnętrzne serwery DNS"**.
+4. Wpisz **oba** nameserwery Cloudflare z kroku 1.4 (minimum 2) i zatwierdź
+   **„OK"**, by uruchomić delegację.
+5. Delegacja trwa **do ~30 h**; w tym oknie strona/poczta pod domeną może chwilowo
+   nie działać, dopóki rekordy nie ustawią się po stronie Cloudflare.
+
+#### Krok 5 — poczekaj na „Active" i podłącz domenę do Pages
+
+1. Wróć do Cloudflare (zakładka Twojej domeny) i kliknij **„Check nameservers"**.
+   Cloudflare przyśle e-mail i pokaże status **„Active"**, gdy delegacja zadziała
+   (zwykle w ciągu godziny–do 24 h, choć rejestrator dopuszcza dłużej — patrz
+   wyżej).
+2. Gdy domena jest **Active**: Pages → Twój projekt → **Custom domains → Set up a
+   custom domain** → `hadrianm.pl`, powtórz dla `www.hadrianm.pl`. Cloudflare sam
+   doda rekordy DNS i wystawi certyfikat **SSL/HTTPS** automatycznie.
+3. Zaktualizuj w GitHubie **Homepage URL** aplikacji OAuth (Etap 3) na
+   `https://hadrianm.pl` (nie jest krytyczne, ale porządkuje).
 
 Po tym kroku masz **działającą stronę i panel pod `hadrianm.pl`** — treść możesz
 edytować, zdjęcia na razie lądują w repo. Etap 5 przenosi je do R2 i włącza
 skalowanie w locie.
+
+---
+
+### 7.4 „Czy brak `hadrianm.com` to problem? Stracę klientów zza granicy?"
+
+**Krótka odpowiedź: nie, dla Twojego przypadku to bezpieczny wybór — a nie
+pułapka.** Rozbicie na czynniki:
+
+- **Dla polskich klientów `.pl` jest wręcz atutem.** Google traktuje końcówkę
+  `.pl` jako **silny sygnał geolokalizacji na Polskę** — automatycznie, bez żadnych
+  ustawień. Domena `.pl` buduje też zaufanie u polskiego odbiorcy („to lokalna
+  firma"). Skoro Twoi klienci to głównie Polacy — `.pl` gra na Twoją korzyść.
+- **Dla pojedynczych klientów zza granicy `.pl` NIE jest blokadą.** Owszem, `.com`
+  brzmi bardziej „międzynarodowo/neutralnie", a `.pl` może się kojarzyć wyłącznie
+  z jednym krajem — ale **rozszerzenie domeny to dziś drugorzędny czynnik**.
+  O widoczności za granicą decyduje przede wszystkim **język i lokalizacja treści,
+  struktura strony, jakość i linki (autorytet)** — a nie litery po kropce.
+  Masz już stronę **dwujęzyczną (PL/EN)**, więc od strony treści jesteś na to
+  gotowy bardziej niż większość konkurencji.
+- **Realne ryzyko utraty klienta zza granicy z powodu samej końcówki `.pl`?**
+  Znikome. Zagraniczny klient trafia do Ciebie zwykle z **polecenia, portfolio,
+  LinkedIn albo bezpośredniego kontaktu**, a nie „wpisując .com w pasek". Na tym
+  etapie (freelancer/mała pracownia) końcówka domeny nie jest wąskim gardłem
+  pozyskiwania klientów — jest nim widoczność i portfolio.
+- **Co możesz zrobić „na zapas" (opcjonalnie, tanio).** Jeśli chcesz się
+  zabezpieczyć na przyszłą ekspansję i chronić markę: **dokup pasujący `.com`
+  później, jeśli będzie wolny**, i ustaw z niego **przekierowanie na `hadrianm.pl`**
+  (albo trzymaj w rezerwie). To decyzja **brandingowa, nie SEO-owa** — nie ma
+  potrzeby robić `.com` domeną główną ani robić tego teraz. Architektura z tego
+  dokumentu w niczym Ci tego nie blokuje: dodanie drugiej domeny to w Cloudflare
+  kilka kliknięć.
+
+**Wniosek:** zostań przy `hadrianm.pl` jako domenie głównej. Jeśli kiedyś realnie
+zaczniesz obsługiwać rynek zagraniczny — dokupisz `.com` i przekierujesz go na
+`.pl`. Dziś to nie jest problem, który kosztuje Cię klientów.
+
+---
+
+### 7.5 Poczta `info@hadrianm.pl` (+ aliasy) — czy od ręki, za darmo, jak?
+
+> Adres główny to **`info@hadrianm.pl`**; `mateusz@`, `contact@` i `kontakt@` to
+> aliasy do tej samej skrzynki (patrz „Jak nazwać adres" niżej). W przykładach
+> poniżej `kontakt@` bywa użyte poglądowo — działa tak samo dla `info@`.
+
+**Krótka odpowiedź:** **odbieranie** poczty na `info@hadrianm.pl` dostajesz
+**za darmo i od ręki** (Cloudflare Email Routing — skoro DNS masz już w Cloudflare).
+Ale samo Cloudflare **tylko przekierowuje pocztę, nie wysyła**. Żeby móc też
+**wysyłać** jako `kontakt@hadrianm.pl`, dokładasz jeden darmowy element (przekaźnik
+SMTP) albo wybierasz osobną skrzynkę. Nie jest to część zakupu domeny — to osobna
+konfiguracja (poniżej).
+
+> **Najważniejsza zasada — jeden zestaw MX.** Rekord **MX** („gdzie leci poczta
+> dla domeny") jest **tylko jeden**. Dlatego opcje poczty poniżej **wykluczają
+> się** — albo poczta idzie przez Cloudflare Email Routing, albo przez Zoho, albo
+> przez Google — nie da się dwóch naraz na tej samej domenie. Wybierasz **jeden**
+> wariant.
+
+> **Ważne — czy poczta u rejestratora „w cenie domeny"?** Nie licz na to:
+> u **nazwa.pl** sama domena daje tylko funkcje DNS (SPF/DKIM/DNSSEC), **realna
+> skrzynka to osobny płatny produkt** (CloudMail). U **home.pl** jest odwrotnie —
+> darmowa domena w 1. roku jest **dodatkiem do płatnego pakietu poczty**. Tak czy
+> siak: **darmowej skrzynki „przy okazji domeny" nie ma**. Dlatego rekomendujemy
+> pocztę spiąć z Cloudflare (gdzie i tak jest już DNS), a nie z rejestratorem.
+
+#### Jak nazwać adres (i dlaczego można mieć kilka naraz)
+
+Nie musisz wybierać „albo po polsku, albo po angielsku" — **jedna skrzynka może
+mieć wiele adresów** (aliasów) albo **catch-all** (`*@hadrianm.pl` — łap-wszystko).
+Cloudflare Email Routing i każda prawdziwa skrzynka to obsługują. Zasada: **ustaw
+kilka aliasów wpadających do jednej skrzynki, ale na stronie pokazuj tylko jeden**
+(spójność marki).
+
+Najbardziej uniwersalne słówka:
+
+- **`info@`** — dosłownie identyczne po polsku i angielsku, neutralne, globalnie
+  rozpoznawalne.
+- **`hello@`** — nowoczesne, „studyjne", zrozumiałe dla Polaka i obcokrajowca.
+- **`contact@`** — uniwersalne; Polacy też rozumieją (bo „kontakt" to niemal to
+  samo słowo).
+- **imię**, np. `mateusz@` — najbardziej osobiste, bez bariery językowej, brzmi
+  „butikowo" (piszesz do konkretnej osoby).
+
+> **Decyzja dla `hadrianm.pl`:** ustawiamy **cztery adresy** wpadające do jednej
+> skrzynki:
+> `info@hadrianm.pl`, `mateusz@hadrianm.pl`, `contact@hadrianm.pl`,
+> `kontakt@hadrianm.pl`.
+> **Głównym (wyświetlanym na stronie, w stopce, w CTA) jest `info@hadrianm.pl`.**
+> Pozostałe trzy działają „w tle" — jeśli ktoś napisze na `kontakt@`/`contact@`
+> albo bezpośrednio `mateusz@`, poczta i tak trafi w to samo miejsce.
+>
+> W praktyce: w Cloudflare Email Routing utwórz **4 reguły** (albo włącz
+> **catch-all**), wszystkie kierujące na ten sam cel (Twój Gmail / skrzynka). Jeśli
+> pójdziesz w prawdziwą skrzynkę (Zoho/rejestrator), zrób `info@` kontem głównym,
+> a resztę dodaj jako **aliasy** tego konta.
+
+#### Trzy warianty — wybierz jeden
+
+| Wariant                                         | Koszt        | Odbiór | Wysyłka jako `kontakt@` | Gdzie czytasz pocztę        |
+| ----------------------------------------------- | ------------ | ------ | ----------------------- | --------------------------- |
+| **(a) Cloudflare Routing + Brevo (SMTP w Gmailu)** | **0 zł**  | ✅ (przekierowanie do Twojego Gmaila) | ✅ (przez darmowy przekaźnik) | W Twoim zwykłym Gmailu |
+| **(b) Zoho Mail Forever Free**                  | **0 zł**     | ✅ (własna skrzynka) | ✅ (z webmaila/apki Zoho) | W panelu/apce Zoho (osobno) |
+| **(c) Google Workspace**                        | ~25–31 zł/mies. | ✅ | ✅ (natywnie) | Firmowy Gmail na własnej domenie |
+
+**Rekomendacja:** dla Ciebie **wariant (a)** — najtaniej (0 zł) i najwygodniej,
+bo całą pocztę firmową masz w **jednym, znajomym Gmailu**. Poniżej pełna
+konfiguracja (a) oraz skrót (b) i (c).
+
+#### Wariant (a) — 0 zł: odbiór przez Cloudflare + wysyłka przez Brevo
+
+**Część 1: ODBIÓR — Cloudflare Email Routing (5 minut).**
+
+1. Cloudflare → Twoja domena `hadrianm.pl` → **Email → Email Routing**.
+2. Kliknij **Enable / Get started**. Cloudflare **sam doda rekordy DNS** potrzebne
+   do odbioru: **3× MX** (`route1/2/3.mx.cloudflare.net`), **TXT (SPF)** i
+   **TXT (DKIM)** (`cf2024-1._domainkey`). Nic nie wpisujesz ręcznie.
+3. **Create address** → wpisz `kontakt` → jako cel podaj swój prywatny Gmail
+   (np. `tenhadrian@gmail.com`). Możesz też włączyć **catch-all** (łap-wszystko),
+   żeby dowolny adres `@hadrianm.pl` też trafiał do Ciebie.
+4. Cloudflare wyśle na Twój Gmail **e-mail weryfikacyjny — kliknij link**, żeby
+   potwierdzić adres docelowy. Od tej chwili poczta na `kontakt@hadrianm.pl`
+   **przychodzi do Twojego Gmaila.**
+
+> Limity: do 200 adresów docelowych i 200 reguł — dla Ciebie z zapasem. Odbiór
+> jest kompletny i darmowy. Zostaje **wysyłka**.
+
+**Część 2: WYSYŁKA — darmowy przekaźnik SMTP (Brevo) + Gmail „Wyślij jako".**
+
+Cloudflare nie wysyła, więc do wysyłki potrzebny jest serwer SMTP. Użyjemy
+darmowego **Brevo** (dawniej Sendinblue) — limit **300 maili/dzień** (do
+korespondencji z zapasem).
+
+1. Załóż darmowe konto na <https://www.brevo.com> i w panelu Brevo dodaj oraz
+   **zweryfikuj domenę** `hadrianm.pl`. Brevo poda Ci rekordy do dodania **w DNS
+   Cloudflare**:
+   - **TXT (SPF)** z `include:spf.brevo.com`,
+   - **2× CNAME (DKIM)**: `brevo1._domainkey`, `brevo2._domainkey`,
+   - **TXT (DMARC)** (np. `v=DMARC1; p=none;`).
+   > Te rekordy **nie kłócą się** z rekordami z Części 1 — bo tylko **MX** jest
+   > „pojedynczy", a to są TXT/CNAME. Od 2024 Gmail wymaga DKIM+DMARC, więc ten
+   > krok jest konieczny, żeby maile nie lądowały w spamie.
+2. W Brevo wygeneruj dane **SMTP**: host `smtp-relay.brevo.com`, port `587`,
+   login i hasło (klucz SMTP).
+3. W Gmailu: **Ustawienia → Konta i import → „Wyślij e-mail jako" → Dodaj inny
+   adres e-mail** → wpisz `kontakt@hadrianm.pl`, a jako serwer SMTP podaj dane
+   z Brevo (host/port/login/hasło).
+4. Gotowe: piszesz w Gmailu, wybierasz nadawcę `kontakt@hadrianm.pl`, a mail
+   wychodzi przez Brevo, podpisany DKIM-em Twojej domeny.
+
+> **Uwaga:** nie używaj sztuczki „wysyłaj przez `smtp.gmail.com`" — wtedy DKIM
+> podpisuje się jako `gmail.com`, odbiorca widzi „via gmail.com" i częściej trafia
+> to do spamu. Własny przekaźnik (Brevo) rozwiązuje ten problem.
+
+#### Wariant (b) — 0 zł: Zoho Mail Forever Free (osobna, „prawdziwa" skrzynka)
+
+Jeśli wolisz **jedną, klasyczną skrzynkę** (osobny login, bez przekaźników) zamiast
+spinania z Gmailem:
+
+1. Załóż **Zoho Mail** na planie **Forever Free** (do 5 skrzynek, 5 GB każda) i przy
+   rejestracji **wybierz centrum danych „EU"** (dane w Unii). Dodaj domenę
+   `hadrianm.pl`.
+2. W DNS Cloudflare **wyłącz wcześniej Cloudflare Email Routing** (bo jego MX by
+   kolidował) i wstaw rekordy Zoho z ich Admin Console: **MX** `mx.zoho.eu`,
+   `mx2.zoho.eu`, `mx3.zoho.eu`, **TXT (SPF)** `include:zoho.eu`, **TXT (DKIM)**
+   `zoho._domainkey` + rekord weryfikacyjny (CNAME/TXT).
+3. Utwórz skrzynkę `kontakt@hadrianm.pl`. Czytasz i wysyłasz z **webmaila Zoho lub
+   ich aplikacji mobilnej**.
+
+> **Największe ograniczenie darmowego Zoho (stan 2026):** **brak IMAP/POP/SMTP** —
+> **nie podłączysz** tej skrzynki pod Gmaila/Outlooka/Thunderbirda, korzystasz
+> **tylko** przez interfejs Zoho. To dlatego wariant (a) jest wygodniejszy, jeśli
+> lubisz mieć wszystko w Gmailu. _Zoho zmienia warunki darmowego planu — potwierdź
+> aktualny cennik na żywo przed założeniem konta._
+
+#### Wariant (c) — płatnie: Google Workspace (max wygoda i dostarczalność)
+
+Jeśli zależy Ci na firmowym Gmailu na własnej domenie, bez kombinowania z
+przekaźnikami i z najlepszą dostarczalnością:
+
+- **Google Workspace Business Starter:** ~**25 zł/użytkownik/mies.** (zobowiązanie
+  roczne) lub ~31,50 zł bez zobowiązania; 30 GB, natywna wysyłka/odbiór jako
+  `kontakt@hadrianm.pl`. W Cloudflare wstawiasz wtedy **MX Google** i **wyłączasz
+  Email Routing**.
+- Alternatywa: **Microsoft 365 Business Basic** (~28 zł/użytk./mies., rocznie).
+
+#### Chcesz OSOBNĄ skrzynkę — w Outlooku na Macu albo jako osobny Gmail?
+
+To zmienia rekomendację, bo **Outlook (i każdy klient desktopowy) potrzebuje
+IMAP + SMTP** — a tego **darmowy Zoho ani samo Cloudflare Routing NIE dają**
+(Routing tylko przekierowuje, darmowy Zoho działa wyłącznie przez własny webmail).
+Masz dwie realne drogi:
+
+**Ścieżka 1 — dedykowany darmowy Gmail jako skrzynka (0 zł).**
+
+Zakładasz **nowe, osobne konto Gmail** (np. `kontakt.hadrianm@gmail.com`), które
+jest „pojemnikiem" na firmową pocztę, i podpinasz je pod Outlooka:
+
+1. **Odbiór:** Cloudflare Email Routing przekierowuje `kontakt@hadrianm.pl` → ten
+   nowy Gmail (jak w wariancie (a) wyżej).
+2. **W Outlooku na Macu** dodajesz **to konto Gmail przez IMAP**
+   (`imap.gmail.com:993`). Gmail osobisty wymaga **hasła aplikacji** (App Password)
+   zamiast zwykłego hasła.
+3. **Wysyłka — kluczowy szczegół:** ustaw **serwer wychodzący (SMTP) w Outlooku
+   na Brevo** (`smtp-relay.brevo.com:587`, login/klucz z Brevo), a jako nadawcę
+   (From) wpisz `kontakt@hadrianm.pl`. Dzięki temu alias jest **prawdziwym,
+   uwierzytelnionym nadawcą** i — z rekordami SPF/DKIM/DMARC Brevo w DNS — poczta
+   ma dobrą dostarczalność.
+   > **Nie wysyłaj przez `smtp.gmail.com`.** Wtedy Google dokłada nagłówek
+   > „`…@gmail.com` **w imieniu** `kontakt@hadrianm.pl`", psuje DMARC (podpis
+   > gmail.com zamiast Twojej domeny) i częściej wpadasz w spam. Wychodzący SMTP =
+   > Brevo, nie Gmail.
+4. Efekt: w Outlooku masz osobną skrzynkę firmową — odbiór przez Gmail (IMAP),
+   wysyłka jako `kontakt@hadrianm.pl` (przez Brevo). Wszystko za **0 zł**.
+
+> **Minus tej ścieżki:** trzy sklejone usługi (Cloudflare forward + Gmail IMAP +
+> Brevo SMTP) = trzy miejsca konfiguracji i trzy potencjalne punkty awarii. Działa,
+> ale to „majstrowanie", żeby oszczędzić ~4 zł/mies.
+
+**Ścieżka 2 — „prawdziwa" skrzynka na własnej domenie z IMAP/SMTP (~3–5 zł/mies.,
+rekomendowana).**
+
+Tu `kontakt@hadrianm.pl` jest **realnym kontem** (nie aliasem) — działa natywnie
+w Outlooku, bez żadnych trików, z czystym DMARC. Konfiguracja: dodajesz **MX +
+SPF/DKIM dostawcy w DNS Cloudflare jako „DNS only"** i **wyłączasz Cloudflare Email
+Routing** (bo MX może być tylko jeden). Aktualne (2026) tanie opcje:
+
+| Dostawca                     | Cena (orient.)              | IMAP/SMTP | Uwaga                                             |
+| ---------------------------- | --------------------------- | --------- | ------------------------------------------------ |
+| **Zoho Mail — Mail Lite**    | ~$1/mies. (~4 zł), rocznie  | ✅ (płatny plan przywraca IMAP/SMTP) | **Rekomendacja** — najtaniej za realne konto; wybierz DC „EU". Hosty: `imappro.zoho.eu:993` / `smtp.zoho.eu:465` |
+| **Migadu (Micro)**           | ~$19/rok (~6 zł/mies.)      | ✅ | Płaska cena, wiele adresów; limit **20 wysłanych/dzień** (dla korespondencji OK). `imap.migadu.com` / `smtp.migadu.com` |
+| **Purelymail**               | ~$10/rok (~3 zł/mies.)      | ✅ | Najtaniej, ale mały jednoosobowy dostawca i **sami zapowiadają podwyżkę** — traktuj cenę jako zmienną |
+| **Poczta u rejestratora**    | home.pl ~9 zł netto/1. rok (odnowienie ~49 zł/rok); nazwa.pl CloudMail ~60 zł netto/rok | ✅ | Kupujesz sam produkt poczty, a **MX wpisujesz do DNS Cloudflare** (DNS-only); strona zostaje na Pages |
+| **iCloud+ własna domena**    | od ~0,99 €/mies.            | ⚠️ | **Słabo współpracuje z Outlookiem na Macu** (nowy Outlook nie obsługuje własnych domen iCloud natywnie, From potrafi pokazywać `@icloud.com`) — odradzam do Outlooka |
+
+> **Outlook na Macu — dobra wiadomość:** nowy Outlook **obsługuje dowolne konta
+> IMAP** (w kreatorze jest opcja „inne/IMAP"), więc Zoho / Migadu / Purelymail /
+> poczta rejestratora wchodzą natywnie. Wyjątki: konta osobiste (Gmail) wymagają
+> **hasła aplikacji**, a własne domeny iCloud są problematyczne (patrz tabela).
+
+**Co polecam:** zapłać **~4 zł/mies. za Zoho Mail Lite** (albo Migadu). Jedna
+realna skrzynka, natywnie w Outlooku, najlepsza dostarczalność i zero grzebania
+przy aliasach — te kilka złotych kupuje Ci spokój. Darmową ścieżkę 1 (dedykowany
+Gmail + Brevo) wybierz tylko, jeśli zależy Ci wyłącznie na „0 zł".
+
+#### Pułapki wspólne dla poczty (przeczytaj przy każdym wariancie)
+
+- **Tylko jeden zestaw MX** — Cloudflare Routing, Zoho i Google **wykluczają się**.
+  Zmiana poczty = wymiana rekordów MX na inne.
+- **Rekordy poczty zawsze „DNS only" (szara chmurka), nigdy „Proxied"
+  (pomarańczowa).** Proxy Cloudflare obsługuje tylko HTTP(S); przez pomarańczową
+  chmurkę poczta (SMTP/IMAP) nie przejdzie.
+- **Włączenie Email Routing nadpisuje istniejące MX** — jeśli kiedyś przejdziesz na
+  Zoho/Google, najpierw wyłącz Email Routing.
+- **Zawsze skonfiguruj SPF + DKIM + DMARC** dostawcy, który faktycznie wysyła —
+  inaczej maile lądują w spamie.
+- **DNSSEC** (włączony w Cloudflare) nie przeszkadza żadnemu wariantowi poczty.
 
 ---
 
@@ -819,7 +1157,8 @@ realizacje wyłącznie z panelu, a strona się aktualizuje.
 | GitHub Actions (bramka)     | **0 zł** (repo prywatne: 2000 min/mies.)                 |
 | Sveltia CMS                 | **0 zł** (open source)                                   |
 | Cloudflare Stream (wideo)   | ~0–kilka USD, tylko jeśli włączysz                       |
-| Domena `hadrianm.pl`        | ~50–70 zł/rok (u rejestratora)                           |
+| Domena `hadrianm.pl`        | 1. rok często ~1–2 zł (promo); odnowienie ~60–100 zł/rok (nazwa.pl/home.pl) |
+| Poczta `info@hadrianm.pl` (+ aliasy) | **0 zł** (Routing + Brevo); osobna skrzynka IMAP (Outlook) ~4 zł/mies. (Zoho Mail Lite); ~25–31 zł/mies. (Google Workspace) |
 | **Razem recurring**         | **~0 zł/mies.** + domena rocznie                         |
 
 ---
