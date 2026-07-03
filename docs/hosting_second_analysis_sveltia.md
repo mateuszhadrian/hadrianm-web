@@ -722,9 +722,9 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -734,6 +734,13 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm build
 ```
+
+> **Wersje akcji (stan 2026-07):** `checkout@v7`, `pnpm/action-setup@v6`
+> (oficjalne wsparcie pnpm 11 — projekt używa `pnpm@11.x`), `setup-node@v6`.
+> Uwaga przy przyszłych podbiciach: od `setup-node@v6` automatyczne cache
+> działa tylko dla npm — dla pnpm **jawne `cache: pnpm` jest wymagane**
+> (mamy je w workflow), a `pnpm/action-setup` musi być w kroku **przed**
+> `setup-node`.
 
 W GitHub: **Settings → Branches → Add branch protection rule** na `main`,
 zaznacz „Require status checks to pass" → wybierz `quality`. Efekt: przez PR nie
