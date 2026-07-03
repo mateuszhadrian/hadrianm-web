@@ -1,16 +1,27 @@
 {
   "slug": "aura",
   "order": 1,
-  "name": "Aura Aesthetics",
+  "name": "Aura Lux Aesthetics",
   "year": "2025",
-  "category": { "pl": "Moda & Beauty", "en": "Fashion & Beauty" },
+  "category": {
+    "pl": "Moda & Beauty",
+    "en": "Fashion & Beauty"
+  },
   "blurb": {
     "pl": "Gabinet medycyny estetycznej — delikatna, elegancka odsłona marki premium.",
     "en": "Aesthetic-medicine clinic — a delicate, elegant take on a premium brand."
   },
   "tags": {
-    "pl": ["Rezerwacja online", "Nowoczesny UI", "Wzrost zapytań"],
-    "en": ["Online booking", "Modern UI", "More enquiries"]
+    "pl": [
+      "Rezerwacja online",
+      "Nowoczesny UI",
+      "Wzrost zapytań"
+    ],
+    "en": [
+      "Online booking",
+      "Modern UI",
+      "More enquiries"
+    ]
   },
   "intro": {
     "pl": "Klientka prowadząca gabinet medycyny estetycznej potrzebowała strony, która odda premium charakter marki i pozwoli pacjentkom rezerwować wizyty online — bez telefonów i wiadomości.",
@@ -19,40 +30,58 @@
   "screens": [
     {
       "key": "home",
-      "label": { "pl": "Strona główna", "en": "Home" },
+      "label": {
+        "pl": "Strona główna",
+        "en": "Home"
+      },
       "desktop": "/realizacje/aura/desktop.webp",
       "mobile": "/realizacje/aura/mobile.webp"
     },
     {
       "key": "gallery",
-      "label": { "pl": "Galeria zabiegów", "en": "Treatments gallery" },
+      "label": {
+        "pl": "Galeria zabiegów",
+        "en": "Treatments gallery"
+      },
       "desktop": "/realizacje/aura/gallery-desktop.webp",
       "mobile": "/realizacje/aura/gallery-mobile.webp"
     },
     {
       "key": "order",
-      "label": { "pl": "Rezerwacja online", "en": "Online booking" },
+      "label": {
+        "pl": "Rezerwacja online",
+        "en": "Online booking"
+      },
       "desktop": "/realizacje/aura/order-desktop.webp",
       "mobile": "/realizacje/aura/order-mobile.webp"
     }
   ],
   "results": [
     {
-      "metric": { "pl": "98/100", "en": "98/100" },
+      "metric": {
+        "pl": "98/100",
+        "en": "98/100"
+      },
       "label": {
         "pl": "Wynik Google PageSpeed (mobile)",
         "en": "Google PageSpeed score (mobile)"
       }
     },
     {
-      "metric": { "pl": "+42%", "en": "+42%" },
+      "metric": {
+        "pl": "+42%",
+        "en": "+42%"
+      },
       "label": {
         "pl": "Więcej rezerwacji online w 3 miesiące",
         "en": "More online bookings in 3 months"
       }
     },
     {
-      "metric": { "pl": "3 tyg.", "en": "3 wk" },
+      "metric": {
+        "pl": "3 tyg.",
+        "en": "3 wk"
+      },
       "label": {
         "pl": "Od projektu do publikacji",
         "en": "From design to launch"
