@@ -2,3 +2,6 @@ dist
 .astro
 pnpm-lock.yaml
 docs
+# JSON-y realizacji pisze Sveltia CMS (własny formater: tablice zawsze
+# wielolinijkowe, Prettier by je składał) — walidację robi schemat Zod w buildzie
+src/content/realizacje

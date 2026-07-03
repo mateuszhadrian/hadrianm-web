@@ -746,7 +746,7 @@ W GitHub: **Settings → Branches → Add branch protection rule** na `main`,
 zaznacz „Require status checks to pass" → wybierz `quality`. Efekt: przez PR nie
 trafi na `main` kod, który nie przeszedł bramki.
 
-> **Dwa niuanse tej bramki (ważne przy pracy z CMS-em).**
+> **Trzy niuanse tej bramki (ważne przy pracy z CMS-em).**
 >
 > 1. Sveltia commituje **bezpośrednio na `main`**, a Pages builduje każdy push
 >    **niezależnie od wyniku Actions** — bramka realnie chroni przy pracy przez
@@ -760,6 +760,13 @@ trafi na `main` kod, który nie przeszedł bramki.
 >    [additional-architecture-adjustment-admin-client.md](./additional-architecture-adjustment-admin-client.md)),
 >    jego commity z CMS-a mogłyby być blokowane — wtedy nie wymuszaj reguły na
 >    push albo daj klientowi bypass.
+> 3. **Formatowanie JSON-ów z panelu ≠ Prettier** (wykryte przy pierwszym
+>    zapisie, 2026-07-03): Sveltia zapisuje tablice zawsze wielolinijkowo,
+>    a Prettier krótkie tablice składa do jednej linii — żadnej strony nie da
+>    się tak skonfigurować, by pisały identycznie, więc każdy zapis z panelu
+>    czerwieniłby `format:check`. Rozwiązanie: `src/content/realizacje` jest w
+>    `.prettierignore` (pliki pisane maszynowo przez CMS; poprawność danych i
+>    tak waliduje schemat Zod podczas builda).
 
 ### 7.2 Podpięcie repo do Cloudflare Pages
 
