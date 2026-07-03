@@ -1,16 +1,6 @@
 ---
 import WorkDeviceDuo from "./WorkDeviceDuo.astro";
-
-interface LocalizedProject {
-  slug: string;
-  name: string;
-  year: string;
-  category: string;
-  blurb: string;
-  tags: string[];
-  img: { desktop: string; mobile: string };
-  href?: string;
-}
+import type { LocalizedProject } from "./work-data";
 
 interface Props {
   project: LocalizedProject;
@@ -19,6 +9,11 @@ interface Props {
 }
 const { project, index, cta } = Astro.props;
 const flip = index % 2 === 1;
+
+// Kafelek bierze obraz z ekranu „home" (fallback: pierwszy ekran) — dzięki temu
+// w CMS nie trzeba wgrywać tego samego zrzutu dwa razy.
+const cover =
+  project.screens.find((s) => s.key === "home") ?? project.screens[0];
 ---
 
 <button
@@ -31,8 +26,8 @@ const flip = index % 2 === 1;
 >
   <div class="rz-card__media">
     <WorkDeviceDuo
-      desktop={project.img.desktop}
-      mobile={project.img.mobile}
+      desktop={cover.desktop}
+      mobile={cover.mobile}
       altDesktop={`${project.name} — desktop`}
       altMobile={`${project.name} — mobile`}
     />

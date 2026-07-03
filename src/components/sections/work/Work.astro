@@ -1,6 +1,7 @@
 ---
+import { getCollection } from "astro:content";
 import { useTranslations, type Lang } from "@/i18n/utils";
-import { workProjects, localizeProject } from "./work-data";
+import { localizeProject } from "./work-data";
 import { siteConfig } from "@/config/site";
 import WorkCard from "./WorkCard.astro";
 import WorkDetail from "./WorkDetail.astro";
@@ -13,7 +14,11 @@ interface Props {
 const { lang } = Astro.props;
 const t = useTranslations(lang);
 
-const projects = workProjects.map((p) => localizeProject(p, lang));
+const entries = await getCollection("realizacje");
+const projects = entries
+  .map((e) => e.data)
+  .sort((a, b) => a.order - b.order)
+  .map((p) => localizeProject(p, lang));
 const showComingSoon = siteConfig.work.showComingSoonTile;
 ---
 

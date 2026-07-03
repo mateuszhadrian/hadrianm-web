@@ -1,0 +1,77 @@
+{
+  "slug": "dab",
+  "order": 2,
+  "name": "Dąb & Forma",
+  "year": "2025",
+  "category": { "pl": "Wnętrza & Meble", "en": "Interiors & Furniture" },
+  "blurb": {
+    "pl": "Manufaktura mebli z litego drewna — surowy, architektoniczny minimalizm.",
+    "en": "Solid-wood furniture studio — raw, architectural minimalism."
+  },
+  "tags": {
+    "pl": ["Szybkość ładowania", "Katalog produktów", "Mocna typografia"],
+    "en": ["Fast loading", "Product catalogue", "Bold typography"]
+  },
+  "intro": {
+    "pl": "Manufaktura mebli na zamówienie chciała witryny, która podkreśli rzemiosło i jakość materiałów oraz uprości zbieranie zapytań o wycenę projektów B2B i B2C.",
+    "en": "A bespoke furniture workshop wanted a site that highlights craftsmanship and material quality, and simplifies collecting quote requests for B2B and B2C projects."
+  },
+  "screens": [
+    {
+      "key": "home",
+      "label": { "pl": "Strona główna", "en": "Home" },
+      "desktop": "/realizacje/dab/desktop.webp",
+      "mobile": "/realizacje/dab/mobile.webp"
+    },
+    {
+      "key": "gallery",
+      "label": { "pl": "Kolekcje", "en": "Collections" },
+      "desktop": "/realizacje/dab/gallery-desktop.webp",
+      "mobile": "/realizacje/dab/gallery-mobile.webp"
+    },
+    {
+      "key": "order",
+      "label": { "pl": "Formularz wyceny", "en": "Quote form" },
+      "desktop": "/realizacje/dab/order-desktop.webp",
+      "mobile": "/realizacje/dab/order-mobile.webp"
+    }
+  ],
+  "results": [
+    {
+      "metric": { "pl": "0,9 s", "en": "0.9 s" },
+      "label": {
+        "pl": "Czas ładowania strony głównej",
+        "en": "Home page load time"
+      }
+    },
+    {
+      "metric": { "pl": "+30%", "en": "+30%" },
+      "label": {
+        "pl": "Więcej zapytań z formularza wyceny",
+        "en": "More quote-form enquiries"
+      }
+    },
+    {
+      "metric": { "pl": "4 tyg.", "en": "4 wk" },
+      "label": {
+        "pl": "Pełna realizacja projektu",
+        "en": "Full project delivery"
+      }
+    }
+  ],
+  "quote": {
+    "pl": "Wreszcie strona, która wygląda jak nasze meble — prosto, mocno i bez zbędnych ozdobników. Zapytania o wyceny ruszyły od pierwszego tygodnia.",
+    "en": "Finally a site that looks like our furniture — simple, strong, no needless ornament. Quote requests started coming in from the very first week."
+  },
+  "author": "Tomasz Wiśniewski",
+  "role": { "pl": "Założyciel, Dąb & Forma", "en": "Founder, Dąb & Forma" },
+  "scope": {
+    "pl": [
+      "Projekt UI/UX",
+      "Wdrożenie frontendowe",
+      "Katalog produktów",
+      "Formularz wyceny"
+    ],
+    "en": ["UI/UX design", "Frontend build", "Product catalogue", "Quote form"]
+  }
+}

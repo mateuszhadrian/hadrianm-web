@@ -1,0 +1,85 @@
+{
+  "slug": "sielski",
+  "order": 3,
+  "name": "Sielski Zakątek",
+  "year": "2024",
+  "category": { "pl": "Turystyka & Wypoczynek", "en": "Tourism & Leisure" },
+  "blurb": {
+    "pl": "Agroturystyka w sercu gór — ciepły, rustykalny klimat i prosta rezerwacja.",
+    "en": "Countryside stay in the heart of the mountains — a warm, rustic mood and simple booking."
+  },
+  "tags": {
+    "pl": ["Kalendarz rezerwacji", "Galeria zdjęć", "Zwiększona konwersja"],
+    "en": ["Booking calendar", "Photo gallery", "Higher conversion"]
+  },
+  "intro": {
+    "pl": "Gospodarstwo agroturystyczne potrzebowało ciepłej, klimatycznej strony, która sprzeda spokój wsi i pozwoli gościom rezerwować pobyt bezpośrednio — z pominięciem prowizji portali.",
+    "en": "A countryside guesthouse needed a warm, atmospheric site that sells the calm of the countryside and lets guests book their stay directly — skipping portal commissions."
+  },
+  "screens": [
+    {
+      "key": "home",
+      "label": { "pl": "Strona główna", "en": "Home" },
+      "desktop": "/realizacje/sielski/desktop.webp",
+      "mobile": "/realizacje/sielski/mobile.webp"
+    },
+    {
+      "key": "gallery",
+      "label": { "pl": "Atrakcje", "en": "Attractions" },
+      "desktop": "/realizacje/sielski/gallery-desktop.webp",
+      "mobile": "/realizacje/sielski/gallery-mobile.webp"
+    },
+    {
+      "key": "order",
+      "label": { "pl": "Rezerwacja noclegu", "en": "Stay booking" },
+      "desktop": "/realizacje/sielski/order-desktop.webp",
+      "mobile": "/realizacje/sielski/order-mobile.webp"
+    }
+  ],
+  "results": [
+    {
+      "metric": { "pl": "+55%", "en": "+55%" },
+      "label": {
+        "pl": "Rezerwacji bezpośrednich (bez portali)",
+        "en": "Direct bookings (no portals)"
+      }
+    },
+    {
+      "metric": { "pl": "4,9/5", "en": "4.9/5" },
+      "label": {
+        "pl": "Średnia ocena gości po pobycie",
+        "en": "Average guest rating after stay"
+      }
+    },
+    {
+      "metric": { "pl": "3 tyg.", "en": "3 wk" },
+      "label": {
+        "pl": "Od briefu do startu sezonu",
+        "en": "From brief to season launch"
+      }
+    }
+  ],
+  "quote": {
+    "pl": "Goście mówią, że zakochali się w nas już na stronie. Rezerwują wprost u nas, więc nie oddajemy prowizji portalom.",
+    "en": "Guests say they fell in love with us on the website already. They book directly with us, so we don't hand commissions to portals."
+  },
+  "author": "Anna i Piotr Górscy",
+  "role": {
+    "pl": "Gospodarze, Sielski Zakątek",
+    "en": "Hosts, Sielski Zakątek"
+  },
+  "scope": {
+    "pl": [
+      "Projekt UI/UX",
+      "Wdrożenie frontendowe",
+      "Kalendarz rezerwacji",
+      "Sesja & galeria zdjęć"
+    ],
+    "en": [
+      "UI/UX design",
+      "Frontend build",
+      "Booking calendar",
+      "Photo shoot & gallery"
+    ]
+  }
+}

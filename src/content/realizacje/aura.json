@@ -1,0 +1,85 @@
+{
+  "slug": "aura",
+  "order": 1,
+  "name": "Aura Aesthetics",
+  "year": "2025",
+  "category": { "pl": "Moda & Beauty", "en": "Fashion & Beauty" },
+  "blurb": {
+    "pl": "Gabinet medycyny estetycznej — delikatna, elegancka odsłona marki premium.",
+    "en": "Aesthetic-medicine clinic — a delicate, elegant take on a premium brand."
+  },
+  "tags": {
+    "pl": ["Rezerwacja online", "Nowoczesny UI", "Wzrost zapytań"],
+    "en": ["Online booking", "Modern UI", "More enquiries"]
+  },
+  "intro": {
+    "pl": "Klientka prowadząca gabinet medycyny estetycznej potrzebowała strony, która odda premium charakter marki i pozwoli pacjentkom rezerwować wizyty online — bez telefonów i wiadomości.",
+    "en": "The owner of an aesthetic-medicine clinic needed a site that conveys the brand's premium character and lets patients book visits online — without phone calls or messages."
+  },
+  "screens": [
+    {
+      "key": "home",
+      "label": { "pl": "Strona główna", "en": "Home" },
+      "desktop": "/realizacje/aura/desktop.webp",
+      "mobile": "/realizacje/aura/mobile.webp"
+    },
+    {
+      "key": "gallery",
+      "label": { "pl": "Galeria zabiegów", "en": "Treatments gallery" },
+      "desktop": "/realizacje/aura/gallery-desktop.webp",
+      "mobile": "/realizacje/aura/gallery-mobile.webp"
+    },
+    {
+      "key": "order",
+      "label": { "pl": "Rezerwacja online", "en": "Online booking" },
+      "desktop": "/realizacje/aura/order-desktop.webp",
+      "mobile": "/realizacje/aura/order-mobile.webp"
+    }
+  ],
+  "results": [
+    {
+      "metric": { "pl": "98/100", "en": "98/100" },
+      "label": {
+        "pl": "Wynik Google PageSpeed (mobile)",
+        "en": "Google PageSpeed score (mobile)"
+      }
+    },
+    {
+      "metric": { "pl": "+42%", "en": "+42%" },
+      "label": {
+        "pl": "Więcej rezerwacji online w 3 miesiące",
+        "en": "More online bookings in 3 months"
+      }
+    },
+    {
+      "metric": { "pl": "3 tyg.", "en": "3 wk" },
+      "label": {
+        "pl": "Od projektu do publikacji",
+        "en": "From design to launch"
+      }
+    }
+  ],
+  "quote": {
+    "pl": "Strona wygląda dokładnie tak elegancko jak mój gabinet. Pacjentki same się zapisują, a ja mam więcej czasu dla nich.",
+    "en": "The site looks exactly as elegant as my clinic. Patients book themselves, and I have more time for them."
+  },
+  "author": "Marta Kowalczyk",
+  "role": {
+    "pl": "Właścicielka, Aura Aesthetics",
+    "en": "Owner, Aura Aesthetics"
+  },
+  "scope": {
+    "pl": [
+      "Projekt UI/UX",
+      "Wdrożenie frontendowe",
+      "System rezerwacji",
+      "Optymalizacja SEO"
+    ],
+    "en": [
+      "UI/UX design",
+      "Frontend build",
+      "Booking system",
+      "SEO optimisation"
+    ]
+  }
+}

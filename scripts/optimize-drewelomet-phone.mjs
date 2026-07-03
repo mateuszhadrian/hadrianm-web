@@ -50,4 +50,6 @@ for (const rel of files) {
     `${rel} → ${info.width}×${info.height}  ${(info.size / 1024).toFixed(0)}KB`,
   );
 }
-console.log(`\nTOTAL phone variants: ${(after / 1024).toFixed(0)}KB`);
+console.log(
+  `\nTOTAL phone variants: ${(after / 1024).toFixed(0)}KB (źródła: ${(before / 1024).toFixed(0)}KB)`,
+);

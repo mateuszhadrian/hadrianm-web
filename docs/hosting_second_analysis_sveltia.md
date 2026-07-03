@@ -165,8 +165,9 @@ Jeśli `pnpm preview` pokazuje Realizacje tak jak dotąd — punkt wyjścia OK.
 (a nie w tablicy w `work-data.ts`), a wybór wariantu obrazka przechodzi przez
 jeden helper. To fundament, na którym CMS „usiądzie".
 
-> Ten etap mogę wykonać za Ciebie w całości. Poniżej opis **co i dlaczego**, żebyś
-> rozumiał zmianę.
+> **Stan: ✅ wykonany (2026-07-03).** Opis poniżej zaktualizowano po wdrożeniu —
+> odzwierciedla faktyczny kod w repo (w tym drobne poprawki wykryte podczas
+> realizacji: import Zoda, limit tagów, usunięcie nieużywanego `href`).
 
 ### 4.1 Nowy schemat kolekcji (Zod) — `src/content.config.ts`
 
@@ -178,14 +179,21 @@ zostaje bez zmian.
 
 ```ts
 // src/content.config.ts
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
+import { z } from "zod";
 
 // „Pole tłumaczone": jedno pole, dwie wersje językowe — jak dziś w work-data.ts.
 const localized = z.object({ pl: z.string(), en: z.string() });
 const localizedList = z.object({
   pl: z.array(z.string()),
   en: z.array(z.string()),
+});
+// Tagi: strona pokazuje maks. 3 — walidacja pilnuje tego już przy zapisie,
+// żeby edytor w CMS nie wpisał 5 tagów i nie dziwił się, że widać tylko 3.
+const localizedTags = z.object({
+  pl: z.array(z.string()).max(3),
+  en: z.array(z.string()).max(3),
 });
 
 const realizacje = defineCollection({
@@ -198,7 +206,7 @@ const realizacje = defineCollection({
     year: z.string(), // np. "2025"
     category: localized,
     blurb: localized,
-    tags: localizedList,
+    tags: localizedTags,
     intro: localized,
     screens: z
       .array(
@@ -222,11 +230,22 @@ const realizacje = defineCollection({
 export const collections = { realizacje };
 ```
 
+> **Uwaga (Astro 6):** re-eksport `z` z `astro:content` jest oznaczony jako
+> przestarzały — dlatego importujemy Zoda bezpośrednio z pakietu `zod` (jest już
+> bezpośrednią zależnością projektu). `astro check` przechodzi wtedy bez
+> ostrzeżeń o deprecacji.
+
 ### 4.2 Pliki treści — `src/content/realizacje/*.json`
 
 Zamiast trzech obiektów w tablicy `workProjects` powstają trzy pliki:
 `src/content/realizacje/aura.json`, `dab.json`, `sielski.json`. Przykład (skrót —
 pełne dane przeniesiemy 1:1 z `work-data.ts`):
+
+> **Nazwa pliku = wartość pola `slug`.** To celowa konwencja: Sveltia (Etap 2,
+> `slug: "{{fields.slug}}"` w `config.yml`) nazywa pliki wartością tego pola,
+> więc oba muszą być zgodne. Jeśli kiedyś zmieniasz nazwę pliku ręcznie w repo —
+> zmień też pole `slug` w środku (i odwrotnie), inaczej wpis w panelu i URL/anchor
+> na stronie się rozjadą.
 
 ```json
 {
@@ -273,7 +292,9 @@ pełne dane przeniesiemy 1:1 z `work-data.ts`):
 
 ### 4.3 Zmiana w `work-data.ts` — zostaje tylko typ i `localizeProject`
 
-Usuwamy tablicę `workProjects` (dane idą do JSON-ów). Zostawiamy **typy** i
+Usuwamy tablicę `workProjects` (dane idą do JSON-ów). Przy okazji znika też
+nieużywane pole `href` (żadna realizacja go nie ustawiała, a schemat kolekcji
+go nie przewiduje — link na żywo to `liveUrl`). Zostawiamy **typy** i
 funkcję `localizeProject` (dopasowujemy typ wejściowy do danych z kolekcji).
 `localizeProject` w środku nie zmienia logiki — nadal czyta `p.category[lang]`
 itd. To celowe: dzięki formatowi „pole `{pl,en}`" nic w tej funkcji nie pęka.
@@ -338,6 +359,13 @@ pnpm preview     # Realizacje muszą wyglądać 1:1 jak przed refaktorem
 ```
 
 Jeśli wygląda identycznie — **treść jest już „w plikach", gotowa dla CMS-a.**
+
+> **Tip (IDE):** typy dla `astro:content` (m.in. to, że `getCollection` zna
+> kolekcję `realizacje`) Astro generuje do katalogu `.astro/`. Jeśli edytor
+> pokazuje błędy w stylu `Argument of type "realizacje" is not assignable to
+> parameter of type never`, uruchom `pnpm exec astro sync` (albo `pnpm typecheck`,
+> który robi sync automatycznie) i w razie potrzeby zrestartuj serwer TypeScript
+> w IDE.
 
 ---
 
@@ -426,12 +454,14 @@ collections:
           - { label: "Polski", name: "pl", widget: "text" }
           - { label: "English", name: "en", widget: "text" }
 
-      - label: "Tagi"
+      # min/max — strona pokazuje maks. 3 tagi (limit zgodny ze schematem Zod
+      # .max(3)); `min` w parze, bo w Decap/Sveltii `max` bez `min` bywa ignorowane
+      - label: "Tagi (maks. 3)"
         name: "tags"
         widget: "object"
         fields:
-          - { label: "Polski", name: "pl", widget: "list", field: { label: "Tag", name: "tag", widget: "string" } }
-          - { label: "English", name: "en", widget: "list", field: { label: "Tag", name: "tag", widget: "string" } }
+          - { label: "Polski", name: "pl", widget: "list", min: 1, max: 3, field: { label: "Tag", name: "tag", widget: "string" } }
+          - { label: "English", name: "en", widget: "list", min: 1, max: 3, field: { label: "Tag", name: "tag", widget: "string" } }
 
       - label: "Wprowadzenie (intro)"
         name: "intro"
@@ -445,6 +475,7 @@ collections:
         name: "screens"
         widget: "list"
         label_singular: "Ekran"
+        min: 1 # schemat Zod wymaga ≥1 ekranu; kafelek bierze obraz z ekranu „home"
         summary: "{{fields.label.pl}}"
         fields:
           - { label: "Klucz (home/gallery/order)", name: "key", widget: "string" }
@@ -508,6 +539,18 @@ collections:
 > zapisałaby dane inaczej (osobno per język), co wymusiłoby przepisanie logiki.
 > Ten wariant jest prostszy i w 100% zgodny z tym, co masz.
 
+> **Pusty `liveUrl`:** Sveltia potrafi zapisać niewypełnione pole jako pusty
+> string (`"liveUrl": ""`), nie pominąć go. To bezpieczne — schemat
+> (`z.string().optional()`) i `localizeProject` (puste/`"#"` → CTA się nie
+> renderuje) obsługują ten przypadek. Jeśli wolisz czyste JSON-y, włącz w
+> `config.yml` opcję `omit_empty_optional_fields: true` (sekcja `output`).
+
+> **Okno między Etapem 2 a 5 — nie podmieniaj zdjęć z panelu.** Dopóki obrazy
+> mieszkają w repo z wariantami `-m` (a `imgAt()` jest w fazie przejściowej),
+> plik wgrany z panelu **nie będzie miał** wariantu `-m` → mobile dostanie 404.
+> Teksty edytuj śmiało; zdjęcia wgrywaj z panelu dopiero po Etapie 5
+> (R2 + transformacje).
+
 ### 5.3 Weryfikacja Etapu 2 (lokalnie, jeszcze bez logowania)
 
 Panel wymaga logowania (Etap 3), więc pełny test zrobisz po Etapie 3–4. Na razie
@@ -516,6 +559,10 @@ sprawdź, że pliki są na miejscu i build przechodzi:
 ```bash
 pnpm build && pnpm preview   # wejdź na http://localhost:4321/admin — zobaczysz ekran logowania
 ```
+
+Po utworzeniu `public/admin/index.html` i `config.yml` odpal `pnpm format` —
+długie linie YAML mogą nie być w formacie Prettiera, a bramka CI z Etapu 4
+sprawdza (`format:check`) całe repo.
 
 ---
 
@@ -586,6 +633,13 @@ jakości przed publikacją.
 
 ### 7.1 Bramka jakości — GitHub Actions
 
+> **Higiena repo pod bramkę: ✅ zrobiona (2026-07-03).** Bramka odpala `lint` i
+> `format:check` na całym repo, więc zaszłości w `scripts/` (nieużywana zmienna
+> w `optimize-drewelomet-phone.mjs`, niedoformatowane `capture-ambient-bg.mjs`
+> i `optimize-drewelomet.mjs`) zostały naprawione zawczasu. Przed dodaniem
+> workflow upewnij się tylko, że `pnpm lint && pnpm format:check && pnpm
+> typecheck && pnpm build` nadal przechodzą lokalnie na zielono.
+
 Dodaj plik `.github/workflows/ci.yml` (dokładnie jak w
 [hosting_first_analysis.md](./hosting_first_analysis.md) §5.2):
 
@@ -613,8 +667,23 @@ jobs:
 ```
 
 W GitHub: **Settings → Branches → Add branch protection rule** na `main`,
-zaznacz „Require status checks to pass" → wybierz `quality`. Efekt: na produkcję
-nie trafi kod, który nie przeszedł bramki.
+zaznacz „Require status checks to pass" → wybierz `quality`. Efekt: przez PR nie
+trafi na `main` kod, który nie przeszedł bramki.
+
+> **Dwa niuanse tej bramki (ważne przy pracy z CMS-em).**
+>
+> 1. Sveltia commituje **bezpośrednio na `main`**, a Pages builduje każdy push
+>    **niezależnie od wyniku Actions** — bramka realnie chroni przy pracy przez
+>    PR-y. Przy zapisie z panelu ostatnią linią obrony jest to, że nieudany
+>    build Pages **nie podmienia** poprzedniego deployu (strona zostaje na
+>    ostatniej działającej wersji).
+> 2. Reguła „Require status checks" może **odrzucać bezpośrednie pushe na
+>    `main`** od użytkowników bez uprawnień administratora. Ty (właściciel)
+>    domyślnie ją omijasz, ale gdybyś kiedyś dał klientowi zapis z panelu
+>    (wariant z
+>    [additional-architecture-adjustment-admin-client.md](./additional-architecture-adjustment-admin-client.md)),
+>    jego commity z CMS-a mogłyby być blokowane — wtedy nie wymuszaj reguły na
+>    push albo daj klientowi bypass.
 
 ### 7.2 Podpięcie repo do Cloudflare Pages
 
@@ -1022,8 +1091,10 @@ R2 → `hadrianm-media` → **Settings → CORS Policy → Add**:
 [
   {
     "AllowedOrigins": ["https://hadrianm.pl", "http://localhost:4321"],
-    "AllowedMethods": ["GET", "PUT"],
-    "AllowedHeaders": ["*"]
+    "AllowedMethods": ["GET", "PUT", "HEAD"],
+    "AllowedHeaders": ["*"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3000
   }
 ]
 ```
@@ -1065,9 +1136,13 @@ To jedyna zmiana w kodzie w tym etapie — reszta (markup) zostaje:
 ```ts
 // src/lib/img.ts — FAZA DOCELOWA: skalowanie w locie przez Cloudflare
 export function imgAt(src: string, width: "full" | "mobile"): string {
+  // Lokalnie (dev/preview) endpoint /cdn-cgi/image nie istnieje — pokaż oryginał.
+  if (import.meta.env.DEV) return src;
   const w = width === "mobile" ? 320 : 960; // szerokości pod telefon / desktop
-  // format=auto → przeglądarka dostaje AVIF/WebP automatycznie
-  return `/cdn-cgi/image/width=${w},format=auto/${src}`;
+  // format=auto → przeglądarka dostaje AVIF/WebP automatycznie.
+  // replace: źródło bez wiodącego "/" (stare ścieżki z repo typu /realizacje/…);
+  // pełne URL-e https://media.hadrianm.pl/… przechodzą bez zmian.
+  return `/cdn-cgi/image/width=${w},format=auto/${src.replace(/^\//, "")}`;
 }
 ```
 
@@ -1077,13 +1152,21 @@ AVIF/WebP. To drobne rozszerzenie diffa w `WorkDeviceDuo.astro`.
 
 ### 8.7 Weryfikacja + sprzątanie
 
-1. `pnpm build && pnpm preview` — Realizacje wyglądają jak dotąd, ale w
-   `Network` (narzędzia deweloperskie przeglądarki) adresy obrazów zawierają
-   `/cdn-cgi/image/…`.
+1. **Test rób na produkcji (`hadrianm.pl`), nie lokalnie.** Endpoint
+   `/cdn-cgi/image/…` istnieje tylko na strefie Cloudflare z włączonymi
+   Transformations — na `localhost:4321` (i na `*.pages.dev`, bo to nie Twoja
+   strefa) te adresy dadzą 404. Lokalny podgląd ratuje warunek
+   `import.meta.env.DEV` z 8.6 (dev pokazuje oryginały). Po deployu sprawdź w
+   `Network` (narzędzia deweloperskie przeglądarki), że adresy obrazów
+   zawierają `/cdn-cgi/image/…` i obrazy się ładują.
 2. Gdy potwierdzisz, że zdjęcia idą z R2/transformacji:
-   - **usuń** pliki `public/realizacje/*-m.webp`,
+   - **usuń** pliki `public/realizacje/**/*-m.webp` (leżą w podkatalogach per
+     projekt: `aura/`, `dab/`, `sielski/`),
    - **usuń** skrypt `scripts/optimize-realizacje.mjs` i wpis `optimize:realizacje`
      z `package.json`,
+   - (opcjonalnie) gdy wszystkie realizacje wskazują już URL-e z R2, usuń też
+     bazowe `public/realizacje/**/*.webp` — inaczej zostaną w repo jako martwy
+     balast,
    - `docs/testing-data/` **zostaw** (lokalne źródło zrzutów do ponownego wgrania).
 
 > **Dlaczego to kasuje problem, a nie przenosi:** trzymasz **jeden** oryginał na
@@ -1135,7 +1218,8 @@ realizacje wyłącznie z panelu, a strona się aktualizuje.
 
 ## 11. Checklist końcowy
 
-- [ ] Etap 1: kolekcja `realizacje` + JSON-y + `imgAt()`; build 1:1 jak wcześniej.
+- [x] Etap 1: kolekcja `realizacje` + JSON-y + `imgAt()`; build 1:1 jak wcześniej
+      (zweryfikowane diffem zbudowanego HTML, 2026-07-03).
 - [ ] Etap 2: `public/admin/index.html` + `config.yml` z pełnym modelem realizacji.
 - [ ] Etap 3: Worker `sveltia-cms-auth` + aplikacja OAuth GitHub + `base_url`.
 - [ ] Etap 4: `ci.yml` + branch protection; Pages podpięte; domena `hadrianm.pl`.

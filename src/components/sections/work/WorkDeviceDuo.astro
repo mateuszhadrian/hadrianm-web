@@ -1,4 +1,6 @@
 ---
+import { imgAt } from "@/lib/img";
+
 interface Props {
   desktop: string;
   mobile: string;
@@ -13,10 +15,6 @@ const {
   altMobile,
   showPhone = true,
 } = Astro.props;
-
-// Wariant mobile (≤760px): lżejsza grafika obok tej samej ścieżki, z sufiksem
-// `-m` (np. desktop.webp → desktop-m.webp). Desktop dostaje oryginał.
-const mobileSrc = (src: string) => src.replace(/\.webp$/, "-m.webp");
 ---
 
 <div class="wd">
@@ -26,7 +24,10 @@ const mobileSrc = (src: string) => src.replace(/\.webp$/, "-m.webp");
     <div class="wd__lid">
       <div class="wd__screen">
         <picture class="wd__pic">
-          <source media="(max-width: 760px)" srcset={mobileSrc(desktop)} />
+          <source
+            media="(max-width: 760px)"
+            srcset={imgAt(desktop, "mobile")}
+          />
           <img
             class="wd__img"
             src={desktop}
@@ -47,7 +48,10 @@ const mobileSrc = (src: string) => src.replace(/\.webp$/, "-m.webp");
       <div class="wd__phone">
         <div class="wd__phone-screen">
           <picture class="wd__pic">
-            <source media="(max-width: 760px)" srcset={mobileSrc(mobile)} />
+            <source
+              media="(max-width: 760px)"
+              srcset={imgAt(mobile, "mobile")}
+            />
             <img
               class="wd__img"
               src={mobile}

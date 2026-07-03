@@ -35,7 +35,12 @@ for (const { full, rel } of files) {
   const meta = await sharp(full).metadata();
   const outPath = full.replace(/\.png$/i, ".webp");
   const info = await sharp(full)
-    .resize({ width: max, height: max, fit: "inside", withoutEnlargement: true })
+    .resize({
+      width: max,
+      height: max,
+      fit: "inside",
+      withoutEnlargement: true,
+    })
     .webp({ quality: q, effort: 6, alphaQuality: 90 })
     .toFile(outPath);
   const inSize = (await stat(full)).size;
