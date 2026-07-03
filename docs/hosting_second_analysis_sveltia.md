@@ -700,6 +700,33 @@ Zrób `git push`. Od teraz `/admin` pozwala się zalogować przez GitHub.
 **Cel:** strona i panel żyją pod `hadrianm.pl`, a każdy `push` przechodzi bramkę
 jakości przed publikacją.
 
+> **Stan: ✅ wykonany (2026-07-03) — z wyjątkiem 7.5 (poczta), która czeka na
+> osobny krok.** Przebieg faktyczny:
+>
+> - **7.1** — workflow `ci.yml` (job `quality`) + classic branch protection na
+>   `main` z wymaganym checkiem `quality`. Po drodze podbito akcje do
+>   `checkout@v7`/`setup-node@v6`/`pnpm-action-setup@v6` i dodano
+>   `src/content/realizacje` do `.prettierignore` (Sveltia formatuje JSON
+>   inaczej niż Prettier — niuans 3 w 7.1).
+> - **7.2** — Pages podpięte do repo (`hadrianm-web.pages.dev`); przy teście
+>   logowania trzeba było poprawić **callback URL w GitHub OAuth App**
+>   (został placeholder `twoj-login` zamiast `tenhadrian`) i dopisać
+>   `hadrianm-web.pages.dev` do `ALLOWED_DOMAINS` Workera.
+> - **7.3** — domena kupiona w **OVH** (sama domena; liczniki kont e-mail 0,
+>   bez DNS Anycast — darmowa skrzynka Zimbra Starter 15 GB i tak jest w
+>   cenie). Kreator Cloudflare „Connect a domain": z zeskanowanych rekordów
+>   OVH **zachowano MX + SPF** (pod przyszłą skrzynkę, wariant a2), usunięto
+>   rekordy parkingowe (2×A, CNAME `ftp`, 2×TXT znaczniki OVH). DNSSEC
+>   (domyślnie ON!) wyłączony w OVH przed zmianą NS — zdjęcie rekordu DS
+>   potwierdzone w DNSViz (NSEC3) i whois NASK (`dnssec: Unsigned`); panel
+>   OVH długo pokazywał „Disabling..." mimo zakończonej operacji w rejestrze.
+>   Nameserwery `barbara`/`miguel.ns.cloudflare.com` (OVH: „Use my own DNS",
+>   pola IP puste). Domena **Active**, custom domains w Pages
+>   (`hadrianm.pl` + `www`), Homepage URL w OAuth App zaktualizowany.
+>   Testy strony i panelu pod `https://hadrianm.pl` — OK.
+> - Dodatkowe przełączniki Cloudflare (Bot Fight Mode itd.) — świadomie
+>   niewłączone; domyślny zestaw Free wystarcza.
+
 ### 7.1 Bramka jakości — GitHub Actions
 
 > **Higiena repo pod bramkę: ✅ zrobiona (2026-07-03).** Bramka odpala `lint` i
