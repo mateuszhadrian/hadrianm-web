@@ -1,9 +1,21 @@
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 128 128">
-    <path d="M50.4 78.5a75.1 75.1 0 0 0-28.5 6.9l24.2-65.7c.7-2 1.9-3.2 3.4-3.2h29c1.5 0 2.7 1.2 3.4 3.2l24.2 65.7s-11.6-7-28.5-7L67 45.5c-.4-1.7-1.6-2.8-2.9-2.8-1.3 0-2.5 1.1-2.9 2.7L50.4 78.5Zm-1.1 28.2Zm-4.2-20.2c-2 6.6-.6 15.8 4.2 20.2a17.5 17.5 0 0 1 .2-.7 5.5 5.5 0 0 1 5.7-4.5c2.8.1 4.3 1.5 4.7 4.7.2 1.1.2 2.3.2 3.5v.4c0 2.7.7 5.2 2.2 7.4a13 13 0 0 0 5.7 4.9v-.3l-.2-.3c-1.8-5.6-.5-9.5 4.4-12.8l1.5-1a73 73 0 0 0 3.2-2.2 16 16 0 0 0 6.8-11.4c.3-2 .1-4-.6-6l-.8.6-1.6 1a37 37 0 0 1-22.4 2.7c-5-.7-9.7-2-13.2-6.2Z" />
-    <style>
-        path { fill: #000; }
-        @media (prefers-color-scheme: dark) {
-            path { fill: #FFF; }
-        }
-    </style>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#170605"/>
+      <stop offset="0.55" stop-color="#37100b"/>
+      <stop offset="1" stop-color="#4c150e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.12" cy="0.95" r="0.9">
+      <stop offset="0" stop-color="#711f14" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#711f14" stop-opacity="0"/>
+    </radialGradient>
+    <pattern id="dots" width="26" height="26" patternUnits="userSpaceOnUse">
+      <circle cx="13" cy="13" r="5.4" fill="#0a0302" fill-opacity="0.55"/>
+    </pattern>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <rect width="512" height="512" fill="url(#glow)"/>
+  <rect width="512" height="512" fill="url(#dots)"/>
+  <path transform="translate(81.92 329.99) scale(0.22096 -0.22096)" fill="#f5f0ec" d="M62 0L62 724L226 724L226 470L233 470Q250 491 274.5 506.5Q299 522 329 530.5Q359 539 391 539Q448 539 487.5 518Q527 497 548 455Q569 413 569 348L569 0L405 0L405 325Q405 347 399.5 362.5Q394 378 384 389Q374 400 359 405Q344 410 325 410Q296 410 274 396.5Q252 383 239 360.5Q226 338 226 308L226 0Z"/>
+  <path transform="translate(223.14 329.99) scale(0.22096 -0.22096)" fill="#f5f0ec" fill-opacity="0.58" d="M62 0L62 527L197 527L209 452L216 452Q234 479 259.5 499Q285 519 316 529Q347 539 382 539Q436 539 474 517.5Q512 496 532 452L539 452Q557 479 582.5 499Q608 519 639.5 529Q671 539 705 539Q760 539 798 518.5Q836 498 856.5 456.5Q877 415 877 351L877 0L713 0L713 326Q713 348 708 363.5Q703 379 694 389.5Q685 400 671 405Q657 410 641 410Q615 410 594.5 396.5Q574 383 563 360.5Q552 338 552 308L552 0L388 0L388 326Q388 348 383 363.5Q378 379 369 389.5Q360 400 346 405Q332 410 316 410Q290 410 269.5 396.5Q249 383 237.5 360.5Q226 338 226 308L226 0Z"/>
 </svg>

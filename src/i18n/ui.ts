@@ -7,7 +7,7 @@ export const defaultLang = "pl";
 
 export const ui = {
   pl: {
-    "meta.title": "hadrianm — demo GSAP",
+    "meta.title": "hadrianm.pl — pracownia stron i aplikacji",
     "demo.intro": "Start ↓",
     "demo.box": "hadrianm",
     "demo.outro": "Koniec 🎉",
@@ -36,7 +36,7 @@ export const ui = {
     "work.close": "Zamknij",
   },
   en: {
-    "meta.title": "hadrianm — GSAP demo",
+    "meta.title": "hadrianm.pl — web & app studio",
     "demo.intro": "Start ↓",
     "demo.box": "hadrianm",
     "demo.outro": "Finish 🎉",
