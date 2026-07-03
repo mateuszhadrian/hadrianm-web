@@ -374,6 +374,13 @@ Jeśli wygląda identycznie — **treść jest już „w plikach", gotowa dla CM
 **Cel:** pod adresem `/admin` pojawia się panel z zakładką „Realizacje" i
 formularzem mającym te same pola co `work-data.ts`.
 
+> **Stan: ✅ wykonany (2026-07-03).** Opis poniżej zaktualizowano po wdrożeniu —
+> odzwierciedla faktyczny kod w repo, w tym rekomendacje przyjęte podczas
+> realizacji: **przypięta wersja Sveltii ładowana z jsDelivr** (zamiast „zawsze
+> najnowszej" z unpkg), sekcja **`output.omit_empty_optional_fields`** (czyste
+> JSON-y), **`public/robots.txt` z `Disallow: /admin`** oraz notka o świadomej
+> asymetrii walidacji tagów (panel ≥1, schemat Zod dopuszcza 0).
+
 Sveltia to **dwa statyczne pliki** wrzucone do `public/admin/` (Astro kopiuje
 `public/` do gotowej strony 1:1, więc trafią pod `/admin`).
 
@@ -389,11 +396,28 @@ Sveltia to **dwa statyczne pliki** wrzucone do `public/admin/` (Astro kopiuje
     <title>Panel treści — hadrianm.pl</title>
   </head>
   <body>
-    <!-- Sveltia CMS ładuje się z sieci CDN jako moduł JavaScript -->
-    <script src="https://unpkg.com/@sveltia/cms/dist/sveltia-cms.js"></script>
+    <!-- Sveltia CMS ładuje się z CDN jako skrypt — wersja PRZYPIĘTA (patrz niżej) -->
+    <script src="https://cdn.jsdelivr.net/npm/@sveltia/cms@0.170.0/dist/sveltia-cms.js"></script>
   </body>
 </html>
 ```
+
+> **Dlaczego wersja przypięta, a nie „latest"?** Sveltia jest w fazie pre-1.0
+> (w chwili wdrożenia: `0.170.0`) i wydaje nowe wersje bardzo często. Skrypt bez
+> wersji (`@sveltia/cms/dist/…`) ładuje zawsze najnowszą — czyli niepilnowana
+> aktualizacja mogłaby pewnego dnia **zepsuć panel bez żadnej zmiany w repo**.
+> Z przypiętą wersją aktualizacja to świadoma decyzja: podbij numer w
+> `index.html`, przetestuj `/admin`, zrób commit. Co jakiś czas (np. przy okazji
+> innych prac) sprawdź changelog i podbij wersję.
+>
+> **Dlaczego jsDelivr, a nie unpkg?** unpkg miewa historycznie problemy ze
+> stabilnością; jsDelivr to multi-CDN z lepszą dostępnością. Alternatywa
+> docelowa (opcjonalna): self-hosting pliku w `public/admin/` — zero zależności
+> od zewnętrznego CDN, ale ręczne aktualizacje.
+>
+> **Drobiazg techniczny:** `dist/sveltia-cms.js` to klasyczny bundel (IIFE),
+> więc `type="module"` jest zbędny — nie sugeruj się przykładami z dokumentacji
+> Sveltii, które ładują wariant ESM (`.mjs`).
 
 ### 5.2 `public/admin/config.yml` — serce konfiguracji
 
@@ -407,11 +431,15 @@ backend:
   repo: mateuszhadrian/hadrianm-web # właściciel/nazwa repo
   branch: main
   # base_url wskaże nasz Worker-logowania (uzupełnimy w Etapie 3):
-  # base_url: https://sveltia-cms-auth.<twój-subdomena>.workers.dev
+  # base_url: https://sveltia-cms-auth.<twoja-subdomena>.workers.dev
 
 # ── Gdzie trafiają zdjęcia (na teraz: do repo; w Etapie 5 → R2) ───────────
 media_folder: "public/realizacje" # fizyczna ścieżka w repo
 public_folder: "/realizacje" # ścieżka w adresie URL na stronie
+
+# ── Czyste JSON-y: pomijaj niewypełnione pola opcjonalne (np. liveUrl) ────
+output:
+  omit_empty_optional_fields: true
 
 # ── Dwujęzyczność panelu jest zrobiona przez pola {pl,en} (patrz niżej) ───
 
@@ -539,11 +567,23 @@ collections:
 > zapisałaby dane inaczej (osobno per język), co wymusiłoby przepisanie logiki.
 > Ten wariant jest prostszy i w 100% zgodny z tym, co masz.
 
-> **Pusty `liveUrl`:** Sveltia potrafi zapisać niewypełnione pole jako pusty
-> string (`"liveUrl": ""`), nie pominąć go. To bezpieczne — schemat
-> (`z.string().optional()`) i `localizeProject` (puste/`"#"` → CTA się nie
-> renderuje) obsługują ten przypadek. Jeśli wolisz czyste JSON-y, włącz w
-> `config.yml` opcję `omit_empty_optional_fields: true` (sekcja `output`).
+> **Pusty `liveUrl`:** bez dodatkowej konfiguracji Sveltia zapisałaby
+> niewypełnione pole jako pusty string (`"liveUrl": ""`). Byłoby to bezpieczne —
+> schemat (`z.string().optional()`) i `localizeProject` (puste/`"#"` → CTA się
+> nie renderuje) obsługują ten przypadek — ale dla czystych JSON-ów włączyliśmy
+> w `config.yml` opcję `omit_empty_optional_fields: true` (sekcja `output`
+> powyżej): niewypełnione pole opcjonalne jest po prostu pomijane w pliku.
+
+> **Asymetria walidacji tagów (świadoma).** Panel wymaga min. 1 taga na język
+> (`min: 1` — w Decap/Sveltii `max` bez `min` bywa ignorowane), a schemat Zod
+> (`z.array(z.string()).max(3)`) dopuszcza pustą listę. Kierunek jest bezpieczny:
+> panel jest **bardziej** restrykcyjny niż walidacja builda, więc nic z panelu
+> nie wywróci builda. Gdybyś kiedyś chciał realizację **bez** tagów — poluzuj
+> `min` w `config.yml` (schematu nie trzeba ruszać). Analogiczna, równie
+> bezpieczna asymetria dotyczy listy `results`: w panelu lista wymagana
+> (Sveltia/Decap traktują wymaganą listę jako „min. 1 element"), a Zod dopuszcza
+> pustą — gdyby realizacja miała nie mieć sekcji „Wyniki", dodaj
+> `required: false` do pola `results` w `config.yml`.
 
 > **Okno między Etapem 2 a 5 — nie podmieniaj zdjęć z panelu.** Dopóki obrazy
 > mieszkają w repo z wariantami `-m` (a `imgAt()` jest w fazie przejściowej),
@@ -551,7 +591,31 @@ collections:
 > Teksty edytuj śmiało; zdjęcia wgrywaj z panelu dopiero po Etapie 5
 > (R2 + transformacje).
 
-### 5.3 Weryfikacja Etapu 2 (lokalnie, jeszcze bez logowania)
+### 5.3 `public/robots.txt` — nie zapraszaj crawlerów do panelu
+
+`index.html` panelu ma już `meta robots noindex`, ale warto dołożyć drugi,
+wcześniejszy poziom: `robots.txt`, żeby crawlery w ogóle nie zaglądały pod
+`/admin`. Przy okazji wskazujemy sitemapę (projekt generuje `sitemap-index.xml`
+przez `@astrojs/sitemap`):
+
+```txt
+# public/robots.txt
+User-agent: *
+Disallow: /admin
+
+Sitemap: https://hadrianm.pl/sitemap-index.xml
+```
+
+To kosmetyka/higiena SEO, nie zabezpieczenie — realną ochroną panelu jest
+logowanie (Etap 3).
+
+> **Niuans:** przez `Disallow` crawler nigdy nie przeczyta `meta robots noindex`
+> z 5.1 — przy zewnętrznym linku URL może się pojawić jako „indexed, though
+> blocked by robots.txt" (bez treści). `noindex` zostaje jako siatka
+> bezpieczeństwa na wypadek zdjęcia `Disallow`; oba mechanizmy razem to
+> maksimum tego, co ma sens dla panelu za loginem.
+
+### 5.4 Weryfikacja Etapu 2 (lokalnie, jeszcze bez logowania)
 
 Panel wymaga logowania (Etap 3), więc pełny test zrobisz po Etapie 3–4. Na razie
 sprawdź, że pliki są na miejscu i build przechodzi:
@@ -561,8 +625,13 @@ pnpm build && pnpm preview   # wejdź na http://localhost:4321/admin — zobaczy
 ```
 
 Po utworzeniu `public/admin/index.html` i `config.yml` odpal `pnpm format` —
-długie linie YAML mogą nie być w formacie Prettiera, a bramka CI z Etapu 4
-sprawdza (`format:check`) całe repo.
+długie linie YAML mogą nie być w formacie Prettiera (Prettier rozbija długie
+inline'owe wpisy list na bloki wielolinijkowe — treść zostaje ta sama), a bramka
+CI z Etapu 4 sprawdza (`format:check`) całe repo.
+
+> **Wykonana weryfikacja (2026-07-03):** `pnpm format:check`, `pnpm lint`,
+> `pnpm typecheck`, `pnpm build` — zielone; na `pnpm preview` ścieżki `/admin`,
+> `/admin/config.yml` i `/` zwracają 200, `dist/admin/` zawiera oba pliki.
 
 ---
 
@@ -1101,7 +1170,8 @@ R2 → `hadrianm-media` → **Settings → CORS Policy → Add**:
 
 ### 8.4 Wskaż R2 jako magazyn mediów w `config.yml`
 
-Zamień w `public/admin/config.yml` blok `media_folder/public_folder` na:
+Zamień w `public/admin/config.yml` blok `media_folder/public_folder` na poniższy
+(sekcje `backend`, `output` i `collections` zostają bez zmian):
 
 ```yaml
 media_libraries:
@@ -1220,7 +1290,9 @@ realizacje wyłącznie z panelu, a strona się aktualizuje.
 
 - [x] Etap 1: kolekcja `realizacje` + JSON-y + `imgAt()`; build 1:1 jak wcześniej
       (zweryfikowane diffem zbudowanego HTML, 2026-07-03).
-- [ ] Etap 2: `public/admin/index.html` + `config.yml` z pełnym modelem realizacji.
+- [x] Etap 2: `public/admin/index.html` (Sveltia `0.170.0` przypięta, jsDelivr) +
+      `config.yml` z pełnym modelem realizacji i `omit_empty_optional_fields` +
+      `robots.txt` z `Disallow: /admin` (zweryfikowane lokalnie, 2026-07-03).
 - [ ] Etap 3: Worker `sveltia-cms-auth` + aplikacja OAuth GitHub + `base_url`.
 - [ ] Etap 4: `ci.yml` + branch protection; Pages podpięte; domena `hadrianm.pl`.
 - [ ] Etap 5: bucket R2 + domena `media.hadrianm.pl` + CORS + `media_libraries`

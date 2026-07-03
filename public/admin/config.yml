@@ -1,0 +1,167 @@
+# ── Gdzie zapisywana jest treść ──────────────────────────────────────────
+backend:
+  name: github
+  repo: mateuszhadrian/hadrianm-web # właściciel/nazwa repo
+  branch: main
+  # base_url wskaże nasz Worker-logowania (uzupełnimy w Etapie 3):
+  # base_url: https://sveltia-cms-auth.<twoja-subdomena>.workers.dev
+
+# ── Gdzie trafiają zdjęcia (na teraz: do repo; w Etapie 5 → R2) ───────────
+media_folder: "public/realizacje" # fizyczna ścieżka w repo
+public_folder: "/realizacje" # ścieżka w adresie URL na stronie
+
+# ── Czyste JSON-y: pomijaj niewypełnione pola opcjonalne (np. liveUrl) ────
+output:
+  omit_empty_optional_fields: true
+
+# ── Dwujęzyczność panelu jest zrobiona przez pola {pl,en} (patrz niżej) ───
+
+collections:
+  - name: "realizacje"
+    label: "Realizacje"
+    label_singular: "Realizacja"
+    folder: "src/content/realizacje" # tu leżą pliki JSON z Etapu 1
+    extension: "json"
+    format: "json"
+    create: true # pozwól DODAWAĆ nowe realizacje
+    delete: true # pozwól USUWAĆ realizacje
+    identifier_field: "name" # co pokazać na liście wpisów
+    slug: "{{fields.slug}}" # nazwa pliku = wartość pola slug
+    summary: "{{fields.name}} ({{fields.year}})"
+    fields:
+      - { label: "Slug (adres, np. aura)", name: "slug", widget: "string" }
+      - {
+          label: "Kolejność (mniejsze = wyżej)",
+          name: "order",
+          widget: "number",
+          value_type: "int",
+          default: 10,
+        }
+      - { label: "Nazwa", name: "name", widget: "string" }
+      - { label: "Rok", name: "year", widget: "string" }
+
+      # ── Pola tłumaczone: object z podpolami pl/en ──
+      - label: "Kategoria"
+        name: "category"
+        widget: "object"
+        fields:
+          - { label: "Polski", name: "pl", widget: "string" }
+          - { label: "English", name: "en", widget: "string" }
+
+      - label: "Krótki opis (blurb)"
+        name: "blurb"
+        widget: "object"
+        fields:
+          - { label: "Polski", name: "pl", widget: "text" }
+          - { label: "English", name: "en", widget: "text" }
+
+      # min/max — strona pokazuje maks. 3 tagi (limit zgodny ze schematem Zod
+      # .max(3)); `min` w parze, bo w Decap/Sveltii `max` bez `min` bywa ignorowane
+      - label: "Tagi (maks. 3)"
+        name: "tags"
+        widget: "object"
+        fields:
+          - {
+              label: "Polski",
+              name: "pl",
+              widget: "list",
+              min: 1,
+              max: 3,
+              field: { label: "Tag", name: "tag", widget: "string" },
+            }
+          - {
+              label: "English",
+              name: "en",
+              widget: "list",
+              min: 1,
+              max: 3,
+              field: { label: "Tag", name: "tag", widget: "string" },
+            }
+
+      - label: "Wprowadzenie (intro)"
+        name: "intro"
+        widget: "object"
+        fields:
+          - { label: "Polski", name: "pl", widget: "text" }
+          - { label: "English", name: "en", widget: "text" }
+
+      # ── Ekrany: lista, każdy ma DWA zrzuty (desktop + mobile) ──
+      - label: "Ekrany (podgląd na urządzeniach)"
+        name: "screens"
+        widget: "list"
+        label_singular: "Ekran"
+        min: 1 # schemat Zod wymaga ≥1 ekranu; kafelek bierze obraz z ekranu „home"
+        summary: "{{fields.label.pl}}"
+        fields:
+          - {
+              label: "Klucz (home/gallery/order)",
+              name: "key",
+              widget: "string",
+            }
+          - label: "Etykieta"
+            name: "label"
+            widget: "object"
+            fields:
+              - { label: "Polski", name: "pl", widget: "string" }
+              - { label: "English", name: "en", widget: "string" }
+          - { label: "Zrzut DESKTOP", name: "desktop", widget: "image" }
+          - { label: "Zrzut MOBILE", name: "mobile", widget: "image" }
+
+      # ── Liczby i wyniki ──
+      - label: "Wyniki (liczby)"
+        name: "results"
+        widget: "list"
+        label_singular: "Wynik"
+        fields:
+          - label: "Metryka"
+            name: "metric"
+            widget: "object"
+            fields:
+              - { label: "Polski", name: "pl", widget: "string" }
+              - { label: "English", name: "en", widget: "string" }
+          - label: "Opis"
+            name: "label"
+            widget: "object"
+            fields:
+              - { label: "Polski", name: "pl", widget: "string" }
+              - { label: "English", name: "en", widget: "string" }
+
+      # ── Opinia ──
+      - label: "Cytat / opinia"
+        name: "quote"
+        widget: "object"
+        fields:
+          - { label: "Polski", name: "pl", widget: "text" }
+          - { label: "English", name: "en", widget: "text" }
+      - { label: "Autor opinii", name: "author", widget: "string" }
+      - label: "Rola autora"
+        name: "role"
+        widget: "object"
+        fields:
+          - { label: "Polski", name: "pl", widget: "string" }
+          - { label: "English", name: "en", widget: "string" }
+
+      # ── Zakres prac ──
+      - label: "Zakres prac (scope)"
+        name: "scope"
+        widget: "object"
+        fields:
+          - {
+              label: "Polski",
+              name: "pl",
+              widget: "list",
+              field: { label: "Punkt", name: "item", widget: "string" },
+            }
+          - {
+              label: "English",
+              name: "en",
+              widget: "list",
+              field: { label: "Item", name: "item", widget: "string" },
+            }
+
+      - {
+          label: "Link do strony na żywo (opcjonalny)",
+          name: "liveUrl",
+          widget: "string",
+          required: false,
+        }
