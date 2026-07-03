@@ -14,7 +14,11 @@ declare global {
   }
 }
 
-const LERP = 1;
+// Wygładzanie kółka na desktopie: 0.1 = klasyczny Lenis; niżej = dłuższy
+// wybieg (macOS-owe szybowanie); 1 = brak wygładzania (wraca skokowy scroll
+// na rolkach z zapadkami). Nie współdzielić z touch.
+const WHEEL_LERP = 0.05;
+const TOUCH_LERP = 1; // syncTouch prowadzi palec 1:1; wybiegiem steruje SYNC_TOUCH_LERP
 const TOUCH_MULTIPLIER = 1; // <1 = wolniej (Hero kompensuje przez SCROLL_SCALE)
 const SYNC_TOUCH_LERP = 0.06; // wybieg po machnięciu; niżej = dłuższy
 const TOUCH_INERTIA_EXPONENT = 1.95; // zasięg machnięcia; wyżej = dalej
@@ -31,13 +35,13 @@ function start() {
   lenis = new Lenis(
     isTouch
       ? {
-          lerp: LERP,
+          lerp: TOUCH_LERP,
           syncTouch: true,
           touchMultiplier: TOUCH_MULTIPLIER,
           syncTouchLerp: SYNC_TOUCH_LERP,
           touchInertiaExponent: TOUCH_INERTIA_EXPONENT,
         }
-      : { lerp: LERP, smoothWheel: true, syncTouch: false },
+      : { lerp: WHEEL_LERP, smoothWheel: true, syncTouch: false },
   );
   lenis.on("scroll", ScrollTrigger.update);
   gsap.ticker.add(tick);
