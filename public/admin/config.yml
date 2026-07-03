@@ -3,8 +3,8 @@ backend:
   name: github
   repo: mateuszhadrian/hadrianm-web # właściciel/nazwa repo
   branch: main
-  # base_url wskaże nasz Worker-logowania (uzupełnimy w Etapie 3):
-  # base_url: https://sveltia-cms-auth.<twoja-subdomena>.workers.dev
+  # Worker-logowania (OAuth proxy) — wdrożony w Etapie 3:
+  base_url: https://sveltia-cms-auth.tenhadrian.workers.dev
 
 # ── Gdzie trafiają zdjęcia (na teraz: do repo; w Etapie 5 → R2) ───────────
 media_folder: "public/realizacje" # fizyczna ścieżka w repo
