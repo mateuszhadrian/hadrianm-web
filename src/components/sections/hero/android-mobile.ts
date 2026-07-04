@@ -1,15 +1,12 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 /**
- * Wariant FAZY 3 (mobile) dla Androida — wyodrębniony z Hero.astro.
- *
- * Dlaczego osobno: przypięta, kompozytowana scena GSAP na Androidzie nie
- * repaintuje niezawodnie zmian stanu wyzwalanych w trakcie scrolla, więc
- * mechanizm play/stop wideo (gating pozycją scrolla) potrafił się zacinać.
- * Na Androidzie ekrany grają więc w pętli CAŁY CZAS, a pasek postępu jest
- * cały w kolorze akcentu (czerwony) z kulką stale czerwoną. Skalowanie
- * urządzeń (rośnie → hold → maleje) pozostaje takie samo jak w domyślnym
- * (iOS) wariancie.
+ * FAZA 3 (mobile) — wspólna dla iOS i Androida: ekrany urządzeń grają w pętli
+ * CAŁY CZAS, gdy #hero jest na ekranie i karta aktywna. Gating wg postępu
+ * scrolla celowo usunięty — na Androidzie zacinał się (repaint przypiętej
+ * sceny GSAP), na iOS zamarzał po mimowolnej pauzie dekodera Safari.
+ * IntersectionObserver + visibilitychange działają poza ścieżką repaintu,
+ * więc są niezawodne na obu. Czerwone odcinki paska są czysto wizualne.
  */
 
 /** Czy bieżące urządzenie to Android (smartfon/tablet z Androidem). */
@@ -23,22 +20,22 @@ export interface Zone {
   end: number;
 }
 
-export interface AndroidVideoSpec {
+export interface MobileVideoSpec {
   video: HTMLVideoElement | null;
   /** Element urządzenia, na którym ustawiamy --vid-scale. */
   el: HTMLElement | null;
   zone: Zone;
 }
 
-export interface AndroidPhase3Params {
+export interface MobilePhase3Params {
   hero: HTMLElement | null;
-  /** Docelowe powiększenie w szczycie strefy (wspólne z wariantem iOS). */
+  /** Docelowe powiększenie w szczycie strefy. */
   vidMax: number;
   /** Koniec powiększania / start przytrzymania (postęp strefy ∈ [0,1]). */
   growEnd: number;
   /** Koniec przytrzymania / start zmniejszania. */
   holdEnd: number;
-  videos: AndroidVideoSpec[];
+  videos: MobileVideoSpec[];
   /** Pasek postępu + kulka (mogą nie istnieć w DOM). */
   progressEl: HTMLElement | null;
   progressDot: HTMLElement | null;
@@ -48,9 +45,9 @@ export interface AndroidPhase3Params {
 }
 
 /**
- * Inicjuje androidowy wariant fazy 3. Zwraca funkcję sprzątającą.
+ * Inicjuje mobilny wariant fazy 3 (iOS + Android). Zwraca funkcję sprzątającą.
  */
-export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
+export function initMobilePhase3(p: MobilePhase3Params): () => void {
   const { hero, vidMax, growEnd, holdEnd, videos, progressEl, progressDot } = p;
 
   // Skala urządzenia dla postępu strefy: 1→MAX (grow) | MAX (hold) | MAX→1 (shrink).
@@ -60,29 +57,26 @@ export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
     return 1 + (vidMax - 1) * ((1 - prog) / (1 - holdEnd));
   };
 
-  // Wideo gra w pętli (atrybut `loop`), ale TYLKO gdy scena #hero jest na
-  // ekranie i karta jest aktywna. Wcześniej grało CAŁY CZAS — także po
-  // przewinięciu do dalszych sekcji — co niepotrzebnie obciążało CPU/GPU na
-  // Androidzie. Pauzujemy więc dekodowanie, gdy użytkownik nie patrzy na
-  // urządzenia, a wznawiamy po powrocie (bez resetu klatki → brak skoku).
-  //
-  // Świadomie NIE używamy tu gatingu wg postępu scrolla (jak wariant iOS) —
-  // na Androidzie bywał niestabilny. IntersectionObserver i visibilitychange
-  // działają poza ścieżką repaintu GSAP, więc są na Androidzie niezawodne.
+  // Wideo gra w pętli (atrybut `loop`) tylko gdy #hero na ekranie i karta
+  // aktywna — poza tym pauzujemy dekodowanie (CPU/GPU), wznowienie od
+  // bieżącej klatki → brak skoku.
   const vids = videos
     .map((v) => v.video)
     .filter((v): v is HTMLVideoElement => v != null);
 
   let heroOnScreen = true;
   let docVisible = typeof document === "undefined" || !document.hidden;
+  // autoplay twardo zablokowany (np. iOS Low Power Mode) → plakat, bez ponawiania
+  let autoplayBlocked = false;
+
+  const shouldPlay = () => heroOnScreen && docVisible && !autoplayBlocked;
 
   const syncPlayback = () => {
-    const shouldPlay = heroOnScreen && docVisible;
     vids.forEach((v) => {
-      if (shouldPlay) {
+      if (shouldPlay()) {
         if (v.paused) {
           v.play()?.catch(() => {
-            /* autoplay zablokowany (np. tryb oszczędzania danych) → plakat */
+            autoplayBlocked = true;
           });
         }
       } else if (!v.paused) {
@@ -90,6 +84,20 @@ export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
       }
     });
   };
+
+  // Samonaprawa iOS: Safari mimowolnie wstrzymuje dekoder pod obciążeniem
+  // (pamięć/termika/Low Power). `pause`, gdy powinno grać ⇒ wznów od bieżącej
+  // klatki. Celowa pauza nie wznawia — shouldPlay() jest wtedy false.
+  const pauseCleanups = vids.map((v) => {
+    const onPause = () => {
+      if (!shouldPlay() || !v.paused) return;
+      v.play()?.catch(() => {
+        /* przejściowo zablokowane — IO/visibility ponowi */
+      });
+    };
+    v.addEventListener("pause", onPause);
+    return () => v.removeEventListener("pause", onPause);
+  });
 
   let observer: IntersectionObserver | null = null;
   if (hero && typeof IntersectionObserver !== "undefined") {
@@ -138,10 +146,30 @@ export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
     );
   });
 
-  // Pasek postępu: cały czerwony (.is-android steruje CSS) + kulka stale
-  // czerwona (.is-on-seg na stałe — bez przełączania na odcinkach).
-  progressEl?.classList.add("is-android");
-  progressDot?.classList.add("is-on-seg");
+  // Czerwone odcinki paska: [szczyt powiększenia, koniec strefy] każdego
+  // urządzenia — czysto wizualne oznaczenie, bez wpływu na wideo (to gra
+  // ciągle); kulka przejmuje akcent, gdy jest na odcinku.
+  const barSpan = p.barEndVh - p.barStartVh;
+  const barP = (vh: number) => (vh - p.barStartVh) / barSpan;
+  const segs = videos.map(({ zone }) => ({
+    from: barP(zone.start + growEnd * (zone.end - zone.start)),
+    to: barP(zone.end),
+  }));
+
+  // Odcinki są statyczne w markupie (2× seg) — tu tylko ustawiamy pozycje.
+  const segEls = progressEl
+    ? [...progressEl.querySelectorAll<HTMLElement>(".hero__progress-seg")]
+    : [];
+  segs.forEach((s, i) => {
+    segEls[i]?.style.setProperty("--seg-top", s.from.toFixed(4));
+    segEls[i]?.style.setProperty("--seg-h", (s.to - s.from).toFixed(4));
+  });
+
+  const updateDot = (prog: number) => {
+    const onSeg = segs.some((s) => prog >= s.from && prog <= s.to);
+    progressDot?.classList.toggle("is-on-seg", onSeg);
+  };
+  updateDot(0);
 
   const progressTrigger =
     hero && progressEl
@@ -150,8 +178,10 @@ export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
           start: () => "top+=" + p.barStartVh * window.innerHeight + " top",
           end: () => "top+=" + p.barEndVh * window.innerHeight + " top",
           scrub: true,
-          onUpdate: (self) =>
-            progressEl.style.setProperty("--p", self.progress.toFixed(4)),
+          onUpdate: (self) => {
+            progressEl.style.setProperty("--p", self.progress.toFixed(4));
+            updateDot(self.progress);
+          },
           onToggle: (self) =>
             progressEl.classList.toggle("is-active", self.isActive),
         })
@@ -162,9 +192,10 @@ export function initAndroidPhase3(p: AndroidPhase3Params): () => void {
     if (typeof document !== "undefined") {
       document.removeEventListener("visibilitychange", onVisibility);
     }
+    pauseCleanups.forEach((fn) => fn());
     triggers.forEach((t) => t.kill());
     progressTrigger?.kill();
-    progressEl?.classList.remove("is-active", "is-android");
+    progressEl?.classList.remove("is-active");
     progressEl?.style.removeProperty("--p");
     progressDot?.classList.remove("is-on-seg");
   };
