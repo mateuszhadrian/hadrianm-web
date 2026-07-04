@@ -34,13 +34,14 @@
     z-index: 1;
     pointer-events: none;
   }
+  /* Chmury bez filter: blur (render-pass GPU co klatkę, ×4 warstwy) —
+     miękkość dają same radial-gradienty. */
   .ambient-bg__clouds::before,
   .ambient-bg__clouds::after {
     content: "";
     position: absolute;
     width: 65%;
     height: 78%;
-    filter: blur(55px);
     will-change: transform;
   }
   .ambient-bg__clouds::before {
@@ -95,7 +96,6 @@
     right: -28%;
     width: 60%;
     height: 50%;
-    filter: blur(40px);
     will-change: transform;
     background: radial-gradient(
       closest-side,
@@ -111,7 +111,6 @@
     left: 28%;
     width: 60%;
     height: 50%;
-    filter: blur(40px);
     will-change: transform;
     background: radial-gradient(
       closest-side,
@@ -174,9 +173,9 @@
     }
   }
 
-  /* Mobile: zamiast czterech rozmytych, kompozytowanych warstw (blur 40–55px)
-     + maski kropek — jedna płaska, statyczna tekstura. Zero animacji, zero
-     filtrów: minimalne GPU/CPU. Wygląd identyczny (grafika = render tych warstw).
+  /* Mobile: zamiast czterech animowanych, kompozytowanych warstw gradientowych
+     + maski kropek — jedna płaska, statyczna tekstura. Zero animacji:
+     minimalne GPU/CPU. Wygląd identyczny (grafika = render tych warstw).
      Regeneracja: node scripts/capture-ambient-bg.mjs */
   @media (max-width: 768px) {
     .ambient-bg {

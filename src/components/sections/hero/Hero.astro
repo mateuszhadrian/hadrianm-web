@@ -688,6 +688,8 @@ const splitAccent = (line: string) =>
   const DREWELOMET_DUR = 5.0;
   const phase1Desktop = (b: Base) => {
     const { tl, live, devices, startX, startY, endX, endY } = b;
+    // Blur działa przed transformem: przy scale 5.2 → 8px ≈ ~40px na ekranie.
+    // Wyższe wartości = droższa re-rasteryzacja w każdej klatce scrubu.
     tl.fromTo(
       live,
       { x: startX, y: startY, scale: 1, filter: "blur(0px)", autoAlpha: 1 },
@@ -695,7 +697,7 @@ const splitAccent = (line: string) =>
         x: endX,
         y: endY,
         scale: 5.2,
-        filter: "blur(24px)",
+        filter: "blur(8px)",
         duration: 0.5,
         ease: "power1.in",
       },
@@ -703,12 +705,14 @@ const splitAccent = (line: string) =>
     );
     tl.to(live, { autoAlpha: 0, duration: 0.13 }, 0.56);
 
+    // opacity, NIE autoAlpha — visibility:hidden odkłada paint całej sceny do
+    // klatki ujawnienia (jank). Bez filter: blur — pełnoekranowy pass GPU
+    // po ciężkim poddrzewie w każdej klatce scrubu.
     tl.fromTo(
       devices,
-      { autoAlpha: 0, filter: "blur(26px)", scale: 1.22 },
+      { opacity: 0, scale: 1.22 },
       {
-        autoAlpha: 1,
-        filter: "blur(0px)",
+        opacity: 1,
         scale: 1,
         duration: 0.38,
         ease: "power2.out",

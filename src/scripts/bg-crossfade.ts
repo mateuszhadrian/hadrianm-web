@@ -25,12 +25,15 @@ function setup(hard: boolean) {
     const vh = window.innerHeight;
 
     // p[t] (t = 1..n-1): postęp wjazdu sekcji order[t] — od dołu okna (0)
-    // do góry okna (1).
+    // do góry okna (1). pn[t] = wersja bez clampa (ujemna, gdy sekcja jest
+    // jeszcze pod foldem) — potrzebna do pre-warmu warstw.
     const p = new Array(n).fill(0);
+    const pn = new Array(n).fill(0);
     for (let t = 1; t < n; t++) {
       const sec = sections[t];
       if (!sec) continue;
-      p[t] = clamp((vh - sec.getBoundingClientRect().top) / vh, 0, 1);
+      pn[t] = (vh - sec.getBoundingClientRect().top) / vh;
+      p[t] = clamp(pn[t], 0, 1);
     }
 
     let opacity: number[];
@@ -50,12 +53,20 @@ function setup(hard: boolean) {
       });
     }
 
+    // Pre-warm: warstwę aktywujemy (promocja GPU + raster chmur) już M
+    // viewportów przed krawędzią fade-in/out (p=0.5) — inaczej ten koszt
+    // trafia dokładnie w klatkę startu crossfade'u (widoczna zacinka).
+    const M = 1;
     for (let k = 0; k < n; k++) {
       const el = layers[k];
       if (!el) continue;
       el.style.opacity = String(opacity[k]);
-      // pauza animacji + zwolnienie warstwy GPU, gdy tło jest niewidoczne
-      el.classList.toggle("is-inactive", opacity[k] < 0.01);
+      const nearIn = k === 0 || pn[k] > 0.5 - M;
+      const nearOut = k === n - 1 || pn[k + 1] < 0.5 + M;
+      el.classList.toggle(
+        "is-inactive",
+        opacity[k] < 0.01 && !(nearIn && nearOut),
+      );
     }
   };
 
