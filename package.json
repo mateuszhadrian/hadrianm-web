@@ -26,7 +26,6 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "optimize:drewelomet": "node scripts/optimize-drewelomet.mjs",
-    "optimize:realizacje": "node scripts/optimize-realizacje.mjs",
     "capture:devices": "node scripts/capture-device-videos.mjs",
     "capture:ambient-bg": "node scripts/capture-ambient-bg.mjs",
     "prepare": "husky"
