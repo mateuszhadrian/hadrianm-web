@@ -34,8 +34,8 @@
         "pl": "Strona główna",
         "en": "Home"
       },
-      "desktop": "/realizacje/dab/desktop.webp",
-      "mobile": "/realizacje/dab/mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/dab-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/dab-mobile.webp"
     },
     {
       "key": "gallery",
@@ -43,8 +43,8 @@
         "pl": "Kolekcje",
         "en": "Collections"
       },
-      "desktop": "/realizacje/dab/gallery-desktop.webp",
-      "mobile": "/realizacje/dab/gallery-mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/dab-gallery-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/dab-gallery-mobile.webp"
     },
     {
       "key": "order",
@@ -52,8 +52,8 @@
         "pl": "Formularz wyceny",
         "en": "Quote form"
       },
-      "desktop": "/realizacje/dab/order-desktop.webp",
-      "mobile": "/realizacje/dab/order-mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/dab-order-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/dab-order-mobile.webp"
     }
   ],
   "results": [

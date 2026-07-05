@@ -34,8 +34,8 @@
         "pl": "Strona główna",
         "en": "Home"
       },
-      "desktop": "/realizacje/aura/desktop.webp",
-      "mobile": "/realizacje/aura/mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/aura-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/aura-mobile.webp"
     },
     {
       "key": "gallery",
@@ -43,8 +43,8 @@
         "pl": "Galeria zabiegów",
         "en": "Treatments gallery"
       },
-      "desktop": "/realizacje/aura/gallery-desktop.webp",
-      "mobile": "/realizacje/aura/gallery-mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/aura-gallery-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/aura-gallery-mobile.webp"
     },
     {
       "key": "order",
@@ -52,8 +52,8 @@
         "pl": "Rezerwacja online",
         "en": "Online booking"
       },
-      "desktop": "/realizacje/aura/order-desktop.webp",
-      "mobile": "/realizacje/aura/order-mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/aura-order-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/aura-order-mobile.webp"
     }
   ],
   "results": [

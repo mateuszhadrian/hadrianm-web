@@ -1221,11 +1221,22 @@ pliki `-m.webp` i skrypt `optimize-realizacje.mjs` znikają.
 ### 8.1 Utwórz magazyn R2
 
 1. Cloudflare: **R2 → Create bucket** → nazwa np. `hadrianm-media`.
+   - R2 siedzi na **poziomie konta** (lewy pasek → „R2 Object Storage"), nie w
+     widoku domeny. Pierwsze wejście wymaga jednorazowej aktywacji subskrypcji
+     ($0.00 — płatne dopiero powyżej darmowych limitów) i karty na koncie.
    - **Location / jurisdiction:** wybierz **EU** (dane w Unii — spójne z RODO).
+     Tego wyboru **nie da się zmienić** po utworzeniu bucketa.
+   - **Default Storage Class:** **Standard** (darmowy limit dotyczy tylko tej
+     klasy; Infrequent Access ma opłaty za odczyt — zły wybór dla strony WWW).
 2. **Podłącz własną domenę do bucketa** (żeby transformacje działały na Twojej
-   strefie): R2 → `hadrianm-media` → **Settings → Public access → Custom Domains
-   → Connect Domain** → `media.hadrianm.pl`. Cloudflare doda rekord DNS.
+   strefie): R2 → `hadrianm-media` → **Settings → Custom Domains → + Add**
+   → `media.hadrianm.pl`. Cloudflare sam doda rekord CNAME w strefie; po
+   chwili status zmieni się na **Active**.
    - Efekt: pliki będą pod `https://media.hadrianm.pl/<nazwa-pliku>`.
+   - Test: `https://media.hadrianm.pl/test` → 404 „Object not found" = OK
+     (domena działa, bucket pusty).
+   - **Public Development URL** (`*.r2.dev`) zostaw wyłączony — własna domena
+     wystarcza i tylko ona daje transformacje na strefie (8.5).
 
 ### 8.2 Klucze dostępu do R2 (dla uploadu z panelu)
 
@@ -1272,15 +1283,55 @@ media_libraries:
 > Upload idzie **bezpośrednio z przeglądarki do R2** (podpisany AWS Signature
 > V4 — standard uwierzytelniania żądań do magazynów typu S3).
 
-Od teraz obraz wgrany w panelu zapisuje się w R2, a w JSON-ie realizacji ląduje
-adres typu `https://media.hadrianm.pl/realizacje/aura-home.webp`.
+> **Ograniczenie Sveltii (stan 0.170.0, potwierdzone przy wdrożeniu):** R2 jest
+> obsługiwane **wyłącznie przez pola File/Image w edytorze wpisu** — dopiero
+> okno wyboru mediów przy takim polu wgrywa do R2 i pyta o sekret. Globalny
+> widok **Assets NIE wgrywa do R2** (upload tam kończy się niczym — bez błędu,
+> bez żądań do R2); zarządzanie R2 z poziomu Asset Library jest u Sveltii
+> „planned". Źródło: <https://sveltiacms.app/en/docs/media/cloudflare-r2>.
+
+Od teraz obraz wgrany w panelu (przez pole Image) zapisuje się w R2, a w
+JSON-ie realizacji ląduje adres typu
+`https://media.hadrianm.pl/realizacje/aura-home.webp`.
+
+### 8.4a Migracja istniejących zdjęć do R2 (przez dashboard, NIE przez panel)
+
+Wykonana decyzja wdrożeniowa: zamiast hybrydy „stare zdjęcia w repo, nowe w R2"
+przenosimy **wszystko** do R2 od razu — spójniej i pozwala usunąć cały
+`public/realizacje/` (patrz 8.7). Przez ograniczenie Sveltii z ramki wyżej
+migrację robimy **dashboardem Cloudflare**, nie panelem:
+
+1. **Przemianuj pliki bazowe na płaskie, unikalne nazwy.** Panel wgrywa płasko
+   do prefiksu `realizacje/` (bez podfolderów per projekt), więc `desktop.webp`
+   z trzech projektów by się nadpisały. Konwencja: `<projekt>-<plik>.webp`,
+   np. `aura-desktop.webp`, `dab-gallery-mobile.webp`, `sielski-order-desktop.webp`
+   (18 plików: 3 projekty × 6 zrzutów bazowych; warianty `-m` pomijamy — i tak
+   idą do kosza w tym etapie).
+2. **Wgraj przez dashboard:** R2 → `hadrianm-media` → **Objects → Create
+   folder** `realizacje` → wejdź do folderu → **Upload** (przeciągnij 18 plików).
+3. **Podmień ścieżki w JSON-ach** (`src/content/realizacje/*.json`):
+   `/realizacje/aura/desktop.webp` → `https://media.hadrianm.pl/realizacje/aura-desktop.webp`
+   (analogicznie wszystkie pola `desktop`/`mobile`).
+4. Test: `https://media.hadrianm.pl/realizacje/aura-desktop.webp` w przeglądarce
+   ma pokazać obrazek.
+
+> **Kolejność wdrożenia:** najpierw pliki do R2, **dopiero potem** push zmian
+> JSON-ów/kodu — inaczej produkcja przez chwilę serwuje 404-ki na obrazach.
+
+> **Konsekwencja dla lokalnego dev:** zdjęcia realizacji ładują się z
+> `media.hadrianm.pl`, czyli z internetu — offline sekcja realizacji będzie
+> bez obrazków. Świadomy trade-off za brak binariów w repo.
 
 ### 8.5 Włącz transformacje obrazów na strefie
 
-1. Cloudflare → Twoja domena `hadrianm.pl` → **Images → Transformations**.
-2. Włącz **Enable transformations** dla strefy.
-3. W **Sources / Origins** upewnij się, że dozwolone jest czytanie obrazów z
-   `media.hadrianm.pl` (ta sama strefa Cloudflare, więc domyślnie OK).
+1. Cloudflare → **poziom konta** (nie strefy!) → **Images → Transformations**.
+   W aktualnym dashboardzie Images nie występuje w menu domeny — jest na
+   koncie, obok Stream; zakładka Transformations pokazuje listę stref.
+2. Przy strefie `hadrianm.pl` kliknij **Enable**.
+3. Opcję **„Resize images from any origin"** (jeśli się pojawi) zostaw
+   **wyłączoną** — transformujemy tylko z `media.hadrianm.pl`, czyli z tej
+   samej strefy (domyślnie dozwolone); otwarcie na dowolne źródła pozwoliłoby
+   obcym stronom zużywać limit.
 
 ### 8.6 Podmień wnętrze helpera `imgAt()` na transformacje
 
@@ -1341,14 +1392,16 @@ Klient robi screenshot, wrzuca, koniec — zero ręcznej konwersji.
    `/cdn-cgi/image/…`. Jeśli na desktopie widzisz surowy adres bez tego
    prefiksu, znaczy że pominąłeś krok 8.6a.
 2. Gdy potwierdzisz, że zdjęcia idą z R2/transformacji:
-   - **usuń** pliki `public/realizacje/**/*-m.webp` (leżą w podkatalogach per
-     projekt: `aura/`, `dab/`, `sielski/`),
+   - **usuń cały katalog `public/realizacje/`** — po migracji z 8.4a wszystkie
+     JSON-y wskazują URL-e z R2, więc znikają zarówno warianty `-m.webp`, jak
+     i pliki bazowe (w repo byłyby martwym balastem),
    - **usuń** skrypt `scripts/optimize-realizacje.mjs` i wpis `optimize:realizacje`
      z `package.json`,
-   - (opcjonalnie) gdy wszystkie realizacje wskazują już URL-e z R2, usuń też
-     bazowe `public/realizacje/**/*.webp` — inaczej zostaną w repo jako martwy
-     balast,
    - `docs/testing-data/` **zostaw** (lokalne źródło zrzutów do ponownego wgrania).
+3. **Test końcowy pełnego flow klienta:** w panelu usuń jedną realizację i
+   dodaj ją od nowa, wgrywając zdjęcia **przez pola Image w edytorze wpisu**
+   (to tu panel pierwszy raz poprosi o Secret Access Key). Efekt na stronie ma
+   być identyczny jak przed usunięciem.
 
 > **Dlaczego to kasuje problem, a nie przenosi:** trzymasz **jeden** oryginał na
 > R2, a każdy rozmiar powstaje z adresu URL. Zmiana progu 760px czy szerokości =
@@ -1407,9 +1460,12 @@ realizacje wyłącznie z panelu, a strona się aktualizuje.
 - [ ] Etap 3: Worker `sveltia-cms-auth` + aplikacja OAuth GitHub + `base_url`.
 - [ ] Etap 4: `ci.yml` + branch protection; Pages podpięte; domena `hadrianm.pl`.
 - [ ] Etap 5: bucket R2 + domena `media.hadrianm.pl` + CORS + `media_libraries`
-      + transformacje włączone + `imgAt()` przełączony + **8.6a: oba `src` w
+      + **8.4a: istniejące zdjęcia zmigrowane do R2 przez dashboard (płaskie
+      nazwy `<projekt>-<plik>.webp`), JSON-y wskazują URL-e z R2** + transformacje
+      włączone + `imgAt()` przełączony + **8.6a: oba `src` w
       `WorkDeviceDuo.astro` owinięte w `imgAt(..., "full")`** (bez tego desktop
-      serwuje surowe screenshoty z panelu); pliki `-m` i skrypt usunięte.
+      serwuje surowe screenshoty z panelu); cały `public/realizacje/` i skrypt
+      `optimize-realizacje.mjs` usunięte.
 - [ ] Etap 6: (opcjonalnie) Stream przygotowany.
 - [ ] Etap 7: realizacja wgrana z panelu widoczna na `hadrianm.pl`.
 

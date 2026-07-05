@@ -20,20 +20,20 @@
     {
       "key": "home",
       "label": { "pl": "Strona główna", "en": "Home" },
-      "desktop": "/realizacje/sielski/desktop.webp",
-      "mobile": "/realizacje/sielski/mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/sielski-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/sielski-mobile.webp"
     },
     {
       "key": "gallery",
       "label": { "pl": "Atrakcje", "en": "Attractions" },
-      "desktop": "/realizacje/sielski/gallery-desktop.webp",
-      "mobile": "/realizacje/sielski/gallery-mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/sielski-gallery-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/sielski-gallery-mobile.webp"
     },
     {
       "key": "order",
       "label": { "pl": "Rezerwacja noclegu", "en": "Stay booking" },
-      "desktop": "/realizacje/sielski/order-desktop.webp",
-      "mobile": "/realizacje/sielski/order-mobile.webp"
+      "desktop": "https://media.hadrianm.pl/realizacje/sielski-order-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/sielski-order-mobile.webp"
     }
   ],
   "results": [
