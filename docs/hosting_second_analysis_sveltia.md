@@ -1284,7 +1284,7 @@ adres typu `https://media.hadrianm.pl/realizacje/aura-home.webp`.
 
 ### 8.6 Podmień wnętrze helpera `imgAt()` na transformacje
 
-To jedyna zmiana w kodzie w tym etapie — reszta (markup) zostaje:
+Pierwsza z dwóch zmian w kodzie w tym etapie (druga — obowiązkowa — w 8.6a):
 
 ```ts
 // src/lib/img.ts — FAZA DOCELOWA: skalowanie w locie przez Cloudflare
@@ -1299,9 +1299,34 @@ export function imgAt(src: string, width: "full" | "mobile"): string {
 }
 ```
 
-Uwaga: transformacje działają też na `<img src={desktop}>` — możesz owinąć w
-`imgAt(desktop, "full")`, żeby i wersja desktopowa była skalowana/serwowana jako
-AVIF/WebP. To drobne rozszerzenie diffa w `WorkDeviceDuo.astro`.
+### 8.6a OBOWIĄZKOWE: owiń też `src` w `WorkDeviceDuo.astro` w `imgAt(..., "full")`
+
+Dziś przez `imgAt()` przechodzi tylko wariant mobilny (`<source
+media="(max-width: 760px)">`), a desktopowy `<img src={desktop}>` i
+`<img src={mobile}>` serwują **surowy oryginał**. Dopóki oryginały w repo to
+zoptymalizowane WebP-y — nie boli. Ale w docelowym flow klient wgrywa z panelu
+zwykły screenshot (kilkumegabajtowy PNG/JPG) i bez tej zmiany desktop dostawałby
+go **bez konwersji i bez skalowania**. Dlatego to NIE jest opcja, tylko część
+Etapu 5:
+
+```astro
+<!-- src/components/sections/work/WorkDeviceDuo.astro — w OBU <picture> -->
+<img
+  class="wd__img"
+  src={imgAt(desktop, "full")}   <!-- było: src={desktop} -->
+  ...
+/>
+<!-- analogicznie w bloku telefonu: src={imgAt(mobile, "full")} -->
+```
+
+Efekt: każdy obraz — niezależnie od formatu wgranego w panelu (JPG/PNG/WebP) —
+jest na produkcji skalowany i serwowany jako AVIF/WebP na **obu** szerokościach.
+Klient robi screenshot, wrzuca, koniec — zero ręcznej konwersji.
+
+> **Formaty wejściowe:** transformacje Cloudflare przyjmują JPEG, PNG, GIF i
+> WebP. **HEIC nie jest wspierany** — screenshoty z iPhone'a to PNG (OK), ale
+> zdjęcia prosto z aparatu iPhone'a trzeba wgrywać jako JPG (iOS zwykle sam
+> konwertuje przy udostępnianiu).
 
 ### 8.7 Weryfikacja + sprzątanie
 
@@ -1311,7 +1336,10 @@ AVIF/WebP. To drobne rozszerzenie diffa w `WorkDeviceDuo.astro`.
    strefa) te adresy dadzą 404. Lokalny podgląd ratuje warunek
    `import.meta.env.DEV` z 8.6 (dev pokazuje oryginały). Po deployu sprawdź w
    `Network` (narzędzia deweloperskie przeglądarki), że adresy obrazów
-   zawierają `/cdn-cgi/image/…` i obrazy się ładują.
+   zawierają `/cdn-cgi/image/…` i obrazy się ładują — **sprawdź na szerokim
+   oknie (desktop) I na wąskim (mobile)**: oba muszą iść przez
+   `/cdn-cgi/image/…`. Jeśli na desktopie widzisz surowy adres bez tego
+   prefiksu, znaczy że pominąłeś krok 8.6a.
 2. Gdy potwierdzisz, że zdjęcia idą z R2/transformacji:
    - **usuń** pliki `public/realizacje/**/*-m.webp` (leżą w podkatalogach per
      projekt: `aura/`, `dab/`, `sielski/`),
@@ -1379,7 +1407,9 @@ realizacje wyłącznie z panelu, a strona się aktualizuje.
 - [ ] Etap 3: Worker `sveltia-cms-auth` + aplikacja OAuth GitHub + `base_url`.
 - [ ] Etap 4: `ci.yml` + branch protection; Pages podpięte; domena `hadrianm.pl`.
 - [ ] Etap 5: bucket R2 + domena `media.hadrianm.pl` + CORS + `media_libraries`
-      + transformacje włączone + `imgAt()` przełączony; pliki `-m` i skrypt usunięte.
+      + transformacje włączone + `imgAt()` przełączony + **8.6a: oba `src` w
+      `WorkDeviceDuo.astro` owinięte w `imgAt(..., "full")`** (bez tego desktop
+      serwuje surowe screenshoty z panelu); pliki `-m` i skrypt usunięte.
 - [ ] Etap 6: (opcjonalnie) Stream przygotowany.
 - [ ] Etap 7: realizacja wgrana z panelu widoczna na `hadrianm.pl`.
 
