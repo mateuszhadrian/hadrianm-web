@@ -6,9 +6,17 @@ backend:
   # Worker-logowania (OAuth proxy) — wdrożony w Etapie 3:
   base_url: https://sveltia-cms-auth.tenhadrian.workers.dev
 
-# ── Gdzie trafiają zdjęcia (na teraz: do repo; w Etapie 5 → R2) ───────────
-media_folder: "public/realizacje" # fizyczna ścieżka w repo
-public_folder: "/realizacje" # ścieżka w adresie URL na stronie
+# ── Gdzie trafiają zdjęcia: Cloudflare R2 (Etap 5) ────────────────────────
+# Secret Access Key NIE trafia do tego pliku — Sveltia poprosi o niego
+# w panelu przy pierwszym uploadzie i trzyma go w pamięci przeglądarki.
+media_libraries:
+  cloudflare_r2:
+    account_id: "a1f687532595bb8659c557adba293d53"
+    access_key_id: "d73ebcace4b956ef8a1a4dee8cb77712"
+    bucket: "hadrianm-media"
+    public_url: "https://media.hadrianm.pl" # własna domena z 8.1
+    prefix: "realizacje/" # pliki wewnątrz bucketa w podfolderze
+    jurisdiction: "eu"
 
 # ── Czyste JSON-y: pomijaj niewypełnione pola opcjonalne (np. liveUrl) ────
 output:
