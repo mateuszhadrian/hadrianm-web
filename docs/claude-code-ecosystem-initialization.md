@@ -176,13 +176,14 @@ hadrianm-web/
 │   ├── settings.json                  # Etap 2 — permissions + hooks (w gicie, wspólne)
 │   ├── settings.local.json            # istnieje — osobiste, poza gitem (zostaje)
 │   ├── hooks/
+│   │   ├── guard-realizacje.sh        # Etap 2 — PreToolUse: blokada edycji JSON-ów CMS (filtr ścieżki w skrypcie)
 │   │   ├── format-file.sh             # Etap 2 — PostToolUse: prettier(+eslint) na edytowanym pliku
 │   │   └── stop-typecheck.sh          # Etap 2 — Stop: typecheck gdy zmieniono .ts/.astro
 │   ├── rules/
 │   │   ├── hero-device-scene.md       # Etap 3 — paths: src/components/sections/hero/**
 │   │   ├── scroll-lenis.md            # Etap 3 — paths: src/scripts/smooth-scroll.ts
 │   │   ├── cms-realizacje.md          # Etap 3 — paths: content, admin, img.ts
-│   │   └── capture-scripts.md         # Etap 3 — paths: scripts/**
+│   │   └── capture-scripts.md         # Etap 3 — paths: scripts/**/*.{mjs,astro}
 │   └── skills/
 │       ├── new-realizacja/SKILL.md    # Etap 4
 │       ├── capture-devices/SKILL.md   # Etap 4
@@ -431,6 +432,14 @@ pliku):
 }
 ```
 
+> ⚠️ **Korekta z wdrożenia (2026-07-06):** pole `if` w hookach PreToolUse
+> NIE zadziałało jak wyżej — w praktyce (Claude Code 2.1.200+) hooki z `if`
+> odpalały się na KAŻDYM Edit/Write, blokując całą pracę w repo. Wdrożone
+> rozwiązanie: jeden wpis PreToolUse `matcher: "Edit|Write"` wywołujący
+> `.claude/hooks/guard-realizacje.sh`, który sam filtruje `file_path` ze
+> stdin (case na `src/content/realizacje/`) i przy trafieniu zwraca exit 2
+> z komunikatem. Źródłem prawdy jest `.claude/settings.json` w repo.
+
 Uwagi projektowe:
 
 - **`deny` na `git commit/push`** — pokrywa Twoją zasadę „commituję
@@ -441,8 +450,9 @@ Uwagi projektowe:
   pewniejsze niż hook — egzekwuje harness, zero kodu).
 - **Guard CMS przez hook**, nie `deny` — bo hook zwraca **czytelny powód**,
   dzięki któremu Claude wie, co zamiast tego zrobić (panel `/admin`).
-- Pole `if` w hooku używa składni reguł permissions (wymaga Claude Code
-  ≥ 2.1.85 — masz nowszy).
+- ~~Pole `if` w hooku używa składni reguł permissions (wymaga Claude Code
+  ≥ 2.1.85 — masz nowszy).~~ ⚠️ Patrz korekta wyżej — `if` porzucone na
+  rzecz filtra w skrypcie guard.
 
 **Krok 2.3.** Utwórz `.claude/hooks/format-file.sh`:
 
@@ -682,10 +692,17 @@ paths:
 
 **Krok 3.4.** Utwórz `.claude/rules/capture-scripts.md`:
 
+> ⚠️ **Korekta z wdrożenia (2026-07-06):** glob `scripts/**` w praktyce
+> ładował regułę także przy plikach z `src/scripts/` (wbrew dokumentacji,
+> wg której wzorce kotwiczą się w root projektu). Wdrożone `paths:` to
+> `scripts/**/*.mjs` + `scripts/**/*.astro` — rozłączne z `src/scripts/`
+> (tam są wyłącznie `.ts`) niezależnie od semantyki kotwiczenia.
+
 ````markdown
 ---
 paths:
-  - "scripts/**"
+  - "scripts/**/*.mjs"
+  - "scripts/**/*.astro"
 ---
 
 # Skrypty dev-only (capture / optymalizacja) — reguły
@@ -1231,14 +1248,29 @@ Etapy 1+2 można wdrożyć w jednej sesji („fundament"), 3+4 w następnej
 
 ### 10.3. Definicja ukończenia (checklista całości)
 
-- [ ] Etap 1: CLAUDE.md w repo, widoczny w `/context`
-- [ ] Etap 2: settings.json + 2 hooki (chmod +x), `.gitignore` z wpisem
-      `settings.local.json`; test: odmowa `git commit`, blokada edycji
-      JSON-a realizacji, wymuszenie naprawy typów na Stop
-- [ ] Etap 3: 4 rules; test lazy-load na `smooth-scroll.ts`
-- [ ] Etap 4: 4 skille widoczne w autouzupełnianiu; `/release-check`
-      przechodzi na czystym repo
-- [ ] Etap 5: `.mcp.json`; serwer playwright zatwierdzony i działa
+- [x] Etap 1: CLAUDE.md w repo, widoczny w `/context` (zweryfikowane 2026-07-06)
+- [x] Etap 2: settings.json + 3 hooki (chmod +x; guard-realizacje.sh zamiast
+      pola `if` — patrz korekta w Etapie 2), `.gitignore` z wpisami
+      `settings.local.json` + `scheduled_tasks.lock`; przetestowane na żywo
+      (2026-07-06, sesja + agent testowy): odmowa `git commit`, blokada
+      edycji JSON-a realizacji, auto-format po Write, Stop-hook exit 2 przy
+      celowym błędzie typu i exit 0 na czystym drzewie. Krok 2.6 wykonany
+      (backup starego local w scratchpadzie sesji)
+- [x] Etap 3: 4 rules; lazy-load POTWIERDZONY (agent testowy 2026-07-06):
+      reguła nieobecna przed odczytem, wstrzyknięta system-reminderem po
+      Read `smooth-scroll.ts` (scroll-lenis) i `platform.ts`
+      (hero-device-scene). Korekta: glob `scripts/**` w capture-scripts.md
+      łapał też `src/scripts/` (wbrew dokumentacji o kotwiczeniu w root) —
+      zawężony do `scripts/**/*.{mjs,astro}` (root `scripts/` to wyłącznie
+      .mjs/.astro, `src/scripts/` wyłącznie .ts)
+- [x] Etap 4: 4 skille — widoczne w sesji interaktywnej (Skills 51→55 w
+      `/context`); procedura `/release-check` przeszła w całości: bramka
+      format/lint/typecheck/build ✓, smoke na preview :4399 ✓ (200 na
+      `/` i `/en/`, robots blokuje /admin, sitemap jest, zero `localhost`
+      w dist). Uwaga: skille projektowe NIE są widoczne dla subagentów —
+      to zachowanie harnessu, nie błąd konfiguracji
+- [x] Etap 5: `.mcp.json` — serwer playwright ładuje się w nowej sesji
+      (MCP tools 25→48 w `/context`)
 - [ ] Etap 6: decyzja podjęta (wdrażamy / odkładamy z datą przeglądu)
 - [ ] Etap 7: site-template istnieje, oznaczony jako Template repository,
       `/init-client` + `/provision-client` przetestowane na próbnym repo

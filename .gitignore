@@ -26,3 +26,7 @@ pnpm-debug.log*
 
 # siatka regresyjna hero (scripts/verify-hero.mjs) — artefakty lokalne
 .hero-verify/
+
+# osobiste ustawienia Claude Code
+.claude/settings.local.json
+.claude/scheduled_tasks.lock

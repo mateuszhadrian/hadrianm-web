@@ -24,7 +24,7 @@
 | `mailbox_setup.md` | Konfiguracja skrzynki `info@hadrianm.pl` (OVH Zimbra) + DNS — wykonana |
 | `gmail_alias_setup.md` | Opcjonalna integracja skrzynki OVH z Gmailem — do wykonania w dowolnym momencie |
 | `optional-todos.md` | Otwarte, opcjonalne TODO (Worker auth, subdomena `auth.`, robots/Pages) |
-| `claude-code-ecosystem-initialization.md` | **Plan** ekosystemu Claude Code — jeszcze NIE wdrożony (w `.claude/` jest tylko `settings.local.json`) |
+| `claude-code-ecosystem-initialization.md` | **Plan** ekosystemu Claude Code — Etapy 1–5 **wdrożone** (2026-07-06; korekta: guard CMS przez skrypt zamiast pola `if` w hookach — patrz ⚠️ w Etapie 2); status w checkliście §10.3; zostały: Etap 6 (decyzja) i Etap 7 (white-label) |
 
 ## 🔧 Wdrożone plany/naprawy (czytaj z adnotacjami na górze pliku)
 
