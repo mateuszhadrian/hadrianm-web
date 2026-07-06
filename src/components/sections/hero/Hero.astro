@@ -511,13 +511,11 @@ const splitAccent = (line: string) =>
 
   @media (prefers-reduced-motion: no-preference) and (min-width: 761px) {
     .hero {
-      /* Pin (CSS-sticky) jest rozłączony od scrubu GSAP (ScrollTrigger end =
-         innerHeight*12 ≈ 1200svh). Dystans przypięcia = min-height − stage(100svh).
-         Chcemy odpiąć dokładnie gdy napis "…najlepszy przedstawiciel" osiada na
-         finalnej pozycji: timeline CAP_END=5.57 / długość 5.9 = 0.944 scrubu →
-         0.944·1200svh ≈ 1133svh przypięcia + 100svh stage = 1233svh.
-         Scrub leci dalej do 1.0, więc resztka animacji urządzeń dogrywa się już po
-         odpięciu (sekcja zjeżdża w górę „w trakcie" animacji). */
+      /* Wartość wstępna (przed hydracją); finalną ustawia <script> jako
+         POCHODNĄ osi scrolla (DESKTOP_MIN_HEIGHT_SVH w hero-config.ts —
+         tam też pełne wyjaśnienie geometrii pin/scrub). Nie przeliczaj
+         tej liczby ręcznie. Scrub leci dalej za odpięciem, więc resztka
+         animacji urządzeń dogrywa się, gdy sekcja zjeżdża już w górę. */
       min-height: 1233svh;
     }
   }
@@ -569,6 +567,31 @@ const splitAccent = (line: string) =>
   import { initLaptopSite, type LaptopSiteApi } from "./laptop-site";
   import { initPhoneSite, type PhoneSiteApi } from "./phone-site";
   import { IS_ANDROID, initMobilePhase3 } from "./android-mobile";
+  import {
+    DESKTOP_SCREENS,
+    DESKTOP_SCREENS_FALLBACK,
+    PH3_START,
+    DREWELOMET_DUR,
+    PHONE_START,
+    PHONE_END,
+    CAP_START,
+    CAP_END,
+    DESKTOP_MIN_HEIGHT_SVH,
+    SCROLL_SCALE,
+    MOBILE_SCREENS_BASE,
+    MOB_SETTLE_START,
+    MOB_SETTLE_DUR,
+    MOB_SETTLE_EASE,
+    MOB_ENTRY_Z_PX,
+    VID_MAX,
+    GROW_END,
+    HOLD_END,
+    LAP_ZONE,
+    PH_ZONE,
+    MOBILE_MIN_HEIGHT_SVH,
+    GAP_LAP_DIV,
+    GAP_PH_DIV,
+  } from "./hero-config";
 
   gsap.registerPlugin(ScrollTrigger);
 
@@ -677,9 +700,8 @@ const splitAccent = (line: string) =>
   };
 
   // ════════════════════════════ FAZY (desktop) ════════════════════════════
+  // Stałe osi scrolla żyją w hero-config.ts (jedno źródło prawdy).
 
-  const PH3_START = 0.9;
-  const DREWELOMET_DUR = 5.0;
   const phase1Desktop = (b: Base) => {
     const { tl, live, devices, startX, startY, endX, endY } = b;
     // Blur działa przed transformem: przy scale 5.2 → 8px ≈ ~40px na ekranie.
@@ -806,8 +828,6 @@ const splitAccent = (line: string) =>
 
   const phase3PhoneDesktop = (b: Base, phone: PhoneSiteApi) => {
     const { tl } = b;
-    const PHONE_START = 2.0;
-    const PHONE_END = 5.9;
     const p = { v: 0 };
     tl.to(
       p,
@@ -838,9 +858,7 @@ const splitAccent = (line: string) =>
 
     copy.classList.add("is-carousel");
 
-    const CAP_START = 1.95;
-    const DOG_PROGRESS = 0.934;
-    const CAP_END = PH3_START + DREWELOMET_DUR * DOG_PROGRESS;
+    // CAP_START/CAP_END: hero-config.ts (CAP_END = pochodna doghouse.webp)
     const PHASE_A_FRAC = 0.14;
     const REST_BIG_SCALE = 0.53;
     const REST_SMALL_SCALE = 1;
@@ -1014,13 +1032,7 @@ const splitAccent = (line: string) =>
   };
 
   // ════════════════════════════ FAZY (mobile) ═════════════════════════════
-
-  // Wspólne okno "osadzania" urządzeń: wjazd z boków ORAZ rozsunięcie/pomniejszenie
-  // dzielą ten sam start i czas, więc całość to jeden ciągły ruch (zero martwego
-  // punktu — urządzenia już w trakcie wjazdu zmierzają do finalnej pozycji i skali).
-  const MOB_SETTLE_START = 0.5; // start po zaniku słowa "Ciebie"
-  const MOB_SETTLE_DUR = 0.9; // krócej niż dawne 1.4 (wjazd 0.7 + przerwa + 0.6)
-  const MOB_SETTLE_EASE = "power3.out"; // snappy dolot, wspólny dla wszystkich torów
+  // Stałe osi (MOB_SETTLE_*, strefy, VID_*): hero-config.ts.
 
   const phase1Mobile = (
     b: Base,
@@ -1152,12 +1164,18 @@ const splitAccent = (line: string) =>
         phoneSite = null;
       }
 
-      const b = buildBase(site ? 12 : 4);
+      const b = buildBase(site ? DESKTOP_SCREENS : DESKTOP_SCREENS_FALLBACK);
       if (!b) {
         site?.destroy();
         phoneSite?.destroy();
         return;
       }
+
+      // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
+      // (1233svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
+      const hero = q("#hero");
+      if (hero) hero.style.minHeight = DESKTOP_MIN_HEIGHT_SVH + "svh";
+
       const refs = deviceRefs();
       const captionCleanup = site ? initCaptionCarousel(b) : null;
       phase1Desktop(b);
@@ -1169,6 +1187,7 @@ const splitAccent = (line: string) =>
         cleanup(b)();
         site?.destroy();
         phoneSite?.destroy();
+        hero?.style.removeProperty("min-height");
       };
     },
   );
@@ -1182,10 +1201,7 @@ const splitAccent = (line: string) =>
       q(".hero__devices .screen--laptop .dw-root")?.remove();
       q(".hero__devices .screen--phone .dwm-root")?.remove();
 
-      // Skraca scenę Hero (Lenis spowalnia scroll globalnie); niżej = krótsze.
-      const SCROLL_SCALE = 0.95;
-
-      const b = buildBase(4 * SCROLL_SCALE);
+      const b = buildBase(MOBILE_SCREENS_BASE * SCROLL_SCALE);
       if (!b) return;
       const refs = deviceRefs();
       const fitEl = q(".hero__devices .fit");
@@ -1196,8 +1212,7 @@ const splitAccent = (line: string) =>
       const slide = () =>
         (devicesEl?.clientWidth || window.innerWidth) / fitScale();
       // głębia wjazdu w jednostkach projektowych (≈ stała głębia ekranowa pod perspektywą)
-      const Z_PX = 340;
-      const zDepth = () => Z_PX / fitScale();
+      const zDepth = () => MOB_ENTRY_Z_PX / fitScale();
 
       phase1Mobile(b, refs, slide, zDepth);
       phase2Mobile(b, refs);
@@ -1225,20 +1240,10 @@ const splitAccent = (line: string) =>
       const lapVideo = setupVideo("[data-gsap='video-laptop']");
       const phVideo = setupVideo("[data-gsap='video-phone']");
 
-      const VID_MAX = 1.5; // docelowe powiększenie w szczycie strefy
-      const GROW_END = 1 / 4; // szczyt — koniec powiększania, start przytrzymania
-      const HOLD_END = 3 / 4; // koniec przytrzymania (~2 ekrany) — start zmniejszania
-
-      // Strefy (w jednostkach innerHeight) skalowane tak jak długość sceny.
-      const LAP_ZONE = { start: 4.4 * SCROLL_SCALE, end: 8.4 * SCROLL_SCALE };
-      const PH_ZONE = { start: 8.8 * SCROLL_SCALE, end: 12.8 * SCROLL_SCALE };
-
-      // Wysokość sekcji tak, by odpięcie wypadło tuż po dojechaniu kulki
-      // (PH_ZONE.end); sticky puszcza przy scrollu = min-height − stage(100svh).
-      const HERO_END_BUFFER = 0.2; // ekrany od końca kulki do odpięcia
+      // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
+      // (1500svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
       if (hero) {
-        hero.style.minHeight =
-          (PH_ZONE.end + 1 + HERO_END_BUFFER) * 100 + "svh";
+        hero.style.minHeight = MOBILE_MIN_HEIGHT_SVH + "svh";
       }
 
       // ── Wzrost tekstów 02/03 (mobile, wspólny iOS + Android) ──────────────
@@ -1327,8 +1332,6 @@ const splitAccent = (line: string) =>
       const stageEl = q(".hero__stage");
       const div02 = q<HTMLElement>(".hero__copy-row--2");
       const div03 = q<HTMLElement>(".hero__copy-row--3");
-      const GAP_LAP_DIV = 23; // px viewportu (laptop.bottom → div02)
-      const GAP_PH_DIV = 21; // px viewportu (phone.bottom → div03)
       const placeDividers = () => {
         if (!stageEl) return;
         const stageTop = stageEl.getBoundingClientRect().top;

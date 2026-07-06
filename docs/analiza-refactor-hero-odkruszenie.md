@@ -179,7 +179,9 @@ Low Power Mode, realnej termiki dekodera — stąd powyższa tabela.
 
 - [x] Krok 0 — harness `scripts/verify-hero.mjs` + baseline (2026-07-06;
       walidacja determinizmu: 33/33 klatek 0.000% diff; wideo mobile gra 2/2)
-- [ ] Krok 1 — `hero-config.ts` + pochodny min-height 📱
+- [ ] Krok 1 — `hero-config.ts` + pochodny min-height 📱 (2026-07-06:
+      wdrożone; harness 33/33 = 0.000% diff; inline min-height potwierdzony
+      na obu gałęziach; CZEKA na test 📱 przed commitem)
 - [ ] Krok 2 — `platform.ts` + `--k` z JS 📱 KRYTYCZNY
 - [ ] Krok 3 — `scene-vars.ts`
 - [ ] Krok 4 — rozbicie monolitu 📱
