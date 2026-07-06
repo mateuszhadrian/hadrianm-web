@@ -602,7 +602,7 @@ const splitAccent = (line: string) =>
     DESKTOP_SCREENS_FALLBACK,
     DESKTOP_MIN_HEIGHT_SVH,
     SCROLL_SCALE,
-    MOBILE_SCREENS_BASE,
+    MOBILE_SCREENS,
     MOB_ENTRY_Z_PX,
     VID_MAX,
     GROW_END,
@@ -711,7 +711,7 @@ const splitAccent = (line: string) =>
     q(SEL.laptopSiteRoot)?.remove();
     q(SEL.phoneSiteRoot)?.remove();
 
-    const b = buildBase(MOBILE_SCREENS_BASE * SCROLL_SCALE);
+    const b = buildBase(MOBILE_SCREENS * SCROLL_SCALE);
     if (!b) return;
     const refs = deviceRefs();
     const fitEl = q(SEL.fit);

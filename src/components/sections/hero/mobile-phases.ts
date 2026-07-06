@@ -12,6 +12,8 @@ import {
   MOB_SETTLE_START,
   MOB_SETTLE_DUR,
   MOB_SETTLE_EASE,
+  MOB_COPY_FADE_LEAD,
+  MOB_COPY_FADE_DUR,
   GROW_END,
   LAP_ZONE,
   PH_ZONE,
@@ -119,12 +121,14 @@ export const phase2Mobile = (b: Base, refs: DeviceRefs) => {
     APART_START,
   );
   if (copy) {
-    // copy wjeżdża wraz z dolotem urządzeń i domyka się tuż po osadzeniu
+    // copy wjeżdża wraz z dolotem urządzeń i domyka się tuż po osadzeniu;
+    // koniec tego tweena = MOBILE_TL_LENGTH (pochodna w hero-config.ts) —
+    // stałe fade żyją tam, żeby długość osi liczyła się z jednego źródła
     tl.fromTo(
       copy,
       { autoAlpha: 0 },
-      { autoAlpha: 1, duration: 0.5, ease: "power2.out" },
-      APART_START + MOB_SETTLE_DUR - 0.4,
+      { autoAlpha: 1, duration: MOB_COPY_FADE_DUR, ease: "power2.out" },
+      APART_START + MOB_SETTLE_DUR - MOB_COPY_FADE_LEAD,
     );
   }
 };

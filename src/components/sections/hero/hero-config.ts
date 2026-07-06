@@ -44,14 +44,30 @@ export const DESKTOP_MIN_HEIGHT_SVH = Math.round(
 
 /** Skraca scenę Hero (Lenis spowalnia scroll globalnie); niżej = krótsze. */
 export const SCROLL_SCALE = 0.95;
-/** buildBase(MOBILE_SCREENS_BASE × SCROLL_SCALE) — długość scrubu wejścia. */
-export const MOBILE_SCREENS_BASE = 4;
+/** Tempo scrubu wejścia: ekrany scrolla na 1 jednostkę osi tl. Stała jest
+ *  NIEZALEŻNA od MOB_SETTLE_START — przesunięcie startu urządzeń nie zmienia
+ *  prędkości zjazdu headline'u ani zaniku słowa (skraca tylko całą scenę).
+ *  Wartość utrwala tempo sprzed uzależnienia: 4 ekrany / oś długości 1.5. */
+export const MOBILE_SCREENS_PER_TL = 4 / 1.5;
 
 /** Wspólne okno „osadzania" urządzeń: wjazd z boków ORAZ rozsunięcie/
- *  pomniejszenie dzielą start/czas/ease → jeden ciągły ruch. */
-export const MOB_SETTLE_START = 0.5; // start po zaniku słowa "Ciebie"
+ *  pomniejszenie dzielą start/czas/ease → jeden ciągły ruch. Start w trakcie
+ *  zjazdu headline'u (head: yPercent −110 na tl 0→0.6) — urządzenia mają być
+ *  widoczne, gdy „strona, która" chowa się jeszcze pod navbarem. */
+export const MOB_SETTLE_START = 0.15;
 export const MOB_SETTLE_DUR = 0.9;
 export const MOB_SETTLE_EASE = "power3.out";
+
+/** Fade-in copy (02/03): start MOB_COPY_FADE_LEAD przed końcem osadzania. */
+export const MOB_COPY_FADE_LEAD = 0.4;
+export const MOB_COPY_FADE_DUR = 0.5;
+
+/** POCHODNA: długość osi tl wejścia = koniec ostatniego tweena (fade copy). */
+export const MOBILE_TL_LENGTH =
+  MOB_SETTLE_START + MOB_SETTLE_DUR - MOB_COPY_FADE_LEAD + MOB_COPY_FADE_DUR;
+/** POCHODNA: buildBase(MOBILE_SCREENS × SCROLL_SCALE) — długość scrubu
+ *  wejścia w ekranach; wcześniejszy MOB_SETTLE_START = krótszy scrub. */
+export const MOBILE_SCREENS = MOBILE_TL_LENGTH * MOBILE_SCREENS_PER_TL;
 
 /** Głębia wjazdu urządzeń w px projektu (dzielona przez skalę .fit). */
 export const MOB_ENTRY_Z_PX = 340;
@@ -62,14 +78,16 @@ export const VID_MAX = 1.5;
 export const GROW_END = 1 / 4;
 export const HOLD_END = 3 / 4;
 
-/** Strefy urządzeń (vh od góry #hero) — skalowane razem z długością sceny. */
+/** Strefy urządzeń (vh od góry #hero) — POCHODNE: kotwiczone do końca scrubu
+ *  wejścia (MOBILE_SCREENS), więc przesuwają się razem z wcześniejszym/
+ *  późniejszym startem urządzeń; skalowane razem z długością sceny. */
 export const LAP_ZONE = {
-  start: 4.4 * SCROLL_SCALE,
-  end: 8.4 * SCROLL_SCALE,
+  start: (MOBILE_SCREENS + 0.4) * SCROLL_SCALE,
+  end: (MOBILE_SCREENS + 4.4) * SCROLL_SCALE,
 };
 export const PH_ZONE = {
-  start: 8.8 * SCROLL_SCALE,
-  end: 12.8 * SCROLL_SCALE,
+  start: (MOBILE_SCREENS + 4.8) * SCROLL_SCALE,
+  end: (MOBILE_SCREENS + 8.8) * SCROLL_SCALE,
 };
 
 /** Ekrany od dojechania kulki paska do odpięcia sticky. */
