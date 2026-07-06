@@ -78,16 +78,37 @@ export const VID_MAX = 1.5;
 export const GROW_END = 1 / 4;
 export const HOLD_END = 3 / 4;
 
-/** Strefy urządzeń (vh od góry #hero) — POCHODNE: kotwiczone do końca scrubu
- *  wejścia (MOBILE_SCREENS), więc przesuwają się razem z wcześniejszym/
- *  późniejszym startem urządzeń; skalowane razem z długością sceny. */
+/** GŁÓWNE POKRĘTŁO długości sceny urządzeń (mobile): ile ekranów scrolla
+ *  trwa strefa KAŻDEGO urządzenia (laptop i telefon). Pasek postępu z prawej
+ *  biegnie od startu strefy laptopa do końca strefy telefonu, więc niższa
+ *  wartość = krótsza cała animacja z paskiem (i krótsza sekcja — wysokość
+ *  jest pochodną). Kształt grow/hold/shrink (GROW_END/HOLD_END) to ułamki
+ *  strefy, więc skaluje się sam. */
+export const MOB_ZONE_SCREENS = 2;
+/** Odstęp (w ekranach) między strefą laptopa a telefonu. */
+export const MOB_ZONE_GAP = 0.4;
+
+/** POCHODNA: koniec RUCHU osadzania urządzeń w ekranach scrolla — kotwica
+ *  stref. Celowo bez ogona fade-inu copy (MOBILE_SCREENS): strefa laptopa
+ *  (pasek z prawej + powiększanie ekranu) startuje DOKŁADNIE w chwili, gdy
+ *  urządzenia nieruchomieją — zero martwego okna scrolla; fade copy domyka
+ *  się równolegle z początkiem wzrostu laptopa. */
+export const MOB_SETTLE_END_SCREENS =
+  (MOB_SETTLE_START + MOB_SETTLE_DUR) * MOBILE_SCREENS_PER_TL;
+
+/** Strefy urządzeń (vh od góry #hero) — POCHODNE: kotwiczone do końca
+ *  osadzania (MOB_SETTLE_END_SCREENS), więc przesuwają się razem z
+ *  wcześniejszym/późniejszym startem urządzeń; skalowane z długością sceny. */
 export const LAP_ZONE = {
-  start: (MOBILE_SCREENS + 0.4) * SCROLL_SCALE,
-  end: (MOBILE_SCREENS + 4.4) * SCROLL_SCALE,
+  start: MOB_SETTLE_END_SCREENS * SCROLL_SCALE,
+  end: (MOB_SETTLE_END_SCREENS + MOB_ZONE_SCREENS) * SCROLL_SCALE,
 };
 export const PH_ZONE = {
-  start: (MOBILE_SCREENS + 4.8) * SCROLL_SCALE,
-  end: (MOBILE_SCREENS + 8.8) * SCROLL_SCALE,
+  start:
+    (MOB_SETTLE_END_SCREENS + MOB_ZONE_SCREENS + MOB_ZONE_GAP) * SCROLL_SCALE,
+  end:
+    (MOB_SETTLE_END_SCREENS + 2 * MOB_ZONE_SCREENS + MOB_ZONE_GAP) *
+    SCROLL_SCALE,
 };
 
 /** Ekrany od dojechania kulki paska do odpięcia sticky. */
