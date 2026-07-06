@@ -23,3 +23,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# siatka regresyjna hero (scripts/verify-hero.mjs) — artefakty lokalne
+.hero-verify/
