@@ -118,7 +118,8 @@ import PhoneSite from "./PhoneSite.astro";
     transform-origin: center center;
   }
   .camera {
-    /* kąty kamery (--cx/--cy) i wyśrodkowanie grupy (--gx/--gy) — ustawiane z JS */
+    /* kąty kamery (--cx/--cy) i wyśrodkowanie grupy (--gx/--gy) — ustawiane z JS;
+       defaulty = spoczynek protokołu (SCENE_VAR_REST w scene-vars.ts) — zmieniaj razem */
     --cx: 0deg;
     --cy: 0deg;
     --gx: 0px;
@@ -233,7 +234,8 @@ import PhoneSite from "./PhoneSite.astro";
   }
 
   .laptop {
-    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP */
+    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP;
+       defaulty = spoczynek protokołu (SCENE_VAR_REST w scene-vars.ts) — zmieniaj razem */
     --sl-lap: 0px;
     --sz-lap: 0px;
     --apart-lap: 0px; /* rozsunięcie pionowe (mobile: laptop w górę) */
@@ -282,7 +284,8 @@ import PhoneSite from "./PhoneSite.astro";
   }
 
   .phone {
-    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP */
+    /* wjazd na mobile (poziom/głębia) + morph fazy 2 — ustawiane z JS/GSAP;
+       defaulty = spoczynek protokołu (SCENE_VAR_REST w scene-vars.ts) — zmieniaj razem */
     --sl-ph: 0px;
     --sz-ph: 0px;
     --apart-ph: 0px; /* rozsunięcie pionowe (mobile: telefon w dół) */

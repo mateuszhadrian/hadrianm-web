@@ -576,6 +576,7 @@ const splitAccent = (line: string) =>
     DESKTOP_MQ,
     ANDROID_DESIGN_SCALE,
   } from "./platform";
+  import { setRest, removeVars } from "./scene-vars";
   import {
     DESKTOP_SCREENS,
     DESKTOP_SCREENS_FALLBACK,
@@ -706,15 +707,9 @@ const splitAccent = (line: string) =>
       clearProps: "all",
     });
     const { laptop: lp, phone: ph, camera: cam, base: bs } = deviceRefs();
-    lp?.style.removeProperty("--lap-yaw");
-    lp?.style.removeProperty("--lap-pitch");
-    lp?.style.removeProperty("--apart-lap");
-    ph?.style.removeProperty("--ph-dx");
-    ph?.style.removeProperty("--ph-dy");
-    ph?.style.removeProperty("--ph-dz");
-    ph?.style.removeProperty("--apart-ph");
-    cam?.style.removeProperty("--cx");
-    cam?.style.removeProperty("--cy");
+    removeVars(lp, ["--lap-yaw", "--lap-pitch", "--apart-lap"]);
+    removeVars(ph, ["--ph-dx", "--ph-dy", "--ph-dz", "--apart-ph"]);
+    removeVars(cam, ["--cx", "--cy"]);
     if (bs) gsap.set(bs, { clearProps: "opacity" });
   };
 
@@ -1407,12 +1402,8 @@ const splitAccent = (line: string) =>
       hero?.style.removeProperty("min-height");
       stopReset(lapVideo);
       stopReset(phVideo);
-      refs.laptop?.style.setProperty("--vid-scale", "1");
-      refs.phone?.style.setProperty("--vid-scale", "1");
-      refs.laptop?.style.setProperty("--sl-lap", "0px");
-      refs.phone?.style.setProperty("--sl-ph", "0px");
-      refs.laptop?.style.setProperty("--sz-lap", "0px");
-      refs.phone?.style.setProperty("--sz-ph", "0px");
+      setRest(refs.laptop, ["--vid-scale", "--sl-lap", "--sz-lap"]);
+      setRest(refs.phone, ["--vid-scale", "--sl-ph", "--sz-ph"]);
     };
   });
 </script>

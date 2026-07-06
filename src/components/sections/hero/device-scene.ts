@@ -1,5 +1,6 @@
 import { gsap } from "gsap";
 import { IS_ANDROID, MOBILE_MQ, ANDROID_DESIGN_SCALE } from "./platform";
+import { setRest, cameraCxRest } from "./scene-vars";
 
 // ── Docelowa poza urządzeń w klatce C (desktop) — jedno źródło prawdy:
 //    używane i przy pomiarze adaptacyjnym (computeFrameC), i w timeline (Hero). ──
@@ -169,21 +170,19 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
   const centerGroup = () => {
     if (!camera || !laptop || !phone || !fitEl) return;
     // 1) wyzeruj offsety (centrujący + wjazd + morph) i ustaw bazowy kąt kamery,
-    //    aby zmierzyć naturalny środek grupy w klatce B (spoczynek)
-    camera.style.setProperty("--gx", "0px");
-    camera.style.setProperty("--gy", "0px");
-    camera.style.setProperty("--cx", (isStacked() ? 4 : 0) + "deg");
-    camera.style.setProperty("--cy", "0deg");
-    laptop.style.setProperty("--sl-lap", "0px");
-    phone.style.setProperty("--sl-ph", "0px");
-    laptop.style.setProperty("--sz-lap", "0px");
-    phone.style.setProperty("--sz-ph", "0px");
-    laptop.style.setProperty("--apart-lap", "0px");
-    phone.style.setProperty("--apart-ph", "0px");
-    laptop.style.setProperty("--lap-yaw", "0deg");
-    phone.style.setProperty("--ph-dx", "0px");
-    phone.style.setProperty("--ph-dy", "0px");
-    phone.style.setProperty("--ph-dz", "0px");
+    //    aby zmierzyć naturalny środek grupy w klatce B (spoczynek).
+    //    Uwaga: celowo BEZ --lap-pitch (historyczna semantyka tego pomiaru).
+    setRest(camera, ["--gx", "--gy", "--cy"]);
+    camera.style.setProperty("--cx", cameraCxRest(isStacked()));
+    setRest(laptop, ["--sl-lap", "--sz-lap", "--apart-lap", "--lap-yaw"]);
+    setRest(phone, [
+      "--sl-ph",
+      "--sz-ph",
+      "--apart-ph",
+      "--ph-dx",
+      "--ph-dy",
+      "--ph-dz",
+    ]);
     const lr = laptop.getBoundingClientRect();
     const pr = phone.getBoundingClientRect();
     const fr = fitEl.getBoundingClientRect(); // środek = origin kamery
@@ -225,13 +224,10 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
     const top = Math.min(lr.top, pr.top);
     const bottom = Math.max(lr.bottom, pr.bottom);
     // przywróć spoczynek (klatka B) + wrapper
-    camera!.style.setProperty("--cx", (isStacked() ? 4 : 0) + "deg");
-    camera!.style.setProperty("--cy", "0deg");
-    laptop!.style.setProperty("--lap-yaw", "0deg");
-    laptop!.style.setProperty("--lap-pitch", "0deg");
-    phone!.style.setProperty("--ph-dx", "0px");
-    phone!.style.setProperty("--ph-dy", "0px");
-    phone!.style.setProperty("--ph-dz", "0px");
+    camera!.style.setProperty("--cx", cameraCxRest(isStacked()));
+    setRest(camera, ["--cy"]);
+    setRest(laptop, ["--lap-yaw", "--lap-pitch"]);
+    setRest(phone, ["--ph-dx", "--ph-dy", "--ph-dz"]);
     gsap.set(devicesEl, { x: sx, scale: ssc });
     return { cx: (left + right) / 2, w: right - left, h: bottom - top };
   };
