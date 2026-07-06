@@ -9,10 +9,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
  * więc są niezawodne na obu. Czerwone odcinki paska są czysto wizualne.
  */
 
-/** Czy bieżące urządzenie to Android (smartfon/tablet z Androidem). */
-export const IS_ANDROID =
-  typeof navigator !== "undefined" && /android/i.test(navigator.userAgent);
-
 export interface Zone {
   /** Start strefy w jednostkach wysokości viewportu od górnej krawędzi #hero. */
   start: number;

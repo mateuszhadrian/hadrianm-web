@@ -179,10 +179,13 @@ Low Power Mode, realnej termiki dekodera — stąd powyższa tabela.
 
 - [x] Krok 0 — harness `scripts/verify-hero.mjs` + baseline (2026-07-06;
       walidacja determinizmu: 33/33 klatek 0.000% diff; wideo mobile gra 2/2)
-- [ ] Krok 1 — `hero-config.ts` + pochodny min-height 📱 (2026-07-06:
-      wdrożone; harness 33/33 = 0.000% diff; inline min-height potwierdzony
-      na obu gałęziach; CZEKA na test 📱 przed commitem)
-- [ ] Krok 2 — `platform.ts` + `--k` z JS 📱 KRYTYCZNY
+- [x] Krok 1 — `hero-config.ts` + pochodny min-height 📱 (2026-07-06:
+      harness 33/33 = 0.000% diff; test na urządzeniach OK; zacommitowane)
+- [ ] Krok 2 — `platform.ts` + `--k` z JS 📱 KRYTYCZNY (2026-07-06: wdrożone;
+      znaleziono i podpięto CZWARTĄ kopię 0.6 — phase2Mobile/APART w
+      Hero.astro, nieujęta w S2; harness 33/33 = 0.000% diff; sondа tokenów:
+      Pixel --k=0.6/--ph-w=171.6px, iPhone/desktop nietknięte; CZEKA na
+      OBOWIĄZKOWY test 📱 na fizycznym Androidzie przed commitem)
 - [ ] Krok 3 — `scene-vars.ts`
 - [ ] Krok 4 — rozbicie monolitu 📱
 - [ ] Krok 5 — `selectors.ts` + głośny dev

@@ -1,5 +1,5 @@
 import { gsap } from "gsap";
-import { IS_ANDROID } from "./android-mobile";
+import { IS_ANDROID, MOBILE_MQ, ANDROID_DESIGN_SCALE } from "./platform";
 
 // ── Docelowa poza urządzeń w klatce C (desktop) — jedno źródło prawdy:
 //    używane i przy pomiarze adaptacyjnym (computeFrameC), i w timeline (Hero). ──
@@ -77,7 +77,7 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
   // ekstruzji byłyby i tak niewidoczne, a ich rasteryzacja głodzi GPU i powoduje
   // mruganie napisów + paska na Androidzie. Dlatego budujemy ekstruzję wyłącznie
   // poza wariantem mobilnym (patrz docs/analiza-android-obudowy-3d-...md).
-  if (!window.matchMedia("(max-width: 760px)").matches) {
+  if (!window.matchMedia(MOBILE_MQ).matches) {
     scene
       .querySelectorAll<HTMLElement>(".lid[data-extrude]")
       .forEach((el) => buildExtrude(el, dvar("--lap-depth")));
@@ -93,18 +93,19 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
   const base = scene.querySelector<HTMLElement>('[data-gsap="laptop-base"]');
   const fitEl = scene.querySelector<HTMLElement>(".fit");
 
-  const isStacked = () => window.matchMedia("(max-width: 760px)").matches;
+  const isStacked = () => window.matchMedia(MOBILE_MQ).matches;
 
   const GROUP_SCALE = 0.72; // ogólne zmniejszenie całej grupy urządzeń
 
-  // Współczynnik rozmiaru PROJEKTOWEGO sceny — MUSI być spójny z tokenem --k w
-  // DeviceScene.astro. Aktywny (0.6) WYŁĄCZNIE na Androidzie (Problem 2 = limit
-  // warstwy GPU Androida); iPhone/iOS i desktop = 1 → zachowanie sprzed fixu.
-  // Bramka IS_ANDROID musi być zgodna z CSS (--k:0.6 tylko pod html.is-android),
-  // inaczej JS skalowałby bbox, a CSS nie (rozjazd geometrii). Stałe px poniżej są
-  // w przestrzeni projektowej laptopa (jego --lap-w/--lap-h też ×--k), więc mnożymy
-  // je przez k. --ph-w/--ph-h czytamy z CSS (już z --k) → NIE skalujemy ponownie.
-  const K = () => (isStacked() && IS_ANDROID ? 0.6 : 1);
+  // Współczynnik rozmiaru PROJEKTOWEGO sceny — wartość i pełne wyjaśnienie:
+  // ANDROID_DESIGN_SCALE w platform.ts (CSS-owy --k pochodzi z TEJ SAMEJ stałej,
+  // wystawianej przez Hero.astro jako --android-design-scale). Bramka
+  // isStacked() && IS_ANDROID odpowiada 1:1 warunkowi CSS (media query +
+  // html.is-android) — inaczej JS skalowałby bbox, a CSS nie (rozjazd geometrii).
+  // Stałe px poniżej są w przestrzeni projektowej laptopa (jego --lap-w/--lap-h
+  // też ×--k), więc mnożymy je przez k. --ph-w/--ph-h czytamy z CSS (już z --k)
+  // → NIE skalujemy ponownie.
+  const K = () => (isStacked() && IS_ANDROID ? ANDROID_DESIGN_SCALE : 1);
   const LAP_HW = 441; // pokrywa + szerszy pasek bazy (1.05×)
   const LAP_TOP = -267; // górna krawędź pokrywy względem środka laptopa
   const LAP_BOT = 285; // dolna krawędź (pokrywa + pasek bazy)

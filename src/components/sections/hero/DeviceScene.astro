@@ -314,6 +314,7 @@ import PhoneSite from "./PhoneSite.astro";
 
   /* ── mobile: większy bazowy telefon (bez scale — treść na ekranie zostaje ostra,
         a w kolejnym etapie ekrany będą rosły wraz ze scrollowaną treścią) ── */
+  /* 760 = MOBILE_MAX (platform.ts) — zmieniaj razem */
   @media (max-width: 760px) {
     .screen__video {
       display: block;
@@ -331,11 +332,13 @@ import PhoneSite from "./PhoneSite.astro";
     }
     /* ── ANDROID ONLY (Problem 2): zmniejsz rozmiar PROJEKTOWY sceny — fit()
        kompensuje ×1/--k, więc wygląd identyczny, a rasteryzowana warstwa jest
-       ~K× mniejsza (zapas pod limitem tekstury GPU). Klasę is-android ustawia
-       Hero.astro PRZED initDeviceScene, więc dvar czyta już skalowane --ph-w/--ph-h
-       (Chrome wspiera @property). iPhone/iOS nie wchodzi tu nigdy. */
+       ~K× mniejsza (zapas pod limitem tekstury GPU). WARTOŚĆ skali żyje w
+       platform.ts (ANDROID_DESIGN_SCALE) — Hero.astro wystawia ją na <html>
+       jako --android-design-scale RAZEM z klasą is-android, PRZED
+       initDeviceScene (dvar czyta już skalowane --ph-w/--ph-h; Chrome wspiera
+       @property). Fallback 1 = stan bez JS. iPhone/iOS nie wchodzi tu nigdy. */
     html.is-android .device-scene {
-      --k: 0.6;
+      --k: var(--android-design-scale, 1);
       --ph-w: calc(286px * var(--k));
       --ph-h: calc(584px * var(--k));
     }

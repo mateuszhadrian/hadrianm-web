@@ -392,8 +392,10 @@ const splitAccent = (line: string) =>
     display: none;
   }
 
+  /* 760 = MOBILE_MAX (platform.ts) — zmieniaj razem */
   @media (prefers-reduced-motion: no-preference) and (max-width: 760px) {
-    /* Wartość wstępna (przed hydracją); finalną, krótszą ustawia <script>. */
+    /* Wartość wstępna (przed hydracją); finalną, krótszą ustawia <script>
+       (MOBILE_MIN_HEIGHT_SVH — pochodna w hero-config.ts). */
     .hero {
       min-height: 1500svh;
     }
@@ -509,6 +511,7 @@ const splitAccent = (line: string) =>
     }
   }
 
+  /* 761 = MOBILE_MAX + 1 (platform.ts) — zmieniaj razem */
   @media (prefers-reduced-motion: no-preference) and (min-width: 761px) {
     .hero {
       /* Wartość wstępna (przed hydracją); finalną ustawia <script> jako
@@ -566,7 +569,13 @@ const splitAccent = (line: string) =>
   import { initDeviceScene, FRAME_C } from "./device-scene";
   import { initLaptopSite, type LaptopSiteApi } from "./laptop-site";
   import { initPhoneSite, type PhoneSiteApi } from "./phone-site";
-  import { IS_ANDROID, initMobilePhase3 } from "./android-mobile";
+  import { initMobilePhase3 } from "./android-mobile";
+  import {
+    IS_ANDROID,
+    MOBILE_MQ,
+    DESKTOP_MQ,
+    ANDROID_DESIGN_SCALE,
+  } from "./platform";
   import {
     DESKTOP_SCREENS,
     DESKTOP_SCREENS_FALLBACK,
@@ -597,7 +606,17 @@ const splitAccent = (line: string) =>
 
   ScrollTrigger.config({ ignoreMobileResize: true });
 
-  if (IS_ANDROID) document.documentElement.classList.add("is-android");
+  // Klasa + wartość skali projektowej idą RAZEM i PRZED initDeviceScene
+  // (dvar w device-scene.ts musi czytać już przeskalowane --ph-w/--ph-h).
+  // CSS (DeviceScene.astro) robi z tej zmiennej --k wyłącznie pod
+  // media query mobile + html.is-android — wartość żyje tylko w platform.ts.
+  if (IS_ANDROID) {
+    document.documentElement.classList.add("is-android");
+    document.documentElement.style.setProperty(
+      "--android-design-scale",
+      String(ANDROID_DESIGN_SCALE),
+    );
+  }
   const devicesEl = document.querySelector<HTMLElement>(".hero__devices");
   const scene = devicesEl ? initDeviceScene(devicesEl) : null;
 
@@ -1088,7 +1107,9 @@ const splitAccent = (line: string) =>
     // Scalone z wjazdem: rozsunięcie + pomniejszenie biegną RAZEM z fazą 1
     // (ten sam start/czas/ease) → jeden ciągły ruch, bez etapu pośredniego.
     const APART_START = MOB_SETTLE_START;
-    const K = IS_ANDROID ? 0.6 : 1;
+    // px projektu skalują się razem ze sceną (S2: wartość tylko w platform.ts);
+    // gałąź mobile (mm.add) = isStacked, więc warunek zgodny z K() w device-scene.
+    const K = IS_ANDROID ? ANDROID_DESIGN_SCALE : 1;
     const APART_LAP = -150 * K; // laptop w górę (px projektu)
     const APART_PH = 170 * K; // telefon w dół (px projektu)
     const MOB_END_SCALE = 0.82; // pomniejszenie grupy (miejsce na tekst góra/dół)
@@ -1137,270 +1158,261 @@ const splitAccent = (line: string) =>
   };
 
   // ── DESKTOP/TABLET ──
-  mm.add(
-    "(prefers-reduced-motion: no-preference) and (min-width: 761px)",
-    () => {
-      // Strona drewelomet na ekranie laptopa — inicjalizowana tylko na desktop/tablet.
-      // Owinięte w try/catch: błąd inicjalizacji nie może zamrozić animacji Hero.
-      const laptopRoot = q<HTMLElement>(
-        ".hero__devices .screen--laptop .dw-root",
-      );
-      let site: LaptopSiteApi | null = null;
-      try {
-        if (laptopRoot) site = initLaptopSite(laptopRoot);
-      } catch (e) {
-        console.error("[LaptopSite] init failed:", e);
-        site = null;
-      }
+  mm.add(`(prefers-reduced-motion: no-preference) and ${DESKTOP_MQ}`, () => {
+    // Strona drewelomet na ekranie laptopa — inicjalizowana tylko na desktop/tablet.
+    // Owinięte w try/catch: błąd inicjalizacji nie może zamrozić animacji Hero.
+    const laptopRoot = q<HTMLElement>(
+      ".hero__devices .screen--laptop .dw-root",
+    );
+    let site: LaptopSiteApi | null = null;
+    try {
+      if (laptopRoot) site = initLaptopSite(laptopRoot);
+    } catch (e) {
+      console.error("[LaptopSite] init failed:", e);
+      site = null;
+    }
 
-      const phoneRoot = q<HTMLElement>(
-        ".hero__devices .screen--phone .dwm-root",
-      );
-      let phoneSite: PhoneSiteApi | null = null;
-      try {
-        if (phoneRoot) phoneSite = initPhoneSite(phoneRoot);
-      } catch (e) {
-        console.error("[PhoneSite] init failed:", e);
-        phoneSite = null;
-      }
+    const phoneRoot = q<HTMLElement>(".hero__devices .screen--phone .dwm-root");
+    let phoneSite: PhoneSiteApi | null = null;
+    try {
+      if (phoneRoot) phoneSite = initPhoneSite(phoneRoot);
+    } catch (e) {
+      console.error("[PhoneSite] init failed:", e);
+      phoneSite = null;
+    }
 
-      const b = buildBase(site ? DESKTOP_SCREENS : DESKTOP_SCREENS_FALLBACK);
-      if (!b) {
-        site?.destroy();
-        phoneSite?.destroy();
-        return;
-      }
+    const b = buildBase(site ? DESKTOP_SCREENS : DESKTOP_SCREENS_FALLBACK);
+    if (!b) {
+      site?.destroy();
+      phoneSite?.destroy();
+      return;
+    }
 
-      // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
-      // (1233svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
-      const hero = q("#hero");
-      if (hero) hero.style.minHeight = DESKTOP_MIN_HEIGHT_SVH + "svh";
+    // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
+    // (1233svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
+    const hero = q("#hero");
+    if (hero) hero.style.minHeight = DESKTOP_MIN_HEIGHT_SVH + "svh";
 
-      const refs = deviceRefs();
-      const captionCleanup = site ? initCaptionCarousel(b) : null;
-      phase1Desktop(b);
-      phase2Desktop(b, refs);
-      if (site) phase3Desktop(b, site);
-      if (site && phoneSite) phase3PhoneDesktop(b, phoneSite);
-      return () => {
-        captionCleanup?.();
-        cleanup(b)();
-        site?.destroy();
-        phoneSite?.destroy();
-        hero?.style.removeProperty("min-height");
-      };
-    },
-  );
+    const refs = deviceRefs();
+    const captionCleanup = site ? initCaptionCarousel(b) : null;
+    phase1Desktop(b);
+    phase2Desktop(b, refs);
+    if (site) phase3Desktop(b, site);
+    if (site && phoneSite) phase3PhoneDesktop(b, phoneSite);
+    return () => {
+      captionCleanup?.();
+      cleanup(b)();
+      site?.destroy();
+      phoneSite?.destroy();
+      hero?.style.removeProperty("min-height");
+    };
+  });
 
   // ── MOBILE ──
-  mm.add(
-    "(prefers-reduced-motion: no-preference) and (max-width: 760px)",
-    () => {
-      // Odchudzenie DOM: żywe podglądy stron (ciężkie poddrzewa + obrazy) są na
-      // mobile niepotrzebne — ekrany napędza video. Usuwamy je całkiem z DOM.
-      q(".hero__devices .screen--laptop .dw-root")?.remove();
-      q(".hero__devices .screen--phone .dwm-root")?.remove();
+  mm.add(`(prefers-reduced-motion: no-preference) and ${MOBILE_MQ}`, () => {
+    // Odchudzenie DOM: żywe podglądy stron (ciężkie poddrzewa + obrazy) są na
+    // mobile niepotrzebne — ekrany napędza video. Usuwamy je całkiem z DOM.
+    q(".hero__devices .screen--laptop .dw-root")?.remove();
+    q(".hero__devices .screen--phone .dwm-root")?.remove();
 
-      const b = buildBase(MOBILE_SCREENS_BASE * SCROLL_SCALE);
-      if (!b) return;
-      const refs = deviceRefs();
-      const fitEl = q(".hero__devices .fit");
+    const b = buildBase(MOBILE_SCREENS_BASE * SCROLL_SCALE);
+    if (!b) return;
+    const refs = deviceRefs();
+    const fitEl = q(".hero__devices .fit");
 
-      const fitScale = () =>
-        fitEl ? parseFloat(fitEl.style.getPropertyValue("--fit")) || 1 : 1;
-      // offset poziomy ≈ szerokość viewportu / skala .fit (urządzenie za krawędzią)
-      const slide = () =>
-        (devicesEl?.clientWidth || window.innerWidth) / fitScale();
-      // głębia wjazdu w jednostkach projektowych (≈ stała głębia ekranowa pod perspektywą)
-      const zDepth = () => MOB_ENTRY_Z_PX / fitScale();
+    const fitScale = () =>
+      fitEl ? parseFloat(fitEl.style.getPropertyValue("--fit")) || 1 : 1;
+    // offset poziomy ≈ szerokość viewportu / skala .fit (urządzenie za krawędzią)
+    const slide = () =>
+      (devicesEl?.clientWidth || window.innerWidth) / fitScale();
+    // głębia wjazdu w jednostkach projektowych (≈ stała głębia ekranowa pod perspektywą)
+    const zDepth = () => MOB_ENTRY_Z_PX / fitScale();
 
-      phase1Mobile(b, refs, slide, zDepth);
-      phase2Mobile(b, refs);
+    phase1Mobile(b, refs, slide, zDepth);
+    phase2Mobile(b, refs);
 
-      const hero = q("#hero");
-      const setupVideo = (sel: string) => {
-        const v = q<HTMLVideoElement>(sel);
-        if (v && v.dataset.src && !v.src) {
-          v.preload = "auto";
-          v.src = v.dataset.src;
-          v.load();
-        }
-        return v;
-      };
-      const stopReset = (v: HTMLVideoElement | null) => {
-        if (!v) return;
-        try {
-          v.pause();
-          v.currentTime = 0;
-        } catch {
-          /* noop */
-        }
-      };
-
-      const lapVideo = setupVideo("[data-gsap='video-laptop']");
-      const phVideo = setupVideo("[data-gsap='video-phone']");
-
-      // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
-      // (1500svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
-      if (hero) {
-        hero.style.minHeight = MOBILE_MIN_HEIGHT_SVH + "svh";
+    const hero = q("#hero");
+    const setupVideo = (sel: string) => {
+      const v = q<HTMLVideoElement>(sel);
+      if (v && v.dataset.src && !v.src) {
+        v.preload = "auto";
+        v.src = v.dataset.src;
+        v.load();
       }
+      return v;
+    };
+    const stopReset = (v: HTMLVideoElement | null) => {
+      if (!v) return;
+      try {
+        v.pause();
+        v.currentTime = 0;
+      } catch {
+        /* noop */
+      }
+    };
 
-      // ── Wzrost tekstów 02/03 (mobile, wspólny iOS + Android) ──────────────
-      // Spójnie z desktopową karuzelą: powiększenie + szary→biały + 600→800.
-      // Geometria przez transform: scale z origin lewo-środek → tekst rośnie
-      // w prawo i równomiernie w górę/dół, lewa krawędź stoi, zero reflow
-      // (nic innego się nie przesuwa). Sterowane scrubem → w pełni odwracalne.
-      const initCaptionGrowth = () => {
-        if (!hero) return () => {};
-        const t1 = q<HTMLElement>(".hero__copy-row--1 .hero__copy-text");
-        const t2 = q<HTMLElement>(".hero__copy-row--2 .hero__copy-text");
-        const t3 = q<HTMLElement>(".hero__copy-row--3 .hero__copy-text");
-        if (!t1 || !t2 || !t3) return () => {};
+    const lapVideo = setupVideo("[data-gsap='video-laptop']");
+    const phVideo = setupVideo("[data-gsap='video-phone']");
 
-        const muted = getComputedStyle(t2).color; // bazowy szary 02/03
-        const ink = getComputedStyle(t1).color; // biel tekstu 01
+    // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
+    // (1500svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
+    if (hero) {
+      hero.style.minHeight = MOBILE_MIN_HEIGHT_SVH + "svh";
+    }
 
-        // Docelowa "część drogi" z rozmiaru bazowego do rozmiaru 01.
-        // 02 rośnie w połowę drogi; 03 ("Płynnie…") mniej, bo dłuższy tekst
-        // wystawałby poza kontener z prawej.
-        const REACH_02 = 0.5;
-        const REACH_03 = 0.3;
-        // transform nie zmienia computed font-size, więc odczyt jest zawsze
-        // rozmiarem bazowym niezależnie od bieżącej skali (bezpieczne przy refresh).
-        const targetScale = (base: HTMLElement, reach: number) => {
-          const s0 = parseFloat(getComputedStyle(t1).fontSize) || 32;
-          const sb = parseFloat(getComputedStyle(base).fontSize) || 16;
-          return 1 + reach * (s0 / sb - 1);
-        };
+    // ── Wzrost tekstów 02/03 (mobile, wspólny iOS + Android) ──────────────
+    // Spójnie z desktopową karuzelą: powiększenie + szary→biały + 600→800.
+    // Geometria przez transform: scale z origin lewo-środek → tekst rośnie
+    // w prawo i równomiernie w górę/dół, lewa krawędź stoi, zero reflow
+    // (nic innego się nie przesuwa). Sterowane scrubem → w pełni odwracalne.
+    const initCaptionGrowth = () => {
+      if (!hero) return () => {};
+      const t1 = q<HTMLElement>(".hero__copy-row--1 .hero__copy-text");
+      const t2 = q<HTMLElement>(".hero__copy-row--2 .hero__copy-text");
+      const t3 = q<HTMLElement>(".hero__copy-row--3 .hero__copy-text");
+      if (!t1 || !t2 || !t3) return () => {};
 
-        // Start czerwonego odcinka paska = szczyt powiększenia urządzenia.
-        const segStartVh = (z: { start: number; end: number }) =>
-          z.start + GROW_END * (z.end - z.start);
-        // Okno wzrostu = pierwsze GROW_FRACTION długości czerwonego odcinka.
-        // Mniejsza wartość = teksty szybciej osiągają maksymalny rozmiar.
-        const GROW_FRACTION = 0.18;
-        const growEndVh = (z: { start: number; end: number }) => {
-          const s = segStartVh(z);
-          return s + GROW_FRACTION * (z.end - s);
-        };
+      const muted = getComputedStyle(t2).color; // bazowy szary 02/03
+      const ink = getComputedStyle(t1).color; // biel tekstu 01
 
-        const make = (
-          text: HTMLElement,
-          z: { start: number; end: number },
-          reach: number,
-        ) =>
-          gsap.fromTo(
-            text,
-            { scale: 1, color: muted, fontWeight: 600 },
-            {
-              scale: () => targetScale(text, reach),
-              color: ink,
-              fontWeight: 800,
-              transformOrigin: "0% 50%",
-              ease: "none",
-              scrollTrigger: {
-                trigger: hero,
-                start: () =>
-                  "top+=" + segStartVh(z) * window.innerHeight + " top",
-                end: () => "top+=" + growEndVh(z) * window.innerHeight + " top",
-                scrub: true,
-                invalidateOnRefresh: true,
-              },
-            },
-          );
-
-        const tweens = [
-          make(t2, LAP_ZONE, REACH_02),
-          make(t3, PH_ZONE, REACH_03),
-        ];
-
-        return () => {
-          tweens.forEach((tw) => {
-            tw.scrollTrigger?.kill();
-            tw.kill();
-          });
-          [t2, t3].forEach((t) => {
-            t.style.removeProperty("transform");
-            t.style.removeProperty("color");
-            t.style.removeProperty("font-weight");
-          });
-        };
+      // Docelowa "część drogi" z rozmiaru bazowego do rozmiaru 01.
+      // 02 rośnie w połowę drogi; 03 ("Płynnie…") mniej, bo dłuższy tekst
+      // wystawałby poza kontener z prawej.
+      const REACH_02 = 0.5;
+      const REACH_03 = 0.3;
+      // transform nie zmienia computed font-size, więc odczyt jest zawsze
+      // rozmiarem bazowym niezależnie od bieżącej skali (bezpieczne przy refresh).
+      const targetScale = (base: HTMLElement, reach: number) => {
+        const s0 = parseFloat(getComputedStyle(t1).fontSize) || 32;
+        const sb = parseFloat(getComputedStyle(base).fontSize) || 16;
+        return 1 + reach * (s0 / sb - 1);
       };
-      const captionGrowthCleanup = initCaptionGrowth();
 
-      const stageEl = q(".hero__stage");
-      const div02 = q<HTMLElement>(".hero__copy-row--2");
-      const div03 = q<HTMLElement>(".hero__copy-row--3");
-      const placeDividers = () => {
-        if (!stageEl) return;
-        const stageTop = stageEl.getBoundingClientRect().top;
-        if (refs.laptop && div02) {
-          const lapBottom =
-            refs.laptop.getBoundingClientRect().bottom - stageTop;
-          div02.style.top = lapBottom + GAP_LAP_DIV + "px";
-        }
-        if (refs.phone && div03) {
-          const phBottom = refs.phone.getBoundingClientRect().bottom - stageTop;
-          div03.style.top = phBottom + GAP_PH_DIV + "px";
-        }
+      // Start czerwonego odcinka paska = szczyt powiększenia urządzenia.
+      const segStartVh = (z: { start: number; end: number }) =>
+        z.start + GROW_END * (z.end - z.start);
+      // Okno wzrostu = pierwsze GROW_FRACTION długości czerwonego odcinka.
+      // Mniejsza wartość = teksty szybciej osiągają maksymalny rozmiar.
+      const GROW_FRACTION = 0.18;
+      const growEndVh = (z: { start: number; end: number }) => {
+        const s = segStartVh(z);
+        return s + GROW_FRACTION * (z.end - s);
       };
-      const dividerTrigger =
-        IS_ANDROID && hero
-          ? ScrollTrigger.create({
+
+      const make = (
+        text: HTMLElement,
+        z: { start: number; end: number },
+        reach: number,
+      ) =>
+        gsap.fromTo(
+          text,
+          { scale: 1, color: muted, fontWeight: 600 },
+          {
+            scale: () => targetScale(text, reach),
+            color: ink,
+            fontWeight: 800,
+            transformOrigin: "0% 50%",
+            ease: "none",
+            scrollTrigger: {
               trigger: hero,
-              start: "top top",
-              end: () => "top+=" + LAP_ZONE.start * window.innerHeight + " top",
-              onUpdate: placeDividers,
-              onLeave: placeDividers,
-              onLeaveBack: placeDividers,
-            })
-          : null;
-      if (IS_ANDROID) {
-        ScrollTrigger.addEventListener("refresh", placeDividers);
-        placeDividers();
-      }
-      const cleanupDividers = () => {
-        dividerTrigger?.kill();
-        ScrollTrigger.removeEventListener("refresh", placeDividers);
-        div02?.style.removeProperty("top");
-        div03?.style.removeProperty("top");
-      };
+              start: () =>
+                "top+=" + segStartVh(z) * window.innerHeight + " top",
+              end: () => "top+=" + growEndVh(z) * window.innerHeight + " top",
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          },
+        );
 
-      // ── Faza 3 (wspólna iOS + Android): ciągłe odtwarzanie w pętli +
-      // czerwone odcinki na pasku postępu — patrz android-mobile.ts.
-      const progressEl = q(".hero__progress");
-      const progressDot = q(".hero__progress-dot");
-      const phase3Cleanup = initMobilePhase3({
-        hero,
-        vidMax: VID_MAX,
-        growEnd: GROW_END,
-        holdEnd: HOLD_END,
-        videos: [
-          { video: lapVideo, el: refs.laptop, zone: LAP_ZONE },
-          { video: phVideo, el: refs.phone, zone: PH_ZONE },
-        ],
-        progressEl,
-        progressDot,
-        barStartVh: LAP_ZONE.start,
-        barEndVh: PH_ZONE.end,
-      });
+      const tweens = [
+        make(t2, LAP_ZONE, REACH_02),
+        make(t3, PH_ZONE, REACH_03),
+      ];
 
       return () => {
-        cleanup(b)();
-        phase3Cleanup();
-        captionGrowthCleanup();
-        cleanupDividers();
-        hero?.style.removeProperty("min-height");
-        stopReset(lapVideo);
-        stopReset(phVideo);
-        refs.laptop?.style.setProperty("--vid-scale", "1");
-        refs.phone?.style.setProperty("--vid-scale", "1");
-        refs.laptop?.style.setProperty("--sl-lap", "0px");
-        refs.phone?.style.setProperty("--sl-ph", "0px");
-        refs.laptop?.style.setProperty("--sz-lap", "0px");
-        refs.phone?.style.setProperty("--sz-ph", "0px");
+        tweens.forEach((tw) => {
+          tw.scrollTrigger?.kill();
+          tw.kill();
+        });
+        [t2, t3].forEach((t) => {
+          t.style.removeProperty("transform");
+          t.style.removeProperty("color");
+          t.style.removeProperty("font-weight");
+        });
       };
-    },
-  );
+    };
+    const captionGrowthCleanup = initCaptionGrowth();
+
+    const stageEl = q(".hero__stage");
+    const div02 = q<HTMLElement>(".hero__copy-row--2");
+    const div03 = q<HTMLElement>(".hero__copy-row--3");
+    const placeDividers = () => {
+      if (!stageEl) return;
+      const stageTop = stageEl.getBoundingClientRect().top;
+      if (refs.laptop && div02) {
+        const lapBottom = refs.laptop.getBoundingClientRect().bottom - stageTop;
+        div02.style.top = lapBottom + GAP_LAP_DIV + "px";
+      }
+      if (refs.phone && div03) {
+        const phBottom = refs.phone.getBoundingClientRect().bottom - stageTop;
+        div03.style.top = phBottom + GAP_PH_DIV + "px";
+      }
+    };
+    const dividerTrigger =
+      IS_ANDROID && hero
+        ? ScrollTrigger.create({
+            trigger: hero,
+            start: "top top",
+            end: () => "top+=" + LAP_ZONE.start * window.innerHeight + " top",
+            onUpdate: placeDividers,
+            onLeave: placeDividers,
+            onLeaveBack: placeDividers,
+          })
+        : null;
+    if (IS_ANDROID) {
+      ScrollTrigger.addEventListener("refresh", placeDividers);
+      placeDividers();
+    }
+    const cleanupDividers = () => {
+      dividerTrigger?.kill();
+      ScrollTrigger.removeEventListener("refresh", placeDividers);
+      div02?.style.removeProperty("top");
+      div03?.style.removeProperty("top");
+    };
+
+    // ── Faza 3 (wspólna iOS + Android): ciągłe odtwarzanie w pętli +
+    // czerwone odcinki na pasku postępu — patrz android-mobile.ts.
+    const progressEl = q(".hero__progress");
+    const progressDot = q(".hero__progress-dot");
+    const phase3Cleanup = initMobilePhase3({
+      hero,
+      vidMax: VID_MAX,
+      growEnd: GROW_END,
+      holdEnd: HOLD_END,
+      videos: [
+        { video: lapVideo, el: refs.laptop, zone: LAP_ZONE },
+        { video: phVideo, el: refs.phone, zone: PH_ZONE },
+      ],
+      progressEl,
+      progressDot,
+      barStartVh: LAP_ZONE.start,
+      barEndVh: PH_ZONE.end,
+    });
+
+    return () => {
+      cleanup(b)();
+      phase3Cleanup();
+      captionGrowthCleanup();
+      cleanupDividers();
+      hero?.style.removeProperty("min-height");
+      stopReset(lapVideo);
+      stopReset(phVideo);
+      refs.laptop?.style.setProperty("--vid-scale", "1");
+      refs.phone?.style.setProperty("--vid-scale", "1");
+      refs.laptop?.style.setProperty("--sl-lap", "0px");
+      refs.phone?.style.setProperty("--sl-ph", "0px");
+      refs.laptop?.style.setProperty("--sz-lap", "0px");
+      refs.phone?.style.setProperty("--sz-ph", "0px");
+    };
+  });
 </script>
