@@ -63,13 +63,27 @@ const FREEZE_CSS = `
 `;
 
 async function assertServer() {
+  let html;
   try {
     const res = await fetch(BASE_URL, { redirect: "follow" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    html = await res.text();
   } catch (e) {
     console.error(
       `Serwer nie odpowiada pod ${BASE_URL} (${e.message}).\n` +
         `Uruchom najpierw: pnpm build && pnpm preview (lub ustaw BASE_URL).`,
+    );
+    process.exit(1);
+  }
+  // Strażnik: baseline jest robiony na PREVIEW (build produkcyjny). Jeśli na
+  // porcie siedzi dev server (np. odpalony do testów na telefonie), diff
+  // porówna dev z preview i zgłosi fałszywe regresje. Astro dev wstrzykuje
+  // klienta Vite — wykrywamy i przerywamy.
+  if (html.includes("/@vite/client")) {
+    console.error(
+      `Pod ${BASE_URL} działa DEV SERVER (wykryto /@vite/client) — harness ` +
+        `wymaga preview.\nZostaw dev na 4321 i odpal: pnpm preview --port 4399, ` +
+        `potem BASE_URL=http://localhost:4399 node scripts/verify-hero.mjs`,
     );
     process.exit(1);
   }

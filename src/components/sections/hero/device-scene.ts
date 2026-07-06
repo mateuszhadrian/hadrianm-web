@@ -169,6 +169,26 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
   // pasek bazy, perspective-origin itd. — analityka tu nie wystarcza).
   const centerGroup = () => {
     if (!camera || !laptop || !phone || !fitEl) return;
+    // 0) SNAPSHOT zmiennych animowanych przez timeline — pomiar wymaga stanu
+    //    spoczynku, ale nie może go bezpowrotnie NARZUCIĆ. Na desktopie po
+    //    resize ScrollTrigger.refresh i tak re-renderuje scrub, ale na mobile
+    //    ignoreMobileResize blokuje refresh — wyzerowane offsety wjazdu
+    //    zostawały na stałe i urządzenia pojawiały się na środku ekranu
+    //    (objaw: iPhone po zimnym cache / resize toolbara).
+    const snap = (el: HTMLElement, names: string[]) =>
+      names.map((n) => [el, n, el.style.getPropertyValue(n)] as const);
+    const saved = [
+      ...snap(camera, ["--cx", "--cy"]),
+      ...snap(laptop, ["--sl-lap", "--sz-lap", "--apart-lap", "--lap-yaw"]),
+      ...snap(phone, [
+        "--sl-ph",
+        "--sz-ph",
+        "--apart-ph",
+        "--ph-dx",
+        "--ph-dy",
+        "--ph-dz",
+      ]),
+    ];
     // 1) wyzeruj offsety (centrujący + wjazd + morph) i ustaw bazowy kąt kamery,
     //    aby zmierzyć naturalny środek grupy w klatce B (spoczynek).
     //    Uwaga: celowo BEZ --lap-pitch (historyczna semantyka tego pomiaru).
@@ -203,6 +223,10 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
     camera.style.setProperty(
       "--gy",
       (-(groupCy - camCy) / k).toFixed(2) + "px",
+    );
+    // 3) przywróć stan sprzed pomiaru (--gx/--gy to wyniki — zostają nowe)
+    saved.forEach(([el, n, v]) =>
+      v ? el.style.setProperty(n, v) : el.style.removeProperty(n),
     );
   };
 

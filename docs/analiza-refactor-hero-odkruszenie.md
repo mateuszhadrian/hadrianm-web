@@ -165,6 +165,62 @@ Przeniesienie MECHANICZNE (zero zmian logiki), moduły w `hero/`:
 Emulacja Playwright NIE wykrywa: limitu warstwy GPU (Android), zachowań
 Low Power Mode, realnej termiki dekodera — stąd powyższa tabela.
 
+## 4a. Interwencja 2026-07-06 (po kroku 3): iPhone, zimny cache — dwa objawy
+
+Zgłoszone na produkcji (iPhone 15 Pro, po wyczyszczeniu danych przeglądania):
+(1) hero odpinało się ~w połowie strefy telefonu na pasku; (2) urządzenia
+widoczne od wejścia na stronę, znikały po chwili scrollowania. Oba objawy to
+PRE-ISTNIEJĄCE wyścigi, które ujawnia dopiero zimny cache (późny
+`window.load` przez duże MP4) — nie regresja kroków 1–3.
+
+Przyczyny i naprawy (wszystkie trzy wdrożone):
+
+1. **Rozjazd metryk svh ↔ innerHeight.** Wysokość sekcji była w `svh`
+   (stabilne), a strefy/scrub liczą z `window.innerHeight` (rośnie ~15% po
+   zwinięciu toolbara iOS). Późny refresh ScrollTriggera (window.load po
+   zimnym cache, już po zwinięciu toolbara) rozciągał strefy, sekcja stała
+   w miejscu → wczesne odpięcie (wyliczone: kulka na ~83% paska = ~52%
+   w głąb strefy telefonu — zgodne z obserwacją). FIX: min-height w PX
+   z `window.innerHeight` (ta sama metryka co triggery), przeliczany na
+   `refreshInit` — obie gałęzie; przy starcie px ≡ dawnym svh (harness:
+   identyczne wartości inline).
+2. **`centerGroup()` bezpowrotnie zerował offsety wjazdu** (`--sl-*`,
+   `--sz-*`…) przy pomiarze na resize. Desktop maskował to refreshem
+   (re-render scruba), mobile z `ignoreMobileResize` — nie → urządzenia
+   na środku ekranu do czasu dojechania scruba do tweenów wjazdu.
+   FIX: snapshot → pomiar → restore (wyniki `--gx/--gy` zostają nowe).
+3. **Widoczność wrappera urządzeń włączana bezwarunkowo przy budowie**
+   (`gsap.set(devices, autoAlpha:1)`), zabezpieczona tylko off-screenowymi
+   offsetami. FIX: widoczność bramkowana timeline'em
+   (`tl.set(..., MOB_SETTLE_START)`) — przed wejściem urządzenia nie mogą
+   być widoczne niezależnie od stanu offsetów.
+
+4. **„za Ciebie" poniżej „mówi" na starcie (zgłoszone przy retescie).**
+   Pozycja startowa słowa (from-values scruba) liczona przy budowie
+   timeline'u; font Archivo z zimnego cache doładowuje się później i
+   przesuwa nagłówek (zmierzone: −3,1 px), słowo zostawało na starej
+   pozycji. Desktop miał częściową ochronę (fonts.ready→refresh w karuzeli),
+   mobile żadnej. FIX: w `buildBase` po `document.fonts.ready` dociągnięcie
+   słowa `gsap.set(live, {x,y})` (bez globalnego refresh — zbędny; naturalny
+   refresh przeliczy from-values przez invalidateOnRefresh). Zweryfikowane
+   emulacją z opóźnionymi fontami (route-delay 2,5 s): delta 0,0 px.
+
+Weryfikacja: harness 33/33 = 0.000% diff (w emulacji px ≡ svh, brak zmiany
+wyglądu); sondy inline min-height równe co do piksela wartościom sprzed
+zmiany. Scenariusza „zimny cache + zwijany toolbar iOS" emulacja nie
+odtwarza → wymagany test 📱 na iPhone 15 Pro po wyczyszczeniu danych.
+
+Lekcja operacyjna (utrwalona strażnikiem w verify-hero.mjs): gdy na 4321
+działa dev server (testy na telefonie przez --host), preview się nie
+zbindował i harness porównywał DEV z baseline'em preview → fałszywe FAILe
+(0,5–2% na ekranie telefonu). Harness wykrywa teraz /@vite/client i
+przerywa z instrukcją (preview na 4399 + BASE_URL).
+
+Do kroku 6 (rules): inwariant „wysokość sekcji i triggery scrolla muszą
+dzielić JEDNĄ metrykę viewportu"; wzorzec snapshot/restore przy pomiarach;
+uwaga, że `normalizeScroll` i mechanizm `is-lowpower` NIE istnieją już w
+kodzie (stare notatki wprowadzały w błąd).
+
 ## 5. Czego celowo NIE robimy
 
 - NIE przepisujemy karuzeli na CSS scroll-driven animations.

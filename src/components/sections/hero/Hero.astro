@@ -671,6 +671,21 @@ const splitAccent = (line: string) =>
     tl.to(head, { yPercent: -110, duration: 0.6 }, 0);
     if (scroll) tl.to(scroll, { autoAlpha: 0, duration: 0.12 }, 0);
 
+    // Fonty z zimnego cache doładowują się PO zbudowaniu timeline'u i
+    // przesuwają layout headline'u, a pozycja startowa „za Ciebie" (from-values
+    // scruba) była policzona na starym układzie → słowo lądowało PONIŻEJ
+    // „mówi" (iPhone, świeże dane przeglądania). Po fontach dociągamy słowo
+    // do aktualnego ghosta SAMYM gsap.set — celowo BEZ wymuszania globalnego
+    // ScrollTrigger.refresh(): jest zbędny (stan statyczny naprawia set,
+    // a from-values tweenów przeliczy invalidateOnRefresh przy naturalnym
+    // refreshu — window.load/resize) i niepotrzebnie dotykałby wszystkich
+    // triggerów, w tym proxy-tweenów fazy 3.
+    let disposed = false;
+    document.fonts?.ready.then(() => {
+      if (disposed) return;
+      gsap.set(live, { x: startX(), y: startY() });
+    });
+
     return {
       tl,
       ghost,
@@ -682,6 +697,9 @@ const splitAccent = (line: string) =>
       startY,
       endX,
       endY,
+      dispose: () => {
+        disposed = true;
+      },
     };
   };
 
@@ -701,6 +719,7 @@ const splitAccent = (line: string) =>
   });
 
   const cleanup = (b: Base) => () => {
+    b.dispose();
     b.tl.scrollTrigger?.kill();
     b.tl.kill();
     gsap.set([b.ghost, b.live, b.devices, b.copy, b.scroll].filter(Boolean), {
@@ -1065,7 +1084,13 @@ const splitAccent = (line: string) =>
       0.45,
     );
 
-    gsap.set(devices, { autoAlpha: 1, filter: "none", scale: 1 });
+    // filter/scale sprzątamy od razu, ale WIDOCZNOŚĆ bramkuje timeline:
+    // przed wejściem urządzeń wrapper zostaje ukryty (CSS opacity:0). Chroni
+    // to przed pokazaniem urządzeń na środku ekranu, gdyby resize/refresh
+    // wyzerował offsety wjazdu, zanim scrub dojdzie do ich tweenów
+    // (objaw: iPhone po zimnym cache widział laptop+telefon na starcie).
+    gsap.set(devices, { filter: "none", scale: 1 });
+    tl.set(devices, { autoAlpha: 1 }, MOB_SETTLE_START);
     if (laptop) {
       tl.fromTo(
         laptop,
@@ -1184,9 +1209,21 @@ const splitAccent = (line: string) =>
     }
 
     // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
-    // (1233svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
+    // (1233svh) jest tylko wstępna. Ustawiana w PX z window.innerHeight — tej
+    // samej metryki, z której ScrollTrigger liczy end/strefy — i przeliczana
+    // przy każdym refreshu (refreshInit). Sam svh nie wystarcza: późny refresh
+    // (window.load po zimnym cache) przelicza scrub przy ZWINIĘTYM toolbarze
+    // iOS (innerHeight ≈ +15%), a svh stoi w miejscu → sticky puszczał za
+    // wcześnie. Przy starcie px == DESKTOP_MIN_HEIGHT_SVH (svh ≡ innerHeight
+    // przy rozwiniętym toolbarze).
     const hero = q("#hero");
-    if (hero) hero.style.minHeight = DESKTOP_MIN_HEIGHT_SVH + "svh";
+    const setHeroHeight = () => {
+      if (hero)
+        hero.style.minHeight =
+          (DESKTOP_MIN_HEIGHT_SVH / 100) * window.innerHeight + "px";
+    };
+    setHeroHeight();
+    ScrollTrigger.addEventListener("refreshInit", setHeroHeight);
 
     const refs = deviceRefs();
     const captionCleanup = site ? initCaptionCarousel(b) : null;
@@ -1199,6 +1236,7 @@ const splitAccent = (line: string) =>
       cleanup(b)();
       site?.destroy();
       phoneSite?.destroy();
+      ScrollTrigger.removeEventListener("refreshInit", setHeroHeight);
       hero?.style.removeProperty("min-height");
     };
   });
@@ -1250,10 +1288,18 @@ const splitAccent = (line: string) =>
     const phVideo = setupVideo("[data-gsap='video-phone']");
 
     // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
-    // (1500svh) jest tylko wstępna — tu nadpisujemy ją źródłem prawdy.
-    if (hero) {
-      hero.style.minHeight = MOBILE_MIN_HEIGHT_SVH + "svh";
-    }
+    // (1500svh) jest tylko wstępna. PX z window.innerHeight + refreshInit —
+    // ta sama metryka co triggery stref/paska, żeby odpięcie sticky ZAWSZE
+    // wypadało tuż po dojechaniu kulki (pełne uzasadnienie: analogiczny blok
+    // w gałęzi desktop; objaw naprawiany: iPhone po zimnym cache odpinał
+    // hero w połowie strefy telefonu).
+    const setHeroHeight = () => {
+      if (hero)
+        hero.style.minHeight =
+          (MOBILE_MIN_HEIGHT_SVH / 100) * window.innerHeight + "px";
+    };
+    setHeroHeight();
+    ScrollTrigger.addEventListener("refreshInit", setHeroHeight);
 
     // ── Wzrost tekstów 02/03 (mobile, wspólny iOS + Android) ──────────────
     // Spójnie z desktopową karuzelą: powiększenie + szary→biały + 600→800.
@@ -1399,6 +1445,7 @@ const splitAccent = (line: string) =>
       phase3Cleanup();
       captionGrowthCleanup();
       cleanupDividers();
+      ScrollTrigger.removeEventListener("refreshInit", setHeroHeight);
       hero?.style.removeProperty("min-height");
       stopReset(lapVideo);
       stopReset(phVideo);
