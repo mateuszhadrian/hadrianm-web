@@ -966,6 +966,14 @@ nie duplikować w projekcie.
 
 ## Etap 6 (propozycja) — minimalne testy Playwright
 
+> ℹ️ **Decyzja (2026-07-06): ten etap NIE będzie realizowany z tego
+> dokumentu.** Testy (lokalnie + CI/CD) zostaną wdrożone jako **osobne
+> przedsięwzięcie** z własną analizą — o szerszym zakresie niż poniższy
+> zarys minimum. Poniższa sekcja zostaje wyłącznie jako materiał wejściowy
+> (inwentarz fundamentów i propozycja zakresu). Etap 7 (white-label)
+> startuje dopiero PO tym, jak testy będą działały poprawnie — dziedziczy
+> wtedy kompletną siatkę bezpieczeństwa.
+
 Zgodnie z decyzją: **tylko zarys, bez szczegółowej rozpiski** — do
 osobnej sesji, gdy uznasz za priorytet.
 
@@ -1271,7 +1279,11 @@ Etapy 1+2 można wdrożyć w jednej sesji („fundament"), 3+4 w następnej
       to zachowanie harnessu, nie błąd konfiguracji
 - [x] Etap 5: `.mcp.json` — serwer playwright ładuje się w nowej sesji
       (MCP tools 25→48 w `/context`)
-- [ ] Etap 6: decyzja podjęta (wdrażamy / odkładamy z datą przeglądu)
-- [ ] Etap 7: site-template istnieje, oznaczony jako Template repository,
+- [x] Etap 6: decyzja podjęta (2026-07-06) — testy będą wdrożone OSOBNO
+      (lokalnie + CI/CD, własna analiza), nie z tego dokumentu; zarys w
+      Etapie 6 zostaje jako materiał wejściowy
+- [ ] Etap 7: START dopiero gdy testy z osobnego przedsięwzięcia działają
+      poprawnie (nowa sesja na prośbę Mateusza); site-template istnieje,
+      oznaczony jako Template repository,
       `/init-client` + `/provision-client` przetestowane na próbnym repo
       (np. fikcyjny klient), moduł hero z manifestem
