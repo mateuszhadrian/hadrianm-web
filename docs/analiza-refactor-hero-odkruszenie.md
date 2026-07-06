@@ -249,13 +249,18 @@ kodzie (stare notatki wprowadzały w błąd).
       890→216 linii orkiestracji; zmiany wyłącznie mechaniczne + jawne
       parametry (scene, hero) i deduplikacja heroHeightSync; harness 33/33 =
       0.000% diff; CZEKA na pełny test 📱 na obu telefonach przed commitem)
-- [ ] Krok 5 — `selectors.ts` + głośny dev (2026-07-06: wdrożone — mapa SEL
-      27 selektorów międzyplikowych + devWarnMissing z dedupem; ostrzeżenia
-      w buildBase/deviceRefs/device-scene/karuzeli/fazach mobile/orkiestracji;
-      harness 33/33 = 0.000% diff; DEV-kod wycięty z builda prod (grep 0);
-      smoke-test ostrzeżenia na zepsutym kontrakcie — działa; bez testu 📱
-      zgodnie z tabelą — do odhaczenia po commicie)
-- [ ] Krok 6 — aktualizacja rules / komentarzy
+- [x] Krok 5 — `selectors.ts` + głośny dev (2026-07-06: mapa SEL 27
+      selektorów + devWarnMissing z dedupem; harness 33/33 = 0.000% diff;
+      DEV-kod wycięty z builda prod; smoke-test ostrzeżeń OK; zacommitowane)
+- [x] Krok 6 — aktualizacja rules / komentarzy (2026-07-06: wykonane w
+      `docs/claude-code-ecosystem-initialization.md` — sekcja 0 „Stan repo",
+      skorygowany inwentarz G1–G15 (usunięte martwe mechanizmy:
+      normalizeScroll, is-lowpower, --vh/use-dvh, loader, ?flat/?svh/?dvh),
+      przebudowane rules/hero-device-scene.md i skill /verify-mobile
+      (otoczka verify-hero.mjs), zaktualizowany CLAUDE.md, capture-scripts,
+      moduł white-label. Same pliki .claude/ powstaną przy wykonaniu tego
+      planu w świeżej sesji. Kotwice w kodzie: nagłówki modułów →
+      analiza-refactor; pamięć Claude'a skorygowana 4a/krok 6)
 
 Szacunek: krok 0 — jedna sesja; 1–3 — jedna sesja; 4 — jedna–dwie sesje;
 5–6 — szybkie. Efekt uboczny: czystsza ekstrakcja hero jako modułu

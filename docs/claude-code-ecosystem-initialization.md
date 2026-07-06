@@ -15,6 +15,7 @@
 
 ## Spis treści
 
+0. [Stan repo na start — aktualizacja 2026-07-06](#0-stan-repo-na-start-aktualizacja-2026-07-06--przeczytaj-najpierw)
 1. [Analiza stanu obecnego](#1-analiza-stanu-obecnego)
 2. [Docelowa architektura ekosystemu](#2-docelowa-architektura-ekosystemu)
 3. [Etap 1 — Root CLAUDE.md](#etap-1--root-claudemd)
@@ -25,6 +26,42 @@
 8. [Etap 6 (propozycja) — minimalne testy Playwright](#etap-6-propozycja--minimalne-testy-playwright)
 9. [Etap 7 — White-label: template repo + skille inicjujące](#etap-7--white-label-template-repo--skille-inicjujące)
 10. [Kolejność wdrożenia i utrzymanie](#10-kolejność-wdrożenia-i-utrzymanie)
+
+---
+
+## 0. Stan repo na start (aktualizacja 2026-07-06 — PRZECZYTAJ NAJPIERW)
+
+Między napisaniem tego planu a jego wykonaniem przeprowadzono **refactor
+„odkruszający" hero** (kroki 0–6, pełny opis i status:
+`docs/analiza-refactor-hero-odkruszenie.md`) oraz serię napraw zimnego
+startu na iOS. Sesja wykonująca ten plan startuje więc z nowym stanem:
+
+1. **Hero jest zmodularyzowane.** Inline `<script>` Hero.astro to ~220-liniowy
+   orkiestrator; logika żyje w `src/components/sections/hero/`:
+   `hero-config.ts` (oś scrolla; wartości POCHODNE liczone kodem),
+   `platform.ts` (IS_ANDROID, MOBILE_MAX, ANDROID_DESIGN_SCALE — jedno
+   źródło), `scene-vars.ts` (rejestr protokołu zmiennych CSS),
+   `selectors.ts` (kontrakt selektorów + ostrzeżenia dev),
+   `timeline-base.ts` / `desktop-phases.ts` / `mobile-phases.ts` /
+   `caption-carousel.ts` (fazy), `device-scene.ts`, `android-mobile.ts`.
+2. **Istnieje siatka regresyjna**: `scripts/verify-hero.mjs` — sweep scrolla
+   × 3 profile (desktop / iPhone 14 / Pixel 7), pixel-diff vs baseline w
+   `.hero-verify/` (poza gitem); wymaga PREVIEW i ma strażnika przeciw dev
+   serverowi. Skill `/verify-mobile` (Etap 4) jest OTOCZKĄ na ten skrypt —
+   nie pisze własnych sweepów.
+3. **Część dawnych gotchas jest dziś WYMUSZONA KODEM** — reguły mają je
+   wskazywać, nie dyktować wartości: skala `--k` (platform.ts), oś scrolla
+   i min-height (hero-config + `heroHeightSync`), protokół zmiennych
+   (scene-vars), selektory (selectors), doklejanie „za Ciebie" po fontach
+   (timeline-base).
+4. **Mechanizmy, których JUŻ NIE MA w kodzie** (nie przenosić do reguł ze
+   starych notatek/pamięci!): `ScrollTrigger.normalizeScroll`,
+   `html.is-lowpower` / revert scen (z sondy LPM został wyłącznie toast
+   `LowPowerNotice.astro`), flaga `html.use-dvh` / zmienna `--vh`, loader
+   bootujący, parametry debug `?flat` / `?svh` / `?dvh`.
+5. Sekcja 1.4 i treści plików w Etapach 1–4 są zaktualizowane do tego stanu.
+   Przy wątpliwościach źródłem prawdy jest KOD +
+   `docs/analiza-refactor-hero-odkruszenie.md` (sekcje 1.2, 3, 4a).
 
 ---
 
@@ -41,7 +78,7 @@ jako **statyczny Astro 6** z dwoma językami (PL pod `/`, EN pod `/en/`,
 | Framework | Astro 6 (`output: "static"`), wyspy React 19 (dostępne, prawie nieużywane) |
 | Styling | Tailwind 4 (via `@tailwindcss/vite`) + design tokens w `:root` (`src/styles/global.css`) |
 | Animacje | GSAP 3.15 + ScrollTrigger; Lenis 1.3 (smooth scroll desktop + mobile) |
-| Hero | ~4,8 tys. linii najbardziej dopracowanego i **najbardziej kruchego** kodu (`src/components/sections/hero/`) — scroll-driven scena urządzeń, wideo ekranów, karuzela captionów |
+| Hero | ~5 tys. linii najbardziej dopracowanego kodu (`src/components/sections/hero/`) — scroll-driven scena urządzeń, wideo ekranów, karuzela captionów. Po refactorze „odkruszającym" (2026-07-06): zmodularyzowane (orkiestrator + 8 modułów TS), inwarianty wymuszane kodem, siatka regresyjna `scripts/verify-hero.mjs` |
 | CMS | Sveltia CMS (`public/admin/`) → commituje JSON-y do `src/content/realizacje/` przez GitHub; logowanie przez Worker `sveltia-cms-auth` |
 | Media | Cloudflare R2 (`media.hadrianm.pl`, bucket `hadrianm-media`) + Cloudflare Image Transformations; jedyny punkt wiedzy o rozmiarach: `src/lib/img.ts` (`imgAt()`) |
 | Treść | Content Collections + walidacja Zod (`src/content.config.ts`), pola dwujęzyczne `{pl, en}` |
@@ -49,7 +86,7 @@ jako **statyczny Astro 6** z dwoma językami (PL pod `/`, EN pod `/en/`,
 | CI | GitHub Actions: `format:check` → `lint` → `typecheck` → `build` |
 | Lokalna jakość | husky (`pre-commit`: lint-staged; `commit-msg`: commitlint conventional) |
 | Narzędzia dev | `scripts/capture-device-videos.mjs` (Playwright + ffmpeg + cwebp — nagrywanie MP4 ekranów urządzeń), optymalizatory obrazów (sharp) |
-| Testy | **Brak** — weryfikacja ręczna/screenshotowa |
+| Testy | Brak formalnych testów w CI; jest **siatka regresyjna hero** (`scripts/verify-hero.mjs`: pixel-diff vs baseline, 3 profile) + weryfikacja ręczna na fizycznych urządzeniach |
 
 ### 1.2. Wnioski z historii gita (84 commity)
 
@@ -99,19 +136,21 @@ najwięcej iteracji i **nie wynikają z samego kodu**:
 
 | # | Gotcha | Dziś udokumentowane w | Trafi do |
 |---|---|---|---|
-| G1 | Ciężkie CSS-3D obudowy urządzeń głodzą rasteryzację GPU na Androidzie (znikające captiony/bar) — modele muszą zostać płaskie na mobile | `docs/analiza-android-obudowy-3d-glodza-rasteryzacje.md` | `rules/hero-device-scene.md` |
-| G2 | Scena projektowana w ogromnych design-px przekracza limit rozmiaru warstwy GPU → skala `--k: 0.6` na Androidzie MUSI zostać | `docs/naprawa-android-scena-urzadzen-mobile.md` | `rules/hero-device-scene.md` |
-| G3 | iOS Low Power Mode ≠ `prefers-reduced-motion`; wykrywanie przez probe muted-autoplay → `html.is-lowpower`; `normalizeScroll` zostaje WŁĄCZONY | kod + historia commitów | `rules/hero-device-scene.md` |
-| G4 | iOS decoder potrafi mimowolnie pauzować wideo → oba systemy grają ciągle przez `initMobilePhase3` + pause self-heal; jedyne dopuszczalne splity Android/iOS są render-only (`--k`, dividery) | kod | `rules/hero-device-scene.md` |
-| G5 | Dynamiczny toolbar Androida vs stabilne `svh` → pozycjonowanie przez zmienną `--vh` + flaga `html.use-dvh` (debug `?svh`/`?dvh`) | kod | `rules/hero-device-scene.md` |
+| G1 | Ciężkie CSS-3D obudowy urządzeń głodzą rasteryzację GPU na Androidzie (znikające captiony/bar) — modele MUSZĄ zostać płaskie na mobile (`transform-style: flat`, bez ekstruzji/perspektywy/blur) | `docs/analiza-android-obudowy-3d-glodza-rasteryzacje.md` | `rules/hero-device-scene.md` |
+| G2 | Scena projektowana w dużych design-px przekracza limit rozmiaru warstwy GPU Androida → skala projektowa MUSI zostać. WYMUSZONE KODEM: wartość tylko w `platform.ts` (`ANDROID_DESIGN_SCALE`), CSS dostaje ją przez `--android-design-scale` | `docs/naprawa-android-scena-urzadzen-mobile.md` + `platform.ts` | `rules/hero-device-scene.md` (wskaźnik) |
+| G3 | iOS Low Power Mode ≠ `prefers-reduced-motion` (osobny przełącznik; blokuje autoplay, dławi CPU). Obecna obsługa: wideo gra CIĄGLE z self-heal (`android-mobile.ts`), a sonda LPM istnieje wyłącznie jako toast `LowPowerNotice.astro`. UWAGA: `normalizeScroll` i `html.is-lowpower` NIE istnieją w kodzie — stare notatki o nich są historyczne | kod + skorygowana pamięć | `rules/hero-device-scene.md` |
+| G4 | iOS decoder potrafi mimowolnie pauzować wideo → oba systemy grają ciągle przez `initMobilePhase3` + pause self-heal; jedyne dopuszczalne splity Android/iOS są render-only (skala projektowa, dividery) | kod (`android-mobile.ts`) | `rules/hero-device-scene.md` |
+| G5 | JEDNA METRYKA viewportu: wysokość sekcji hero MUSI być liczona z `window.innerHeight` (px, przeliczane na `refreshInit`) — tej samej metryki co triggery — NIGDY w `svh` z JS. Późny refresh (zimny cache, zwinięty toolbar iOS) rozjeżdżał odpięcie sticky o ~50% strefy telefonu. WYMUSZONE KODEM: `heroHeightSync` w Hero.astro | `docs/analiza-refactor-hero-odkruszenie.md` (4a) | `rules/hero-device-scene.md` (wskaźnik) |
 | G6 | NIGDY nie scalać stałych Lenis desktop (`WHEEL_LERP=0.05`) i touch (`syncTouch`) — regresja `0640aa1`; gate przez `maxTouchPoints`, nie media queries hover/pointer | kod (`smooth-scroll.ts`) | `rules/scroll-lenis.md` |
-| G7 | Loader nie może lockować scrolla przez `overflow: clip` | historia commitów | `rules/hero-device-scene.md` |
-| G8 | Nie ponawiać zablokowanego `video.play()` co klatkę scrolla (judder na iOS LPM) | commit `fb7be64` | `rules/hero-device-scene.md` |
+| G7 | Pomiary geometrii sceny = snapshot → rest → pomiar → restore (nigdy „wyzeruj i zostaw"): na mobile `ignoreMobileResize` blokuje refresh, więc nadpisane zmienne NIE samonaprawiają się — urządzenia lądowały na środku ekranu. WYMUSZONE KODEM: `centerGroup` w device-scene.ts | `docs/analiza-refactor-hero-odkruszenie.md` (4a) | `rules/hero-device-scene.md` (wskaźnik) |
+| G8 | Nie ponawiać zablokowanego `video.play()` co klatkę scrolla (judder na iOS LPM); widoczność elementów wejściowych bramkować timeline'em, nie bezwarunkowym set przy budowie | commit `fb7be64` + `mobile-phases.ts` | `rules/hero-device-scene.md` |
 | G9 | JSON-y realizacji pisze Sveltia (własny formater) — nie edytować ręcznie, nie formatować Prettierem (są w `.prettierignore`) | `.prettierignore` + komentarze | `rules/cms-realizacje.md` + hook guard |
 | G10 | Sveltia wgrywa do R2 **tylko** przez pola Image (nie przez bibliotekę Assets) i **nie kasuje** plików z R2 przy usuwaniu wpisu (osierocone pliki sprząta się ręcznie) | pamięć + `docs/cms-hosting…` | `rules/cms-realizacje.md` |
 | G11 | Zmiana schematu realizacji = trzy miejsca naraz: Zod (`content.config.ts`), panel (`public/admin/config.yml`), komponenty `work/` | struktura kodu | `rules/cms-realizacje.md` |
 | G12 | Capture pipeline: wymaga działającego `pnpm dev` + ffmpeg + cwebp; harness kopiowany chwilowo do `src/pages/capture.astro`; Vite potrafi rzucać 504 po świeżym typechecku; Playwright musi mieć wyłączone reduced-motion | nagłówek skryptu + pamięć | `rules/capture-scripts.md` + skill |
 | G13 | Worker `sveltia-cms-auth` wdrożony ręcznie — nie aktualizuje się sam; sekrety przeżywają redeploy | `docs/optional-todos.md` | CLAUDE.md (link) |
+| G14 | Fonty z zimnego cache przesuwają layout nagłówka PO zbudowaniu timeline'u → pozycje mierzone przy budowie się starzeją. WYMUSZONE KODEM: re-glue „za Ciebie" po `fonts.ready` w `timeline-base.ts` | `docs/analiza-refactor-hero-odkruszenie.md` (4a) | `rules/hero-device-scene.md` (wskaźnik) |
+| G15 | Weryfikacja zmian w hero: OBOWIĄZKOWO `scripts/verify-hero.mjs` (pixel-diff vs baseline; wymaga PREVIEW — dev server daje fałszywe FAILe, jest strażnik) + fizyczne urządzenia dla obszarów, których emulacja nie pokrywa (GPU Androida, LPM, toolbar iOS, zimny cache) | `docs/analiza-refactor-hero-odkruszenie.md` (krok 0, 4a) | `rules/hero-device-scene.md` + skill `/verify-mobile` |
 
 ---
 
@@ -209,11 +248,15 @@ deploy automatyczny z gałęzi `main` → **main = produkcja**.
 
 ## Mapa projektu
 
-- `src/components/sections/hero/` — scroll-driven scena urządzeń, ~5 tys.
-  linii, NAJBARDZIEJ KRUCHY kod w repo (platform-specific gotchas iOS/
-  Android). Przed edycją przeczytaj reguły, które się załadują, i podlinkowane
-  analizy w `docs/`. Zmian NIE uznaje się za zweryfikowane bez sprawdzenia
-  mobile (skill `/verify-mobile`).
+- `src/components/sections/hero/` — scroll-driven scena urządzeń (platform-
+  specific gotchas iOS/Android). Architektura: `Hero.astro` = orkiestrator;
+  moduły: `hero-config.ts` (oś scrolla — POCHODNE liczy kod), `platform.ts`
+  (detekcja + skala Androida), `scene-vars.ts` (protokół zmiennych CSS),
+  `selectors.ts` (kontrakt selektorów), `timeline-base` / `desktop-phases` /
+  `mobile-phases` / `caption-carousel` (fazy), `device-scene`,
+  `android-mobile`. Przed edycją przeczytaj reguły, które się załadują.
+  Zmiana NIE jest zweryfikowana bez `scripts/verify-hero.mjs` (pixel-diff
+  vs baseline; skill `/verify-mobile`).
 - `src/components/sections/work/` — Realizacje: dane z Content Collections
   (`src/content/realizacje/*.json`, schema Zod w `src/content.config.ts`).
 - `src/scripts/smooth-scroll.ts` — Lenis; stałe desktop/touch są rozdzielone
@@ -233,11 +276,17 @@ deploy automatyczny z gałęzi `main` → **main = produkcja**.
   numerowane etapy.
 - Media realizacji żyją w R2 (`https://media.hadrianm.pl`), NIE w repo.
   Upload wyłącznie przez pola Image w panelu Sveltia.
-- Weryfikacja wizualna: headless Playwright/Chrome + screenshoty; projekty
-  mobile sprawdzaj na profilach iPhone i Pixel (skill `/verify-mobile`).
+- Weryfikacja wizualna: hero → `scripts/verify-hero.mjs` (baseline w
+  `.hero-verify/`; WYMAGA preview, nie dev — skrypt ma strażnika); reszta →
+  headless Playwright/Chrome + screenshoty na profilach iPhone i Pixel.
+  Emulacja NIE wykrywa: limitu warstwy GPU Androida, Low Power Mode,
+  zwijanego toolbara iOS, zimnego cache — tam poproś Mateusza o test na
+  fizycznym urządzeniu i wskaż, na co patrzeć.
 
 ## Kluczowe dokumenty (czytaj przed pracą w danym obszarze)
 
+- Hero — refactor, inwarianty, naprawy zimnego startu iOS:
+  `docs/analiza-refactor-hero-odkruszenie.md` (NAJWAŻNIEJSZY dla pracy w hero)
 - Hero/Android: `docs/analiza-android-obudowy-3d-glodza-rasteryzacje.md`,
   `docs/naprawa-android-scena-urzadzen-mobile.md`
 - Architektura sekcji/tła: `docs/architektura-sekcje-tla-hero-i-kolejne.md`,
@@ -468,55 +517,80 @@ paths:
 
 # Hero / scena urządzeń — reguły krytyczne
 
-Najbardziej kruchy kod w repo. Każda z poniższych zasad to naprawiona
-kosztowna regresja — NIE cofaj ich „przy okazji" refaktorów.
+Najbardziej wrażliwy kod w repo. Każda zasada = naprawiona kosztowna
+regresja — NIE cofaj ich „przy okazji" refaktorów. Mapa modułów i pełna
+historia: `docs/analiza-refactor-hero-odkruszenie.md`.
+
+## Jedno źródło prawdy (inwarianty wymuszane kodem — nie duplikuj wartości)
+
+- Oś scrolla (fazy, strefy, długości): `hero-config.ts`. Wartości POCHODNE
+  (`CAP_END`, `*_MIN_HEIGHT_SVH`) liczy kod — nigdy nie wpisuj wyników
+  ręcznie do CSS/komentarzy (svh w CSS to tylko fallback przed hydracją).
+- Platforma: `platform.ts` (`IS_ANDROID`, `MOBILE_MAX` — literały 760/761
+  w media queries CSS mają komentarze „zmieniaj razem",
+  `ANDROID_DESIGN_SCALE` — CSS dostaje ją przez `--android-design-scale`).
+- Protokół zmiennych CSS sceny (`--sl-*`, `--apart-*`, `--vid-scale`…):
+  rejestr `scene-vars.ts`; wartości spoczynkowe = defaulty w CSS
+  DeviceScene.astro. Nowa zmienna → dopisz do rejestru, cleanupy pokryją.
+- Selektory międzyplikowe: `selectors.ts` (SEL) — zmiana klasy w markupie =
+  zmiana jednej stałej; brak węzła loguje ostrzeżenie w dev.
+
+## Metryki viewportu (iOS/Android — NAJCZĘSTSZE źródło regresji)
+
+- Wysokość sekcji hero i triggery ScrollTriggera MUSZĄ dzielić JEDNĄ
+  metrykę: px z `window.innerHeight`, przeliczane w `refreshInit`
+  (`heroHeightSync` w Hero.astro). NIGDY `svh` z JS — późny refresh
+  (zimny cache → `window.load` po zwinięciu toolbara iOS) rozjeżdżał
+  odpięcie sticky o pół strefy telefonu.
+- Pomiary geometrii sceny: snapshot → rest → pomiar → restore (wzorzec w
+  `centerGroup`, device-scene.ts). Na mobile `ignoreMobileResize` blokuje
+  refresh, więc nadpisane zmienne NIE samonaprawiają się.
+- Widoczność elementów wejściowych bramkuj TIMELINE'em
+  (`tl.set(..., START)`), nie bezwarunkowym `gsap.set` przy budowie.
+- Pozycje mierzone przy budowie starzeją się po doładowaniu fontów —
+  wzorzec re-glue po `document.fonts.ready` jest w `buildBase`
+  (timeline-base.ts); nie wymuszaj tam globalnego `ScrollTrigger.refresh()`.
 
 ## Architektura render (Android/iOS)
 
-- Obudowy urządzeń na mobile są PŁASKIE (bez perspective/blur/extrusion).
-  Ciężkie CSS-3D głodziło rasteryzację GPU na Androidzie → znikające
-  captiony i progress bar. Pełna analiza:
-  `docs/analiza-android-obudowy-3d-glodza-rasteryzacje.md`. Debug: `?flat`.
-- Skala design-px `--k: 0.6` na Androidzie MUSI zostać — scena projektowana
-  w ogromnych design-px przekraczała limit rozmiaru warstwy GPU (obcinany
-  spód telefonu). Fit kompensuje automatycznie. Spec:
+- Obudowy urządzeń na mobile są PŁASKIE (`transform-style: flat`, bez
+  ekstruzji/perspektywy/blur). Ciężkie CSS-3D głodziło rasteryzację GPU na
+  Androidzie → znikające captiony i progress bar. Analiza:
+  `docs/analiza-android-obudowy-3d-glodza-rasteryzacje.md`.
+- Skala projektowa na Androidzie MUSI zostać (limit rozmiaru warstwy GPU —
+  obcinany spód telefonu); `fit()` kompensuje. Spec:
   `docs/naprawa-android-scena-urzadzen-mobile.md`.
-- Jedyne dopuszczalne rozjazdy Android vs iOS są RENDER-ONLY (`--k`,
-  dividery). Logika odtwarzania wideo jest wspólna i MA taka zostać.
+- Jedyne dopuszczalne rozjazdy Android vs iOS są RENDER-ONLY (skala
+  projektowa, dividery). Logika odtwarzania wideo jest wspólna i MA zostać.
 
 ## Wideo ekranów (mobile)
 
 - Oba systemy grają wideo CIĄGLE przez `initMobilePhase3` + self-heal na
-  mimowolne pauzy dekodera iOS. Czerwone odcinki na progress barze są
-  wyłącznie wizualne.
-- NIGDY nie ponawiaj zablokowanego `video.play()` co klatkę scrolla —
-  powodowało judder na iOS Low Power Mode.
-
-## iOS Low Power Mode
-
-- LPM ≠ `prefers-reduced-motion`. Wykrywanie: probe muted-autoplay
-  (`public/lpm-probe.mp4`) → klasa `html.is-lowpower` → uproszczone sceny
-  GSAP. `ScrollTrigger.normalizeScroll` zostaje WŁĄCZONY — wyłączenie
-  psuło dotyk (gubione gesty, ucinane momentum).
-
-## Viewport / pozycjonowanie
-
-- Android: dynamiczny toolbar vs stabilne `svh` → pozycje liczone przez
-  zmienną `--vh` + flaga `html.use-dvh`. Debug: `?svh` / `?dvh` w URL.
-- Loader NIE może lockować scrolla przez `overflow: clip`.
+  mimowolne pauzy dekodera iOS. Czerwone odcinki paska = czysto wizualne.
+- NIGDY nie ponawiaj zablokowanego `video.play()` co klatkę scrolla.
+- iOS Low Power Mode ≠ `prefers-reduced-motion` (osobny przełącznik);
+  jedyna obsługa LPM to toast `LowPowerNotice.astro`. UWAGA: mechanizmy
+  `normalizeScroll` / `html.is-lowpower` / `--vh` / `use-dvh` / loader /
+  `?flat` NIE istnieją w kodzie — jeśli stara notatka je nakazuje, jest
+  nieaktualna.
 
 ## Sekwencja captionów (desktop)
 
-- Karuzela 7 punktów: faza A (swap) → faza B (center-pinned scroll);
-  `CAP_END` zsynchronizowane z `doghouse.webp`
-  (`DOG_SITE_PROGRESS = 0.934`). Zmieniasz jedno — sprawdź drugie.
+- Karuzela: faza A (swap) → faza B (center-pinned scroll); koniec
+  zsynchronizowany z `doghouse.webp` przez `DOG_SITE_PROGRESS` w
+  hero-config.ts (`CAP_END` = pochodna — zmieniasz próg, reszta się liczy).
 
-## Weryfikacja
+## Weryfikacja (obowiązkowa dla KAŻDEJ zmiany w tym katalogu)
 
-Zmiana w tym katalogu NIE jest skończona bez sprawdzenia na profilach
-mobile (iPhone + Pixel) — użyj skilla `/verify-mobile`. Po zmianach w
-`LaptopSite`/`PhoneSite` może być potrzebna regeneracja wideo:
-`/capture-devices`.
+1. `scripts/verify-hero.mjs` vs baseline (skill `/verify-mobile`) — wymaga
+   PREVIEW, nie dev (skrypt ma strażnika); zamierzona zmiana wyglądu =
+   nowy baseline (`--baseline`) po akceptacji.
+2. Emulacja NIE pokrywa: limitu warstwy GPU Androida, LPM, zwijanego
+   toolbara iOS, zimnego cache (czyszczenie danych przeglądania) — przy
+   zmianach w tych obszarach poproś Mateusza o test na fizycznych
+   urządzeniach (tabela: `docs/analiza-refactor-hero-odkruszenie.md` §4).
+3. Po zmianach w `LaptopSite`/`PhoneSite` — regeneracja wideo:
+   `/capture-devices`.
 ````
 
 **Krok 3.2.** Utwórz `.claude/rules/scroll-lenis.md`:
@@ -614,6 +688,18 @@ paths:
 - Po nagraniu weryfikuj `ffprobe` (wymiary, fps, czas) i rozmiar plików —
   pipeline enkoduje dwuprzebiegowo pod twardy limit wagi.
 - Preferowane wejście: skill `/capture-devices` (ma pre-checki).
+
+## Siatka regresyjna hero (`verify-hero.mjs`)
+
+- `--baseline` zapisuje wzorzec do `.hero-verify/baseline/` (poza gitem);
+  bez flagi porównuje pixel-diffem (obrazy różnic → `.hero-verify/diff/`).
+- WYMAGA preview builda: `pnpm build && pnpm preview --port 4399` +
+  `BASE_URL=http://localhost:4399` (na 4321 często wisi dev server do
+  testów na telefonie — skrypt wykrywa `/@vite/client` i przerwie).
+- Determinizm: skrypt sam wyłącza czasowe animacje CSS i chowa piksele
+  wideo (odtwarzanie sprawdza funkcjonalnie — log `paused`/`currentTime`).
+- Zamierzona zmiana wyglądu hero = po akceptacji przez Mateusza nagraj
+  nowy baseline.
 ````
 
 **Krok 3.5.** Weryfikacja: nowa sesja → poproś o otwarcie
@@ -727,48 +813,45 @@ ls -la public/drewelomet/video/ 2>/dev/null
 ````markdown
 ---
 name: verify-mobile
-description: Weryfikacja hero i strony na profilach mobilnych (iPhone + Pixel) przez Playwright — screenshoty faz scrolla, obecność captionów i progress bara. Użyj po KAŻDEJ zmianie w src/components/sections/hero/ oraz przed release.
+description: Weryfikacja regresyjna hero przez scripts/verify-hero.mjs — sweep scrolla × 3 profile (desktop/iPhone/Pixel), pixel-diff vs baseline. Użyj po KAŻDEJ zmianie w src/components/sections/hero/ oraz przed release.
 ---
 
-Zweryfikuj bieżący stan strony na urządzeniach mobilnych. Zmiany w hero
-NIE są skończone bez tego kroku.
+Zweryfikuj hero istniejącym harnessem (NIE pisz własnych sweepów —
+`scripts/verify-hero.mjs` jest siatką regresyjną z baseline'em).
 
-## 1. Serwer
+## 1. Serwer — preview, NIGDY dev
 
-Preferuj `pnpm build && pnpm preview` (bliżej produkcji). Dev server
-dopuszczalny do szybkich iteracji.
+```!
+lsof -nP -iTCP:4321 -sTCP:LISTEN | tail -1
+ls .hero-verify/baseline 2>/dev/null | head -3 || echo "BRAK BASELINE"
+```
 
-## 2. Sweep Playwright
+- Baseline był robiony na buildzie produkcyjnym; dev server daje fałszywe
+  FAILe (skrypt wykrywa `/@vite/client` i przerwie z instrukcją).
+- Na 4321 często wisi dev do testów na telefonie — nie ubijaj go bez
+  pytania; użyj: `pnpm build && pnpm preview --port 4399 &`, potem
+  `BASE_URL=http://localhost:4399`.
 
-Napisz do scratchpada i uruchom skrypt Node (playwright jest w
-devDependencies), który dla profili `devices['iPhone 14']` i
-`devices['Pixel 7']`:
+## 2. Przebieg
 
-1. otwiera `/` (PL) i `/en/`,
-2. czeka na pełny load + 1 s,
-3. scrolluje przez fazy hero (np. progres 0 / 0.25 / 0.5 / 0.75 / 1.0
-   wysokości sekcji hero) z krótkim settle po każdym kroku,
-4. robi screenshot po każdym kroku do scratchpada,
-5. loguje: czy captiony są widoczne, czy progress bar istnieje, czy
-   elementy `video` nie są w stanie `paused` w fazie odtwarzania,
-   błędy z konsoli przeglądarki.
+- Porównanie: `BASE_URL=... node scripts/verify-hero.mjs` — oczekiwane
+  „Zero różnic" przy zmianach behawioralnie neutralnych.
+- Brak baseline'u: najpierw `--baseline` na czystym stanie (main przed
+  Twoimi zmianami), potem porównanie.
+- Raport skryptu obejmuje też funkcjonalny stan wideo (`x/2 gra`) i błędy
+  konsoli — czytaj całość, nie tylko FAIL/OK.
 
-Wzorce sterowania sceną znajdziesz w `scripts/capture-device-videos.mjs`
-i `scripts/verify-mobile-videos.mjs`.
+## 3. Interpretacja
 
-UWAGA: nie emuluj `prefers-reduced-motion: reduce` (bramka w BaseLayout
-wyłączyłaby animacje) — chyba że celowo testujesz ścieżkę reduced.
-
-## 3. Ocena
-
-Obejrzyj screenshoty (Read) i oceń wizualnie: brak obciętego spodu
-telefonu (gotcha `--k`), captiony/bar widoczne na Androidzie, dividery
-zakotwiczone do spodów urządzeń. Raport: co sprawdzono, co przeszło,
-co wygląda podejrzanie (z załączonymi screenshotami).
-
-Ograniczenie: emulacja NIE wykryje problemów zależnych od realnego GPU /
-Low Power Mode — przy zmianach w tych obszarach poproś Mateusza o test na
-fizycznym iPhone/Android i wskaż, na co ma patrzeć.
+- FAIL → obejrzyj obraz różnic w `.hero-verify/diff/` (Read) i oceń: to
+  regresja czy ZAMIERZONA zmiana wyglądu? Zamierzona → pokaż Mateuszowi
+  diff, po akceptacji nagraj nowy baseline (`--baseline`).
+- Emulacja NIE wykrywa: limitu warstwy GPU Androida, Low Power Mode,
+  zwijanego toolbara iOS, zimnego cache. Przy zmianach w tych obszarach
+  poproś Mateusza o test na fizycznych urządzeniach (co dokładnie
+  sprawdzić: tabela §4 w docs/analiza-refactor-hero-odkruszenie.md).
+- Nie emuluj `prefers-reduced-motion: reduce` (bramka w BaseLayout
+  wyłączyłaby animacje) — chyba że celowo testujesz ścieżkę reduced.
 ````
 
 **Krok 4.4.** `.claude/skills/release-check/SKILL.md`:
@@ -801,7 +884,8 @@ Uruchom `pnpm preview` i sprawdź:
 - `robots.txt` blokuje `/admin`; `sitemap-index.xml` istnieje w dist;
 - meta OG (`og-image.png`, tytuły PL/EN) obecne w HTML;
 - brak odwołań do `localhost`/portów dev w dist (grep);
-- jeśli zmieniano hero: odpal `/verify-mobile`.
+- jeśli zmieniano hero: `/verify-mobile` (harness `scripts/verify-hero.mjs`
+  vs baseline) — obowiązkowo.
 
 ## 4. Raport
 
@@ -854,13 +938,17 @@ nie duplikować w projekcie.
 Zgodnie z decyzją: **tylko zarys, bez szczegółowej rozpiski** — do
 osobnej sesji, gdy uznasz za priorytet.
 
+Fundament już istnieje: `scripts/verify-hero.mjs` (pixel-diff regresyjny
+hero, uruchamiany ręcznie/skillem) oraz wydzielona czysta arytmetyka
+karuzeli (`caption-carousel.ts: render(u)`) gotowa pod testy jednostkowe.
 Proponowany zakres minimum (3–5 testów, `@playwright/test`):
 render PL/EN (status + widoczny H1), otwarcie modala realizacji (desktop)
 i bottom sheet (mobile profile), przejście przez fazy scrolla hero bez
-błędów konsoli. Zysk: skill `/verify-mobile` i `/release-check` dostają
-obiektywną podstawę, CI łapie regresje renderu, a white-label dziedziczy
-siatkę bezpieczeństwa. Koszt: +1 job w CI (~2–3 min), utrzymanie selektorów.
-Kiedy wrócić do tematu: przy pierwszym prawdziwym kliencie white-label.
+błędów konsoli; opcjonalnie job CI odpalający verify-hero na preview.
+Zysk: `/release-check` dostaje obiektywną podstawę, CI łapie regresje
+renderu, a white-label dziedziczy siatkę bezpieczeństwa. Koszt: +1 job
+w CI (~2–3 min), utrzymanie selektorów (ułatwione: kontrakt w
+`selectors.ts`). Kiedy wrócić: przy pierwszym prawdziwym kliencie.
 
 ---
 
@@ -927,7 +1015,7 @@ i18n + smooth-scroll + CI + husky + `.claude/`. Moduły ponad rdzeń:
 
 | Moduł | Pliki źródłowe (w hadrianm-web) | Kiedy włączać |
 |---|---|---|
-| **hero-device-scene** | `src/components/sections/hero/*` (DeviceScene, LaptopSite, PhoneSite + ich .ts), `scripts/capture-*.{mjs,astro}`, `scripts/verify-mobile-videos.mjs`, assety showcase, rules `hero-device-scene.md` + `capture-scripts.md`, skille `capture-devices` + `verify-mobile` | klient płaci za stronę z animowanym showcase |
+| **hero-device-scene** | cały `src/components/sections/hero/` (orkiestrator Hero.astro + moduły: hero-config, platform, scene-vars, selectors, timeline-base, desktop/mobile-phases, caption-carousel, device-scene, android-mobile, LaptopSite/PhoneSite), `scripts/capture-*.{mjs,astro}`, `scripts/verify-hero.mjs` + `scripts/verify-mobile-videos.mjs`, assety showcase, rules `hero-device-scene.md` + `capture-scripts.md`, skille `capture-devices` + `verify-mobile` | klient płaci za stronę z animowanym showcase |
 | **ambient-bg** | `src/components/backgrounds/*`, `src/scripts/bg-crossfade.ts`, `scripts/capture-ambient-bg.mjs` | strony z animowanym tłem |
 | **simple-hero** (do napisania) | prosta wersja hero bez sceny urządzeń — domyślna w template | zawsze (rdzeń) |
 
