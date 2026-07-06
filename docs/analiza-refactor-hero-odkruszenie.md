@@ -244,7 +244,11 @@ kodzie (stare notatki wprowadzały w błąd).
       miejscach — semantyka remove vs set zachowana 1:1, centerGroup celowo
       nadal bez --lap-pitch; harness 33/33 = 0.000% diff; bez testu 📱
       zgodnie z tabelą)
-- [ ] Krok 4 — rozbicie monolitu 📱
+- [ ] Krok 4 — rozbicie monolitu 📱 (2026-07-06: wdrożone — timeline-base /
+      desktop-phases / caption-carousel / mobile-phases; Hero.astro script
+      890→216 linii orkiestracji; zmiany wyłącznie mechaniczne + jawne
+      parametry (scene, hero) i deduplikacja heroHeightSync; harness 33/33 =
+      0.000% diff; CZEKA na pełny test 📱 na obu telefonach przed commitem)
 - [ ] Krok 5 — `selectors.ts` + głośny dev
 - [ ] Krok 6 — aktualizacja rules / komentarzy
 

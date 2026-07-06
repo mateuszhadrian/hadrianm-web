@@ -564,9 +564,14 @@ const splitAccent = (line: string) =>
 </style>
 
 <script>
+  // ORKIESTRATOR sceny hero (krok 4 refactoru — docs/analiza-refactor-hero-
+  // odkruszenie.md). Logika żyje w modułach: timeline-base (scrub + refy),
+  // desktop-phases / mobile-phases / caption-carousel (fazy), device-scene
+  // (geometria 3D), android-mobile (faza 3 mobile: wideo + pasek),
+  // hero-config (oś scrolla), platform (detekcja), scene-vars (protokół CSS).
   import { gsap } from "gsap";
   import { ScrollTrigger } from "gsap/ScrollTrigger";
-  import { initDeviceScene, FRAME_C } from "./device-scene";
+  import { initDeviceScene } from "./device-scene";
   import { initLaptopSite, type LaptopSiteApi } from "./laptop-site";
   import { initPhoneSite, type PhoneSiteApi } from "./phone-site";
   import { initMobilePhase3 } from "./android-mobile";
@@ -576,22 +581,27 @@ const splitAccent = (line: string) =>
     DESKTOP_MQ,
     ANDROID_DESIGN_SCALE,
   } from "./platform";
-  import { setRest, removeVars } from "./scene-vars";
+  import { setRest } from "./scene-vars";
+  import { q, buildBase, deviceRefs, cleanup } from "./timeline-base";
+  import {
+    phase1Desktop,
+    phase2Desktop,
+    phase3Desktop,
+    phase3PhoneDesktop,
+  } from "./desktop-phases";
+  import { initCaptionCarousel } from "./caption-carousel";
+  import {
+    phase1Mobile,
+    phase2Mobile,
+    initCaptionGrowth,
+    initDividers,
+  } from "./mobile-phases";
   import {
     DESKTOP_SCREENS,
     DESKTOP_SCREENS_FALLBACK,
-    PH3_START,
-    DREWELOMET_DUR,
-    PHONE_START,
-    PHONE_END,
-    CAP_START,
-    CAP_END,
     DESKTOP_MIN_HEIGHT_SVH,
     SCROLL_SCALE,
     MOBILE_SCREENS_BASE,
-    MOB_SETTLE_START,
-    MOB_SETTLE_DUR,
-    MOB_SETTLE_EASE,
     MOB_ENTRY_Z_PX,
     VID_MAX,
     GROW_END,
@@ -599,8 +609,6 @@ const splitAccent = (line: string) =>
     LAP_ZONE,
     PH_ZONE,
     MOBILE_MIN_HEIGHT_SVH,
-    GAP_LAP_DIV,
-    GAP_PH_DIV,
   } from "./hero-config";
 
   gsap.registerPlugin(ScrollTrigger);
@@ -624,557 +632,23 @@ const splitAccent = (line: string) =>
   /* ── Animacja sterowana scrollem (tylko gdy ruch dozwolony) ── */
   const mm = gsap.matchMedia();
 
-  const q = <T extends HTMLElement = HTMLElement>(s: string) =>
-    document.querySelector<T>(s);
-  const buildBase = (screens: number) => {
-    const hero = q("#hero");
-    const stage = q(".hero__stage");
-    const head = q(".hero__head");
-    const ghost = q(".hero__accent--ghost");
-    const live = q(".hero__accent--live");
-    const devices = q(".hero__devices");
-    const copy = q(".hero__copy");
-    const scroll = q(".hero__scroll");
-    if (!hero || !stage || !head || !ghost || !live || !devices) return null;
-
-    const rect = () => {
-      const g = ghost.getBoundingClientRect();
-      const h = head.getBoundingClientRect();
-      return {
-        left: g.left - h.left,
-        top: g.top - h.top,
-        width: g.width,
-        height: g.height,
-      };
+  // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartości w CSS
+  // (1233svh / 1500svh) są tylko wstępne. PX z window.innerHeight — tej samej
+  // metryki, z której ScrollTrigger liczy end/strefy — przeliczane przy każdym
+  // refreshu (refreshInit). Sam svh nie wystarcza: późny refresh (window.load
+  // po zimnym cache) przelicza scrub przy ZWINIĘTYM toolbarze iOS
+  // (innerHeight ≈ +15%), a svh stoi w miejscu → sticky puszczał za wcześnie
+  // (w połowie strefy telefonu). Przy starcie px == wartość svh.
+  const heroHeightSync = (hero: HTMLElement | null, svh: number) => {
+    const set = () => {
+      if (hero) hero.style.minHeight = (svh / 100) * window.innerHeight + "px";
     };
-    const startX = () => rect().left;
-    const startY = () => rect().top;
-    const endX = () => stage.clientWidth / 2 - rect().width / 2;
-    const endY = () => stage.clientHeight / 2 - rect().height / 2;
-
-    // ghost znika wizualnie, ale zostaje w drzewie dostępności (opacity, nie visibility)
-    gsap.set(ghost, { opacity: 0 });
-
-    const tl = gsap.timeline({
-      defaults: { ease: "none" },
-      scrollTrigger: {
-        trigger: hero,
-        start: "top top",
-        end: () => "+=" + window.innerHeight * screens,
-        scrub: true,
-        invalidateOnRefresh: true,
-        onUpdate: (self) =>
-          live.classList.toggle("is-wave-paused", self.progress > 0.3),
-      },
-    });
-
-    tl.to(head, { yPercent: -110, duration: 0.6 }, 0);
-    if (scroll) tl.to(scroll, { autoAlpha: 0, duration: 0.12 }, 0);
-
-    // Fonty z zimnego cache doładowują się PO zbudowaniu timeline'u i
-    // przesuwają layout headline'u, a pozycja startowa „za Ciebie" (from-values
-    // scruba) była policzona na starym układzie → słowo lądowało PONIŻEJ
-    // „mówi" (iPhone, świeże dane przeglądania). Po fontach dociągamy słowo
-    // do aktualnego ghosta SAMYM gsap.set — celowo BEZ wymuszania globalnego
-    // ScrollTrigger.refresh(): jest zbędny (stan statyczny naprawia set,
-    // a from-values tweenów przeliczy invalidateOnRefresh przy naturalnym
-    // refreshu — window.load/resize) i niepotrzebnie dotykałby wszystkich
-    // triggerów, w tym proxy-tweenów fazy 3.
-    let disposed = false;
-    document.fonts?.ready.then(() => {
-      if (disposed) return;
-      gsap.set(live, { x: startX(), y: startY() });
-    });
-
-    return {
-      tl,
-      ghost,
-      live,
-      devices,
-      copy,
-      scroll,
-      startX,
-      startY,
-      endX,
-      endY,
-      dispose: () => {
-        disposed = true;
-      },
-    };
-  };
-
-  type Base = NonNullable<ReturnType<typeof buildBase>>;
-  // Refy urządzeń sceny — wspólne dla obu wariantów (selektory = kontrakt z DeviceScene).
-  type DeviceRefs = {
-    laptop: HTMLElement | null;
-    phone: HTMLElement | null;
-    camera: HTMLElement | null;
-    base: HTMLElement | null;
-  };
-  const deviceRefs = (): DeviceRefs => ({
-    laptop: q("[data-gsap='laptop']"),
-    phone: q("[data-gsap='phone']"),
-    camera: q(".hero__devices .camera"),
-    base: q("[data-gsap='laptop-base']"),
-  });
-
-  const cleanup = (b: Base) => () => {
-    b.dispose();
-    b.tl.scrollTrigger?.kill();
-    b.tl.kill();
-    gsap.set([b.ghost, b.live, b.devices, b.copy, b.scroll].filter(Boolean), {
-      clearProps: "all",
-    });
-    const { laptop: lp, phone: ph, camera: cam, base: bs } = deviceRefs();
-    removeVars(lp, ["--lap-yaw", "--lap-pitch", "--apart-lap"]);
-    removeVars(ph, ["--ph-dx", "--ph-dy", "--ph-dz", "--apart-ph"]);
-    removeVars(cam, ["--cx", "--cy"]);
-    if (bs) gsap.set(bs, { clearProps: "opacity" });
-  };
-
-  // ════════════════════════════ FAZY (desktop) ════════════════════════════
-  // Stałe osi scrolla żyją w hero-config.ts (jedno źródło prawdy).
-
-  const phase1Desktop = (b: Base) => {
-    const { tl, live, devices, startX, startY, endX, endY } = b;
-    // Blur działa przed transformem: przy scale 5.2 → 8px ≈ ~40px na ekranie.
-    // Wyższe wartości = droższa re-rasteryzacja w każdej klatce scrubu.
-    tl.fromTo(
-      live,
-      { x: startX, y: startY, scale: 1, filter: "blur(0px)", autoAlpha: 1 },
-      {
-        x: endX,
-        y: endY,
-        scale: 5.2,
-        filter: "blur(8px)",
-        duration: 0.5,
-        ease: "power1.in",
-      },
-      0.15,
-    );
-    tl.to(live, { autoAlpha: 0, duration: 0.13 }, 0.56);
-
-    // opacity, NIE autoAlpha — visibility:hidden odkłada paint całej sceny do
-    // klatki ujawnienia (jank). Bez filter: blur — pełnoekranowy pass GPU
-    // po ciężkim poddrzewie w każdej klatce scrubu.
-    tl.fromTo(
-      devices,
-      { opacity: 0, scale: 1.22 },
-      {
-        opacity: 1,
-        scale: 1,
-        duration: 0.38,
-        ease: "power2.out",
-      },
-      0.5,
-    );
-  };
-
-  const phase2Desktop = (b: Base, refs: DeviceRefs) => {
-    const { tl, copy, devices } = b;
-    const { laptop, phone, camera, base } = refs;
-    const PH2 = 0.95; // start fazy 2 na osi timeline (po wejściu urządzeń)
-
-    if (phone) {
-      tl.to(
-        phone,
-        {
-          "--ph-dx": FRAME_C.phDx + "px",
-          "--ph-dy": FRAME_C.phDy + "px",
-          "--ph-dz": FRAME_C.phDz + "px",
-          duration: 0.5,
-          ease: "power2.inOut",
-        },
-        PH2,
-      );
-    }
-    if (base) {
-      tl.to(
-        base,
-        { autoAlpha: 0, duration: 0.4, ease: "power2.inOut" },
-        PH2 + 0.03,
-      );
-    }
-    // (c) ruch kamery B→C + skręt (yaw) i odchylenie do tyłu (pitch) laptopa
-    if (camera) {
-      tl.to(
-        camera,
-        {
-          "--cx": FRAME_C.camCx + "deg",
-          "--cy": FRAME_C.camCy + "deg",
-          duration: 0.5,
-          ease: "power2.inOut",
-        },
-        PH2 + 0.45,
-      );
-    }
-    if (laptop) {
-      tl.to(
-        laptop,
-        {
-          "--lap-yaw": FRAME_C.lapYaw + "deg",
-          "--lap-pitch": FRAME_C.lapPitch + "deg",
-          duration: 0.5,
-          ease: "power2.inOut",
-        },
-        PH2 + 0.45,
-      );
-    }
-    tl.to(
-      devices,
-      {
-        x: () => scene?.getFrameC().x ?? 0,
-        scale: () => scene?.getFrameC().scale ?? 1,
-        transformOrigin: "50% 50%",
-        duration: 1.0,
-        ease: "power2.inOut",
-      },
-      PH2,
-    );
-    if (copy) {
-      tl.fromTo(
-        copy,
-        { autoAlpha: 0, x: -48 },
-        { autoAlpha: 1, x: 0, duration: 0.6, ease: "power2.out" },
-        PH2 + 0.35,
-      );
-    }
-  };
-
-  const phase3Desktop = (b: Base, site: LaptopSiteApi) => {
-    const { tl } = b;
-    const p = { v: 0 };
-    tl.to(
-      p,
-      {
-        v: 1,
-        ease: "none",
-        duration: DREWELOMET_DUR,
-        onUpdate: () => site.master.progress(p.v),
-        onStart: () => site.setActive(true),
-        onComplete: () => site.setActive(false),
-        onReverseComplete: () => site.setActive(false),
-      },
-      PH3_START,
-    );
-  };
-
-  const phase3PhoneDesktop = (b: Base, phone: PhoneSiteApi) => {
-    const { tl } = b;
-    const p = { v: 0 };
-    tl.to(
-      p,
-      {
-        v: 1,
-        ease: "none",
-        duration: PHONE_END - PHONE_START,
-        onUpdate: () => phone.master.progress(p.v),
-        onStart: () => phone.setActive(true),
-        onComplete: () => phone.setActive(false),
-        onReverseComplete: () => phone.setActive(false),
-      },
-      PHONE_START,
-    );
-  };
-
-  const initCaptionCarousel = (b: Base) => {
-    const copy = b.copy;
-    if (!copy) return () => {};
-    const rows = Array.from(
-      copy.querySelectorAll<HTMLElement>(".hero__copy-row"),
-    );
-    const maybeTexts = rows.map((r) =>
-      r.querySelector<HTMLElement>(".hero__copy-text"),
-    );
-    if (rows.length < 3 || maybeTexts.some((t) => !t)) return () => {};
-    const texts = maybeTexts as HTMLElement[];
-
-    copy.classList.add("is-carousel");
-
-    // CAP_START/CAP_END: hero-config.ts (CAP_END = pochodna doghouse.webp)
-    const PHASE_A_FRAC = 0.14;
-    const REST_BIG_SCALE = 0.53;
-    const REST_SMALL_SCALE = 1;
-    const MIN_GROW = 0.98;
-    const LOW_OPACITY = 0.05;
-    const MORPH_A0 = 1;
-    const MORPH_A1 = 2;
-    const CONTAINER_EXTRA = 110;
-    const FIRST_GAP_EXTRA = 110;
-    const LAST_BIG_SCALE = 1;
-
-    const N = rows.length;
-    let smallPx = 16;
-    let bigPx = 40;
-    let bigPxRest = 34;
-    let GAP = 18;
-    let Cy = 0;
-    let big0H = 0;
-    let p1MinH = 0;
-
-    const bigOf = (i: number) =>
-      i === 0 ? bigPx : i === N - 1 ? bigPx * LAST_BIG_SCALE : bigPxRest;
-    const smallOf = (i: number) =>
-      i === 0 ? smallPx : smallPx * REST_SMALL_SCALE;
-
-    const smallH = new Array<number>(N).fill(0);
-    const bigH = new Array<number>(N).fill(0);
-    const g = new Array<number>(N).fill(0);
-    const h = new Array<number>(N).fill(0);
-    const center = new Array<number>(N).fill(0);
-    const lastFont = new Array<string>(N).fill("");
-    const lastWeight = new Array<string>(N).fill("");
-    const lastOpacity = new Array<string>(N).fill("");
-    const lastTransform = new Array<string>(N).fill("");
-
-    const measure = () => {
-      const t0 = texts[0];
-      const t1 = texts[1];
-      const p0 = t0.style.fontSize;
-      const p1 = t1.style.fontSize;
-      t0.style.fontSize = "";
-      t1.style.fontSize = "";
-      bigPx = parseFloat(getComputedStyle(t0).fontSize) || 40;
-      bigPxRest = bigPx * REST_BIG_SCALE;
-      smallPx = parseFloat(getComputedStyle(t1).fontSize) || 16;
-      t0.style.fontSize = p0;
-      t1.style.fontSize = p1;
-      const rootPx =
-        parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-      const rowSpace = Math.max(
-        1.1 * rootPx,
-        Math.min(0.02 * window.innerWidth, 1.65 * rootPx),
-      );
-      GAP = Math.round(2 * rowSpace);
-      for (let i = 0; i < N; i++) {
-        const tx = texts[i];
-        const prev = tx.style.fontSize;
-        tx.style.fontSize = smallOf(i) + "px";
-        smallH[i] = rows[i].offsetHeight;
-        tx.style.fontSize = bigOf(i) + "px";
-        bigH[i] = rows[i].offsetHeight;
-        tx.style.fontSize = prev;
-        lastFont[i] = lastWeight[i] = lastOpacity[i] = lastTransform[i] = "";
-      }
-      big0H = bigH[0];
-      p1MinH =
-        smallH[0] +
-        (bigH[0] - smallH[0]) * ((bigPxRest - smallPx) / (bigPx - smallPx));
-      const H = bigH[0] + 2 * GAP + smallH[1] + smallH[2] + CONTAINER_EXTRA;
-      Cy = H / 2;
-      copy.style.height = H + "px";
-    };
-
-    const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x);
-    const smoother = (t: number) => t * t * t * (t * (t * 6 - 15) + 10);
-
-    const render = (u: number) => {
-      let A =
-        u <= PHASE_A_FRAC
-          ? u / PHASE_A_FRAC
-          : 1 + ((u - PHASE_A_FRAC) / (1 - PHASE_A_FRAC)) * (N - 2);
-      if (A < 0) A = 0;
-      else if (A > N - 1) A = N - 1;
-
-      const m = smoother(clamp01((A - MORPH_A0) / (MORPH_A1 - MORPH_A0)));
-      const grow = MIN_GROW * m;
-      const lastFade = smoother(clamp01(A - (N - 2)));
-      const minOp = (0.58 + (LOW_OPACITY - 0.58) * m) * (1 - lastFade);
-
-      let top = 0;
-      for (let i = 0; i < N; i++) {
-        g[i] = smoother(clamp01(1 - Math.abs(i - A)));
-        const sH = i === 0 ? p1MinH : smallH[i] + (bigH[i] - smallH[i]) * grow;
-        h[i] = sH + (bigH[i] - sH) * g[i];
-        center[i] = top + h[i] / 2;
-        top += h[i] + GAP + (i === 0 ? FIRST_GAP_EXTRA : 0);
-      }
-
-      const lo = Math.floor(A);
-      const hi = lo + 1 < N ? lo + 1 : N - 1;
-      const anchorRaw = center[lo] + (center[hi] - center[lo]) * (A - lo);
-      const anchorY = A <= 1 ? big0H / 2 + (Cy - big0H / 2) * A : Cy;
-      const offset = anchorY - anchorRaw;
-
-      for (let i = 0; i < N; i++) {
-        const gi = g[i];
-        const sPx =
-          i === 0 ? bigPxRest : smallOf(i) + (bigOf(i) - smallOf(i)) * grow;
-
-        const font = (sPx + (bigOf(i) - sPx) * gi).toFixed(2) + "px";
-        if (font !== lastFont[i]) {
-          texts[i].style.fontSize = font;
-          lastFont[i] = font;
-        }
-        const weight = "" + Math.round(600 + 200 * gi);
-        if (weight !== lastWeight[i]) {
-          texts[i].style.fontWeight = weight;
-          lastWeight[i] = weight;
-        }
-        const opacity = (minOp + (1 - minOp) * gi).toFixed(3);
-        if (opacity !== lastOpacity[i]) {
-          rows[i].style.opacity = opacity;
-          lastOpacity[i] = opacity;
-        }
-        const transform =
-          "translateY(" + (center[i] + offset - h[i] / 2).toFixed(2) + "px)";
-        if (transform !== lastTransform[i]) {
-          rows[i].style.transform = transform;
-          lastTransform[i] = transform;
-        }
-      }
-    };
-
-    measure();
-    render(0);
-
-    const capProxy = { u: 0 };
-    b.tl.to(
-      capProxy,
-      {
-        u: 1,
-        ease: "none",
-        duration: CAP_END - CAP_START,
-        onUpdate: () => render(capProxy.u),
-      },
-      CAP_START,
-    );
-
-    const onRefresh = () => {
-      measure();
-      render(capProxy.u);
-    };
-    ScrollTrigger.addEventListener("refresh", onRefresh);
-    document.fonts?.ready.then(() => {
-      measure();
-      render(capProxy.u);
-      ScrollTrigger.refresh();
-    });
-
+    set();
+    ScrollTrigger.addEventListener("refreshInit", set);
     return () => {
-      ScrollTrigger.removeEventListener("refresh", onRefresh);
-      copy.classList.remove("is-carousel");
-      copy.style.removeProperty("height");
-      rows.forEach((r, i) => {
-        r.style.removeProperty("opacity");
-        r.style.removeProperty("transform");
-        texts[i].style.removeProperty("font-size");
-        texts[i].style.removeProperty("font-weight");
-      });
+      ScrollTrigger.removeEventListener("refreshInit", set);
+      hero?.style.removeProperty("min-height");
     };
-  };
-
-  // ════════════════════════════ FAZY (mobile) ═════════════════════════════
-  // Stałe osi (MOB_SETTLE_*, strefy, VID_*): hero-config.ts.
-
-  const phase1Mobile = (
-    b: Base,
-    refs: DeviceRefs,
-    slide: () => number,
-    zDepth: () => number,
-  ) => {
-    const { tl, live, devices, startX, startY } = b;
-    const { laptop, phone } = refs;
-
-    // słowo: hold w miejscu, potem sam zanik (bez skali/blura/przejazdu)
-    tl.fromTo(
-      live,
-      { x: startX, y: startY, scale: 1, autoAlpha: 1 },
-      { autoAlpha: 0, duration: 0.17 },
-      0.45,
-    );
-
-    // filter/scale sprzątamy od razu, ale WIDOCZNOŚĆ bramkuje timeline:
-    // przed wejściem urządzeń wrapper zostaje ukryty (CSS opacity:0). Chroni
-    // to przed pokazaniem urządzeń na środku ekranu, gdyby resize/refresh
-    // wyzerował offsety wjazdu, zanim scrub dojdzie do ich tweenów
-    // (objaw: iPhone po zimnym cache widział laptop+telefon na starcie).
-    gsap.set(devices, { filter: "none", scale: 1 });
-    tl.set(devices, { autoAlpha: 1 }, MOB_SETTLE_START);
-    if (laptop) {
-      tl.fromTo(
-        laptop,
-        { "--sl-lap": () => slide() + "px" },
-        { "--sl-lap": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
-        MOB_SETTLE_START,
-      );
-      tl.fromTo(
-        laptop,
-        { "--sz-lap": () => -zDepth() + "px" },
-        { "--sz-lap": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
-        MOB_SETTLE_START,
-      );
-    }
-    if (phone) {
-      tl.fromTo(
-        phone,
-        { "--sl-ph": () => -slide() + "px" },
-        { "--sl-ph": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
-        MOB_SETTLE_START,
-      );
-      tl.fromTo(
-        phone,
-        { "--sz-ph": () => zDepth() + "px" },
-        { "--sz-ph": "0px", duration: MOB_SETTLE_DUR, ease: MOB_SETTLE_EASE },
-        MOB_SETTLE_START,
-      );
-    }
-  };
-
-  const phase2Mobile = (b: Base, refs: DeviceRefs) => {
-    const { tl, copy, devices } = b;
-    const { laptop, phone } = refs;
-    // Scalone z wjazdem: rozsunięcie + pomniejszenie biegną RAZEM z fazą 1
-    // (ten sam start/czas/ease) → jeden ciągły ruch, bez etapu pośredniego.
-    const APART_START = MOB_SETTLE_START;
-    // px projektu skalują się razem ze sceną (S2: wartość tylko w platform.ts);
-    // gałąź mobile (mm.add) = isStacked, więc warunek zgodny z K() w device-scene.
-    const K = IS_ANDROID ? ANDROID_DESIGN_SCALE : 1;
-    const APART_LAP = -150 * K; // laptop w górę (px projektu)
-    const APART_PH = 170 * K; // telefon w dół (px projektu)
-    const MOB_END_SCALE = 0.82; // pomniejszenie grupy (miejsce na tekst góra/dół)
-
-    if (laptop) {
-      tl.to(
-        laptop,
-        {
-          "--apart-lap": APART_LAP + "px",
-          duration: MOB_SETTLE_DUR,
-          ease: MOB_SETTLE_EASE,
-        },
-        APART_START,
-      );
-    }
-    if (phone) {
-      tl.to(
-        phone,
-        {
-          "--apart-ph": APART_PH + "px",
-          duration: MOB_SETTLE_DUR,
-          ease: MOB_SETTLE_EASE,
-        },
-        APART_START,
-      );
-    }
-    tl.to(
-      devices,
-      {
-        scale: MOB_END_SCALE,
-        transformOrigin: "50% 50%",
-        duration: MOB_SETTLE_DUR,
-        ease: MOB_SETTLE_EASE,
-      },
-      APART_START,
-    );
-    if (copy) {
-      // copy wjeżdża wraz z dolotem urządzeń i domyka się tuż po osadzeniu
-      tl.fromTo(
-        copy,
-        { autoAlpha: 0 },
-        { autoAlpha: 1, duration: 0.5, ease: "power2.out" },
-        APART_START + MOB_SETTLE_DUR - 0.4,
-      );
-    }
   };
 
   // ── DESKTOP/TABLET ──
@@ -1208,27 +682,15 @@ const splitAccent = (line: string) =>
       return;
     }
 
-    // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
-    // (1233svh) jest tylko wstępna. Ustawiana w PX z window.innerHeight — tej
-    // samej metryki, z której ScrollTrigger liczy end/strefy — i przeliczana
-    // przy każdym refreshu (refreshInit). Sam svh nie wystarcza: późny refresh
-    // (window.load po zimnym cache) przelicza scrub przy ZWINIĘTYM toolbarze
-    // iOS (innerHeight ≈ +15%), a svh stoi w miejscu → sticky puszczał za
-    // wcześnie. Przy starcie px == DESKTOP_MIN_HEIGHT_SVH (svh ≡ innerHeight
-    // przy rozwiniętym toolbarze).
-    const hero = q("#hero");
-    const setHeroHeight = () => {
-      if (hero)
-        hero.style.minHeight =
-          (DESKTOP_MIN_HEIGHT_SVH / 100) * window.innerHeight + "px";
-    };
-    setHeroHeight();
-    ScrollTrigger.addEventListener("refreshInit", setHeroHeight);
+    const heroHeightCleanup = heroHeightSync(
+      q("#hero"),
+      DESKTOP_MIN_HEIGHT_SVH,
+    );
 
     const refs = deviceRefs();
     const captionCleanup = site ? initCaptionCarousel(b) : null;
     phase1Desktop(b);
-    phase2Desktop(b, refs);
+    phase2Desktop(b, refs, scene);
     if (site) phase3Desktop(b, site);
     if (site && phoneSite) phase3PhoneDesktop(b, phoneSite);
     return () => {
@@ -1236,8 +698,7 @@ const splitAccent = (line: string) =>
       cleanup(b)();
       site?.destroy();
       phoneSite?.destroy();
-      ScrollTrigger.removeEventListener("refreshInit", setHeroHeight);
-      hero?.style.removeProperty("min-height");
+      heroHeightCleanup();
     };
   });
 
@@ -1287,139 +748,9 @@ const splitAccent = (line: string) =>
     const lapVideo = setupVideo("[data-gsap='video-laptop']");
     const phVideo = setupVideo("[data-gsap='video-phone']");
 
-    // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartość w CSS
-    // (1500svh) jest tylko wstępna. PX z window.innerHeight + refreshInit —
-    // ta sama metryka co triggery stref/paska, żeby odpięcie sticky ZAWSZE
-    // wypadało tuż po dojechaniu kulki (pełne uzasadnienie: analogiczny blok
-    // w gałęzi desktop; objaw naprawiany: iPhone po zimnym cache odpinał
-    // hero w połowie strefy telefonu).
-    const setHeroHeight = () => {
-      if (hero)
-        hero.style.minHeight =
-          (MOBILE_MIN_HEIGHT_SVH / 100) * window.innerHeight + "px";
-    };
-    setHeroHeight();
-    ScrollTrigger.addEventListener("refreshInit", setHeroHeight);
-
-    // ── Wzrost tekstów 02/03 (mobile, wspólny iOS + Android) ──────────────
-    // Spójnie z desktopową karuzelą: powiększenie + szary→biały + 600→800.
-    // Geometria przez transform: scale z origin lewo-środek → tekst rośnie
-    // w prawo i równomiernie w górę/dół, lewa krawędź stoi, zero reflow
-    // (nic innego się nie przesuwa). Sterowane scrubem → w pełni odwracalne.
-    const initCaptionGrowth = () => {
-      if (!hero) return () => {};
-      const t1 = q<HTMLElement>(".hero__copy-row--1 .hero__copy-text");
-      const t2 = q<HTMLElement>(".hero__copy-row--2 .hero__copy-text");
-      const t3 = q<HTMLElement>(".hero__copy-row--3 .hero__copy-text");
-      if (!t1 || !t2 || !t3) return () => {};
-
-      const muted = getComputedStyle(t2).color; // bazowy szary 02/03
-      const ink = getComputedStyle(t1).color; // biel tekstu 01
-
-      // Docelowa "część drogi" z rozmiaru bazowego do rozmiaru 01.
-      // 02 rośnie w połowę drogi; 03 ("Płynnie…") mniej, bo dłuższy tekst
-      // wystawałby poza kontener z prawej.
-      const REACH_02 = 0.5;
-      const REACH_03 = 0.3;
-      // transform nie zmienia computed font-size, więc odczyt jest zawsze
-      // rozmiarem bazowym niezależnie od bieżącej skali (bezpieczne przy refresh).
-      const targetScale = (base: HTMLElement, reach: number) => {
-        const s0 = parseFloat(getComputedStyle(t1).fontSize) || 32;
-        const sb = parseFloat(getComputedStyle(base).fontSize) || 16;
-        return 1 + reach * (s0 / sb - 1);
-      };
-
-      // Start czerwonego odcinka paska = szczyt powiększenia urządzenia.
-      const segStartVh = (z: { start: number; end: number }) =>
-        z.start + GROW_END * (z.end - z.start);
-      // Okno wzrostu = pierwsze GROW_FRACTION długości czerwonego odcinka.
-      // Mniejsza wartość = teksty szybciej osiągają maksymalny rozmiar.
-      const GROW_FRACTION = 0.18;
-      const growEndVh = (z: { start: number; end: number }) => {
-        const s = segStartVh(z);
-        return s + GROW_FRACTION * (z.end - s);
-      };
-
-      const make = (
-        text: HTMLElement,
-        z: { start: number; end: number },
-        reach: number,
-      ) =>
-        gsap.fromTo(
-          text,
-          { scale: 1, color: muted, fontWeight: 600 },
-          {
-            scale: () => targetScale(text, reach),
-            color: ink,
-            fontWeight: 800,
-            transformOrigin: "0% 50%",
-            ease: "none",
-            scrollTrigger: {
-              trigger: hero,
-              start: () =>
-                "top+=" + segStartVh(z) * window.innerHeight + " top",
-              end: () => "top+=" + growEndVh(z) * window.innerHeight + " top",
-              scrub: true,
-              invalidateOnRefresh: true,
-            },
-          },
-        );
-
-      const tweens = [
-        make(t2, LAP_ZONE, REACH_02),
-        make(t3, PH_ZONE, REACH_03),
-      ];
-
-      return () => {
-        tweens.forEach((tw) => {
-          tw.scrollTrigger?.kill();
-          tw.kill();
-        });
-        [t2, t3].forEach((t) => {
-          t.style.removeProperty("transform");
-          t.style.removeProperty("color");
-          t.style.removeProperty("font-weight");
-        });
-      };
-    };
-    const captionGrowthCleanup = initCaptionGrowth();
-
-    const stageEl = q(".hero__stage");
-    const div02 = q<HTMLElement>(".hero__copy-row--2");
-    const div03 = q<HTMLElement>(".hero__copy-row--3");
-    const placeDividers = () => {
-      if (!stageEl) return;
-      const stageTop = stageEl.getBoundingClientRect().top;
-      if (refs.laptop && div02) {
-        const lapBottom = refs.laptop.getBoundingClientRect().bottom - stageTop;
-        div02.style.top = lapBottom + GAP_LAP_DIV + "px";
-      }
-      if (refs.phone && div03) {
-        const phBottom = refs.phone.getBoundingClientRect().bottom - stageTop;
-        div03.style.top = phBottom + GAP_PH_DIV + "px";
-      }
-    };
-    const dividerTrigger =
-      IS_ANDROID && hero
-        ? ScrollTrigger.create({
-            trigger: hero,
-            start: "top top",
-            end: () => "top+=" + LAP_ZONE.start * window.innerHeight + " top",
-            onUpdate: placeDividers,
-            onLeave: placeDividers,
-            onLeaveBack: placeDividers,
-          })
-        : null;
-    if (IS_ANDROID) {
-      ScrollTrigger.addEventListener("refresh", placeDividers);
-      placeDividers();
-    }
-    const cleanupDividers = () => {
-      dividerTrigger?.kill();
-      ScrollTrigger.removeEventListener("refresh", placeDividers);
-      div02?.style.removeProperty("top");
-      div03?.style.removeProperty("top");
-    };
+    const heroHeightCleanup = heroHeightSync(hero, MOBILE_MIN_HEIGHT_SVH);
+    const captionGrowthCleanup = initCaptionGrowth(hero);
+    const cleanupDividers = initDividers(hero, refs);
 
     // ── Faza 3 (wspólna iOS + Android): ciągłe odtwarzanie w pętli +
     // czerwone odcinki na pasku postępu — patrz android-mobile.ts.
@@ -1445,8 +776,7 @@ const splitAccent = (line: string) =>
       phase3Cleanup();
       captionGrowthCleanup();
       cleanupDividers();
-      ScrollTrigger.removeEventListener("refreshInit", setHeroHeight);
-      hero?.style.removeProperty("min-height");
+      heroHeightCleanup();
       stopReset(lapVideo);
       stopReset(phVideo);
       setRest(refs.laptop, ["--vid-scale", "--sl-lap", "--sz-lap"]);
