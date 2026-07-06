@@ -1,5 +1,4 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { SEL } from "./selectors";
 
 /**
  * FAZA 3 (mobile) — wspólna dla iOS i Androida: ekrany urządzeń grają w pętli
@@ -7,13 +6,13 @@ import { SEL } from "./selectors";
  * scrolla celowo usunięty — na Androidzie zacinał się (repaint przypiętej
  * sceny GSAP), na iOS zamarzał po mimowolnej pauzie dekodera Safari.
  * IntersectionObserver + visibilitychange działają poza ścieżką repaintu,
- * więc są niezawodne na obu. Czerwone odcinki paska są czysto wizualne.
+ * więc są niezawodne na obu.
  */
 
-export interface Zone {
-  /** Start strefy w jednostkach wysokości viewportu od górnej krawędzi #hero. */
+export interface Span {
+  /** Start okna w jednostkach wysokości viewportu od górnej krawędzi #hero. */
   start: number;
-  /** Koniec strefy (jw.). */
+  /** Koniec okna (jw.). */
   end: number;
 }
 
@@ -21,21 +20,20 @@ export interface MobileVideoSpec {
   video: HTMLVideoElement | null;
   /** Element urządzenia, na którym ustawiamy --vid-scale. */
   el: HTMLElement | null;
-  zone: Zone;
+  span: Span;
 }
 
 export interface MobilePhase3Params {
   hero: HTMLElement | null;
-  /** Docelowe powiększenie w szczycie strefy. */
+  /** Docelowe powiększenie w szczycie okna. */
   vidMax: number;
-  /** Koniec powiększania / start przytrzymania (postęp strefy ∈ [0,1]). */
+  /** Koniec powiększania / start przytrzymania (postęp okna ∈ [0,1]). */
   growEnd: number;
   /** Koniec przytrzymania / start zmniejszania. */
   holdEnd: number;
   videos: MobileVideoSpec[];
-  /** Pasek postępu + kulka (mogą nie istnieć w DOM). */
+  /** Pasek postępu (może nie istnieć w DOM); kulkę pozycjonuje CSS przez --p. */
   progressEl: HTMLElement | null;
-  progressDot: HTMLElement | null;
   /** Pełny zakres paska postępu (vh od górnej krawędzi #hero). */
   barStartVh: number;
   barEndVh: number;
@@ -45,9 +43,9 @@ export interface MobilePhase3Params {
  * Inicjuje mobilny wariant fazy 3 (iOS + Android). Zwraca funkcję sprzątającą.
  */
 export function initMobilePhase3(p: MobilePhase3Params): () => void {
-  const { hero, vidMax, growEnd, holdEnd, videos, progressEl, progressDot } = p;
+  const { hero, vidMax, growEnd, holdEnd, videos, progressEl } = p;
 
-  // Skala urządzenia dla postępu strefy: 1→MAX (grow) | MAX (hold) | MAX→1 (shrink).
+  // Skala urządzenia dla postępu okna: 1→MAX (grow) | MAX (hold) | MAX→1 (shrink).
   const scaleFor = (prog: number) => {
     if (prog <= growEnd) return 1 + (vidMax - 1) * (prog / growEnd);
     if (prog < holdEnd) return vidMax;
@@ -121,9 +119,9 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
 
   const triggers: ScrollTrigger[] = [];
 
-  videos.forEach(({ el, zone }) => {
+  videos.forEach(({ el, span }) => {
     if (!hero || !el) return;
-    // pomijaj redundantne zapisy (faza hold = stała skala przez ~2 ekrany)
+    // pomijaj redundantne zapisy (faza hold = stała skala przez długi odcinek)
     let lastScale = -1;
     const setScale = (s: number) => {
       if (s === lastScale) return;
@@ -133,8 +131,8 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
     triggers.push(
       ScrollTrigger.create({
         trigger: hero,
-        start: () => "top+=" + zone.start * window.innerHeight + " top",
-        end: () => "top+=" + zone.end * window.innerHeight + " top",
+        start: () => "top+=" + span.start * window.innerHeight + " top",
+        end: () => "top+=" + span.end * window.innerHeight + " top",
         scrub: true,
         onUpdate: (self) => setScale(scaleFor(self.progress)),
         onLeave: () => setScale(1),
@@ -142,31 +140,6 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
       }),
     );
   });
-
-  // Czerwone odcinki paska: [szczyt powiększenia, koniec strefy] każdego
-  // urządzenia — czysto wizualne oznaczenie, bez wpływu na wideo (to gra
-  // ciągle); kulka przejmuje akcent, gdy jest na odcinku.
-  const barSpan = p.barEndVh - p.barStartVh;
-  const barP = (vh: number) => (vh - p.barStartVh) / barSpan;
-  const segs = videos.map(({ zone }) => ({
-    from: barP(zone.start + growEnd * (zone.end - zone.start)),
-    to: barP(zone.end),
-  }));
-
-  // Odcinki są statyczne w markupie (2× seg) — tu tylko ustawiamy pozycje.
-  const segEls = progressEl
-    ? [...progressEl.querySelectorAll<HTMLElement>(SEL.progressSeg)]
-    : [];
-  segs.forEach((s, i) => {
-    segEls[i]?.style.setProperty("--seg-top", s.from.toFixed(4));
-    segEls[i]?.style.setProperty("--seg-h", (s.to - s.from).toFixed(4));
-  });
-
-  const updateDot = (prog: number) => {
-    const onSeg = segs.some((s) => prog >= s.from && prog <= s.to);
-    progressDot?.classList.toggle("is-on-seg", onSeg);
-  };
-  updateDot(0);
 
   const progressTrigger =
     hero && progressEl
@@ -177,7 +150,6 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
           scrub: true,
           onUpdate: (self) => {
             progressEl.style.setProperty("--p", self.progress.toFixed(4));
-            updateDot(self.progress);
           },
           onToggle: (self) =>
             progressEl.classList.toggle("is-active", self.isActive),
@@ -194,6 +166,5 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
     progressTrigger?.kill();
     progressEl?.classList.remove("is-active");
     progressEl?.style.removeProperty("--p");
-    progressDot?.classList.remove("is-on-seg");
   };
 }

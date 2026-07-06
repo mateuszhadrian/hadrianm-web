@@ -11,7 +11,7 @@ historia: `docs/analiza-refactor-hero-odkruszenie.md`.
 
 ## Jedno źródło prawdy (inwarianty wymuszane kodem — nie duplikuj wartości)
 
-- Oś scrolla (fazy, strefy, długości): `hero-config.ts`. Wartości POCHODNE
+- Oś scrolla (fazy, okna, długości): `hero-config.ts`. Wartości POCHODNE
   (`CAP_END`, `*_MIN_HEIGHT_SVH`) liczy kod — nigdy nie wpisuj wyników
   ręcznie do CSS/komentarzy (svh w CSS to tylko fallback przed hydracją).
 - Platforma: `platform.ts` (`IS_ANDROID`, `MOBILE_MAX` — literały 760/761
@@ -29,7 +29,7 @@ historia: `docs/analiza-refactor-hero-odkruszenie.md`.
   metrykę: px z `window.innerHeight`, przeliczane w `refreshInit`
   (`heroHeightSync` w Hero.astro). NIGDY `svh` z JS — późny refresh
   (zimny cache → `window.load` po zwinięciu toolbara iOS) rozjeżdżał
-  odpięcie sticky o pół strefy telefonu.
+  odpięcie sticky o pół okna telefonu.
 - Pomiary geometrii sceny: snapshot → rest → pomiar → restore (wzorzec w
   `centerGroup`, device-scene.ts). Na mobile `ignoreMobileResize` blokuje
   refresh, więc nadpisane zmienne NIE samonaprawiają się.
@@ -54,7 +54,8 @@ historia: `docs/analiza-refactor-hero-odkruszenie.md`.
 ## Wideo ekranów (mobile)
 
 - Oba systemy grają wideo CIĄGLE przez `initMobilePhase3` + self-heal na
-  mimowolne pauzy dekodera iOS. Czerwone odcinki paska = czysto wizualne.
+  mimowolne pauzy dekodera iOS. Pasek postępu jest czysto wizualny (kulka
+  pozycjonowana przez `--p`); nie bramkuje odtwarzania wideo.
 - NIGDY nie ponawiaj zablokowanego `video.play()` co klatkę scrolla.
 - iOS Low Power Mode ≠ `prefers-reduced-motion` (osobny przełącznik);
   jedyna obsługa LPM to toast `LowPowerNotice.astro`. UWAGA: mechanizmy

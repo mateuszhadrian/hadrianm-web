@@ -28,8 +28,6 @@ export const SEL = {
   copyRow3Text: ".hero__copy-row--3 .hero__copy-text",
 
   progress: ".hero__progress",
-  progressDot: ".hero__progress-dot",
-  progressSeg: ".hero__progress-seg",
 
   // scena urządzeń (markup: DeviceScene.astro)
   deviceScene: ".device-scene",

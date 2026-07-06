@@ -126,8 +126,6 @@ const splitAccent = (line: string) =>
 
     <div class="hero__progress" aria-hidden="true">
       <span class="hero__progress-track"></span>
-      <span class="hero__progress-seg"></span>
-      <span class="hero__progress-seg"></span>
       <span class="hero__progress-dot"></span>
     </div>
   </div>
@@ -410,7 +408,10 @@ const splitAccent = (line: string) =>
       height: 72svh;
       width: 14px;
       transform: translateY(calc(-50% + var(--bar-shift-y)));
-      z-index: 6;
+      /* POD urządzeniami (5): pasek startuje już podczas wjazdu telefonu
+         z prawej — telefon ma go zasłaniać, nie przecinać. Remis z copy (4)
+         rozstrzyga kolejność DOM (pasek później) → nadal nad dividerami. */
+      z-index: 4;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.15s ease;
@@ -429,19 +430,6 @@ const splitAccent = (line: string) =>
       border-radius: 1px;
       z-index: 0;
     }
-    .hero__progress-seg {
-      --seg-top: 0; /* [0,1] — ustawia JS (setProperty) */
-      --seg-h: 0;
-      position: absolute;
-      left: 50%;
-      top: calc(var(--seg-top) * 100%);
-      height: calc(var(--seg-h) * 100%);
-      width: 2px;
-      transform: translateX(-50%);
-      background: var(--accent);
-      border-radius: 1px;
-      z-index: 1;
-    }
     .hero__progress-dot {
       position: absolute;
       left: 50%;
@@ -449,18 +437,10 @@ const splitAccent = (line: string) =>
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--ink);
-      box-shadow: 0 0 6px 1px rgba(245, 240, 236, 0.22);
-      transform: translate(-50%, -50%);
-      z-index: 3;
-      transition:
-        background-color 0.15s ease,
-        box-shadow 0.15s ease;
-    }
-    /* na czerwonym odcinku kulka przejmuje kolor akcentu */
-    .hero__progress-dot.is-on-seg {
       background: var(--accent);
       box-shadow: 0 0 8px 1px rgba(var(--glow), 0.55);
+      transform: translate(-50%, -50%);
+      z-index: 3;
     }
     .hero__devices {
       z-index: 5;
@@ -607,8 +587,10 @@ const splitAccent = (line: string) =>
     VID_MAX,
     GROW_END,
     HOLD_END,
-    LAP_ZONE,
-    PH_ZONE,
+    LAP_SPAN,
+    PH_SPAN,
+    BAR_START_SCREENS,
+    BAR_END_SCREENS,
     MOBILE_MIN_HEIGHT_SVH,
   } from "./hero-config";
 
@@ -636,11 +618,11 @@ const splitAccent = (line: string) =>
 
   // Wysokość sekcji = pochodna osi scrolla (hero-config.ts); wartości w CSS
   // (1233svh / 1500svh) są tylko wstępne. PX z window.innerHeight — tej samej
-  // metryki, z której ScrollTrigger liczy end/strefy — przeliczane przy każdym
+  // metryki, z której ScrollTrigger liczy end/okna — przeliczane przy każdym
   // refreshu (refreshInit). Sam svh nie wystarcza: późny refresh (window.load
   // po zimnym cache) przelicza scrub przy ZWINIĘTYM toolbarze iOS
   // (innerHeight ≈ +15%), a svh stoi w miejscu → sticky puszczał za wcześnie
-  // (w połowie strefy telefonu). Przy starcie px == wartość svh.
+  // (w połowie okna telefonu). Przy starcie px == wartość svh.
   const heroHeightSync = (hero: HTMLElement | null, svh: number) => {
     const set = () => {
       if (hero) hero.style.minHeight = (svh / 100) * window.innerHeight + "px";
@@ -758,24 +740,21 @@ const splitAccent = (line: string) =>
     const cleanupDividers = initDividers(hero, refs);
 
     // ── Faza 3 (wspólna iOS + Android): ciągłe odtwarzanie w pętli +
-    // czerwone odcinki na pasku postępu — patrz android-mobile.ts.
+    // pasek postępu z kulką — patrz android-mobile.ts.
     const progressEl = q(SEL.progress);
-    const progressDot = q(SEL.progressDot);
     if (!progressEl) devWarnMissing("progress");
-    if (!progressDot) devWarnMissing("progressDot");
     const phase3Cleanup = initMobilePhase3({
       hero,
       vidMax: VID_MAX,
       growEnd: GROW_END,
       holdEnd: HOLD_END,
       videos: [
-        { video: lapVideo, el: refs.laptop, zone: LAP_ZONE },
-        { video: phVideo, el: refs.phone, zone: PH_ZONE },
+        { video: lapVideo, el: refs.laptop, span: LAP_SPAN },
+        { video: phVideo, el: refs.phone, span: PH_SPAN },
       ],
       progressEl,
-      progressDot,
-      barStartVh: LAP_ZONE.start,
-      barEndVh: PH_ZONE.end,
+      barStartVh: BAR_START_SCREENS,
+      barEndVh: BAR_END_SCREENS,
     });
 
     return () => {

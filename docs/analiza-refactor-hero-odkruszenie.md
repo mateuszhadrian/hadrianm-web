@@ -88,7 +88,7 @@ dlatego kroki dotykające tych obszarów mają obowiązkowy test 📱.
 - Wszystkie stałe osi czasu/scrolla do jednego typowanego modułu:
   desktop: `SCREENS=12`, `PH3_START`, `DREWELOMET_DUR`, `PHONE_START`,
   `PHONE_END`, `CAP_START`, `DOG_PROGRESS` (+ stałe karuzeli);
-  mobile: `SCROLL_SCALE`, `LAP_ZONE`, `PH_ZONE`, `VID_MAX`, `GROW_END`,
+  mobile: `SCROLL_SCALE`, `LAP_SPAN`, `PH_SPAN`, `VID_MAX`, `GROW_END`,
   `HOLD_END`, `HERO_END_BUFFER`, `MOB_SETTLE_*`, `GAP_*_DIV`, `Z_PX`.
 - Wartości pochodne LICZONE: `CAP_END = PH3_START + DREWELOMET_DUR *
   DOG_PROGRESS` (eksport, nie lokalna kopia w karuzeli); desktopowy
@@ -159,7 +159,7 @@ Przeniesienie MECHANICZNE (zero zmian logiki), moduły w `hero/`:
 |---|---|---|
 | 1 | desktop + szybki rzut na oba telefony | moment odpięcia sticky (desktop); brak przesunięć na mobile |
 | 2 | **Android — obowiązkowo**, iPhone kontrolnie | spód telefonu nieobcięty; captiony + pasek widoczne przez cały przejazd; wideo gra |
-| 4 | iPhone + Android — pełny przejazd | całość: wjazd urządzeń, wzrost captionów, czerwone odcinki, odpięcie, powrót scrollem w górę |
+| 4 | iPhone + Android — pełny przejazd | całość: wjazd urządzeń, wzrost captionów, pasek postępu z kulką, odpięcie, powrót scrollem w górę |
 | 0, 3, 5, 6 | niepotrzebne | brak zmian w kodzie produktu (0, 6) / zmiany czysto mechaniczne pokryte harnessem (3, 5) |
 
 Emulacja Playwright NIE wykrywa: limitu warstwy GPU (Android), zachowań

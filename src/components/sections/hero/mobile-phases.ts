@@ -15,8 +15,8 @@ import {
   MOB_COPY_FADE_LEAD,
   MOB_COPY_FADE_DUR,
   GROW_END,
-  LAP_ZONE,
-  PH_ZONE,
+  LAP_SPAN,
+  PH_SPAN,
   GAP_LAP_DIV,
   GAP_PH_DIV,
 } from "./hero-config";
@@ -166,14 +166,14 @@ export const initCaptionGrowth = (hero: HTMLElement | null) => {
     return 1 + reach * (s0 / sb - 1);
   };
 
-  // Start czerwonego odcinka paska = szczyt powiększenia urządzenia.
-  const segStartVh = (z: { start: number; end: number }) =>
+  // Start wzrostu tekstu = szczyt powiększenia ekranu urządzenia.
+  const peakVh = (z: { start: number; end: number }) =>
     z.start + GROW_END * (z.end - z.start);
-  // Okno wzrostu = pierwsze GROW_FRACTION długości czerwonego odcinka.
+  // Okno wzrostu = pierwsze GROW_FRACTION drogi szczyt→koniec okna urządzenia.
   // Mniejsza wartość = teksty szybciej osiągają maksymalny rozmiar.
   const GROW_FRACTION = 0.18;
   const growEndVh = (z: { start: number; end: number }) => {
-    const s = segStartVh(z);
+    const s = peakVh(z);
     return s + GROW_FRACTION * (z.end - s);
   };
 
@@ -193,7 +193,7 @@ export const initCaptionGrowth = (hero: HTMLElement | null) => {
         ease: "none",
         scrollTrigger: {
           trigger: hero,
-          start: () => "top+=" + segStartVh(z) * window.innerHeight + " top",
+          start: () => "top+=" + peakVh(z) * window.innerHeight + " top",
           end: () => "top+=" + growEndVh(z) * window.innerHeight + " top",
           scrub: true,
           invalidateOnRefresh: true,
@@ -201,7 +201,7 @@ export const initCaptionGrowth = (hero: HTMLElement | null) => {
       },
     );
 
-  const tweens = [make(t2, LAP_ZONE, REACH_02), make(t3, PH_ZONE, REACH_03)];
+  const tweens = [make(t2, LAP_SPAN, REACH_02), make(t3, PH_SPAN, REACH_03)];
 
   return () => {
     tweens.forEach((tw) => {
@@ -241,7 +241,7 @@ export const initDividers = (hero: HTMLElement | null, refs: DeviceRefs) => {
       ? ScrollTrigger.create({
           trigger: hero,
           start: "top top",
-          end: () => "top+=" + LAP_ZONE.start * window.innerHeight + " top",
+          end: () => "top+=" + LAP_SPAN.start * window.innerHeight + " top",
           onUpdate: placeDividers,
           onLeave: placeDividers,
           onLeaveBack: placeDividers,

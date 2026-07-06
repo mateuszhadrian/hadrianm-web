@@ -591,6 +591,9 @@ historia: `docs/analiza-refactor-hero-odkruszenie.md`.
 
 - Oba systemy grają wideo CIĄGLE przez `initMobilePhase3` + self-heal na
   mimowolne pauzy dekodera iOS. Czerwone odcinki paska = czysto wizualne.
+  (ℹ️ 2026-07-07: czerwone odcinki USUNIĘTE z kodu — tor paska jednolity,
+  kulka na stałe w kolorze akcentu; aktualne brzmienie tej reguły:
+  `.claude/rules/hero-device-scene.md`.)
 - NIGDY nie ponawiaj zablokowanego `video.play()` co klatkę scrolla.
 - iOS Low Power Mode ≠ `prefers-reduced-motion` (osobny przełącznik);
   jedyna obsługa LPM to toast `LowPowerNotice.astro`. UWAGA: mechanizmy

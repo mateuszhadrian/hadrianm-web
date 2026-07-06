@@ -47,7 +47,7 @@ stałym, małym odstępem (jak na iOS), zamiast `svh`. W gałęzi mobile (`Hero.
   div03. Urządzenia w fazie 3 rosną z **dołem przyklejonym**, więc ich dolne krawędzie są
   stałe → wartość jest stabilna przez całą fazę 3.
 - Kiedy wołać: na `ScrollTrigger` obejmującym dojazd urządzeń (faza 1–2, `start:"top top"`
-  do `LAP_ZONE.start`) w `onUpdate` (dividery płynnie podążają, gdy urządzenia dojeżdżają)
+  do `LAP_SPAN.start`) w `onUpdate` (dividery płynnie podążają, gdy urządzenia dojeżdżają)
   - `onLeave`/`onLeaveBack`; dodatkowo `ScrollTrigger.addEventListener("refresh", …)` na
     resize. Po wejściu w fazę 3 nie trzeba mierzyć co klatkę (pozycja stała) — to unika
     per-klatkowego reflow na wrażliwym Androidzie.

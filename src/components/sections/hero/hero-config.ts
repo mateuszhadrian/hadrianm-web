@@ -72,43 +72,54 @@ export const MOBILE_SCREENS = MOBILE_TL_LENGTH * MOBILE_SCREENS_PER_TL;
 /** Głębia wjazdu urządzeń w px projektu (dzielona przez skalę .fit). */
 export const MOB_ENTRY_Z_PX = 340;
 
-/** Powiększenie ekranu wideo w szczycie strefy + kształt krzywej:
- *  1→MAX (do GROW_END), MAX (do HOLD_END ≈ 2 ekrany), MAX→1. */
+/** Powiększenie ekranu wideo w szczycie okna + kształt krzywej:
+ *  1→MAX (do GROW_END), MAX (do HOLD_END), MAX→1 — ułamki okna urządzenia. */
 export const VID_MAX = 1.5;
 export const GROW_END = 1 / 4;
 export const HOLD_END = 3 / 4;
 
-/** GŁÓWNE POKRĘTŁO długości sceny urządzeń (mobile): ile ekranów scrolla
- *  trwa strefa KAŻDEGO urządzenia (laptop i telefon). Pasek postępu z prawej
- *  biegnie od startu strefy laptopa do końca strefy telefonu, więc niższa
- *  wartość = krótsza cała animacja z paskiem (i krótsza sekcja — wysokość
- *  jest pochodną). Kształt grow/hold/shrink (GROW_END/HOLD_END) to ułamki
- *  strefy, więc skaluje się sam. */
-export const MOB_ZONE_SCREENS = 2;
-/** Odstęp (w ekranach) między strefą laptopa a telefonu. */
-export const MOB_ZONE_GAP = 0.4;
+/** GŁÓWNE POKRĘTŁO sceny urządzeń (mobile): ile ekranów scrolla trwa CAŁY
+ *  timeline (pasek postępu z prawej) — od pojawienia się (start osadzania
+ *  urządzeń) do dojechania kulki na dół. Niższa wartość = krótsza cała
+ *  animacja (i krótsza sekcja — wysokość jest pochodną). Okna powiększenia
+ *  ekranów obu urządzeń to ułamki tego zakresu, więc skalują się same. */
+export const MOB_TIMELINE_SCREENS = 4.5;
 
 /** POCHODNA: koniec RUCHU osadzania urządzeń w ekranach scrolla — kotwica
- *  stref. Celowo bez ogona fade-inu copy (MOBILE_SCREENS): strefa laptopa
- *  (pasek z prawej + powiększanie ekranu) startuje DOKŁADNIE w chwili, gdy
- *  urządzenia nieruchomieją — zero martwego okna scrolla; fade copy domyka
- *  się równolegle z początkiem wzrostu laptopa. */
+ *  okien powiększenia. Celowo bez ogona fade-inu copy (MOBILE_SCREENS): okno
+ *  laptopa (powiększanie ekranu) startuje DOKŁADNIE w chwili, gdy urządzenia
+ *  nieruchomieją — zero martwego okna scrolla; fade copy domyka się
+ *  równolegle z początkiem wzrostu laptopa. */
 export const MOB_SETTLE_END_SCREENS =
   (MOB_SETTLE_START + MOB_SETTLE_DUR) * MOBILE_SCREENS_PER_TL;
 
-/** Strefy urządzeń (vh od góry #hero) — POCHODNE: kotwiczone do końca
- *  osadzania (MOB_SETTLE_END_SCREENS), więc przesuwają się razem z
- *  wcześniejszym/późniejszym startem urządzeń; skalowane z długością sceny. */
-export const LAP_ZONE = {
+/* Zakres paska w ekranach PRZED skalą Lenisa (SCROLL_SCALE mnoży eksporty). */
+const BAR_START_RAW = MOB_SETTLE_START * MOBILE_SCREENS_PER_TL;
+const BAR_END_RAW = BAR_START_RAW + MOB_TIMELINE_SCREENS;
+
+/** Start/koniec paska postępu (vh od góry #hero) — pasek pojawia się razem
+ *  ze startem osadzania urządzeń i trwa MOB_TIMELINE_SCREENS ekranów. */
+export const BAR_START_SCREENS = BAR_START_RAW * SCROLL_SCALE;
+export const BAR_END_SCREENS = BAR_END_RAW * SCROLL_SCALE;
+
+/** Kształt odcinka akcji urządzeń (koniec osadzania → koniec paska):
+ *  okno laptopa | przerwa | okno telefonu, jako ułamki tego odcinka. */
+const DEV_WIN_FRAC = 5 / 11;
+const DEV_GAP_FRAC = 1 / 11;
+
+/** Okna powiększenia ekranów urządzeń (vh od góry #hero) — POCHODNE:
+ *  laptop rusza z końcem osadzania, telefon domyka się z końcem paska;
+ *  przesuwają się i skalują razem z osadzaniem i długością timeline'u. */
+const devSpanRaw = BAR_END_RAW - MOB_SETTLE_END_SCREENS;
+export const LAP_SPAN = {
   start: MOB_SETTLE_END_SCREENS * SCROLL_SCALE,
-  end: (MOB_SETTLE_END_SCREENS + MOB_ZONE_SCREENS) * SCROLL_SCALE,
+  end: (MOB_SETTLE_END_SCREENS + DEV_WIN_FRAC * devSpanRaw) * SCROLL_SCALE,
 };
-export const PH_ZONE = {
+export const PH_SPAN = {
   start:
-    (MOB_SETTLE_END_SCREENS + MOB_ZONE_SCREENS + MOB_ZONE_GAP) * SCROLL_SCALE,
-  end:
-    (MOB_SETTLE_END_SCREENS + 2 * MOB_ZONE_SCREENS + MOB_ZONE_GAP) *
+    (MOB_SETTLE_END_SCREENS + (DEV_WIN_FRAC + DEV_GAP_FRAC) * devSpanRaw) *
     SCROLL_SCALE,
+  end: BAR_END_SCREENS,
 };
 
 /** Ekrany od dojechania kulki paska do odpięcia sticky. */
@@ -116,7 +127,7 @@ export const HERO_END_BUFFER = 0.2;
 /** POCHODNA: wysokość sekcji (mobile) — odpięcie tuż po dojechaniu kulki;
  *  sticky puszcza przy scrollu = min-height − stage(100svh). */
 export const MOBILE_MIN_HEIGHT_SVH = Math.round(
-  (PH_ZONE.end + 1 + HERO_END_BUFFER) * 100,
+  (BAR_END_SCREENS + 1 + HERO_END_BUFFER) * 100,
 );
 
 /** Odstępy divider→spód urządzenia (px viewportu; pozycjonowanie Android). */
