@@ -10,7 +10,7 @@
 
 ## Stan wyjściowy (co już działa — 2026-07-04)
 
-- Skrzynka **OVH Zimbra Starter 15 GiB**: konto `info@hadrianm.pl` +
+- Skrzynka **OVH Zimbra Starter 15 GB**: konto `info@hadrianm.pl` +
   aliasy `mateusz@`, `contact@`, `kontakt@` (wszystko wpada do jednej
   skrzynki). DNS (MX/SPF/DKIM/DMARC) skonfigurowany i przetestowany —
   SPF+DKIM+DMARC PASS przy wysyłce z `info@`.

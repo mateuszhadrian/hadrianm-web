@@ -197,6 +197,11 @@
 
 **Po co / przykład.** Zamiast kopiować HTML dla każdej realizacji (i ryzykować, że strona się „rozjedzie"), opisujesz dane raz, a layout renderuje je automatycznie dla N wpisów. Mini-schemat:
 
+> ⚠️ Przykład poniżej to uproszczenie edukacyjne na **starym API** (import `z`
+> z `astro:content`, `type: "content"`). Wdrożona wersja używa `loader: glob(...)`
+> i `import { z } from "zod"`, a pola schematu są inne — patrz
+> `hosting_second_analysis_sveltia.md` §3.
+
 ```ts
 // src/content.config.ts (uproszczenie)
 import { defineCollection, z } from "astro:content";

@@ -1,5 +1,9 @@
 # Wdrożenie CMS + hosting + CI/CD — wariant Sanity (headless SaaS) — instrukcja krok po kroku
 
+> ⚠️ **WARIANT ODRZUCONY — NIE WYKONYWAĆ** (oznaczono 2026-07-06)
+>
+> Wdrożono wariant **Sveltia** (`hosting_second_analysis_sveltia.md`) — ten dokument NIE opisuje stanu projektu i jego kroki nie zostały (i nie będą tu) wykonane. Zachowany, bo wariant Sanity pozostaje realną opcją dla przyszłych projektów klienckich (patrz `additional-architecture-adjustment-admin-client.md`).
+
 > **Dokument wykonawczy.** Zakładam, że robisz to **pierwszy raz w życiu** — każdy
 > krok jest rozpisany, skróty rozwijam w nawiasie. Cel identyczny jak w wariancie
 > Sveltia: kupujesz `hadrianm.pl`, strona żyje na Cloudflare, logujesz się do

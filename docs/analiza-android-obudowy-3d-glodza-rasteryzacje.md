@@ -1,5 +1,7 @@
 # Hero mobile: płaskie ekrany urządzeń zamiast obudów 3D
 
+> ✅ **WDROŻONE** (oznaczono 2026-07-06): mobile-blok `DeviceScene.astro` (`max-width: 760px`) ustawia `perspective: none` i `transform-style: flat` na camera/device/extrude, warstwy ekstruzji nie są budowane na mobile (`device-scene.ts`), a glow to radial-gradient bez `filter: blur`. Desktop bez zmian. Niezależnie od spłaszczenia na Androidzie działa skala projektowa `--k = 0.6` (patrz `naprawa-android-scena-urzadzen-mobile.md`).
+
 ## Cel
 
 W wariantach **mobilnych** hero (`max-width: 760px`, Android **i** iOS) podmienić obudowy

@@ -1,5 +1,16 @@
 # Architektura sekcji i teł — start budowy strony GSAP (Hero → kolejne sekcje)
 
+> ⚠️ **DOKUMENT HISTORYCZNY** (oznaczono 2026-07-06)
+>
+> Opisuje stronę sprzed powstania sceny urządzeń hero — **nie traktować jako źródła ustaleń**. Nieaktualne m.in.:
+>
+> - `Hero.astro` jako „wyłącznie warstwa tła (chmury + raster + winieta)" w `src/components/` → dziś Hero to ciężki orkiestrator sceny urządzeń w `src/components/sections/hero/` (patrz `analiza-refactor-hero-odkruszenie.md`).
+> - Planowane sekcje `Services`/`Work` → dziś strona składa się z: Hero, Audience, Services, Work, About, Faq, Contact (`src/components/Home.astro`).
+> - Rekomendacja „tło per sekcja, `position: sticky`" → dziś tła żyją jako `src/components/backgrounds/AmbientBackground.astro` w `bg-stage` z crossfade (`src/scripts/bg-crossfade.ts`).
+> - `ScrollDemo` → nie istnieje już w projekcie.
+>
+> Zachowany wyłącznie jako kontekst historyczny decyzji.
+
 > Decyzja, od której zależy cała reszta strony: **jak sekcje przechowują swoje tła**, tak żeby
 > tło hero żyło dokładnie przez pierwszą sekcję, **znikało po jej przescrollowaniu**, a następna
 > sekcja miała **własne, inne tło**. Poniżej diagnoza stanu obecnego, trzy rozwiązania z wadami/zaletami,

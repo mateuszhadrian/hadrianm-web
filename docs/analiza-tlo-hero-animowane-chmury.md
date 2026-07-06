@@ -1,5 +1,7 @@
 # Animowane tło hero — „czerwone chmury na czarnym niebie" (czysty CSS, max performance)
 
+> ℹ️ **AKTUALIZACJA (2026-07-06):** wdrożone — mechanizm żyje dziś jako `src/components/backgrounds/AmbientBackground.astro` (montowany w `bg-stage` w `Home.astro`, z crossfade hero↔work przez `bg-crossfade.ts`), a nie jako część `Hero.astro`. Uwaga: breakpoint degradacji mobile tła to **768 px** (zgodnie z tym dokumentem) i jest to próg **niezależny** od progu sceny urządzeń hero (**760 px**, `MOBILE_MAX` w `platform.ts`) — nie ujednolicać bez świadomej decyzji.
+
 > Dokument-baza pod implementację warstwowego, animowanego tła sekcji hero.
 > Stack: Astro 6 (`output: 'static'`) + Tailwind v4 + GSAP (osobno, **nie** dla tego tła).
 > Decyzja kierunkowa: **wariant A — czysty CSS, animacja tylko na `transform`**, kropki statyczne,

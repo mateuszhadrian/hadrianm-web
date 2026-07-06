@@ -1,5 +1,15 @@
 # Strona-wizytówka studia webdev — analiza stacku, struktury i hostingu
 
+> ⚠️ **DOKUMENT HISTORYCZNY** (oznaczono 2026-07-06)
+>
+> Opisuje plan/stan unieważniony w trakcie dalszych prac — **nie traktować jako źródła ustaleń**. Nieaktualne m.in.:
+>
+> - **Next.js jako stack docelowy** oraz plan „równoległej nauki Astro + Next" → obowiązuje **Astro** jako stack domyślny i długoterminowy; Next tylko sytuacyjnie (patrz `hosting_first_analysis.md`).
+> - Szkic modelu danych realizacji (`title/client/cover/gallery/excerpt/...`) → obowiązuje wdrożony schemat z `hosting_second_analysis_sveltia.md` §3 (`name/order/year/blurb/screens/results/...`).
+> - „Cal.com / Calendly" jako równorzędne opcje bookingu → wybrano **Cal.com** (`hosting_first_analysis.md`).
+>
+> Zachowany wyłącznie jako kontekst historyczny decyzji.
+
 > Dokument-baza pod stworzenie scaffolda projektu. Zawiera decyzje i rekomendacje z fazy analizy.
 > Zakres: **stack technologiczny, struktura strony, hosting + CI/CD**. (Poza zakresem: design hero, animacje, narzędzia projektowe.)
 

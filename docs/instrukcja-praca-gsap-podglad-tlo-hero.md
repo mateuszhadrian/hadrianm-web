@@ -1,5 +1,15 @@
 # Jak zacząć pracę nad stroną GSAP — struktura, podgląd (desktop + mobile), pierwszy przykład
 
+> ⚠️ **DOKUMENT HISTORYCZNY** (oznaczono 2026-07-06)
+>
+> Instrukcja z najwcześniejszego etapu budowy — **nie traktować jako opisu obecnego projektu**. Nieaktualne m.in.:
+>
+> - `ScrollDemo.astro` jako główny komponent trasy `/` → nie istnieje już w projekcie.
+> - `Hero.astro` jako proste tło CSS w `src/components/` → dziś hero to `src/components/sections/hero/` (orkiestrator + moduły), a animowane tło to `src/components/backgrounds/AmbientBackground.astro`.
+>
+> Wciąż przydatne fragmenty: podgląd na telefonie (`pnpm dev --host`) i ogólne wzorce pracy z GSAP/ScrollTrigger.
+> Zachowany wyłącznie jako kontekst historyczny.
+
 > Instrukcja zakłada **gotowy scaffold** z [`instrukcja-scaffold-astro-gsap.md`](./instrukcja-scaffold-astro-gsap.md)
 > (Astro 6 `output: 'static'`, React islands, Tailwind v4, GSAP 3, i18n `pl`/`en`, alias `@/*`, `src/styles/global.css`).
 > Po jej przejściu będziesz mieć: czystą strukturę plików, pierwszą stronę z animacją **GSAP + ScrollTrigger**

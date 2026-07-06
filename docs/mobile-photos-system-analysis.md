@@ -1,5 +1,15 @@
 # System lżejszych zdjęć na mobile w sekcji „Realizacje" — analiza
 
+> ⚠️ **DOKUMENT HISTORYCZNY** (oznaczono 2026-07-06)
+>
+> Opisany tu system plików `-m` w repo został w całości zastąpiony przez **Cloudflare R2 + Image Transformations** (patrz `hosting_second_analysis_sveltia.md` §8 i `photos-management-for-cms-analysis.md`): `public/realizacje/` i skrypt `optimize-realizacje.mjs` zostały usunięte, rozmiary generowane są w locie. Nieaktualne m.in.:
+>
+> - Rekomendacja §5 (rozbudowa skryptu sharp o generowanie `-m`) — porzucona.
+> - Szerokość wariantu mobile **300 px** → wdrożony helper `imgAt()` (`src/lib/img.ts`) używa **320 px**.
+>
+> Nadal prawdziwy jest sam mechanizm wyboru wariantu przez `<picture media="(max-width: 760px)">`.
+> Zachowany wyłącznie jako kontekst historyczny.
+
 Dokument opisuje **jak działa obecny mechanizm** serwowania lżejszych
 grafik na urządzeniach mobilnych w sekcji Realizacje oraz **co trzeba zrobić**,
 żeby zbudować system „wrzucasz tylko wersję desktop → mniejszy wariant na mobile

@@ -166,7 +166,7 @@ Wg ustaleń — zero własnego backendu:
 
 ## 7. Domena i DNS (brak lock-inu)
 
-- Trzymaj **DNS na Cloudflare** (nawet jeśli kiedyś hosting pójdzie gdzie indziej). Rejestrator dowolny tani; możesz przenieść domenę do Cloudflare Registrar (sprzedają po cenie kosztowej, bez marży).
+- Trzymaj **DNS na Cloudflare** (nawet jeśli kiedyś hosting pójdzie gdzie indziej). Rejestrator dowolny tani; możesz przenieść domenę do Cloudflare Registrar (sprzedają po cenie kosztowej, bez marży). _⚠️ NIEAKTUALNE (2026-07-06): Cloudflare Registrar nie obsługuje domen `.pl` — `hadrianm.pl` kupiono w OVH (odnowienie ~72,50 zł brutto/rok), nameserwery wskazują Cloudflare; szczegóły w `hosting_second_analysis_sveltia.md` §7._
 - Przy podpięciu Pages: dodaj custom domain `hadrianm.pl` + `www`; certyfikat SSL automatyczny.
 - **Pułapki przy ewentualnym przepięciu** (gdyby kiedyś na Vercel): wyłącz proxy lub ustaw SSL **Full (strict)** (inaczej „too many redirects"); dzień wcześniej obniż TTL do 5 min (zero downtime).
 

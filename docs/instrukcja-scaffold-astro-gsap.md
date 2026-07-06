@@ -1,5 +1,14 @@
 # Scaffold projektu — Astro + GSAP (strona-wizytówka)
 
+> ⚠️ **DOKUMENT HISTORYCZNY — INSTRUKCJA WYKONANA** (oznaczono 2026-07-06)
+>
+> Scaffold został zrealizowany; dokument to zapis punktu startowego (przyda się np. przy white-label). Stan projektu od tego czasu odjechał — **nie opierać na tym pliku ustaleń o obecnym stacku**. Zmieniło się m.in.:
+>
+> - Font **Inter** (jawny placeholder) → docelowe fonty: Archivo / Instrument Serif / Saira / Space Mono (`@fontsource/*`).
+> - **MDX** jako warstwa treści → nieużywany; treść = Content Collections + Zod na plikach JSON (`src/content/realizacje/*.json`, CMS Sveltia — patrz `hosting_second_analysis_sveltia.md`).
+> - Doszedł **Lenis 1.3** (smooth scroll, `src/scripts/smooth-scroll.ts`) — nieprzewidziany w scaffoldzie.
+> - Content collections „dorobisz na etapie realizacji" → dawno wdrożone (`src/content.config.ts`).
+
 > Instrukcja krok po kroku do postawienia czystego, w pełni skonfigurowanego scaffolda
 > pod stronę-wizytówkę z ciężkimi animacjami GSAP. Po wykonaniu części głównej
 > (bez sekcji „Testy") projekt jest gotowy do pierwszego commita i dalszej pracy.

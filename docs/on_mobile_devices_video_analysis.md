@@ -3,6 +3,12 @@
 > Status: **ZAIMPLEMENTOWANE** (2026-06-23). Plan zatwierdzony, video wygenerowane, kod zmieniony i zweryfikowany. Szczegóły wyniku → sekcja 13.
 > Dotyczy sekcji Hero: `src/components/sections/hero/*`.
 
+> ℹ️ **AKTUALIZACJA (2026-07-06)** — od czasu wdrożenia doszły zmiany:
+>
+> - Obudowy na mobile są dziś PŁASKIE — twierdzenie „obudowa CSS 3D zachowana" jest nieaktualne: `perspective: none`, `transform-style: flat`, bez warstw ekstruzji; na Androidzie wymiary projektowe skaluje dodatkowo `--k = 0.6` (`ANDROID_DESIGN_SCALE` w `platform.ts`) — patrz `analiza-android-obudowy-3d-glodza-rasteryzacje.md` i `naprawa-android-scena-urzadzen-mobile.md`.
+> - Oba wideo grają dziś **ciągle** (`initMobilePhase3` + self-heal po mimowolnej pauzie dekodera iOS), nie strefowo jak w pierwotnym planie — szczegóły w `analiza-refactor-hero-odkruszenie.md`.
+> - Sekcja `Problem` nie istnieje — po hero następuje `Audience`.
+
 ---
 
 ## 1. Cel i kontekst

@@ -246,10 +246,14 @@ export function imgAt(src: string, width: "full" | "mobile"): string {
 
 // JUTRO (R2 + transformacje) — podmieniasz TYLKO tę funkcję:
 // export function imgAt(src, width) {
-//   const w = width === "mobile" ? 300 : 960;
+//   const w = width === "mobile" ? 320 : 960;
 //   return `/cdn-cgi/image/width=${w},format=auto/${src}`;
 // }
 ```
+
+> ✅ **2026-07:** wariant „JUTRO" został wdrożony — `src/lib/img.ts` używa dokładnie
+> tej postaci (szerokości **320**/960; patrz `hosting_second_analysis_sveltia.md` §8).
+> Fragmenty „DZIŚ" (pliki `-m` w repo) opisują stan już nieistniejący.
 
 `WorkDeviceDuo.astro` woła `imgAt(desktop, "mobile")` zamiast `mobileSrc(desktop)`
 — i **nie wie**, czy pod spodem jest plik `-m`, R2, czy transformacja CDN. To

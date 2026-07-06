@@ -1,5 +1,7 @@
 # Naprawa sceny urządzeń (mobile) — Android: telefon „za wysoko" + ucinanie dołu
 
+> ✅ **WDROŻONE** (oznaczono 2026-07-06): mnożnik `K = 0.6` żyje w kodzie jako `ANDROID_DESIGN_SCALE` (`src/components/sections/hero/platform.ts`), stosowany pod `max-width: 760px` + `html.is-android`; CSS czyta go przez `--k`. ⚠️ Uwaga: wzmianki w tym dokumencie o `perspective` na mobile (m.in. „perspective jest na mobile i podlega skalowaniu K") są nieaktualne — scena mobile jest dziś PŁASKA (`perspective: none`, `transform-style: flat`, bez warstw ekstruzji; patrz `analiza-android-obudowy-3d-glodza-rasteryzacje.md`), a `--k` skaluje wymiary/tokeny.
+
 > Spec implementacyjny. Dotyczy sekcji Hero, wariant **mobile** (`max-width: 760px`):
 > `src/components/sections/hero/Hero.astro`, `DeviceScene.astro`, `device-scene.ts`.
 > Oba problemy **zaobserwowane na Androidzie** (iPhone renderował poprawnie). Różnią

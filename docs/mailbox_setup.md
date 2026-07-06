@@ -187,9 +187,9 @@ na OK (propagacja: minuty).
 
 ## Krok 3 — test w webmailu (zanim skonfigurujesz klienty)
 
-1. Wejdź na **<https://www.ovhcloud.com/pl/mail/>** → zaloguj się
-   `info@hadrianm.pl` + hasło z Kroku 1 (nastąpi przekierowanie do webmaila
-   Zimbra).
+1. Wejdź na **<https://webmail.mail.ovh.net/>** (bezpośredni adres webmaila
+   Zimbra; działa też <https://www.ovhcloud.com/pl/mail/> z przekierowaniem)
+   → zaloguj się `info@hadrianm.pl` + hasło z Kroku 1.
 2. **Odbiór:** wyślij ze swojego Gmaila testowe maile na **wszystkie cztery**
    adresy (`info@`, `mateusz@`, `contact@`, `kontakt@hadrianm.pl`) — wszystkie
    powinny wpaść do tej samej skrzynki. Jeśli nie dochodzą — poczekaj na
@@ -334,7 +334,8 @@ Po przejściu checklisty zaktualizuj status 7.5 w
 
 ## Ściąga — wszystkie dane w jednym miejscu
 
-- **Webmail:** <https://www.ovhcloud.com/pl/mail/> (login: `info@hadrianm.pl`)
+- **Webmail:** <https://webmail.mail.ovh.net/> (login: `info@hadrianm.pl`;
+  alternatywnie <https://www.ovhcloud.com/pl/mail/> z przekierowaniem)
 - **IMAP:** `imap.mail.ovh.net:993` SSL · **POP3:** `pop.mail.ovh.net:995` SSL
   · **SMTP:** `smtp.mail.ovh.net:465` SSL (alias wszystkich trzech:
   `ssl0.ovh.net`) · login zawsze pełny adres `info@hadrianm.pl`

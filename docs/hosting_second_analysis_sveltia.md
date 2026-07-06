@@ -1457,17 +1457,21 @@ realizacje wyłącznie z panelu, a strona się aktualizuje.
 - [x] Etap 2: `public/admin/index.html` (Sveltia `0.170.0` przypięta, jsDelivr) +
       `config.yml` z pełnym modelem realizacji i `omit_empty_optional_fields` +
       `robots.txt` z `Disallow: /admin` (zweryfikowane lokalnie, 2026-07-03).
-- [ ] Etap 3: Worker `sveltia-cms-auth` + aplikacja OAuth GitHub + `base_url`.
-- [ ] Etap 4: `ci.yml` + branch protection; Pages podpięte; domena `hadrianm.pl`.
-- [ ] Etap 5: bucket R2 + domena `media.hadrianm.pl` + CORS + `media_libraries`
+- [x] Etap 3: Worker `sveltia-cms-auth` + aplikacja OAuth GitHub + `base_url`
+      (wykonane 2026-07-03; Worker wdrożony ręcznie przez `wrangler deploy` —
+      szczegóły utrzymaniowe w `optional-todos.md`).
+- [x] Etap 4: `ci.yml` + branch protection; Pages podpięte; domena `hadrianm.pl`
+      (wykonane 2026-07-03).
+- [x] Etap 5: bucket R2 + domena `media.hadrianm.pl` + CORS + `media_libraries`
       + **8.4a: istniejące zdjęcia zmigrowane do R2 przez dashboard (płaskie
       nazwy `<projekt>-<plik>.webp`), JSON-y wskazują URL-e z R2** + transformacje
       włączone + `imgAt()` przełączony + **8.6a: oba `src` w
       `WorkDeviceDuo.astro` owinięte w `imgAt(..., "full")`** (bez tego desktop
       serwuje surowe screenshoty z panelu); cały `public/realizacje/` i skrypt
-      `optimize-realizacje.mjs` usunięte.
-- [ ] Etap 6: (opcjonalnie) Stream przygotowany.
-- [ ] Etap 7: realizacja wgrana z panelu widoczna na `hadrianm.pl`.
+      `optimize-realizacje.mjs` usunięte (wykonane 2026-07-05).
+- [ ] Etap 6: (opcjonalnie) Stream przygotowany — jedyny pozostały, opcjonalny.
+- [x] Etap 7: realizacja wgrana z panelu widoczna na `hadrianm.pl`
+      (panel przetestowany E2E, 2026-07-05).
 
 ---
 

@@ -1,5 +1,7 @@
 # Analiza refaktoru `Hero.astro` — podział pliku i design system
 
+> ℹ️ **PLAN WYKONANY** (oznaczono 2026-07-06): podział zrealizowany (`DeviceScene.astro` + `device-scene.ts`), a następnie pogłębiony refactorem „odkruszającym" — skrypt hero podzielony na moduły `timeline-base` / `desktop-phases` / `caption-carousel` / `mobile-phases` (patrz `analiza-refactor-hero-odkruszenie.md`, które jest aktualnym opisem struktury). Uwaga: fazy nazywają się ostatecznie `phase1Desktop` / `phase2Desktop` / `phase3PhoneDesktop` / `phase1Mobile` / `phase2Mobile`, a nie `phase1WordToDevices` / `phase2MorphAndCopy` jak proponowano niżej.
+
 > Dokument decyzyjny przed refaktorem komponentu `src/components/sections/hero/Hero.astro`.
 > Zakres: **(A)** podział pliku w Astro, **(B)** organizacja kodu wg etapów animacji GSAP,
 > **(C)** wyodrębnienie kolorów/stylów do globalnego design systemu.

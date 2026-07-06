@@ -1,5 +1,11 @@
 # Osadzenie animacji `drewelomet` na ekranie laptopa w Hero — analiza i plan
 
+> ℹ️ **AKTUALIZACJA (2026-07-06):** plan został wdrożony (fazy nazwane ostatecznie `phase1Desktop` / `phase2Desktop` / `phase3PhoneDesktop`). Czytając, uwzględnij:
+>
+> - `ScrollTrigger.normalizeScroll` został później **usunięty z kodu** — wzmianka w §11 jest nieaktualna.
+> - Sekcja `Problem` nigdy nie powstała — po hero następuje `Audience` (`src/components/Home.astro`).
+> - Wartości liczbowe (`min-height`, `end`, `GROUP_SCALE` itd.) opisują stan z czasu pisania; kanoniczne wartości są dziś w `Hero.astro` / `hero-config.ts` (patrz `analiza-refactor-hero-odkruszenie.md`).
+
 > Dokument decyzyjny przed implementacją. Cel: ekran laptopa w scenie urządzeń Hero ma stać się
 > żywym oknem na stronę `ref_sources/drewelomet-gsap-page/index.html`, której **wewnętrzna animacja
 > GSAP/ScrollTrigger jest w 100% sprzężona z naszym master-timeline Hero** — użytkownik scrolluje
@@ -247,7 +253,7 @@ Skoro czytelność nieistotna, a ekran mały i pochylony — tniemy koszt malowa
 - **Waga/LCP (~14 MB PNG).** Bez optymalizacji (§8) ucierpi pierwszy render i bramka Lighthouse (`docs/analiza-stack...`: perf ≥0,9). Optymalizacja obrazów to nie „nice-to-have".
 - **Cleanup `matchMedia`.** `LaptopSite`/master muszą być killowane w `cleanup()` wariantu desktop (HMR / przejście desktop↔mobile), inaczej zostaną duplikaty timeline'ów i wycieki.
 - **Sprzężenie typewriter/`onUpdate`.** Funkcje zależne od czasu (typewriter liczy progi 0..1) muszą działać na progresie sub-timeline, nie na `tl.time()` globalnym — przy przenoszeniu do paused-timeline zweryfikować źródło progresu.
-- **`ScrollTrigger.normalizeScroll(true)`** (ustawione w Hero) bywa kapryśne z zagnieżdżonymi scrubami — przetestować na touchpadzie i na tablecie.
+- **`ScrollTrigger.normalizeScroll(true)`** (ustawione w Hero) bywa kapryśne z zagnieżdżonymi scrubami — przetestować na touchpadzie i na tablecie. _⚠️ NIEAKTUALNE (2026-07-06): `normalizeScroll` został usunięty z kodu — scroll obsługuje Lenis (`src/scripts/smooth-scroll.ts`)._
 
 ---
 

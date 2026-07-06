@@ -62,6 +62,14 @@ startu na iOS. Sesja wykonująca ten plan startuje więc z nowym stanem:
 5. Sekcja 1.4 i treści plików w Etapach 1–4 są zaktualizowane do tego stanu.
    Przy wątpliwościach źródłem prawdy jest KOD +
    `docs/analiza-refactor-hero-odkruszenie.md` (sekcje 1.2, 3, 4a).
+6. **`docs/` przeszło audyt spójności (2026-07-06).** Istnieje
+   `docs/README.md` — indeks statusów wszystkich analiz. Dokumenty w całości
+   nieaktualne mają banner „⚠️ DOKUMENT HISTORYCZNY" (nie są źródłem
+   ustaleń), częściowo nieaktualne — adnotacje ⚠️/ℹ️ przy konkretnych
+   fragmentach. Wykonując ten plan, przy każdym linkowanym docu sprawdź jego
+   status w indeksie. Checklista etapów w
+   `hosting_second_analysis_sveltia.md` jest zsynchronizowana ze stanem
+   faktycznym (etapy 1–5 i 7 wykonane; został opcjonalny Etap 6 — Stream).
 
 ---
 
@@ -101,9 +109,11 @@ Realizacja …"). Co z tego wynika:
    oznacza regresje (precedens: commit `0640aa1` scalił stałe Lenis
    desktop/touch i wywołał regresję naprawianą w `99ef97a`).
 2. **Docs-first.** Duże decyzje poprzedzają pisemne analizy w `docs/`
-   (24 pliki, po polsku): hosting, CMS, refaktory hero, naprawy Android.
+   (20+ plików, po polsku; statusy AKTUALNY/HISTORYCZNY w indeksie
+   `docs/README.md`): hosting, CMS, refaktory hero, naprawy Android.
    → Ekosystem powinien tę praktykę sformalizować (CLAUDE.md) i **linkować**
-   istniejące analizy zamiast je duplikować.
+   istniejące analizy zamiast je duplikować — ale wyłącznie te ze statusem
+   aktualnym.
 3. **Plany etapowe z numeracją** (Etap 1–5, kroki 7.1, 8.4a…) i odhaczanie
    w dokumentach — czyli preferencja dla kontrolowanego, krokowego wdrażania.
    Ten dokument jest zbudowany tak samo.
@@ -267,7 +277,9 @@ deploy automatyczny z gałęzi `main` → **main = produkcja**.
 - `src/styles/global.css` — design tokens w `:root` (kolory, fonty).
 - `public/admin/` — panel Sveltia CMS (config.yml = definicja pól panelu).
 - `scripts/` — narzędzia dev-only (capture wideo, optymalizacja obrazów).
-- `docs/` — analizy decyzyjne po polsku; Prettier i ESLint je ignorują.
+- `docs/` — analizy decyzyjne po polsku; **statusy plików w `docs/README.md`**
+  (dokumenty z bannerem „DOKUMENT HISTORYCZNY" nie są źródłem ustaleń).
+  Prettier i ESLint je ignorują.
 
 ## Konwencje pracy
 
@@ -285,20 +297,22 @@ deploy automatyczny z gałęzi `main` → **main = produkcja**.
 
 ## Kluczowe dokumenty (czytaj przed pracą w danym obszarze)
 
+- **Najpierw indeks statusów: `docs/README.md`** — dokumenty z bannerem
+  „DOKUMENT HISTORYCZNY" nie są źródłem ustaleń; pliki mieszane mają
+  adnotacje ⚠️/ℹ️ przy nieaktualnych fragmentach.
 - Hero — refactor, inwarianty, naprawy zimnego startu iOS:
   `docs/analiza-refactor-hero-odkruszenie.md` (NAJWAŻNIEJSZY dla pracy w hero)
 - Hero/Android: `docs/analiza-android-obudowy-3d-glodza-rasteryzacje.md`,
   `docs/naprawa-android-scena-urzadzen-mobile.md`
-- Architektura sekcji/tła: `docs/architektura-sekcje-tla-hero-i-kolejne.md`,
-  `docs/analiza-refactor-hero-podzial-i-design-system.md`
+- Tło ambient + crossfade sekcji: `docs/analiza-tlo-hero-animowane-chmury.md`
+  (wdrożone jako `src/components/backgrounds/AmbientBackground.astro`)
 - CMS + hosting (plan i stan): `docs/hosting_second_analysis_sveltia.md`,
   `docs/photos-management-for-cms-analysis.md`
 - Utrzymanie cykliczne (Worker auth, sekrety): `docs/optional-todos.md`
-- Praca z GSAP/podglądem tła: `docs/instrukcja-praca-gsap-podglad-tlo-hero.md`
 ````
 
 **Krok 1.2.** Sprawdź rozmiar: plik ma być < 200 linii (limit adherencji wg
-dokumentacji). Powyższy ma ~85 — jest zapas na przyszłe zasady.
+dokumentacji). Powyższy ma ~90 — jest zapas na przyszłe zasady.
 
 **Krok 1.3.** Weryfikacja: nowa sesja `claude` → komenda `/context` —
 CLAUDE.md powinien być widoczny w załadowanym kontekście.
@@ -1206,6 +1220,10 @@ Etapy 1+2 można wdrożyć w jednej sesji („fundament"), 3+4 w następnej
 - **Rules-review przy większych refaktorach** — reguła, której plik/stała
   zniknęła z kodu, myli zamiast pomagać; aktualizuj razem z kodem (rules
   są w gicie, więc review łapie rozjazdy).
+- **Nowy lub zdezaktualizowany dokument w `docs/`** → zaktualizuj indeks
+  `docs/README.md`; dokument unieważniony przez nowszą decyzję dostaje
+  banner „⚠️ DOKUMENT HISTORYCZNY" (konwencja z audytu 2026-07-06) —
+  inaczej przyszła sesja odczyta stary plan jako obowiązujący.
 - **Okresowo (raz na kwartał)**: `/context` — czy coś niepotrzebnie puchnie;
   przejrzyj `docs/optional-todos.md` (Worker auth, sekrety, R2-orphany).
 - **Po wdrożeniu Etapu 7**: każde ulepszenie rdzenia w hadrianm-web od razu
