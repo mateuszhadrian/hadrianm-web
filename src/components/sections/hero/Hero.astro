@@ -582,6 +582,7 @@ const splitAccent = (line: string) =>
     ANDROID_DESIGN_SCALE,
   } from "./platform";
   import { setRest } from "./scene-vars";
+  import { SEL, devWarnMissing } from "./selectors";
   import { q, buildBase, deviceRefs, cleanup } from "./timeline-base";
   import {
     phase1Desktop,
@@ -626,7 +627,8 @@ const splitAccent = (line: string) =>
       String(ANDROID_DESIGN_SCALE),
     );
   }
-  const devicesEl = document.querySelector<HTMLElement>(".hero__devices");
+  const devicesEl = q(SEL.devices);
+  if (!devicesEl) devWarnMissing("devices");
   const scene = devicesEl ? initDeviceScene(devicesEl) : null;
 
   /* ── Animacja sterowana scrollem (tylko gdy ruch dozwolony) ── */
@@ -655,9 +657,8 @@ const splitAccent = (line: string) =>
   mm.add(`(prefers-reduced-motion: no-preference) and ${DESKTOP_MQ}`, () => {
     // Strona drewelomet na ekranie laptopa — inicjalizowana tylko na desktop/tablet.
     // Owinięte w try/catch: błąd inicjalizacji nie może zamrozić animacji Hero.
-    const laptopRoot = q<HTMLElement>(
-      ".hero__devices .screen--laptop .dw-root",
-    );
+    const laptopRoot = q<HTMLElement>(SEL.laptopSiteRoot);
+    if (!laptopRoot) devWarnMissing("laptopSiteRoot");
     let site: LaptopSiteApi | null = null;
     try {
       if (laptopRoot) site = initLaptopSite(laptopRoot);
@@ -666,7 +667,8 @@ const splitAccent = (line: string) =>
       site = null;
     }
 
-    const phoneRoot = q<HTMLElement>(".hero__devices .screen--phone .dwm-root");
+    const phoneRoot = q<HTMLElement>(SEL.phoneSiteRoot);
+    if (!phoneRoot) devWarnMissing("phoneSiteRoot");
     let phoneSite: PhoneSiteApi | null = null;
     try {
       if (phoneRoot) phoneSite = initPhoneSite(phoneRoot);
@@ -683,7 +685,7 @@ const splitAccent = (line: string) =>
     }
 
     const heroHeightCleanup = heroHeightSync(
-      q("#hero"),
+      q(SEL.hero),
       DESKTOP_MIN_HEIGHT_SVH,
     );
 
@@ -706,13 +708,14 @@ const splitAccent = (line: string) =>
   mm.add(`(prefers-reduced-motion: no-preference) and ${MOBILE_MQ}`, () => {
     // Odchudzenie DOM: żywe podglądy stron (ciężkie poddrzewa + obrazy) są na
     // mobile niepotrzebne — ekrany napędza video. Usuwamy je całkiem z DOM.
-    q(".hero__devices .screen--laptop .dw-root")?.remove();
-    q(".hero__devices .screen--phone .dwm-root")?.remove();
+    q(SEL.laptopSiteRoot)?.remove();
+    q(SEL.phoneSiteRoot)?.remove();
 
     const b = buildBase(MOBILE_SCREENS_BASE * SCROLL_SCALE);
     if (!b) return;
     const refs = deviceRefs();
-    const fitEl = q(".hero__devices .fit");
+    const fitEl = q(SEL.fit);
+    if (!fitEl) devWarnMissing("fit");
 
     const fitScale = () =>
       fitEl ? parseFloat(fitEl.style.getPropertyValue("--fit")) || 1 : 1;
@@ -725,7 +728,7 @@ const splitAccent = (line: string) =>
     phase1Mobile(b, refs, slide, zDepth);
     phase2Mobile(b, refs);
 
-    const hero = q("#hero");
+    const hero = q(SEL.hero);
     const setupVideo = (sel: string) => {
       const v = q<HTMLVideoElement>(sel);
       if (v && v.dataset.src && !v.src) {
@@ -745,8 +748,10 @@ const splitAccent = (line: string) =>
       }
     };
 
-    const lapVideo = setupVideo("[data-gsap='video-laptop']");
-    const phVideo = setupVideo("[data-gsap='video-phone']");
+    const lapVideo = setupVideo(SEL.videoLaptop);
+    const phVideo = setupVideo(SEL.videoPhone);
+    if (!lapVideo) devWarnMissing("videoLaptop");
+    if (!phVideo) devWarnMissing("videoPhone");
 
     const heroHeightCleanup = heroHeightSync(hero, MOBILE_MIN_HEIGHT_SVH);
     const captionGrowthCleanup = initCaptionGrowth(hero);
@@ -754,8 +759,10 @@ const splitAccent = (line: string) =>
 
     // ── Faza 3 (wspólna iOS + Android): ciągłe odtwarzanie w pętli +
     // czerwone odcinki na pasku postępu — patrz android-mobile.ts.
-    const progressEl = q(".hero__progress");
-    const progressDot = q(".hero__progress-dot");
+    const progressEl = q(SEL.progress);
+    const progressDot = q(SEL.progressDot);
+    if (!progressEl) devWarnMissing("progress");
+    if (!progressDot) devWarnMissing("progressDot");
     const phase3Cleanup = initMobilePhase3({
       hero,
       vidMax: VID_MAX,

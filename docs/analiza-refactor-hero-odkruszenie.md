@@ -249,7 +249,12 @@ kodzie (stare notatki wprowadzały w błąd).
       890→216 linii orkiestracji; zmiany wyłącznie mechaniczne + jawne
       parametry (scene, hero) i deduplikacja heroHeightSync; harness 33/33 =
       0.000% diff; CZEKA na pełny test 📱 na obu telefonach przed commitem)
-- [ ] Krok 5 — `selectors.ts` + głośny dev
+- [ ] Krok 5 — `selectors.ts` + głośny dev (2026-07-06: wdrożone — mapa SEL
+      27 selektorów międzyplikowych + devWarnMissing z dedupem; ostrzeżenia
+      w buildBase/deviceRefs/device-scene/karuzeli/fazach mobile/orkiestracji;
+      harness 33/33 = 0.000% diff; DEV-kod wycięty z builda prod (grep 0);
+      smoke-test ostrzeżenia na zepsutym kontrakcie — działa; bez testu 📱
+      zgodnie z tabelą — do odhaczenia po commicie)
 - [ ] Krok 6 — aktualizacja rules / komentarzy
 
 Szacunek: krok 0 — jedna sesja; 1–3 — jedna sesja; 4 — jedna–dwie sesje;

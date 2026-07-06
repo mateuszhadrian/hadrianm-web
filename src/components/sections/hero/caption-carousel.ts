@@ -7,17 +7,22 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { Base } from "./timeline-base";
 import { CAP_START, CAP_END } from "./hero-config";
+import { SEL, devWarnMissing } from "./selectors";
 
 export const initCaptionCarousel = (b: Base) => {
   const copy = b.copy;
-  if (!copy) return () => {};
-  const rows = Array.from(
-    copy.querySelectorAll<HTMLElement>(".hero__copy-row"),
-  );
+  if (!copy) {
+    devWarnMissing("copy");
+    return () => {};
+  }
+  const rows = Array.from(copy.querySelectorAll<HTMLElement>(SEL.copyRow));
   const maybeTexts = rows.map((r) =>
-    r.querySelector<HTMLElement>(".hero__copy-text"),
+    r.querySelector<HTMLElement>(SEL.copyText),
   );
-  if (rows.length < 3 || maybeTexts.some((t) => !t)) return () => {};
+  if (rows.length < 3 || maybeTexts.some((t) => !t)) {
+    devWarnMissing(rows.length < 3 ? "copyRow" : "copyText");
+    return () => {};
+  }
   const texts = maybeTexts as HTMLElement[];
 
   copy.classList.add("is-carousel");

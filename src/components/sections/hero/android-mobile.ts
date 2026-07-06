@@ -1,4 +1,5 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SEL } from "./selectors";
 
 /**
  * FAZA 3 (mobile) — wspólna dla iOS i Androida: ekrany urządzeń grają w pętli
@@ -154,7 +155,7 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
 
   // Odcinki są statyczne w markupie (2× seg) — tu tylko ustawiamy pozycje.
   const segEls = progressEl
-    ? [...progressEl.querySelectorAll<HTMLElement>(".hero__progress-seg")]
+    ? [...progressEl.querySelectorAll<HTMLElement>(SEL.progressSeg)]
     : [];
   segs.forEach((s, i) => {
     segEls[i]?.style.setProperty("--seg-top", s.from.toFixed(4));

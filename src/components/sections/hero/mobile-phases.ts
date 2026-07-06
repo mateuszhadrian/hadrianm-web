@@ -7,6 +7,7 @@ import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { IS_ANDROID, ANDROID_DESIGN_SCALE } from "./platform";
 import { q, type Base, type DeviceRefs } from "./timeline-base";
+import { SEL, devWarnMissing } from "./selectors";
 import {
   MOB_SETTLE_START,
   MOB_SETTLE_DUR,
@@ -135,10 +136,15 @@ export const phase2Mobile = (b: Base, refs: DeviceRefs) => {
 // (nic innego się nie przesuwa). Sterowane scrubem → w pełni odwracalne.
 export const initCaptionGrowth = (hero: HTMLElement | null) => {
   if (!hero) return () => {};
-  const t1 = q<HTMLElement>(".hero__copy-row--1 .hero__copy-text");
-  const t2 = q<HTMLElement>(".hero__copy-row--2 .hero__copy-text");
-  const t3 = q<HTMLElement>(".hero__copy-row--3 .hero__copy-text");
-  if (!t1 || !t2 || !t3) return () => {};
+  const t1 = q<HTMLElement>(SEL.copyRow1Text);
+  const t2 = q<HTMLElement>(SEL.copyRow2Text);
+  const t3 = q<HTMLElement>(SEL.copyRow3Text);
+  if (!t1 || !t2 || !t3) {
+    if (!t1) devWarnMissing("copyRow1Text");
+    if (!t2) devWarnMissing("copyRow2Text");
+    if (!t3) devWarnMissing("copyRow3Text");
+    return () => {};
+  }
 
   const muted = getComputedStyle(t2).color; // bazowy szary 02/03
   const ink = getComputedStyle(t1).color; // biel tekstu 01
@@ -208,9 +214,12 @@ export const initCaptionGrowth = (hero: HTMLElement | null) => {
 
 // ── Dividery 02/03 kotwiczone do spodów urządzeń (render-only, Android) ───
 export const initDividers = (hero: HTMLElement | null, refs: DeviceRefs) => {
-  const stageEl = q(".hero__stage");
-  const div02 = q<HTMLElement>(".hero__copy-row--2");
-  const div03 = q<HTMLElement>(".hero__copy-row--3");
+  const stageEl = q(SEL.stage);
+  const div02 = q<HTMLElement>(SEL.copyRow2);
+  const div03 = q<HTMLElement>(SEL.copyRow3);
+  if (!stageEl) devWarnMissing("stage");
+  if (!div02) devWarnMissing("copyRow2");
+  if (!div03) devWarnMissing("copyRow3");
   const placeDividers = () => {
     if (!stageEl) return;
     const stageTop = stageEl.getBoundingClientRect().top;

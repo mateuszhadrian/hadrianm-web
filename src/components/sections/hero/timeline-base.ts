@@ -4,20 +4,36 @@
 
 import { gsap } from "gsap";
 import { removeVars } from "./scene-vars";
+import { SEL, devWarnMissing } from "./selectors";
 
 export const q = <T extends HTMLElement = HTMLElement>(s: string) =>
   document.querySelector<T>(s);
 
 export const buildBase = (screens: number) => {
-  const hero = q("#hero");
-  const stage = q(".hero__stage");
-  const head = q(".hero__head");
-  const ghost = q(".hero__accent--ghost");
-  const live = q(".hero__accent--live");
-  const devices = q(".hero__devices");
-  const copy = q(".hero__copy");
-  const scroll = q(".hero__scroll");
-  if (!hero || !stage || !head || !ghost || !live || !devices) return null;
+  const hero = q(SEL.hero);
+  const stage = q(SEL.stage);
+  const head = q(SEL.head);
+  const ghost = q(SEL.accentGhost);
+  const live = q(SEL.accentLive);
+  const devices = q(SEL.devices);
+  const copy = q(SEL.copy);
+  const scroll = q(SEL.scroll);
+  if (!hero || !stage || !head || !ghost || !live || !devices) {
+    // brak któregokolwiek = CAŁA animacja hero po cichu wyłączona — w dev krzycz
+    (
+      [
+        ["hero", hero],
+        ["stage", stage],
+        ["head", head],
+        ["accentGhost", ghost],
+        ["accentLive", live],
+        ["devices", devices],
+      ] as const
+    ).forEach(([name, el]) => {
+      if (!el) devWarnMissing(name);
+    });
+    return null;
+  }
 
   const rect = () => {
     const g = ghost.getBoundingClientRect();
@@ -94,12 +110,19 @@ export type DeviceRefs = {
   camera: HTMLElement | null;
   base: HTMLElement | null;
 };
-export const deviceRefs = (): DeviceRefs => ({
-  laptop: q("[data-gsap='laptop']"),
-  phone: q("[data-gsap='phone']"),
-  camera: q(".hero__devices .camera"),
-  base: q("[data-gsap='laptop-base']"),
-});
+export const deviceRefs = (): DeviceRefs => {
+  const refs = {
+    laptop: q(SEL.gsapLaptop),
+    phone: q(SEL.gsapPhone),
+    camera: q(SEL.camera),
+    base: q(SEL.gsapLaptopBase),
+  };
+  if (!refs.laptop) devWarnMissing("gsapLaptop");
+  if (!refs.phone) devWarnMissing("gsapPhone");
+  if (!refs.camera) devWarnMissing("camera");
+  if (!refs.base) devWarnMissing("gsapLaptopBase");
+  return refs;
+};
 
 export const cleanup = (b: Base) => () => {
   b.dispose();

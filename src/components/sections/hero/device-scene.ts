@@ -1,6 +1,7 @@
 import { gsap } from "gsap";
 import { IS_ANDROID, MOBILE_MQ, ANDROID_DESIGN_SCALE } from "./platform";
 import { setRest, cameraCxRest } from "./scene-vars";
+import { SEL, devWarnMissing } from "./selectors";
 
 // ── Docelowa poza urządzeń w klatce C (desktop) — jedno źródło prawdy:
 //    używane i przy pomiarze adaptacyjnym (computeFrameC), i w timeline (Hero). ──
@@ -34,8 +35,11 @@ export interface DeviceSceneApi {
 export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
   // Tokeny wymiarów/chassis żyją na `.device-scene` (komponent), więc CSS-owe
   // zmienne czytamy z tego elementu, a nie z wrappera.
-  const scene = devicesEl.querySelector<HTMLElement>(".device-scene");
-  if (!scene) return null;
+  const scene = devicesEl.querySelector<HTMLElement>(SEL.deviceScene);
+  if (!scene) {
+    devWarnMissing("deviceScene");
+    return null;
+  }
 
   // Adaptacyjne dopasowanie grupy do prawej strefy — liczone w layout (resize),
   // czytane przez timeline. scale >1 = powiększenie, <1 = pomniejszenie.
@@ -88,11 +92,16 @@ export function initDeviceScene(devicesEl: HTMLElement): DeviceSceneApi | null {
   }
 
   /* ── 2) Pierwsza klatka sceny + skalowanie do viewportu ── */
-  const camera = scene.querySelector<HTMLElement>('[data-gsap="camera"]');
-  const laptop = scene.querySelector<HTMLElement>('[data-gsap="laptop"]');
-  const phone = scene.querySelector<HTMLElement>('[data-gsap="phone"]');
-  const base = scene.querySelector<HTMLElement>('[data-gsap="laptop-base"]');
-  const fitEl = scene.querySelector<HTMLElement>(".fit");
+  const camera = scene.querySelector<HTMLElement>(SEL.gsapCamera);
+  const laptop = scene.querySelector<HTMLElement>(SEL.gsapLaptop);
+  const phone = scene.querySelector<HTMLElement>(SEL.gsapPhone);
+  const base = scene.querySelector<HTMLElement>(SEL.gsapLaptopBase);
+  const fitEl = scene.querySelector<HTMLElement>(SEL.fitInScene);
+  if (!camera) devWarnMissing("gsapCamera");
+  if (!laptop) devWarnMissing("gsapLaptop");
+  if (!phone) devWarnMissing("gsapPhone");
+  if (!base) devWarnMissing("gsapLaptopBase");
+  if (!fitEl) devWarnMissing("fitInScene");
 
   const isStacked = () => window.matchMedia(MOBILE_MQ).matches;
 
