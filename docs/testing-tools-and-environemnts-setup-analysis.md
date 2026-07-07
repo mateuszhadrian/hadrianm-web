@@ -520,6 +520,13 @@ projektu. Do tego czasu oba systemy żyją równolegle (stary jako plan B).
    ¹ TBT ×1,15 z baseline'u rzędu 0–25 ms byłoby czystym szumem runnera —
    świadoma podłoga zamiast mnożnika. ² Desktop ładuje fonty drewelomet
    (LaptopSite) — baseline 7, korekta pierwotnego szkicu (6).
+
+   **Ratchet #1 po etapie 7 (2026-07-07, run 28894534750, mediany z 3):**
+   preload fontu (I.4) zbił CLS na mobile `/en/` z 0.0173 → 0.0004, perf
+   mobile 0.95–0.97. Zacieśnione: CLS ≤ 0.005 (oba profile; było 0.02),
+   perf mobile ≥ 0.90 (było 0.89). LCP bez zmian (mobile `/en/` 2724 ms —
+   w granicach szumu vs baseline; ratchet nigdy nie luzuje). Wagi bez
+   zmian — og-image/client.js nie wchodzą w krytyczną ścieżkę strony.
    - próg = baseline × 1,15 dla metryk czasowych, baseline + 10% dla wag
      zasobów — margines na szum runnera, zero fałszywych czerwonych;
    - **ratchet:** po każdej wdrożonej optymalizacji z Części I ponowny pomiar
