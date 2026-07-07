@@ -2,7 +2,10 @@
 
 Strona-wizytówka hadrianm.pl. Astro 6 **static** (bez SSR), PL pod `/`,
 EN pod `/en/` (`prefixDefaultLocale: false`). Hosting: Cloudflare Pages,
-deploy automatyczny z gałęzi `main` → **main = produkcja**.
+deploy automatyczny z gałęzi `main` → **main = produkcja**. Main jest
+chroniony (required checks: `quality`, `e2e`, `lighthouse`) — zmiany idą
+przez feature branch → PR → zielone checki → merge; bez pracy wprost
+na main.
 
 ## Zasady twarde
 
@@ -36,7 +39,11 @@ deploy automatyczny z gałęzi `main` → **main = produkcja**.
   `pnpm test:smoke:prod` (smoke przeciw produkcji)
 - `pnpm capture:devices` — regeneracja MP4 ekranów urządzeń (użyj skilla
   `/capture-devices`, ma pre-checki)
-- CI (GitHub Actions) na push/PR: format:check → lint → typecheck → build.
+- CI (GitHub Actions) na push/PR — 3 joby (required checks na main):
+  `quality` (format:check → lint → typecheck → test:unit → build),
+  `e2e` (test:e2e + test:visual na artefakcie dist), `lighthouse`
+  (budżety ratchet, lighthouserc\*). Po merge'u do main dodatkowo
+  `prod-smoke.yml` (czeka na deploy Cloudflare, potem test:smoke:prod).
   Lokalnie husky: pre-commit lint-staged, commit-msg commitlint.
 
 ## Mapa projektu

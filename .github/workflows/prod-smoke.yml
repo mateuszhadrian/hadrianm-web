@@ -1,0 +1,56 @@
+# Smoke produkcji po każdym push na main (main = produkcja; deploy robi
+# Cloudflare Pages automatycznie). Strategia: zbuduj dist lokalnie, wyciągnij
+# zahashowaną nazwę assetu i czekaj, aż produkcja zacznie ją serwować
+# (hash Astro jest deterministyczny dla tej samej treści) — dopiero wtedy
+# odpal testy @prod-smoke przeciw https://hadrianm.pl. Porażka = mail
+# z GitHuba natychmiast po zepsutym deployu.
+name: Prod smoke
+on:
+  push:
+    branches: [main]
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - name: Czekaj na świeży deploy Cloudflare Pages
+        run: |
+          asset=$(grep -oE '/_astro/[^"]+' dist/index.html | head -1)
+          if [ -z "$asset" ]; then
+            echo "Nie znalazłem zahashowanego assetu w dist/index.html" >&2
+            exit 1
+          fi
+          echo "Czekam, aż https://hadrianm.pl poda: $asset"
+          for i in $(seq 1 30); do
+            html=$(curl -s -H "Cache-Control: no-cache" https://hadrianm.pl/)
+            if echo "$html" | grep -q "$asset"; then
+              ray=$(curl -sI https://hadrianm.pl/ | tr -d '\r' | grep -i '^cf-ray' || true)
+              echo "Deploy świeży (próba $i; $ray)"
+              exit 0
+            fi
+            echo "  próba $i/30 — jeszcze stary build, czekam 20 s…"
+            sleep 20
+          done
+          echo "Timeout (10 min): produkcja nadal nie serwuje $asset" >&2
+          exit 1
+      - name: Playwright version (klucz cache)
+        id: pw
+        run: echo "version=$(node -p "require('@playwright/test/package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      - run: pnpm exec playwright install --with-deps chromium webkit firefox
+      - run: pnpm test:smoke:prod
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: prod-smoke-report
+          path: playwright-report/
