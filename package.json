@@ -25,6 +25,13 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
+    "test": "pnpm test:unit && pnpm test:e2e && pnpm test:visual",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:e2e": "playwright test tests/e2e",
+    "test:visual": "playwright test tests/visual",
+    "test:visual:update": "playwright test tests/visual --update-snapshots",
+    "test:smoke:prod": "BASE_URL=https://hadrianm.pl playwright test tests/e2e --grep @prod-smoke",
     "optimize:drewelomet": "node scripts/optimize-drewelomet.mjs",
     "capture:devices": "node scripts/capture-device-videos.mjs",
     "capture:ambient-bg": "node scripts/capture-ambient-bg.mjs",
@@ -52,9 +59,12 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.12.1",
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
+    "@playwright/test": "~1.61.1",
     "eslint": "^10.4.1",
     "eslint-plugin-astro": "^1.7.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
@@ -62,11 +72,12 @@
     "globals": "^17.6.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.0.7",
-    "playwright": "^1.61.0",
+    "playwright": "^1.61.1",
     "prettier": "^3.8.4",
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "sharp": "^0.35.2",
-    "typescript-eslint": "^8.61.0"
+    "typescript-eslint": "^8.61.0",
+    "vitest": "^4.1.10"
   }
 }
