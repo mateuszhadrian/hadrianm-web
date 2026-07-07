@@ -436,10 +436,18 @@ strona → czytelniejsze raporty). Plus otwarty Modal i BottomSheet WorkDetail.
 1. Lokalnie (macOS): `pnpm build && pnpm test:visual:update` → pliki
    `*-darwin.png`.
 2. Linux: workflow ręczny `update-visual-baselines.yml`
-   (`workflow_dispatch`) uruchamia to samo w CI i **wystawia artefakt**
-   z `*-linux.png`; Mateusz pobiera, podmienia lokalnie i commituje razem
-   z darwin (zgodnie z zasadą „commituje wyłącznie Mateusz" — bez bot-commitów).
-   Alternatywa bez CI: `docker run --rm -v "$PWD":/work -w /work mcr.microsoft.com/playwright:v1.61.2-noble sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm build && pnpm test:visual:update"`.
+   (**wyłącznie `workflow_dispatch`** — nigdy automatycznie; auto-aktualizacja
+   baseline'ów unieważniłaby testy, bo wzorzec podążałby za regresją)
+   uruchamia to samo w CI i **dopisuje bot-commit** (`github-actions[bot]`,
+   `chore(test): update linux visual baselines`) do brancha PR-a, z którego
+   został odpalony. Mateusz ogląda diff obrazków w PR (GitHub renderuje
+   before/after) i decyduje o merge'u — zasada „commituje wyłącznie Mateusz"
+   dotyczy pracy Claude'a w sesji, nie mechanicznych PNG z CI; realna bramka
+   kontroli to review PR-a + branch protection (etap 6). Uwaga: po
+   bot-commicie `git pull` na branchu przed kolejnym pushem. Workflow wymaga
+   `permissions: contents: write`. Alternatywa bez CI (offline):
+   `docker run --rm -v "$PWD":/work -w /work mcr.microsoft.com/playwright:v1.61.2-noble sh -c "corepack enable && pnpm install --frozen-lockfile && pnpm build && pnpm test:visual:update"`
+   — wtedy pliki commituje Mateusz ręcznie.
 3. Zamierzona zmiana wyglądu = w JEDNYM PR: kod + oba komplety baseline'ów
    + diff pokazany Mateuszowi do akceptacji (procedura w regule
    `.claude/rules/testing.md`, Część IV).
