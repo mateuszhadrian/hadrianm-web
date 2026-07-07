@@ -29,18 +29,13 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      # ── TRYB POMIARU BAZOWEGO (etap 5) ──
-      # 5 przebiegów per profil; mediany z logu wpisujemy do lighthouserc*
-      # jako progi ratchet (czasy ×1,15; wagi zasobów +10%), potem ten job
-      # przechodzi na `lhci autorun` (analiza §III.5). Pomiar NA RUNNERZE —
-      # progi muszą odpowiadać maszynie, która bramkuje.
-      - name: LHCI collect — mobile (5 runs)
-        run: pnpm exec lhci collect --config=lighthouserc.cjs --numberOfRuns=5
-      - name: Mediany — mobile
-        run: node scripts/lhci-median.mjs
-      - name: LHCI collect — desktop (5 runs)
+      # Progi ratchet w lighthouserc* (baseline zmierzony na runnerze,
+      # run 28884218254). Ponowny pomiar median (przy ratchecie po
+      # optymalizacjach): lhci collect --numberOfRuns=5 + scripts/lhci-median.mjs
+      # — procedura w analizie §III.5.
+      - name: LHCI — mobile
+        run: pnpm exec lhci autorun --config=lighthouserc.cjs
+      - name: LHCI — desktop
         run: |
           rm -rf .lighthouseci
-          pnpm exec lhci collect --config=lighthouserc.desktop.cjs --numberOfRuns=5
-      - name: Mediany — desktop
-        run: node scripts/lhci-median.mjs
+          pnpm exec lhci autorun --config=lighthouserc.desktop.cjs

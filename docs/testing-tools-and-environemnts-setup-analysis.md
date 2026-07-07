@@ -495,6 +495,23 @@ projektu. Do tego czasu oba systemy żyją równolegle (stary jako plan B).
    - pomiar bazowy: 5× `lhci collect` w CI (nie lokalnie — progi muszą
      odpowiadać maszynie, która będzie bramkować), mediana → do tabeli
      w tym dokumencie (dopisać po pomiarze);
+
+   **Baseline zmierzony (2026-07-07, ubuntu-latest, run 28884218254,
+   mediany z 5 przebiegów; pomocnik: `scripts/lhci-median.mjs`):**
+
+   | Metryka | mobile `/` | mobile `/en/` | desktop `/` | desktop `/en/` | Próg (gorszy URL) |
+   | --- | --- | --- | --- | --- | --- |
+   | performance | 0.94 | 0.96 | 0.93 | 0.93 | ≥ 0.89 (m) / ≥ 0.88 (d) |
+   | LCP | 2568 ms | 2573 ms | 1733 ms | 1713 ms | ≤ 2960 (m) / ≤ 2000 (d) |
+   | TBT | 25 ms | 15 ms | 0 ms | 0 ms | podłoga: ≤ 150 (m) / ≤ 100 (d)¹ |
+   | CLS | 0.0027 | 0.0173 | 0.0089 | 0.0098 | ≤ 0.02 |
+   | script | 68 KB | 68 KB | 68 KB | 68 KB | ≤ 75 KB |
+   | total | 1801 KB | 1789 KB | 1716 KB | 1703 KB | ≤ 1982 (m) / ≤ 1890 KB (d) |
+   | fonty (req) | 4 | 3 | 7 | 6 | warn: ≤ 5 (m) / ≤ 7 (d)² |
+
+   ¹ TBT ×1,15 z baseline'u rzędu 0–25 ms byłoby czystym szumem runnera —
+   świadoma podłoga zamiast mnożnika. ² Desktop ładuje fonty drewelomet
+   (LaptopSite) — baseline 7, korekta pierwotnego szkicu (6).
    - próg = baseline × 1,15 dla metryk czasowych, baseline + 10% dla wag
      zasobów — margines na szum runnera, zero fałszywych czerwonych;
    - **ratchet:** po każdej wdrożonej optymalizacji z Części I ponowny pomiar
