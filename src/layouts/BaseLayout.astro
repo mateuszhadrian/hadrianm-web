@@ -12,6 +12,11 @@ import "@fontsource/space-mono/latin-400.css";
 
 import "@/styles/global.css";
 
+// Preload głównego kroju above-the-fold (Archivo latin) — skraca okno
+// font-display:swap (mniejszy „przeskok" z fontu systemowego). Import ?url
+// zamiast hardkodu: hash pliku woff2 zmienia się co build.
+import archivoWoff2 from "@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2?url";
+
 interface Props {
   title?: string;
   lang?: string;
@@ -40,6 +45,13 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <meta name="theme-color" content="#000000" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={archivoWoff2}
+      crossorigin
+    />
     <title>{title}</title>
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="hadrianm.pl" />
