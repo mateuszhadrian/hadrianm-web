@@ -18,3 +18,29 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # ── TRYB POMIARU BAZOWEGO (etap 5) ──
+      # 5 przebiegów per profil; mediany z logu wpisujemy do lighthouserc*
+      # jako progi ratchet (czasy ×1,15; wagi zasobów +10%), potem ten job
+      # przechodzi na `lhci autorun` (analiza §III.5). Pomiar NA RUNNERZE —
+      # progi muszą odpowiadać maszynie, która bramkuje.
+      - name: LHCI collect — mobile (5 runs)
+        run: pnpm exec lhci collect --config=lighthouserc.cjs --numberOfRuns=5
+      - name: Mediany — mobile
+        run: node scripts/lhci-median.mjs
+      - name: LHCI collect — desktop (5 runs)
+        run: |
+          rm -rf .lighthouseci
+          pnpm exec lhci collect --config=lighthouserc.desktop.cjs --numberOfRuns=5
+      - name: Mediany — desktop
+        run: node scripts/lhci-median.mjs
