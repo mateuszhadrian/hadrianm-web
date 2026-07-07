@@ -18,3 +18,24 @@ jobs:
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm build
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      # Progi ratchet w lighthouserc* (baseline zmierzony na runnerze,
+      # run 28884218254). Ponowny pomiar median (przy ratchecie po
+      # optymalizacjach): lhci collect --numberOfRuns=5 + scripts/lhci-median.mjs
+      # — procedura w analizie §III.5.
+      - name: LHCI — mobile
+        run: pnpm exec lhci autorun --config=lighthouserc.cjs
+      - name: LHCI — desktop
+        run: |
+          rm -rf .lighthouseci
+          pnpm exec lhci autorun --config=lighthouserc.desktop.cjs
