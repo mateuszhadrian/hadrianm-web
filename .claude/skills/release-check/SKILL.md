@@ -16,20 +16,33 @@ git log --oneline -5
 ## 2. Bramka jakości (identyczna z CI — kolejność jak w .github/workflows/ci.yml)
 
 Uruchom po kolei; każdy błąd napraw albo zgłoś:
-`pnpm format:check` → `pnpm lint` → `pnpm typecheck` → `pnpm build`.
+`pnpm format:check` → `pnpm lint` → `pnpm typecheck` → `pnpm test:unit`
+→ `pnpm build`.
 
-## 3. Smoke na preview
+## 3. Testy na preview (build z kroku 2)
 
-Uruchom `pnpm preview` i sprawdź:
+- `pnpm test:e2e` — funkcjonalne + a11y + SEO/linki (webServer wstaje sam
+  na 4399);
+- `pnpm test:visual` — pełna siatka wizualna vs baseline (FAIL = diff do
+  obejrzenia w `test-results/`; interpretacja: skill `/verify-mobile`);
+- `CHECK_REMOTE_MEDIA=1 pnpm exec vitest run tests/unit/media-r2.test.ts`
+  — dostępność mediów R2 (HEAD);
+- brak odwołań do `localhost`/portów dev w dist (grep).
 
-- `/` i `/en/` odpowiadają 200 i renderują hero (curl + screenshot);
-- `robots.txt` blokuje `/admin`; `sitemap-index.xml` istnieje w dist;
-- meta OG (`og-image.png`, tytuły PL/EN) obecne w HTML;
-- brak odwołań do `localhost`/portów dev w dist (grep);
-- jeśli zmieniano hero: `/verify-mobile` (harness `scripts/verify-hero.mjs`
-  vs baseline) — obowiązkowo.
+## 4. Checklista urządzeń fizycznych
 
-## 4. Raport
+Emulacja NIE wykrywa poniższych — jeśli zmiana dotyka obszaru, poproś
+Mateusza o test na telefonie i wskaż, na co patrzeć:
+
+| Obszar                                     | Kiedy test fizyczny                         |
+| ------------------------------------------ | ------------------------------------------- |
+| Limit warstwy GPU Androida                 | zmiany rozmiarów/transformów sceny urządzeń |
+| iOS Low Power Mode                         | zmiany wideo/autoplay/LowPowerNotice        |
+| Zwijany toolbar Safari (metryki viewportu) | zmiany hero-config/timeline/sticky          |
+| Zimny cache + realne łącze komórkowe       | większe zmiany zasobów przed release        |
+| Dotyk fizyczny (Lenis syncTouch feel)      | zmiany w smooth-scroll.ts                   |
+
+## 5. Raport
 
 Podsumuj: wyniki bramki, wyniki smoke, ryzyka. Na końcu zaproponuj treść
 commita (conventional, ze scope). Przypomnij, że po push na main deploy

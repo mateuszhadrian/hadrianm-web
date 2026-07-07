@@ -19,14 +19,9 @@ paths:
   pipeline enkoduje dwuprzebiegowo pod twardy limit wagi.
 - Preferowane wejście: skill `/capture-devices` (ma pre-checki).
 
-## Siatka regresyjna hero (`verify-hero.mjs`)
+## Siatka regresyjna hero
 
-- `--baseline` zapisuje wzorzec do `.hero-verify/baseline/` (poza gitem);
-  bez flagi porównuje pixel-diffem (obrazy różnic → `.hero-verify/diff/`).
-- WYMAGA preview builda: `pnpm build && pnpm preview --port 4399` +
-  `BASE_URL=http://localhost:4399` (na 4321 często wisi dev server do
-  testów na telefonie — skrypt wykrywa `/@vite/client` i przerwie).
-- Determinizm: skrypt sam wyłącza czasowe animacje CSS i chowa piksele
-  wideo (odtwarzanie sprawdza funkcjonalnie — log `paused`/`currentTime`).
-- Zamierzona zmiana wyglądu hero = po akceptacji przez Mateusza nagraj
-  nowy baseline.
+- Dawny `scripts/verify-hero.mjs` został WYCOFANY (2026-07-07) — sweep
+  hero żyje w `tests/visual/hero.spec.ts` (mechanika 1:1, baseline'y
+  commitowane w `tests/visual/__screenshots__/`). Kontrakt testowy:
+  `.claude/rules/testing.md`; wejście: skill `/verify-mobile`.

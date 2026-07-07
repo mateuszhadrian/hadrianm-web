@@ -71,9 +71,11 @@ historia: `docs/analiza-refactor-hero-odkruszenie.md`.
 
 ## Weryfikacja (obowiązkowa dla KAŻDEJ zmiany w tym katalogu)
 
-1. `scripts/verify-hero.mjs` vs baseline (skill `/verify-mobile`) — wymaga
-   PREVIEW, nie dev (skrypt ma strażnika); zamierzona zmiana wyglądu =
-   nowy baseline (`--baseline`) po akceptacji.
+1. `pnpm build && pnpm test:visual` — sweep hero w
+   `tests/visual/hero.spec.ts` vs commitowany baseline (skill
+   `/verify-mobile`); biega na preview (strażnik `assertPreview`).
+   Zamierzona zmiana wyglądu = po akceptacji Mateusza aktualizacja OBU
+   kompletów baseline'ów (darwin + linux — `.claude/rules/testing.md`).
 2. Emulacja NIE pokrywa: limitu warstwy GPU Androida, LPM, zwijanego
    toolbara iOS, zimnego cache (czyszczenie danych przeglądania) — przy
    zmianach w tych obszarach poproś Mateusza o test na fizycznych

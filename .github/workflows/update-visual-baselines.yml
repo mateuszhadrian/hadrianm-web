@@ -1,0 +1,38 @@
+# Ręczna aktualizacja LINUKSOWYCH baseline'ów wizualnych (*-linux.png).
+# WYŁĄCZNIE workflow_dispatch — nigdy automatycznie: auto-aktualizacja
+# unieważniłaby testy (wzorzec podążałby za regresją). Odpalaj z brancha
+# PR-a; bot-commit dopisuje się do tego brancha (potem `git pull` lokalnie).
+# Diff obrazków oglądasz w PR (GitHub renderuje before/after) i decydujesz
+# o merge'u. Procedura: docs/testing-tools-and-environemnts-setup-analysis.md
+# §III.4c (awaryjna alternatywa: Docker mcr.microsoft.com/playwright).
+name: Update linux visual baselines
+on: workflow_dispatch
+permissions:
+  contents: write
+jobs:
+  update-baselines:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps chromium webkit firefox
+      - run: pnpm build
+      - run: pnpm test:visual:update
+        env:
+          CI: "true"
+      - name: Commit updated baselines
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/visual/__screenshots__
+          if git diff --cached --quiet; then
+            echo "Baseline'y linux bez zmian — nic do commitowania."
+          else
+            git commit -m "chore(test): update linux visual baselines"
+            git push
+          fi

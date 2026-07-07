@@ -1,38 +1,40 @@
 ---
 name: verify-mobile
-description: Weryfikacja regresyjna hero przez scripts/verify-hero.mjs — sweep scrolla × 3 profile (desktop/iPhone/Pixel), pixel-diff vs baseline. Użyj po KAŻDEJ zmianie w src/components/sections/hero/ oraz przed release.
+description: Weryfikacja regresyjna hero przez testy wizualne Playwright (tests/visual/hero.spec.ts) — sweep scrolla × 3 profile (desktop/iPhone/Pixel), pixel-diff vs baseline. Użyj po KAŻDEJ zmianie w src/components/sections/hero/ oraz przed release.
 ---
 
-Zweryfikuj hero istniejącym harnessem (NIE pisz własnych sweepów —
-`scripts/verify-hero.mjs` jest siatką regresyjną z baseline'em).
+Zweryfikuj hero istniejącą siatką wizualną (NIE pisz własnych sweepów —
+`tests/visual/hero.spec.ts` jest siatką regresyjną z commitowanym baseline'em
+w `tests/visual/__screenshots__/`).
 
-## 1. Serwer — preview, NIGDY dev
+## 1. Build + przebieg
 
 ```!
-lsof -nP -iTCP:4321 -sTCP:LISTEN | tail -1
-ls .hero-verify/baseline 2>/dev/null | head -3 || echo "BRAK BASELINE"
+git status --short tests/visual/__screenshots__ | head -5
 ```
 
-- Baseline był robiony na buildzie produkcyjnym; dev server daje fałszywe
-  FAILe (skrypt wykrywa `/@vite/client` i przerwie z instrukcją).
-- Na 4321 często wisi dev do testów na telefonie — nie ubijaj go bez
-  pytania; użyj: `pnpm build && pnpm preview --port 4399 &`, potem
-  `BASE_URL=http://localhost:4399`.
+- Testy wizualne biegają na PREVIEW (build produkcyjny) — webServer configu
+  wstaje sam na porcie 4399 (nie 4321 — tam często wisi dev do testów na
+  telefonie). Helper `assertPreview` wykrywa dev server i przerwie.
+- Przebieg: `pnpm build && pnpm test:visual` (sweep hero biega na projektach
+  chromium-1920 / webkit-iphone-14 / chromium-pixel-5; sekcje na wszystkich 6).
+- Tylko sweep hero:
+  `pnpm exec playwright test tests/visual/hero.spec.ts`
 
-## 2. Przebieg
+## 2. Interpretacja
 
-- Porównanie: `BASE_URL=... node scripts/verify-hero.mjs` — oczekiwane
-  „Zero różnic" przy zmianach behawioralnie neutralnych.
-- Brak baseline'u: najpierw `--baseline` na czystym stanie (main przed
-  Twoimi zmianami), potem porównanie.
-- Raport skryptu obejmuje też funkcjonalny stan wideo (`x/2 gra`) i błędy
-  konsoli — czytaj całość, nie tylko FAIL/OK.
-
-## 3. Interpretacja
-
-- FAIL → obejrzyj obraz różnic w `.hero-verify/diff/` (Read) i oceń: to
-  regresja czy ZAMIERZONA zmiana wyglądu? Zamierzona → pokaż Mateuszowi
-  diff, po akceptacji nagraj nowy baseline (`--baseline`).
+- FAIL → obejrzyj diff w `test-results/**/…-diff.png` (Read) lub raport HTML
+  (`pnpm exec playwright show-report`) i oceń: regresja czy ZAMIERZONA zmiana
+  wyglądu? Zamierzona → pokaż Mateuszowi diff, po akceptacji zaktualizuj
+  baseline'y (`pnpm test:visual:update`) — TYLKO darwin; komplet linuksowy
+  aktualizuje ręcznie wyzwalany workflow `update-visual-baselines.yml`
+  (procedura: docs/testing-tools-and-environemnts-setup-analysis.md §III.4c).
+- Klatki desktop 05–09 mają podwyższony próg (utrwalona flaky wiedza:
+  ekran telefonu + ambient, ~0.5–2%) — FAIL tam porównaj najpierw
+  z przebiegiem kontrolnym, dopiero potem podejrzewaj regresję.
+- Wideo ekranów jest maskowane na zrzutach; jego stan funkcjonalny
+  (odtwarzanie, currentTime) sprawdza `tests/e2e/hero-functional.spec.ts`
+  (`pnpm test:e2e`).
 - Emulacja NIE wykrywa: limitu warstwy GPU Androida, Low Power Mode,
   zwijanego toolbara iOS, zimnego cache. Przy zmianach w tych obszarach
   poproś Mateusza o test na fizycznych urządzeniach (co dokładnie

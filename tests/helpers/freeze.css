@@ -1,0 +1,10 @@
+/* Determinizm zrzutów (port FREEZE_CSS z verify-hero.mjs): wyłącza CZASOWE
+ * animacje i przejścia CSS (drift tła, accent-wave, scroll-pulse); animacje
+ * scroll-driven (GSAP scrub) zostają — to je testujemy. Wideo NIE jest
+ * chowane stylem — maskujemy je natywnie w toHaveScreenshot (mask). */
+*,
+*::before,
+*::after {
+  animation: none !important;
+  transition: none !important;
+}

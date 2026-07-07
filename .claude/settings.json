@@ -14,7 +14,9 @@
       "Write(dist/**)",
       "Edit(.astro/**)",
       "Write(.astro/**)",
-      "Edit(pnpm-lock.yaml)"
+      "Edit(pnpm-lock.yaml)",
+      "Edit(tests/visual/__screenshots__/**)",
+      "Write(tests/visual/__screenshots__/**)"
     ],
     "allow": [
       "Bash(pnpm install)",
@@ -29,6 +31,8 @@
       "Bash(pnpm lint:fix)",
       "Bash(pnpm format)",
       "Bash(pnpm format:check)",
+      "Bash(pnpm test)",
+      "Bash(pnpm test:*)",
       "Bash(pnpm -s *)",
       "Bash(pnpm exec *)",
       "Bash(node scripts/*)",
@@ -40,7 +44,8 @@
       "Bash(git branch)",
       "Bash(ls *)",
       "Bash(ffprobe *)",
-      "Bash(curl -s http://localhost:*)"
+      "Bash(curl -s http://localhost:*)",
+      "Bash(curl -s https://hadrianm.pl*)"
     ]
   },
   "hooks": {
