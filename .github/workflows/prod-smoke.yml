@@ -47,6 +47,9 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      # Jak w ci.yml: feedy packages.microsoft.com bywają zepsute i nie są potrzebne.
+      - name: Wyłącz feedy packages.microsoft.com (flaky)
+        run: sudo bash -c 'grep -rl packages.microsoft.com /etc/apt/sources.list.d/ | xargs -r rm -f'
       - run: pnpm exec playwright install --with-deps chromium webkit firefox
       - run: pnpm test:smoke:prod
       - uses: actions/upload-artifact@v4
