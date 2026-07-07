@@ -27,6 +27,10 @@ Uruchom po kolei; każdy błąd napraw albo zgłoś:
   obejrzenia w `test-results/`; interpretacja: skill `/verify-mobile`);
 - `CHECK_REMOTE_MEDIA=1 pnpm exec vitest run tests/unit/media-r2.test.ts`
   — dostępność mediów R2 (HEAD);
+- `pnpm exec lhci autorun --config=lighthouserc.cjs` oraz
+  `rm -rf .lighthouseci && pnpm exec lhci autorun --config=lighthouserc.desktop.cjs`
+  — budżety wydajnościowe (uwaga: progi mierzone na runnerze CI; lokalny
+  Mac jest szybszy, więc lokalny FAIL = niemal na pewno realna regresja);
 - brak odwołań do `localhost`/portów dev w dist (grep).
 
 ## 4. Checklista urządzeń fizycznych

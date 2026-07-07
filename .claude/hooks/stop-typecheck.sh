@@ -1,6 +1,9 @@
 #!/bin/bash
-# Stop: odpal typecheck, gdy w working tree sa zmienione pliki .ts/.tsx/.astro.
+# Stop: odpal typecheck + testy jednostkowe (sekundy), gdy w working tree
+# sa zmienione pliki .ts/.tsx/.astro.
 # Exit 2 = zablokuj zakonczenie tury i kaz Claude'owi naprawic bledy.
+# Testow Playwright celowo NIE wpinamy w Stop (za wolne) — od tego sa
+# skille (/test, /verify-mobile) i CI.
 set -u
 input=$(cat)
 
@@ -14,6 +17,15 @@ out=$(pnpm -s typecheck 2>&1)
 if [ $? -ne 0 ]; then
   {
     echo "pnpm typecheck nie przechodzi — napraw przed zakonczeniem tury:"
+    echo "$out" | tail -40
+  } >&2
+  exit 2
+fi
+
+out=$(pnpm -s test:unit 2>&1)
+if [ $? -ne 0 ]; then
+  {
+    echo "pnpm test:unit nie przechodzi — napraw przed zakonczeniem tury:"
     echo "$out" | tail -40
   } >&2
   exit 2

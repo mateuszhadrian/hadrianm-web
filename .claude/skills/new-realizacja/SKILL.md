@@ -37,8 +37,11 @@ Przypomnij checklistę (sam NIE edytuj JSON-ów — pisze je Sveltia):
 git log --oneline -3
 ```
 
-- `git pull`, potem `pnpm build` — Zod zwaliduje wpis; błędy schematu
-  wyjaśnij i wskaż pole do poprawy W PANELU.
+- `git pull`, potem `pnpm test:unit` — kontrakt CMS zwaliduje nowy JSON
+  schemą Zod w ~2 s (czytelny raport błędów); potem `pnpm build`.
+  Błędy schematu wyjaśnij i wskaż pole do poprawy W PANELU.
+- Media w R2 sprawdzi
+  `CHECK_REMOTE_MEDIA=1 pnpm exec vitest run tests/unit/media-r2.test.ts`.
 - Sprawdź na dev/preview: kafelek na liście, modal desktop, bottom sheet
   mobile (PL i EN).
 - Przy USUWANIU realizacji przypomnij: Sveltia nie kasuje plików z R2 —

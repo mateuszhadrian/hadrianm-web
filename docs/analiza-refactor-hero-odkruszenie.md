@@ -64,6 +64,15 @@ nie podlega pominięciu.
 
 ### Krok 0 — siatka regresyjna (`scripts/verify-hero.mjs`) — NAJPIERW
 
+> ℹ️ **AKTUALIZACJA (2026-07-07):** `scripts/verify-hero.mjs` został
+> WYCOFANY — sweep hero żyje w `tests/visual/hero.spec.ts` (Playwright
+> Test; mechanika 1:1, baseline'y per-platform commitowane w
+> `tests/visual/__screenshots__/`, wideo maskowane natywnie zamiast
+> `visibility:hidden`, część funkcjonalna w
+> `tests/e2e/hero-functional.spec.ts`). Opis poniżej ma wartość
+> historyczną; aktualny kontrakt: `.claude/rules/testing.md` i
+> `docs/testing-tools-and-environemnts-setup-analysis.md`.
+
 Harness screenshotowy: sweep progresu scrolla hero (ok. 10 punktów, od 0 do
 tuż za odpięciem sticky) na 3 profilach (desktop 1440×900, iPhone 14,
 Pixel 7 — Pixel dostaje UA Androida → ścieżka `is-android`), PL.
@@ -210,11 +219,12 @@ wyglądu); sondy inline min-height równe co do piksela wartościom sprzed
 zmiany. Scenariusza „zimny cache + zwijany toolbar iOS" emulacja nie
 odtwarza → wymagany test 📱 na iPhone 15 Pro po wyczyszczeniu danych.
 
-Lekcja operacyjna (utrwalona strażnikiem w verify-hero.mjs): gdy na 4321
-działa dev server (testy na telefonie przez --host), preview się nie
+Lekcja operacyjna (utrwalona strażnikiem w verify-hero.mjs; ℹ️ dziś ten
+strażnik żyje jako `assertPreview` w `tests/helpers/guards.ts`): gdy na
+4321 działa dev server (testy na telefonie przez --host), preview się nie
 zbindował i harness porównywał DEV z baseline'em preview → fałszywe FAILe
-(0,5–2% na ekranie telefonu). Harness wykrywa teraz /@vite/client i
-przerywa z instrukcją (preview na 4399 + BASE_URL).
+(0,5–2% na ekranie telefonu). Harness wykrywa /@vite/client i przerywa
+z instrukcją (preview na 4399).
 
 Do kroku 6 (rules): inwariant „wysokość sekcji i triggery scrolla muszą
 dzielić JEDNĄ metrykę viewportu"; wzorzec snapshot/restore przy pomiarach;
