@@ -20,6 +20,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      # Jak w ci.yml: feedy packages.microsoft.com bywają zepsute i nie są potrzebne.
+      - name: Wyłącz feedy packages.microsoft.com (flaky)
+        run: sudo bash -c 'grep -rl packages.microsoft.com /etc/apt/sources.list.d/ | xargs -r rm -f'
       - run: pnpm exec playwright install --with-deps chromium webkit firefox
       - run: pnpm build
       - run: pnpm test:visual:update

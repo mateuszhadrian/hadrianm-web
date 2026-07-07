@@ -45,6 +45,11 @@ jobs:
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.pw.outputs.version }}
+      # Feedy packages.microsoft.com bywają zepsute (błędy podpisów „NOSPLIT",
+      # incydent 2026-07-07) i wywracają apt-get w `--with-deps`, a nie są
+      # potrzebne — Playwright bierze zależności z repozytoriów Ubuntu.
+      - name: Wyłącz feedy packages.microsoft.com (flaky)
+        run: sudo bash -c 'grep -rl packages.microsoft.com /etc/apt/sources.list.d/ | xargs -r rm -f'
       - run: pnpm exec playwright install --with-deps chromium webkit firefox
       - run: pnpm test:e2e
       # Testy wizualne: baseline'y *-linux.png w repo (aktualizacja TYLKO
