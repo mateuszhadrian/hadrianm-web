@@ -2,6 +2,9 @@ dist
 .astro
 pnpm-lock.yaml
 docs
+# artefakty Playwright
+test-results
+playwright-report
 # JSON-y realizacji pisze Sveltia CMS (własny formater: tablice zawsze
 # wielolinijkowe, Prettier by je składał) — walidację robi schemat Zod w buildzie
 src/content/realizacje

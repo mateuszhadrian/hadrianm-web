@@ -27,6 +27,11 @@ pnpm-debug.log*
 # siatka regresyjna hero (scripts/verify-hero.mjs) — artefakty lokalne
 .hero-verify/
 
+# artefakty Playwright (raporty i wyniki przebiegów; baseline'y wizualne
+# w tests/visual/__screenshots__/ SĄ commitowane)
+test-results/
+playwright-report/
+
 # osobiste ustawienia Claude Code
 .claude/settings.local.json
 .claude/scheduled_tasks.lock

@@ -23,6 +23,14 @@ export default tseslint.config(
     },
   },
   {
-    ignores: ["dist/", ".astro/", "node_modules/", "docs/"],
+    ignores: [
+      "dist/",
+      ".astro/",
+      "node_modules/",
+      "docs/",
+      // artefakty Playwright
+      "test-results/",
+      "playwright-report/",
+    ],
   },
 );

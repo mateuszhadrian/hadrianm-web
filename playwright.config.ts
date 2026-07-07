@@ -1,5 +1,9 @@
 import { defineConfig, devices } from "@playwright/test";
 
+// BASE_URL nadpisuje cel testów (smoke produkcji: test:smoke:prod) —
+// wtedy NIE startujemy lokalnego preview.
+const BASE_URL = process.env.BASE_URL ?? "http://localhost:4399";
+
 export default defineConfig({
   testDir: "./tests",
   fullyParallel: true,
@@ -16,16 +20,18 @@ export default defineConfig({
       animations: "disabled",
     },
   },
-  webServer: {
-    // Celowo BEZ builda — build jest osobnym krokiem (lokalnie: `pnpm build`
-    // przed testami; w CI: osobny step). Testy wizualne tylko na preview,
-    // nigdy dev. Port 4399, nie 4321 — na 4321 często wisi dev server.
-    command: "pnpm preview --port 4399",
-    url: "http://localhost:4399",
-    reuseExistingServer: !process.env.CI,
-    timeout: 120_000,
-  },
-  use: { baseURL: "http://localhost:4399" },
+  // Celowo BEZ builda — build jest osobnym krokiem (lokalnie: `pnpm build`
+  // przed testami; w CI: osobny step). Testy wizualne tylko na preview,
+  // nigdy dev. Port 4399, nie 4321 — na 4321 często wisi dev server.
+  webServer: process.env.BASE_URL
+    ? undefined
+    : {
+        command: "pnpm preview --port 4399",
+        url: "http://localhost:4399",
+        reuseExistingServer: !process.env.CI,
+        timeout: 120_000,
+      },
+  use: { baseURL: BASE_URL },
   // UWAGA: nie ustawiać `reducedMotion: "reduce"` — bramka w BaseLayout
   // wyłączyłaby Lenisa/GSAP i testy przechodziłyby na martwej stronie.
   projects: [
