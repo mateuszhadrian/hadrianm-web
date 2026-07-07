@@ -241,8 +241,8 @@ Dwa komplety baseline'ów (decyzja Mateusza) obsługuje natywnie
 `snapshotPathTemplate` z tokenem `{platform}` — pliki `*-darwin.png`
 i `*-linux.png` żyją obok siebie w repo. Konsekwencja: **zamierzona zmiana
 wyglądu = aktualizacja obu kompletów** (lokalnie `--update-snapshots`, dla
-linuksa: workflow ręczny w CI wystawiający artefakt lub przebieg w Dockerze
-— procedura w etapie 4).
+linuksa: ręcznie wyzwalany workflow w CI dopisujący bot-commit do brancha
+PR-a, awaryjnie przebieg w Dockerze — procedura w etapie 4c).
 
 ---
 
