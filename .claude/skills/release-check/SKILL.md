@@ -44,7 +44,9 @@ Mateusza o test na telefonie i wskaż, na co patrzeć:
 
 ## 5. Raport
 
-Podsumuj: wyniki bramki, wyniki smoke, ryzyka. Na końcu zaproponuj treść
-commita (conventional, ze scope). Przypomnij, że po push na main deploy
-robi Cloudflare Pages automatycznie i warto klik-sprawdzić produkcję
-(hadrianm.pl + /admin) po ~2 min.
+Podsumuj: wyniki bramki, wyniki testów, ryzyka. Na końcu zaproponuj treść
+commita (conventional, ze scope) i **PR z feature brancha** — main jest
+chroniony (required checks: quality, e2e, lighthouse), bezpośredni push
+nie przejdzie. Po merge'u deploy robi Cloudflare Pages automatycznie,
+a workflow `prod-smoke.yml` sam zweryfikuje produkcję (@prod-smoke);
+mimo to warto klik-sprawdzić hadrianm.pl + /admin po ~2 min.
