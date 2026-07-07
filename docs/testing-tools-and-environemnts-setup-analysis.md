@@ -76,6 +76,14 @@ przebieg testów wizualnych (po etapie 4).
 
 ## I.3 — `preconnect` do `media.hadrianm.pl`
 
+> ℹ️ **ODRZUCONE przy wdrożeniu (2026-07-07, etap 7).** Wszystkie obrazy R2
+> idą przez `imgAt()` → w produkcji URL to `/cdn-cgi/image/...` na
+> **hadrianm.pl (same-origin)** — z R2 łączy się edge Cloudflare, nigdy
+> przeglądarka odwiedzającego. `preconnect` do `media.hadrianm.pl`
+> otworzyłby połączenie TLS, którego nikt nie użyje (drobny koszt, zero
+> zysku). Wraca na stół dopiero, gdyby jakiś zasób ładował się z tej
+> domeny bezpośrednio (np. wideo z Etapu 6 planu CMS).
+
 Obrazy sekcji Realizacje ładują się w produkcji z R2 przez `imgAt()`, a w
 `BaseLayout.astro` nie ma `preconnect`. Dodać w `<head>`:
 
