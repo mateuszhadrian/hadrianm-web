@@ -8,7 +8,6 @@ import {
   scrollPageTo,
   scrollPageToStable,
   settle,
-  SNAP_APPROACH_EPS,
 } from "../helpers/scroll";
 
 test.beforeAll(async ({ browser }) => {
@@ -56,14 +55,11 @@ test.describe("desktop: przypięta scena", () => {
   test("progres dochodzi do 04/04, finał odblokowuje CTA, klik wiezie do #contact", async ({
     page,
   }) => {
-    await gotoReady(page);
+    // ?nosnap — jak w sweepie wizualnym: bez wyścigu ze snapem na runnerach CI.
+    await gotoReady(page, "/?nosnap");
     const finalFrac = ABOUT_SNAP_POINTS[ABOUT_SNAP_POINTS.length - 1];
-    // Cel tuż PRZED punktem spoczynku snapa (SNAP_APPROACH_EPS) — kierunkowy
-    // snap domyka różnicę zamiast uciekać do następnego punktu.
-    await scrollPageToStable(
-      page,
-      (await aboutScrollAt(page, finalFrac)) - SNAP_APPROACH_EPS,
-    );
+    // Snap wyłączony (?nosnap wyżej) — dojazd siada dokładnie w punkcie osi.
+    await scrollPageToStable(page, await aboutScrollAt(page, finalFrac));
     // Scrub (1 s) musi dogonić oś zanim finał będzie widoczny/klikalny.
     await settle(page, 1600);
 

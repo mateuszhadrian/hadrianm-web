@@ -180,18 +180,30 @@ export function initAboutScroll(): void {
     if (sign)
       tl.fromTo(sign, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.06 }, 0.93);
 
+    /* Testowy wyłącznik snapa (?nosnap — wzorzec jak ?lpm w LowPowerNotice).
+       Programowy scroll w testach (sweep wizualny, e2e) przegrywa na wolnych
+       runnerach CI wyścig ze snapem: snap decyduje na SCRUBOWANYM (opóźnionym
+       ~1 s) postępie i przy zdławionych rAF potrafi uciec o cały segment osi.
+       UX snapa nie jest przedmiotem tych testów; produkcyjne URL-e nie mają
+       parametru, więc zachowanie strony się nie zmienia. */
+    const noSnap = new URLSearchParams(location.search).has("nosnap");
+
     ScrollTrigger.create({
       trigger: section,
       start: "top top",
       end: "bottom bottom",
       scrub: ABOUT_SCRUB,
       animation: tl,
-      snap: {
-        snapTo: [...ABOUT_SNAP_POINTS],
-        duration: { min: 0.2, max: 0.55 },
-        delay: 0.08,
-        ease: "power1.inOut",
-      },
+      ...(noSnap
+        ? {}
+        : {
+            snap: {
+              snapTo: [...ABOUT_SNAP_POINTS],
+              duration: { min: 0.2, max: 0.55 },
+              delay: 0.08,
+              ease: "power1.inOut",
+            },
+          }),
       onUpdate(self) {
         const p = self.progress;
         const [s1, s2, s3] = ABOUT_STAGE_THRESHOLDS;
