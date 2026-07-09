@@ -1,37 +1,752 @@
 ---
+// Sekcja „O mnie" — design „Z mgły" (port referencji
+// docs/design/o mnie/o-mnie-referencja/; decyzje: docs/analiza-sekcja-o-mnie.md).
+// Markup + style tutaj; animacje scrolla w about-scroll.ts (ładowane tylko
+// przy prefers-reduced-motion: no-preference). Bez JS / przy reduce sekcja
+// renderuje statyczny układ flow ze stanami docelowymi.
+import { Image } from "astro:assets";
 import { navItems, navLabel } from "@/i18n/nav";
-import type { Lang } from "@/i18n/utils";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import { ABOUT_DESKTOP_MIN_PX } from "./about-config";
+import portrait from "@/assets/about/portrait.webp";
+import portraitBlur from "@/assets/about/portrait-blur.webp";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
+const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "about");
-const heading = item ? navLabel(item, lang) : "about";
+const label = item ? navLabel(item, lang) : "O mnie";
+
+const chapters = [
+  {
+    tag: t("about.ch1.tag"),
+    lead: t("about.ch1.headLead"),
+    accent: t("about.ch1.headAccent"),
+    para: t("about.ch1.para"),
+  },
+  {
+    tag: t("about.ch2.tag"),
+    lead: t("about.ch2.headLead"),
+    accent: t("about.ch2.headAccent"),
+    para: t("about.ch2.para"),
+  },
+  {
+    tag: t("about.ch3.tag"),
+    lead: t("about.ch3.headLead"),
+    accent: t("about.ch3.headAccent"),
+    para: t("about.ch3.para"),
+  },
+];
+
+// Portret na desktopie zajmuje min(48vw, 930px), na mobile min(92vw, 420px).
+const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min(92vw, 420px)`;
 ---
 
-<section id="about" class="about">
-  <div class="about__content">
-    <h2>{heading}</h2>
+<section id="about" class="om" aria-label={label}>
+  <script is:inline>
+    // Bez JS sekcja zostaje w statycznym układzie flow (fallback);
+    // klasa .js włącza desktopową scenę przypiętą (patrz @media niżej).
+    document.currentScript?.closest("section")?.classList.add("js");
+  </script>
+  <div class="om-stage">
+    <!-- atmosfera: bazowy żar (lewy dół) + żar narastający z portretem -->
+    <div class="om-atmo" aria-hidden="true">
+      <span class="bl bl-base"></span>
+      <div class="om-ember">
+        <span class="bl bl-e1"></span>
+        <span class="bl bl-e2"></span>
+      </div>
+    </div>
+    <div class="om-vignette" aria-hidden="true"></div>
+    <div class="om-mesh" aria-hidden="true"></div>
+
+    <!-- widmowa typografia w tle -->
+    <div class="om-ghost" aria-hidden="true">{t("about.ghost")}</div>
+
+    <!-- portret (desktop: wyłania się z mgły scrubem; mobile: one-shot
+         crossfade — nakładka .om-photo-veil to WYPIECZONE rozmycie
+         (portrait-blur.webp), więc emerge animuje tylko opacity/transform;
+         animowany filter: blur zacinał syncTouch na starszych telefonach) -->
+    <div class="om-photo-wrap">
+      <div class="om-photo-frame">
+        <Image
+          class="om-photo"
+          src={portrait}
+          alt={t("about.photoAlt")}
+          widths={[420, 640, 840, 1200, 1510]}
+          sizes={photoSizes}
+          loading="lazy"
+          decoding="async"
+        />
+        <span
+          class="om-photo-veil"
+          aria-hidden="true"
+          style={`background-image: url(${portraitBlur.src})`}></span>
+      </div>
+      {
+        /* Dekoracyjny podpis — treść niesie alt portretu (a11y: poza drzewem). */
+      }
+      <div class="om-photo-meta" aria-hidden="true">
+        <svg width="20" height="20" viewBox="0 0 20 20">
+          <line
+            x1="10"
+            y1="1"
+            x2="10"
+            y2="19"
+            stroke="rgba(245,240,236,0.35)"
+            stroke-width="1"></line>
+          <line
+            x1="1"
+            y1="10"
+            x2="19"
+            y2="10"
+            stroke="rgba(245,240,236,0.35)"
+            stroke-width="1"></line>
+        </svg>
+        <span class="om-caption">{t("about.photoCaption")}</span>
+      </div>
+    </div>
+    <!-- /om-photo-wrap -->
+
+    <!-- chrome sekcji -->
+    <div class="om-tag">
+      <span class="t-num">04</span><span class="t-sl" aria-hidden="true">/</span
+      ><span class="t-lbl">{label}</span>
+    </div>
+    <div class="om-meta" aria-hidden="true">{t("about.meta")}</div>
+
+    <!-- rozdziały 01–03 (desktop: wymieniają się na przypiętej scenie) -->
+    <div class="om-chapters">
+      {
+        chapters.map((ch, i) => (
+          <article class="om-ch" data-ch={i}>
+            <div class="ch-tag">{ch.tag}</div>
+            <h3 class="ch-head">
+              {ch.lead} <em class="sf">{ch.accent}</em>
+            </h3>
+            <p class="ch-para">{ch.para}</p>
+          </article>
+        ))
+      }
+    </div>
+
+    <!-- finał 04 · Kontakt (desktop: overlay na środku sceny;
+         mobile: blok w flow z zblurowanym portretem za treścią) -->
+    <div class="om-final">
+      <div class="ch-tag">{t("about.final.tag")}</div>
+      <h3 class="ch-head">
+        {t("about.final.headLead")}
+        <em class="sf">{t("about.final.headAccent")}</em>
+      </h3>
+      <div class="om-final-body">
+        <div class="om-final-bg" aria-hidden="true">
+          {
+            /* Rozmycie wypieczone w pliku (portrait-blur.webp) — zero
+              filter: blur() w runtime; desktop nie pobiera (background). */
+          }
+          <span
+            class="om-final-ph"
+            style={`background-image: url(${portraitBlur.src})`}></span>
+        </div>
+        <p class="ch-para">{t("about.final.para")}</p>
+        <a class="om-cta" href="#contact"
+          >{t("about.final.cta")}
+          <span class="arr" aria-hidden="true">→</span></a
+        >
+        <div class="om-sign">{t("about.final.sign")}</div>
+      </div>
+    </div>
+
+    <!-- progres 01/04 (tylko desktop, czysto wizualny) -->
+    <div class="om-progress" aria-hidden="true">
+      <div class="ticks"><i class="on"></i><i></i><i></i><i></i></div>
+      <span class="pcount">01 / 04</span>
+    </div>
   </div>
 </section>
 
+<script>
+  // Animacje tylko przy dozwolonym ruchu — ta sama bramka co Lenis
+  // w BaseLayout; przy reduce statyczny układ realizuje czysty CSS.
+  if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+    import("./about-scroll").then((m) => m.initAboutScroll());
+  }
+
+  // CTA finału: skok jak w navbarze (Lenis immediate + podmiana hash),
+  // fallback natywny gdy Lenisa nie ma (reduce / awaria JS nie dotyczy —
+  // wtedy działa goła kotwica).
+  const cta = document.querySelector<HTMLAnchorElement>("#about .om-cta");
+  cta?.addEventListener("click", (e) => {
+    const target = document.getElementById("contact");
+    if (!target) return;
+    e.preventDefault();
+    if (window.__lenis) {
+      window.__lenis.scrollTo(target, { offset: 0, immediate: true });
+    } else {
+      target.scrollIntoView({ behavior: "auto", block: "start" });
+    }
+    history.replaceState(null, "", "#contact");
+  });
+</script>
+
 <style>
-  .about {
+  /* ═══ Sekcja „O mnie" — wartości „zamrożone" z prototypu referencji:
+     --omlen 440vh · mgła scale(1.193) · zdjęcie finału opacity 0.59.
+     Paleta/fonty z tokenów projektu (global.css); tło sekcji lokalne.
+     UWAGA: breakpointy @media (861px) MUSZĄ być równe ABOUT_DESKTOP_MIN_PX
+     (about-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
+  .om {
+    --om-bg: #070507;
+    --om-final-op: 0.59; /* widoczność zblurowanego portretu w finale (mobile) */
+    --omlen: 440vh; /* długość scrolla sekcji na desktopie */
     position: relative;
-    min-height: 100svh;
+    background: var(--om-bg);
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+  }
+  .om-stage {
+    position: relative;
+    overflow: hidden;
+    background: var(--om-bg);
   }
 
-  .about__content {
-    height: 100svh;
-    display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: system-ui, sans-serif;
+  /* ── atmosfera ── */
+  .om-atmo,
+  .om-ember {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .om-ember {
+    opacity: 1;
+    transform: scale(1.193); /* mgła 155% (zapieczętowane) */
+  }
+  .bl {
+    position: absolute;
+    border-radius: 50%;
+    /* blur żaru TYLKO na desktopie (niżej): na telefonach duże warstwy
+       filter: blur głodzą rasteryzację (analogia: flatten hero na Androidzie)
+       i destabilizują syncTouch Lenisa; miękkość daje sam radial-gradient,
+       na małym ekranie różnica jest niezauważalna. */
+  }
+  .bl-base {
+    left: -18vw;
+    bottom: -20vh;
+    width: 38vw;
+    height: 38vw;
+    background: radial-gradient(
+      closest-side,
+      rgba(130, 20, 32, 0.3) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+  .bl-e1 {
+    right: -8vw;
+    top: 4vh;
+    width: 58vw;
+    height: 58vw;
+    /* Statyczne opacity (stan „po wyłonieniu") — na mobile żar w ogóle nie
+       jest animowany (płynność syncTouch), a flow no-JS/reduce dostaje ten
+       sam stonowany wygląd. Desktopowa scena i tak nadpisuje inline (gsap). */
+    opacity: 0.65;
+    background: radial-gradient(
+      closest-side,
+      rgba(214, 38, 38, 0.52) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+  .bl-e2 {
+    right: -4vw;
+    bottom: -24vh;
+    width: 36vw;
+    height: 36vw;
+    opacity: 0.55;
+    background: radial-gradient(
+      closest-side,
+      rgba(255, 90, 71, 0.26) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+  .om-vignette {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 2;
+    background: radial-gradient(
+      135% 100% at 50% 45%,
+      rgba(0, 0, 0, 0) 52%,
+      rgba(0, 0, 0, 0.55) 100%
+    );
+  }
+  .om-mesh {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    /* BEZ mix-blend-mode: multiply z czystej czerni (rgba(0,0,0,α)) daje
+       wynik identyczny ze zwykłym kryciem (backdrop×(1−α)), a blend wymusza
+       kompozycję offscreen całej ~2400px sekcji na mobile. Desktop dostaje
+       multiply niżej — tam odpowiada 1:1 referencji i nic nie kosztuje. */
+    opacity: 0.5;
+    background-image: radial-gradient(
+      circle at center,
+      rgba(0, 0, 0, 0.96) 2.17px,
+      rgba(0, 0, 0, 0) 3.69px
+    );
+    background-size: 10.41px 10.41px;
   }
 
-  .about__content h2 {
-    font-size: clamp(1.25rem, 4vw, 2.25rem);
-    font-weight: 700;
+  /* ── ghost „o mnie" ── */
+  .om-ghost {
+    position: absolute;
+    z-index: 4;
+    pointer-events: none;
+    user-select: none;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    line-height: 0.82;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(245, 240, 236, 0.09);
+  }
+
+  /* ── portret ── */
+  .om-photo-wrap {
+    position: relative;
+    z-index: 5;
+  }
+  .om-photo-frame {
+    position: relative;
+  }
+  .om-photo {
+    display: block;
+    width: 100%;
+    height: auto;
+    user-select: none;
+    pointer-events: none;
+  }
+  /* Wypieczona mgła nad portretem (crossfade w emerge na mobile).
+     Domyślnie niewidoczna → no-JS i reduced-motion pokazują ostry portret. */
+  .om-photo-veil {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-size: 100% 100%;
+    pointer-events: none;
+    opacity: 0;
+  }
+  .om-photo-meta {
+    position: absolute;
+    z-index: 6;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .om-photo-meta svg {
+    display: block;
+  }
+  .om-caption {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.24em;
+    color: rgba(245, 240, 236, 0.45);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  /* ── chrome sekcji ── */
+  .om-tag {
+    z-index: 7;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .om-tag .t-num {
+    color: var(--accent);
+  }
+  .om-tag .t-sl {
+    color: var(--faint);
+  }
+  .om-tag .t-lbl {
+    color: var(--muted);
+  }
+  .om-meta {
+    position: absolute;
+    z-index: 7;
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+  .om-progress {
+    position: absolute;
+    z-index: 7;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .om-progress .ticks {
+    display: flex;
+    gap: 7px;
+  }
+  .om-progress .ticks i {
+    width: 26px;
+    height: 2px;
+    background: var(--line);
+    transition: background 0.3s;
+  }
+  .om-progress .ticks i.on {
+    background: var(--accent);
+  }
+  .om-progress .pcount {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── rozdziały ── */
+  .ch-tag {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--accent);
+    text-transform: uppercase;
+  }
+  .ch-head {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .ch-head .sf {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .ch-para {
+    margin: 0;
+    font-weight: 400;
+    line-height: 1.62;
+    color: var(--muted);
+  }
+
+  .om-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 12px;
+    font-weight: 600;
+    font-size: 20px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .om-cta:hover {
+    color: var(--ink);
+  }
+  .om-cta .arr {
+    color: var(--accent);
+    transition: transform 0.25s;
+  }
+  .om-cta:hover .arr {
+    transform: translateX(6px);
+  }
+  .om-sign {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-size: 34px;
+    line-height: 1;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* ═══ UKŁAD BAZOWY: mobile / flow / no-JS / reduced-motion ═══
+     Kolejność w flow (order): tag → 01 → foto → 02 → 03 → 04 */
+  .om-stage {
+    display: flex;
+    flex-direction: column;
+    padding: 84px 26px 72px;
+    gap: 34px;
+  }
+  .om-ghost {
+    font-size: 200px;
+    left: 14px;
+    top: 96px;
+  }
+  .om-tag {
+    order: 1;
+  }
+  .om-chapters {
+    display: contents;
+  }
+  .om-ch {
+    position: relative;
+    z-index: 7;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .om-ch .ch-head {
+    font-size: 42px;
+  }
+  .om-ch .ch-para {
+    font-size: 16px;
+    max-width: 560px;
+  }
+  .om-ch[data-ch="0"] {
+    order: 2;
+    margin-top: 130px;
+  }
+  .om-photo-wrap {
+    order: 3;
+    margin: 10px -26px -2px;
+  }
+  .om-ch[data-ch="1"] {
+    order: 4;
+    border-top: 1px solid var(--line);
+    padding-top: 30px;
+  }
+  .om-ch[data-ch="2"] {
+    order: 5;
+    border-top: 1px solid var(--line);
+    padding-top: 30px;
+  }
+  .om-photo-frame {
+    width: min(92vw, 420px);
+    margin: 0 auto;
+  }
+  .om-photo-meta {
+    right: 40px;
+    top: 0;
+  }
+  .om-photo-meta svg {
+    display: none;
+  }
+
+  /* finał 04: zblurowany portret za treścią (nie za nagłówkiem),
+     zmniejszony do bloku treści, dosunięty do prawej, lekko (34px)
+     wystaje ku nagłówkowi */
+  .om-final {
+    order: 6;
+    position: relative;
+    z-index: 7;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    border-top: 1px solid var(--line);
+    padding-top: 30px;
+  }
+  .om-final-body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .om-final-bg {
+    position: absolute;
+    z-index: -1;
+    inset: -34px 0 0;
+    pointer-events: none;
+  }
+  .om-final-ph {
+    position: absolute;
+    inset: 0;
+    background-repeat: no-repeat;
+    background-position: right bottom;
+    background-size: contain;
+    opacity: var(--om-final-op);
+  }
+  .om-final .ch-head {
+    font-size: 44px;
+  }
+  .om-final .ch-para {
+    font-size: 16px;
+    max-width: 560px;
+  }
+  .om-final .om-cta {
+    align-self: flex-start;
+    margin-top: 8px;
+  }
+  .om-meta,
+  .om-progress {
+    display: none;
+  }
+
+  /* Szeroki układ flow (no-JS albo reduced-motion na desktopie):
+     referencyjny om-static używał mobilnych 26px — jedyne świadome
+     odejście od 1:1 to wygodniejszy padding boczny i portret bez bleedu.
+     861px = ABOUT_DESKTOP_MIN_PX. */
+  @media (min-width: 861px) {
+    .om-stage {
+      padding: 96px clamp(26px, 7vw, 120px) 84px;
+    }
+    .om-photo-wrap {
+      margin-inline: 0;
+    }
+    /* Pełna atmosfera 1:1 z referencją — desktopowe GPU udźwignie blur
+       i blend; na mobile są zdjęte (patrz komentarze wyżej). */
+    .bl {
+      filter: blur(48px);
+    }
+    .om-mesh {
+      mix-blend-mode: multiply;
+    }
+  }
+
+  /* Stany docelowe przy reduced-motion realizuje bazowy CSS (statyczny żar
+     przy .bl-e1/.bl-e2, veil opacity: 0) — bez dodatkowych reguł. */
+
+  /* ═══ UKŁAD DESKTOP: przypięta scena (sticky) + stany scrolla ═══
+     Wyłącznie przy dozwolonym ruchu i działającym JS (klasa .js) —
+     861px = ABOUT_DESKTOP_MIN_PX (kontrakt z about-config.ts). */
+  @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
+    .om.js {
+      height: var(--omlen);
+    }
+    .om.js .om-stage {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      display: block;
+      padding: 0;
+    }
+
+    .om.js .om-ghost {
+      font-size: min(28.5vw, 548px);
+      left: 6.5vw;
+      top: 27vh;
+    }
+
+    .om.js .om-tag {
+      position: absolute;
+      top: 8.8vh;
+      left: 7.8vw;
+    }
+    .om.js .om-meta {
+      display: flex;
+      top: 8.8vh;
+      right: 7.8vw;
+    }
+    .om.js .om-progress {
+      display: flex;
+      bottom: 7.6vh;
+      left: 7.8vw;
+    }
+
+    .om.js .om-chapters {
+      display: block;
+      position: absolute;
+      z-index: 7;
+      left: 7.8vw;
+      top: 48%;
+      width: min(46vw, 900px);
+      height: 0;
+    }
+    .om.js .om-ch {
+      position: absolute;
+      left: 0;
+      top: 0;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      gap: 30px;
+    }
+    .om.js .om-ch .ch-head {
+      font-size: min(4.8vw, 92px);
+    }
+    .om.js .om-ch .ch-para {
+      font-size: clamp(15px, 0.94vw, 18px);
+      max-width: 620px;
+    }
+
+    .om.js .om-photo-wrap {
+      position: absolute;
+      z-index: 5;
+      margin: 0;
+      right: 2.6vw;
+      bottom: -10px;
+      width: min(48vw, 930px);
+      order: 0;
+    }
+    .om.js .om-photo-frame {
+      width: 100%;
+      margin: 0;
+    }
+    /* Desktop wyłania scrubem filter: blur na samym portrecie (1:1
+       z referencją) — nakładka mgły jest zbędna i nie jest pobierana. */
+    .om.js .om-photo-veil {
+      display: none;
+    }
+    /* Podpis portretu tylko na mobile — na scenie desktopowej nachodził
+       na om-meta („Mateusz Hadrian — Software Developer") w prawym górnym
+       rogu (decyzja Mateusza 2026-07-09). */
+    .om.js .om-photo-meta {
+      display: none;
+    }
+
+    .om.js .om-final {
+      position: absolute;
+      inset: 0;
+      z-index: 8;
+      margin: 0;
+      padding: 0;
+      border: 0;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      gap: 34px;
+      pointer-events: none;
+    }
+    .om.js .om-final.on {
+      pointer-events: auto;
+    }
+    .om.js .om-final .ch-head {
+      font-size: min(5.6vw, 108px);
+      max-width: 62vw;
+    }
+    .om.js .om-final .ch-para {
+      font-size: clamp(15px, 0.94vw, 18px);
+      max-width: 620px;
+    }
+    .om.js .om-final .om-cta {
+      align-self: center;
+      margin-top: 4px;
+    }
+    .om.js .om-final .om-sign {
+      position: absolute;
+      bottom: 7.2vh;
+      right: 7.8vw;
+    }
+    .om.js .om-final-bg {
+      display: none;
+    }
+    .om.js .om-final-body {
+      display: contents;
+    }
   }
 </style>
