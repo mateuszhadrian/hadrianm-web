@@ -13,7 +13,12 @@ import {
   ABOUT_SNAP_POINTS,
 } from "../../src/components/sections/about/about-config";
 import { assertPreview } from "../helpers/guards";
-import { gotoReady, scrollPageToStable, settle } from "../helpers/scroll";
+import {
+  gotoReady,
+  scrollPageToStable,
+  settle,
+  SNAP_APPROACH_EPS,
+} from "../helpers/scroll";
 
 // Te same profile co sweep hero (desktop/iPhone/Pixel).
 const ABOUT_PROJECTS = [
@@ -63,9 +68,13 @@ test("sweep scrolla sekcji o-mnie vs baseline", async ({ page }, testInfo) => {
 
   for (let i = 0; i < points.length; i++) {
     const frac = points[i];
+    const exact = Math.min(range.top + range.span * frac, range.max);
+    // Desktop (snap): celuj tuż PRZED punktem — kierunkowy snap domknie
+    // różnicę; scena jest przypięta, więc kadr się nie zmienia. Mobile
+    // (flow, bez snapa): dokładna pozycja — od niej zależy kadr viewportu.
     await scrollPageToStable(
       page,
-      Math.min(range.top + range.span * frac, range.max),
+      range.desktop ? Math.max(exact - SNAP_APPROACH_EPS, 0) : exact,
     );
     await settle(page, SETTLE_MS);
 
