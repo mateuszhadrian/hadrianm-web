@@ -112,11 +112,19 @@ deployu. Zielony = zmiana jest na produkcji i zweryfikowana.
    `pnpm exec playwright show-report`) — upewnij się, że różnice to
    dokładnie to, co zamierzałeś.
 2. Lokalnie: `pnpm test:visual:update` → nowe baseline'y `*-darwin.png`
-   (commit na gałąź PR-a).
-3. Linux: Actions → **Update linux visual baselines** → Run workflow
+   — ale **jeszcze ich nie commituj** (kolejność niżej ma znaczenie).
+3. Push samego kodu na gałąź PR-a. Checki mogą być chwilowo czerwone
+   na starych `*-linux.png` — to oczekiwany stan przejściowy.
+4. Linux: Actions → **Update linux visual baselines** → Run workflow
    → **wybierz gałąź PR-a** (nigdy main!) → bot dopisze commit
    `chore(test): update linux visual baselines` → `git pull` na gałęzi.
-4. Oba komplety + kod jadą w JEDNYM PR; diffy obrazków widać w
+5. **Dopiero teraz** commit `*-darwin.png` + push. Niuans: bot pushuje
+   na `GITHUB_TOKEN`, a taki push **nie wyzwala CI** (GitHub blokuje
+   rekurencyjne rany) — required checks na nowym SHA odpala dopiero
+   Twój push. Darwin na końcu = jedno pełne CI na finalnym stanie
+   (kod + oba komplety); w odwrotnej kolejności PR utknąłby z checkami
+   „Expected" na bot-commicie.
+6. Oba komplety + kod jadą w JEDNYM PR; diffy obrazków widać w
    zakładce Files changed.
 
 ⚠️ Nigdy nie aktualizuj baseline'ów po to, żeby „naprawić" czerwony
