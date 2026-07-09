@@ -22,6 +22,7 @@ const p = project;
   <header class="wdx__header">
     <div class="wdx__tagline">
       <span class="wdx__category">{p.category}</span>
+      <span class="wdx__dot" aria-hidden="true">·</span>
       <span class="wdx__year">{p.year}</span>
     </div>
     <h2 class="wdx__title">{p.name}</h2>
@@ -152,7 +153,7 @@ const p = project;
 
   .wdx__tagline {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
     flex-wrap: wrap;
     margin-bottom: 16px;
@@ -160,12 +161,14 @@ const p = project;
   .wdx__category {
     font-family: var(--font-mono), monospace;
     font-size: 10.5px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--accent-gold);
-    border: 1px solid rgba(var(--accent-gold-rgb), 0.45);
-    border-radius: 999px;
-    padding: 5px 11px;
+  }
+  .wdx__dot {
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    color: var(--faint);
   }
   .wdx__year {
     font-family: var(--font-mono), monospace;
@@ -257,7 +260,7 @@ const p = project;
   .wdx__result {
     background: rgba(245, 240, 236, 0.04);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 4px;
     padding: 18px 16px;
   }
   .wdx__metric {
@@ -280,13 +283,9 @@ const p = project;
 
   .wdx__quote {
     margin: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(var(--accent-gold-rgb), 0.1),
-      rgba(245, 240, 236, 0.03)
-    );
-    border: 1px solid rgba(var(--accent-gold-rgb), 0.22);
-    border-radius: 16px;
+    background: rgba(245, 240, 236, 0.03);
+    border: 1px solid var(--line);
+    border-radius: 4px;
     padding: 24px 22px;
   }
   .wdx__quote-text {
@@ -308,11 +307,11 @@ const p = project;
     width: 42px;
     height: 42px;
     flex: 0 0 auto;
-    border-radius: 999px;
+    border-radius: 3px;
     display: grid;
     place-items: center;
-    background: var(--accent-gold);
-    color: #160a08;
+    background: rgba(245, 240, 236, 0.08);
+    color: var(--accent-gold);
     font-family: var(--font-display), sans-serif;
     font-weight: 800;
     font-size: 15px;
@@ -364,15 +363,21 @@ const p = project;
     font-family: var(--font-body), sans-serif;
     font-weight: 700;
     font-size: 15px;
-    color: #160a08;
+    color: var(--ink);
     text-decoration: none;
-    background: var(--accent-gold);
-    border-radius: 999px;
-    padding: 14px 24px;
-    transition: transform 0.2s;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+    transition: border-color 0.25s;
+  }
+  .wdx__cta svg {
+    color: var(--accent-gold);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
   .wdx__cta:hover {
-    transform: translateY(-1px);
+    border-bottom-color: rgba(245, 240, 236, 0.5);
+  }
+  .wdx__cta:hover svg {
+    transform: translateX(4px);
   }
   .wdx__cta:focus-visible {
     outline: 2px solid var(--ink);
@@ -415,8 +420,12 @@ const p = project;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .wdx__cta {
+    .wdx__cta,
+    .wdx__cta svg {
       transition: none;
+    }
+    .wdx__cta:hover svg {
+      transform: none;
     }
   }
 </style>

@@ -23,7 +23,7 @@ function MCard({ t, r, variant, showPhone, onOpen }) {
 
   if (cfg.panel) {
     return (
-      <div style={{ background: 'rgba(245,240,236,0.04)', border: `1px solid ${t.line}`, borderRadius: 18, padding: '24px 18px 26px' }}>
+      <div style={{ background: 'rgba(245,240,236,0.04)', border: `1px solid ${t.line}`, borderRadius: 4, padding: '24px 18px 26px' }}>
         {inner}
       </div>
     );
@@ -38,7 +38,7 @@ function MobileGallery({ t, tw, variant = 'stos', hover, onOpen }) {
       {REALIZACJE.map(r => (
         <MCard key={r.id} t={t} r={r} variant={variant} showPhone={tw.showPhone} onOpen={onOpen}></MCard>
       ))}
-      <div className="rz-ghost" style={{ minHeight: 150, borderRadius: 18 }}>
+      <div className="rz-ghost" style={{ minHeight: 150, borderRadius: 4 }}>
         <div style={{ fontSize: 26, fontWeight: 300, lineHeight: 1 }}>+</div>
         <div style={{ fontFamily: t.mono, fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Kolejne realizacje wkrótce</div>
       </div>

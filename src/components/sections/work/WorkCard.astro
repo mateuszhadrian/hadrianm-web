@@ -36,6 +36,7 @@ const cover =
   <div class="rz-card__meta">
     <div class="rz-card__tagline">
       <span class="rz-card__category">{project.category}</span>
+      <span class="rz-card__dot" aria-hidden="true">·</span>
       <span class="rz-card__year">{project.year}</span>
     </div>
 
@@ -45,7 +46,18 @@ const cover =
     </div>
 
     <div class="rz-card__tags">
-      {project.tags.map((tag) => <span class="rz-card__tag">{tag}</span>)}
+      {
+        project.tags.map((tag, i) => (
+          <>
+            {i > 0 && (
+              <span class="rz-card__tag-dot" aria-hidden="true">
+                ·
+              </span>
+            )}
+            <span class="rz-card__tag">{tag}</span>
+          </>
+        ))
+      }
     </div>
 
     <span class="rz-card__cta">
@@ -96,10 +108,9 @@ const cover =
     content: "";
     position: absolute;
     inset: -22px -26px;
-    border-radius: 26px;
-    border: 1px solid rgba(var(--accent-gold-rgb), 0.5);
-    background: rgba(var(--accent-gold-rgb), 0.06);
-    box-shadow: 0 0 90px -8px rgba(var(--accent-gold-rgb), 0.45);
+    border-radius: 4px;
+    border: 1px solid rgba(245, 240, 236, 0.28);
+    background: rgba(245, 240, 236, 0.03);
     opacity: 0;
     pointer-events: none;
     z-index: 0;
@@ -117,9 +128,7 @@ const cover =
       transform: scale(1.045);
     }
     .rz-card:hover .rz-card__cta {
-      background: var(--accent-gold);
-      color: #160a08;
-      border-color: var(--accent-gold);
+      border-bottom-color: rgba(245, 240, 236, 0.5);
     }
     .rz-card:hover .rz-card__arrow {
       transform: translateX(4px);
@@ -134,19 +143,21 @@ const cover =
   }
   .rz-card__tagline {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     gap: 10px;
     flex-wrap: wrap;
   }
   .rz-card__category {
     font-family: var(--font-mono), monospace;
     font-size: 10.5px;
-    letter-spacing: 0.16em;
+    letter-spacing: 0.24em;
     text-transform: uppercase;
     color: var(--accent-gold);
-    border: 1px solid rgba(var(--accent-gold-rgb), 0.45);
-    border-radius: 999px;
-    padding: 5px 11px;
+  }
+  .rz-card__dot {
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    color: var(--faint);
   }
   .rz-card__year {
     font-family: var(--font-mono), monospace;
@@ -176,17 +187,18 @@ const cover =
   .rz-card__tags {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    align-items: baseline;
+    gap: 4px 10px;
   }
   .rz-card__tag {
     font-family: var(--font-body), sans-serif;
-    font-weight: 600;
+    font-weight: 400;
     font-size: 12px;
-    color: rgba(245, 240, 236, 0.78);
-    background: rgba(245, 240, 236, 0.06);
-    border: 1px solid var(--line);
-    border-radius: 8px;
-    padding: 6px 10px;
+    color: var(--muted);
+  }
+  .rz-card__tag-dot {
+    font-size: 12px;
+    color: var(--accent-gold);
   }
   .rz-card__cta {
     margin-top: 6px;
@@ -197,16 +209,13 @@ const cover =
     font-weight: 700;
     font-size: 14px;
     color: var(--ink);
-    border: 1px solid rgba(var(--accent-gold-rgb), 0.4);
-    border-radius: 999px;
-    padding: 9px 16px;
-    transition:
-      background 0.25s,
-      color 0.25s,
-      border-color 0.25s;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 7px;
+    transition: border-color 0.25s;
   }
   .rz-card__arrow {
     display: block;
+    color: var(--accent-gold);
     transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
   }
 
@@ -252,14 +261,7 @@ const cover =
     }
     .rz-card::before {
       inset: -18px -20px;
-      border-radius: 22px;
-      box-shadow: 0 0 48px -8px rgba(var(--accent-gold-rgb), 0.45);
       opacity: 1;
-    }
-    .rz-card__cta {
-      background: var(--accent-gold);
-      color: #160a08;
-      border-color: var(--accent-gold);
     }
   }
 

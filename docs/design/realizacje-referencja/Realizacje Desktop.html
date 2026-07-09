@@ -10,10 +10,10 @@
 <style>
   :root {
     --rz-accent: #E3BE7F;
-    --rz-ring: rgba(227,190,127,0.50);
-    --rz-ring-bg: rgba(227,190,127,0.06);
-    --rz-glow: rgba(227,190,127,0.45);
-    --rz-cta-ink: #160a08;
+    --rz-ring: rgba(245,240,236,0.45);       /* focus — neutralna kreska */
+    --rz-line-hover: rgba(245,240,236,0.28); /* ramka hover — neutralna */
+    --rz-ring-bg: rgba(245,240,236,0.03);
+    --rz-glow: rgba(227,190,127,0.18);       /* poświata mocno wyciszona */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
@@ -26,7 +26,7 @@
     text-align: left; outline: none;
   }
   .rz-card::before {
-    content: ''; position: absolute; inset: -22px -26px; border-radius: 26px;
+    content: ''; position: absolute; inset: -22px -26px; border-radius: 4px;
     border: 1px solid transparent; background: transparent; box-shadow: 0 0 0 0 transparent;
     transition: border-color .35s cubic-bezier(.2,.7,.2,1), background .35s, box-shadow .4s;
     pointer-events: none; z-index: 0;
@@ -35,15 +35,15 @@
   .rz-card:focus-visible::before { border-color: var(--rz-ring); }
 
   .rz-media-inner { transition: transform .45s cubic-bezier(.2,.7,.2,1); }
-  .rz-cta { transition: background .25s, color .25s, border-color .25s; }
+  .rz-cta { transition: border-color .25s; }
   .rz-cta-arrow { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
 
-  .rz-card:hover .rz-cta { background: var(--rz-accent); color: var(--rz-cta-ink) !important; border-color: var(--rz-accent) !important; }
+  .rz-card:hover .rz-cta { border-bottom-color: rgba(245,240,236,0.5) !important; }
   .rz-card:hover .rz-cta-arrow { transform: translateX(4px); }
 
-  /* hover = "wszystko": powiększenie + ramka + poświata */
+  /* hover = ramka: powiększenie + neutralna kreska + minimalne rozjaśnienie tła */
   .rz-card:hover .rz-media-inner { transform: scale(1.045); }
-  .rz-card:hover::before { border-color: var(--rz-ring); background: var(--rz-ring-bg); box-shadow: 0 0 90px -8px var(--rz-glow); }
+  .rz-card:hover::before { border-color: var(--rz-line-hover); background: var(--rz-ring-bg); }
 
   @media (prefers-reduced-motion: reduce) {
     .rz-media-inner, .rz-cta-arrow { transition: none; }
@@ -59,10 +59,11 @@
   .rz-modal-card--out { animation: rzCardIn .2s ease reverse both; }
   .rz-modal-x { transition: background .2s, transform .2s; }
   .rz-modal-x:hover { background: rgba(245,240,236,0.16) !important; transform: rotate(90deg); }
-  .rz-modal-cta { transition: transform .2s, box-shadow .25s, filter .2s; }
-  .rz-modal-cta:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 40px -12px var(--rz-glow); }
+  .rz-modal-cta { transition: border-color .25s; }
+  .rz-modal-cta:hover { border-bottom-color: rgba(245,240,236,0.5) !important; }
+  .rz-modal-cta:hover .rz-cta-arrow { transform: translateX(4px); }
   .rz-modal-overlay::-webkit-scrollbar { width: 10px; }
-  .rz-modal-overlay::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 99px; }
+  .rz-modal-overlay::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 1px; }
   @media (max-width: 1024px) {
     .rz-modal-grid { grid-template-columns: 1fr !important; }
     .rz-modal-media { border-right: none !important; border-bottom: 1px solid rgba(245,240,236,0.14); }

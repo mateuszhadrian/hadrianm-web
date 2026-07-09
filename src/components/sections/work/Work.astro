@@ -24,7 +24,12 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
 
 <section id="work" class="work">
   <header class="work__head">
-    <p class="work__eyebrow">{t("work.eyebrow")}</p>
+    <p class="work__eyebrow">
+      <span class="work__eyebrow-num">03</span><span
+        class="work__eyebrow-sl"
+        aria-hidden="true">/</span
+      ><span class="work__eyebrow-lbl">{t("work.eyebrow")}</span>
+    </p>
     <h2 class="work__title">
       {t("work.headlineLead")}{" "}
       <span class="work__accent">{t("work.headlineAccent")}</span>
@@ -162,6 +167,11 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
     text-transform: uppercase;
     color: var(--faint);
   }
+  /* Numer + slash (jak tag w O Mnie) — tylko na mobile */
+  .work__eyebrow-num,
+  .work__eyebrow-sl {
+    display: none;
+  }
   .work__title {
     margin: 0;
     font-family: var(--font-display), sans-serif;
@@ -211,8 +221,8 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
     justify-content: center;
     gap: 12px;
     min-height: 150px;
-    border: 1.5px dashed rgba(245, 240, 236, 0.18);
-    border-radius: 18px;
+    border: 1px dashed rgba(245, 240, 236, 0.18);
+    border-radius: 4px;
     color: var(--faint);
   }
   .work__soon-plus {
@@ -232,10 +242,25 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
       padding: 48px 24px 6px;
     }
     .work__eyebrow {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
       margin-bottom: 16px;
-      font-size: 10.5px;
-      letter-spacing: 0.34em;
-      text-indent: 0.34em;
+      font-size: 12px;
+      letter-spacing: 0.3em;
+      text-indent: 0;
+      text-align: left;
+    }
+    .work__eyebrow-num {
+      display: inline;
+      color: var(--accent);
+    }
+    .work__eyebrow-sl {
+      display: inline;
+      color: var(--faint);
+    }
+    .work__eyebrow-lbl {
+      color: var(--muted);
     }
     .work__title {
       font-size: 42px;
@@ -251,8 +276,8 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
       font-size: 15px;
     }
     .work__gallery {
-      --work-gap: 200px;
-      --work-head-gap: 140px;
+      --work-gap: 42px;
+      --work-head-gap: 72px;
       gap: var(--work-gap);
       padding: var(--work-head-gap) 22px 0;
     }

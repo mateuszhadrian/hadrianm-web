@@ -51,8 +51,9 @@ function RzScreenSet({ t, screen, laptopW }) {
 function RzModalHeader({ t, r }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-        <span style={{ fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase', color: t.accent, border: `1px solid rgba(${t.glowRGB},0.45)`, borderRadius: 999, padding: '5px 11px' }}>{r.category}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+        <span style={{ fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.24em', textTransform: 'uppercase', color: t.accent }}>{r.category}</span>
+        <span style={{ fontFamily: t.mono, fontSize: 10.5, color: t.faint }}>·</span>
         <span style={{ fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.16em', color: t.faint }}>{r.year}</span>
       </div>
       <h2 style={{ margin: 0, fontFamily: t.display, fontWeight: 800, letterSpacing: '-0.03em', lineHeight: 1.0, fontSize: 'clamp(30px,7vw,48px)', color: t.ink }}>{r.name}</h2>
@@ -70,7 +71,7 @@ function RzModalBody({ t, r }) {
         <div style={{ fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.22em', textTransform: 'uppercase', color: t.faint, marginBottom: 16 }}>Liczby i wyniki</div>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 12 }}>
           {r.results.map((res, i) => (
-            <div key={i} style={{ background: 'rgba(245,240,236,0.04)', border: `1px solid ${t.line}`, borderRadius: 14, padding: '18px 16px' }}>
+            <div key={i} style={{ background: 'rgba(245,240,236,0.04)', border: `1px solid ${t.line}`, borderRadius: 4, padding: '18px 16px' }}>
               <div style={{ fontFamily: t.display, fontWeight: 800, letterSpacing: '-0.02em', fontSize: 'clamp(26px,3vw,34px)', lineHeight: 1, color: t.accent }}>{res.metric}</div>
               <div style={{ marginTop: 9, fontFamily: t.body, fontWeight: 500, fontSize: 12.5, lineHeight: 1.35, color: t.muted, textWrap: 'pretty' }}>{res.label}</div>
             </div>
@@ -79,10 +80,10 @@ function RzModalBody({ t, r }) {
       </div>
 
       {/* Opinia klienta */}
-      <div style={{ background: `linear-gradient(135deg, rgba(${t.glowRGB},0.10), rgba(245,240,236,0.03))`, border: `1px solid rgba(${t.glowRGB},0.22)`, borderRadius: 16, padding: '24px 22px' }}>
+      <div style={{ background: 'rgba(245,240,236,0.03)', border: `1px solid ${t.line}`, borderRadius: 4, padding: '24px 22px' }}>
         <p style={{ margin: 0, fontFamily: t.serif, fontStyle: 'italic', fontSize: 'clamp(18px,2.2vw,22px)', lineHeight: 1.4, color: t.ink, textWrap: 'pretty' }}>„{r.quote}”</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 18 }}>
-          <div style={{ width: 42, height: 42, borderRadius: 999, flex: '0 0 auto', display: 'grid', placeItems: 'center', background: t.accent, color: '#160a08', fontFamily: t.display, fontWeight: 800, fontSize: 15 }}>{RzInitials(r.author)}</div>
+          <div style={{ width: 42, height: 42, borderRadius: 3, flex: '0 0 auto', display: 'grid', placeItems: 'center', background: 'rgba(245,240,236,0.08)', color: t.accent, fontFamily: t.display, fontWeight: 800, fontSize: 15 }}>{RzInitials(r.author)}</div>
           <div>
             <div style={{ fontFamily: t.body, fontWeight: 700, fontSize: 14.5, color: t.ink }}>{r.author}</div>
             <div style={{ fontFamily: t.body, fontWeight: 500, fontSize: 12.5, color: t.faint }}>{r.role}</div>
@@ -105,12 +106,12 @@ function RzModalBody({ t, r }) {
 
       {/* CTA na żywo */}
       <a href={r.liveUrl} target="_blank" rel="noopener noreferrer" className="rz-modal-cta" style={{
-        display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 10, alignSelf: 'flex-start',
-        fontFamily: t.body, fontWeight: 700, fontSize: 15, color: '#160a08', textDecoration: 'none',
-        background: t.accent, borderRadius: 999, padding: '14px 24px',
+        display: 'inline-flex', alignItems: 'center', gap: 10, alignSelf: 'flex-start',
+        fontFamily: t.body, fontWeight: 700, fontSize: 15, color: t.ink, textDecoration: 'none',
+        borderBottom: `1px solid ${t.line}`, paddingBottom: 8,
       }}>
         <span>Zobacz stronę na żywo</span>
-        <RzExternal color="#160a08"></RzExternal>
+        <span className="rz-cta-arrow" style={{ display: 'inline-flex' }}><RzExternal color={t.accent}></RzExternal></span>
       </a>
     </div>
   );
@@ -143,13 +144,13 @@ function RzModal({ t, r, onClose }) {
     <div className={'rz-modal-overlay' + (closing ? ' rz-modal-overlay--out' : '')} onClick={close}
       style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'flex-start', justifyContent: 'center', padding: 'clamp(12px,4vw,56px)', overflowY: 'auto', background: 'rgba(6,4,5,0.72)', WebkitBackdropFilter: 'blur(8px)', backdropFilter: 'blur(8px)' }}>
       <div className={'rz-modal-card' + (closing ? ' rz-modal-card--out' : '')} onClick={(e) => e.stopPropagation()}
-        style={{ position: 'relative', width: 'min(1180px, 100%)', background: 'linear-gradient(180deg, #16100F 0%, #0C0809 100%)', border: `1px solid ${t.line}`, borderRadius: 24, boxShadow: `0 60px 140px -30px rgba(0,0,0,0.85), 0 0 120px -40px ${t.glow}`, overflow: 'hidden' }}>
+        style={{ position: 'relative', width: 'min(1180px, 100%)', background: 'linear-gradient(180deg, #16100F 0%, #0C0809 100%)', border: `1px solid ${t.line}`, borderRadius: 4, boxShadow: '0 60px 140px -30px rgba(0,0,0,0.85)', overflow: 'hidden' }}>
         {/* delikatne smugi w tle karty */}
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `radial-gradient(60% 50% at 80% 0%, rgba(${t.glowRGB},0.16), rgba(0,0,0,0) 70%)` }}></div>
 
         {/* X zamknij */}
         <button type="button" onClick={close} aria-label="Zamknij" className="rz-modal-x" style={{
-          position: 'absolute', top: 16, right: 16, zIndex: 5, width: 42, height: 42, borderRadius: 999,
+          position: 'absolute', top: 16, right: 16, zIndex: 5, width: 42, height: 42, borderRadius: 4,
           display: 'grid', placeItems: 'center', cursor: 'pointer',
           background: 'rgba(245,240,236,0.08)', border: `1px solid ${t.line}`, color: t.ink,
         }}>
@@ -194,17 +195,17 @@ function RzModalSheet({ t, r, onClose }) {
       <div className={'rz-sheet' + (closing ? ' rz-sheet--out' : '')} onClick={(e) => e.stopPropagation()}
         style={{ position: 'relative', width: '100%', maxWidth: 460, maxHeight: '92vh', display: 'flex', flexDirection: 'column',
           background: 'linear-gradient(180deg, #17110F 0%, #0C0809 100%)', borderTop: `1px solid ${t.line}`,
-          borderTopLeftRadius: 26, borderTopRightRadius: 26, overflow: 'hidden',
-          boxShadow: `0 -30px 90px -20px rgba(0,0,0,0.85), 0 0 120px -40px ${t.glow}` }}>
+          borderTopLeftRadius: 4, borderTopRightRadius: 4, overflow: 'hidden',
+          boxShadow: '0 -30px 90px -20px rgba(0,0,0,0.85)' }}>
 
         {/* delikatna smuga */}
         <div aria-hidden="true" style={{ position: 'absolute', inset: 0, pointerEvents: 'none', background: `radial-gradient(70% 40% at 80% 0%, rgba(${t.glowRGB},0.16), rgba(0,0,0,0) 70%)` }}></div>
 
         {/* Pasek chwytu + X (sticky) */}
         <div style={{ position: 'relative', zIndex: 2, flex: '0 0 auto', paddingTop: 12 }}>
-          <div style={{ width: 44, height: 5, borderRadius: 99, background: 'rgba(245,240,236,0.28)', margin: '0 auto' }}></div>
+          <div style={{ width: 44, height: 5, borderRadius: 2, background: 'rgba(245,240,236,0.28)', margin: '0 auto' }}></div>
           <button type="button" onClick={close} aria-label="Zamknij" className="rz-modal-x" style={{
-            position: 'absolute', top: 10, right: 14, width: 38, height: 38, borderRadius: 999,
+            position: 'absolute', top: 10, right: 14, width: 38, height: 38, borderRadius: 4,
             display: 'grid', placeItems: 'center', cursor: 'pointer',
             background: 'rgba(245,240,236,0.08)', border: `1px solid ${t.line}`, color: t.ink }}>
             <RzClose color={t.ink}></RzClose>
