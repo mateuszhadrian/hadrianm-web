@@ -15,6 +15,7 @@
 
 | Plik | Czego dotyczy |
 | --- | --- |
+| `daily-workflow.md` | **Codzienny proces pracy** (instrukcja operacyjna): feature branch → `/test` → PR → 3 checki → merge → auto-deploy + prod smoke; przypadki specjalne (baseline'y, czerwone checki, CMS, hotfix) |
 | `analiza-refactor-hero-odkruszenie.md` | **Aktualny opis architektury hero** (moduły, stałe, refactor „odkruszający") |
 | `hosting_first_analysis.md` | Obowiązujące decyzje strategiczne: **Astro** (nie Next), Cloudflare Pages, budżety (1 adnotacja: Cloudflare Registrar nie obsługuje `.pl`) |
 | `hosting_second_analysis_sveltia.md` | **Wykonawczy** dokument CMS/hosting — wdrożony wariant; etapy 1–5 i 7 wykonane, pozostał opcjonalny Etap 6 (Stream) |
