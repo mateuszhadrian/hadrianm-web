@@ -21,10 +21,14 @@ module.exports = {
       // CLS 0.0173, script 68 KB, total 1801 KB, fonty 4.
       // Ratchet po etapie 7 (run 28894534750): perf 0.95/0.97,
       // CLS 0.0007 (preload fontu) → zacieśnione minScore i CLS.
+      // Re-baseline LCP 2026-07-09: dryf runnerów GitHuba (~+13%) — TEN SAM
+      // SHA maina zmierzył 2745 ms o 14:01 i 3111 ms o 16:56 (re-run joba,
+      // run 29023439109); kod bez zmian, czysty dryf infry. Mediana pomiarów
+      // z 2026-07-09 (3017/3100/3101/3111) = 3100 → próg 3100 × 1,15 ≈ 3565.
       aggregationMethod: "median-run",
       assertions: {
         "categories:performance": ["error", { minScore: 0.9 }],
-        "largest-contentful-paint": ["error", { maxNumericValue: 2960 }],
+        "largest-contentful-paint": ["error", { maxNumericValue: 3565 }],
         // TBT ×1,15 dałoby 29 ms — próg-podłoga 150 ms, bo pojedyncze ms
         // to czysty szum runnera; realna regresja JS i tak go przebije.
         "total-blocking-time": ["error", { maxNumericValue: 150 }],
