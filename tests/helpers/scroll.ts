@@ -61,9 +61,22 @@ async function scrollPageToSmooth(
 }
 
 /**
- * Dojeżdża płynnie do y i czeka aż pozycja USIĄDZIE dokładnie tam.
- * Cel musi być punktem spoczynku snapa (albo sekcją bez snapa) — inaczej
- * snap odciągnie scroll i funkcja rzuci po wyczerpaniu prób.
+ * Zapas przy celowaniu w punkt spoczynku snapa. Snap ScrollTriggera jest
+ * KIERUNKOWY (gsap ≥3.8: directional domyślnie true) — gdy dojazd zatrzyma
+ * się choć piksel ZA punktem (zaokrąglenia scrollY różnią się między
+ * platformami; na linuksie CI trafiało się deterministycznie), snap nie
+ * wraca do najbliższego punktu, tylko ucieka o CAŁY segment do następnego.
+ * Celuj w `punkt - SNAP_APPROACH_EPS`: dojazd nigdy nie przekracza punktu,
+ * a brakujące piksele domyka snap (w przód, po kierunku scrolla).
+ */
+export const SNAP_APPROACH_EPS = 2;
+
+/**
+ * Dojeżdża płynnie do y i czeka aż pozycja USIĄDZIE tam (±4 px — zapas na
+ * SNAP_APPROACH_EPS + różnice zaokrągleń scrollY). Cel musi być punktem
+ * spoczynku snapa, ewentualnie pomniejszonym o SNAP_APPROACH_EPS (albo
+ * sekcją bez snapa) — inaczej snap odciągnie scroll i funkcja rzuci po
+ * wyczerpaniu prób.
  */
 export async function scrollPageToStable(
   page: Page,
@@ -76,7 +89,7 @@ export async function scrollPageToStable(
     // Okno snapa: delay 0.08 s + tween do 0.55 s.
     await page.waitForTimeout(900);
     const at = await page.evaluate(() => window.scrollY);
-    if (Math.abs(at - target) <= 2) return;
+    if (Math.abs(at - target) <= 2 + SNAP_APPROACH_EPS) return;
   }
   const at = await page.evaluate(() => window.scrollY);
   throw new Error(

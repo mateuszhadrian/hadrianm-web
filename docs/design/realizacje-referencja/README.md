@@ -12,7 +12,8 @@ Pliki HTML (otwórz dwuklikiem w przeglądarce — działają od razu, offline p
   (Grid/Lista/Zygzak/Poziomo), przełącznik Desktop/Mobile oraz panel Tweaks
   (kolor akcentu, hover, odstępy). Dobry do podejrzenia wszystkich wariantów.
 - **`Realizacje Desktop.html`** — docelowy widok desktop: układ **zygzak**,
-  hover „wszystko”, klik w kartę otwiera **modal** dwukolumnowy.
+  hover „ramka” (neutralna kreska + delikatne powiększenie), klik w kartę
+  otwiera **modal** dwukolumnowy.
 - **`Realizacje Mobile.html`** — docelowy widok mobile: układ **stos**,
   klik w kartę otwiera **bottom sheet** (zjeżdża z dołu, scrollowalny).
 

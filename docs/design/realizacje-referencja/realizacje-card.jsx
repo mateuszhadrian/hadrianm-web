@@ -63,11 +63,11 @@ function RzMeta({ t, r, align = 'left', compact = false }) {
   const isC = align === 'center';
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: isC ? 'center' : 'flex-start', textAlign: isC ? 'center' : 'left', gap: compact ? 12 : 16 }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap', justifyContent: isC ? 'center' : 'flex-start' }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap', justifyContent: isC ? 'center' : 'flex-start' }}>
         <span style={{
-          fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.16em', textTransform: 'uppercase',
-          color: t.accent, border: `1px solid rgba(${t.glowRGB},0.45)`, borderRadius: 999, padding: '5px 11px',
+          fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.24em', textTransform: 'uppercase', color: t.accent,
         }}>{r.category}</span>
+        <span style={{ fontFamily: t.mono, fontSize: 10.5, color: t.faint }}>·</span>
         <span style={{ fontFamily: t.mono, fontSize: 10.5, letterSpacing: '0.16em', color: t.faint }}>{r.year}</span>
       </div>
 
@@ -76,22 +76,22 @@ function RzMeta({ t, r, align = 'left', compact = false }) {
         <p style={{ margin: '8px 0 0', fontFamily: t.body, fontWeight: 500, fontSize: compact ? 14 : 16, lineHeight: 1.45, color: t.muted, maxWidth: 440, textWrap: 'pretty' }}>{r.blurb}</p>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: isC ? 'center' : 'flex-start' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'baseline', gap: '4px 10px', justifyContent: isC ? 'center' : 'flex-start' }}>
         {r.tags.slice(0, 3).map((tag, i) => (
-          <span key={i} style={{
-            fontFamily: t.body, fontWeight: 600, fontSize: 12, color: 'rgba(245,240,236,0.78)',
-            background: 'rgba(245,240,236,0.06)', border: `1px solid ${t.line}`, borderRadius: 8, padding: '6px 10px',
-          }}>{tag}</span>
+          <React.Fragment key={i}>
+            {i > 0 ? <span aria-hidden="true" style={{ fontSize: 12, color: t.accent }}>·</span> : null}
+            <span style={{ fontFamily: t.body, fontWeight: 400, fontSize: 12, color: t.muted }}>{tag}</span>
+          </React.Fragment>
         ))}
       </div>
 
       <div className="rz-cta" style={{
         marginTop: compact ? 2 : 6, display: 'inline-flex', alignItems: 'center', gap: 9,
         fontFamily: t.body, fontWeight: 700, fontSize: 14, color: t.ink,
-        border: `1px solid rgba(${t.glowRGB},0.4)`, borderRadius: 999, padding: '9px 16px',
+        borderBottom: `1px solid ${t.line}`, paddingBottom: 7,
       }}>
         <span>Zobacz realizację</span>
-        <span className="rz-cta-arrow" style={{ display: 'inline-flex' }}><RzArrow size={15}></RzArrow></span>
+        <span className="rz-cta-arrow" style={{ display: 'inline-flex', color: t.accent }}><RzArrow size={15}></RzArrow></span>
       </div>
     </div>
   );

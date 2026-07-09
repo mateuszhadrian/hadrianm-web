@@ -10,10 +10,10 @@
 <style>
   :root {
     --rz-accent: #FF5A47;
-    --rz-ring: rgba(255,90,71,0.50);
-    --rz-ring-bg: rgba(255,90,71,0.05);
-    --rz-glow: rgba(255,90,71,0.45);
-    --rz-cta-ink: #1C0B08;
+    --rz-ring: rgba(245,240,236,0.45);       /* focus — neutralna kreska */
+    --rz-line-hover: rgba(245,240,236,0.28); /* ramka hover — neutralna */
+    --rz-ring-bg: rgba(245,240,236,0.03);
+    --rz-glow: rgba(255,90,71,0.18);         /* poświata mocno wyciszona */
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; }
@@ -27,7 +27,7 @@
     text-align: left; outline: none;
   }
   .rz-card::before {
-    content: ''; position: absolute; inset: -22px -26px; border-radius: 26px;
+    content: ''; position: absolute; inset: -22px -26px; border-radius: 4px;
     border: 1px solid transparent; background: transparent; box-shadow: 0 0 0 0 transparent;
     transition: border-color .35s cubic-bezier(.2,.7,.2,1), background .35s, box-shadow .4s;
     pointer-events: none; z-index: 0;
@@ -36,11 +36,11 @@
   .rz-card:focus-visible::before { border-color: var(--rz-ring); }
 
   .rz-media-inner { transition: transform .45s cubic-bezier(.2,.7,.2,1); }
-  .rz-cta { transition: background .25s, color .25s, border-color .25s; }
+  .rz-cta { transition: border-color .25s; }
   .rz-cta-arrow { transition: transform .3s cubic-bezier(.2,.7,.2,1); }
 
-  /* CTA zawsze reaguje na hover karty */
-  .rz-card:hover .rz-cta { background: var(--rz-accent); color: var(--rz-cta-ink) !important; border-color: var(--rz-accent) !important; }
+  /* CTA zawsze reaguje na hover karty — podkreślenie się rozjaśnia, strzałka jedzie w prawo */
+  .rz-card:hover .rz-cta { border-bottom-color: rgba(245,240,236,0.5) !important; }
   .rz-card:hover .rz-cta-arrow { transform: translateX(4px); }
 
   /* Tryby hover (sterowane atrybutem data-hover na kontenerze galerii) */
@@ -49,13 +49,9 @@
   [data-hover="glow"]      .rz-card:hover .rz-media-inner { transform: scale(1.02); }
 
   [data-hover="frame"]     .rz-card:hover::before,
-  [data-hover="frameZoom"] .rz-card:hover::before { border-color: var(--rz-ring); background: var(--rz-ring-bg); }
+  [data-hover="frameZoom"] .rz-card:hover::before { border-color: var(--rz-line-hover); background: var(--rz-ring-bg); }
 
-  [data-hover="glow"] .rz-card:hover::before { border-color: var(--rz-ring); box-shadow: 0 0 90px -8px var(--rz-glow); }
-
-  /* "Wszystko" = powiększenie + ramka + poświata */
-  [data-hover="all"] .rz-card:hover .rz-media-inner { transform: scale(1.045); }
-  [data-hover="all"] .rz-card:hover::before { border-color: var(--rz-ring); background: var(--rz-ring-bg); box-shadow: 0 0 90px -8px var(--rz-glow); }
+  [data-hover="glow"] .rz-card:hover::before { border-color: var(--rz-line-hover); box-shadow: 0 0 70px -12px var(--rz-glow); }
 
   @media (prefers-reduced-motion: reduce) {
     .rz-media-inner, .rz-cta-arrow { transition: none; }
@@ -63,7 +59,7 @@
 
   /* ── Ghost card (kolejne realizacje) ── */
   .rz-ghost {
-    border: 1.5px dashed rgba(245,240,236,0.18); border-radius: 20px;
+    border: 1px dashed rgba(245,240,236,0.18); border-radius: 4px;
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px;
     color: rgba(245,240,236,0.4); min-height: 260px; width: 100%;
     transition: border-color .3s, color .3s, background .3s; cursor: default;
@@ -71,23 +67,23 @@
 
   /* ── Poziomy scroller ── */
   .rz-hscroll { display: flex; gap: 64px; overflow-x: auto; overflow-y: visible;
-    padding: 30px 6vw 46px; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: rgba(255,90,71,0.4) transparent; }
+    padding: 30px 6vw 46px; scroll-snap-type: x mandatory; scrollbar-width: thin; scrollbar-color: rgba(245,240,236,0.22) transparent; }
   .rz-hscroll::-webkit-scrollbar { height: 8px; }
-  .rz-hscroll::-webkit-scrollbar-thumb { background: rgba(255,90,71,0.4); border-radius: 99px; }
+  .rz-hscroll::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.22); border-radius: 1px; }
   .rz-hscroll > * { scroll-snap-align: center; flex: 0 0 auto; }
 
   /* ── Segmented switcher ── */
-  .rz-seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 999px;
+  .rz-seg { display: inline-flex; gap: 2px; padding: 4px; border-radius: 4px;
     background: rgba(245,240,236,0.05); border: 1px solid rgba(245,240,236,0.12); }
   .rz-seg button { border: none; background: transparent; color: rgba(245,240,236,0.6);
-    font-weight: 600; font-size: 13px; padding: 8px 16px; border-radius: 999px; cursor: pointer; white-space: nowrap;
+    font-weight: 600; font-size: 13px; padding: 8px 16px; border-radius: 2px; cursor: pointer; white-space: nowrap;
     transition: background .2s, color .2s; }
   .rz-seg button:hover { color: #F5F0EC; }
   .rz-seg button[aria-pressed="true"] { background: #F5F0EC; color: #14100F; }
 
   .rz-toast { position: fixed; left: 50%; bottom: 32px; transform: translate(-50%, 20px);
-    background: rgba(28,16,14,0.94); color: #F5F0EC; border: 1px solid rgba(255,90,71,0.4);
-    border-radius: 12px; padding: 12px 18px; font-size: 13.5px; font-weight: 600;
+    background: rgba(28,16,14,0.94); color: #F5F0EC; border: 1px solid rgba(245,240,236,0.16);
+    border-radius: 4px; padding: 12px 18px; font-size: 13.5px; font-weight: 600;
     box-shadow: 0 18px 50px -16px rgba(0,0,0,0.8); opacity: 0; pointer-events: none;
     transition: opacity .35s, transform .35s; z-index: 60; -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
   .rz-toast[data-show="true"] { opacity: 1; transform: translate(-50%, 0); }
@@ -101,10 +97,11 @@
   .rz-modal-card--out { animation: rzCardIn .2s ease reverse both; }
   .rz-modal-x { transition: background .2s, transform .2s; }
   .rz-modal-x:hover { background: rgba(245,240,236,0.16) !important; transform: rotate(90deg); }
-  .rz-modal-cta { transition: transform .2s, box-shadow .25s, filter .2s; }
-  .rz-modal-cta:hover { transform: translateY(-2px); filter: brightness(1.06); box-shadow: 0 16px 40px -12px var(--rz-glow); }
+  .rz-modal-cta { transition: border-color .25s; }
+  .rz-modal-cta:hover { border-bottom-color: rgba(245,240,236,0.5) !important; }
+  .rz-modal-cta:hover .rz-cta-arrow { transform: translateX(4px); }
   .rz-modal-overlay::-webkit-scrollbar { width: 10px; }
-  .rz-modal-overlay::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 99px; }
+  .rz-modal-overlay::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 1px; }
 
   @media (max-width: 1024px) {
     .rz-modal-grid { grid-template-columns: 1fr !important; }
@@ -122,7 +119,7 @@
   .rz-sheet-overlay--out { animation: rzOverlayIn .24s ease reverse both; }
   .rz-sheet--out { animation: rzSheetUp .26s ease-in reverse both; }
   .rz-sheet-scroll::-webkit-scrollbar { width: 8px; }
-  .rz-sheet-scroll::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 99px; }
+  .rz-sheet-scroll::-webkit-scrollbar-thumb { background: rgba(245,240,236,0.18); border-radius: 1px; }
   @media (prefers-reduced-motion: reduce) {
     .rz-sheet-overlay, .rz-sheet, .rz-sheet-overlay--out, .rz-sheet--out { animation: none !important; }
   }
@@ -153,7 +150,7 @@ const LAYOUTS = [
   { id: 'hscroll', label: 'Poziomo' },
 ];
 
-const HOVER_MAP = { 'Powiększenie': 'zoom', 'Ramka': 'frame', 'Oba': 'frameZoom', 'Poświata': 'glow', 'Wszystko': 'all' };
+const HOVER_MAP = { 'Ramka': 'frameZoom', 'Powiększenie': 'zoom', 'Poświata': 'glow', 'Bez ramki': 'none' };
 
 const MOBILE_VARIANTS = [
   { id: 'stos',   label: 'Stos' },
@@ -239,7 +236,7 @@ function Gallery({ t, mode, tw, hover, onOpen }) {
 
 const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
   "accent": "#E3BE7F",
-  "hover": "Wszystko",
+  "hover": "Ramka",
   "showPhone": true,
   "deviceScale": 100,
   "cardGap": 24
@@ -258,13 +255,13 @@ function RealizacjeApp() {
   const t = { ...RZ_THEME, accent: tw.accent, glow: `rgba(${r},${g},${b},0.20)`, glowRGB: `${r},${g},${b}` };
   const hover = HOVER_MAP[tw.hover] || 'frameZoom';
 
-  // zmienne CSS dla ramki / poświaty / CTA
+  // zmienne CSS dla ramki / poświaty — ramka i focus neutralne, poświata wyciszona
   const rootVars = {
     '--rz-accent': tw.accent,
-    '--rz-ring': `rgba(${r},${g},${b},0.5)`,
-    '--rz-ring-bg': `rgba(${r},${g},${b},0.06)`,
-    '--rz-glow': `rgba(${r},${g},${b},0.45)`,
-    '--rz-cta-ink': '#160a08',
+    '--rz-ring': 'rgba(245,240,236,0.45)',
+    '--rz-line-hover': 'rgba(245,240,236,0.28)',
+    '--rz-ring-bg': 'rgba(245,240,236,0.03)',
+    '--rz-glow': `rgba(${r},${g},${b},0.18)`,
   };
 
   const openModal = (r) => setActive(r);
@@ -328,7 +325,7 @@ function RealizacjeApp() {
 
       <TweaksPanel title="Tweaks">
         <TweakSection label="Galeria"></TweakSection>
-        <TweakSelect label="Efekt hover" value={tw.hover} options={['Powiększenie', 'Ramka', 'Oba', 'Poświata', 'Wszystko']} onChange={(v) => setTweak('hover', v)}></TweakSelect>
+        <TweakSelect label="Efekt hover" value={tw.hover} options={['Ramka', 'Powiększenie', 'Poświata', 'Bez ramki']} onChange={(v) => setTweak('hover', v)}></TweakSelect>
         <TweakToggle label="Pokaż telefon" value={tw.showPhone} onChange={(v) => setTweak('showPhone', v)}></TweakToggle>
         <TweakSlider label="Wielkość urządzeń" value={tw.deviceScale} min={80} max={120} unit="%" onChange={(v) => setTweak('deviceScale', v)}></TweakSlider>
         <TweakSlider label="Odstęp kart" value={tw.cardGap} min={24} max={96} unit="px" onChange={(v) => setTweak('cardGap', v)}></TweakSlider>
