@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pl">
+<!-- ═══════════════════════════════════════════════════════════════════
+     O MNIE — sekcja „Z mgły" · eksport referencyjny (desktop + mobile)
+     Jeden plik responsywny; breakpoint 861px (musi być zgodny
+     z gsap.matchMedia w o-mnie.js).
+
+     ┌─ PORT DO ASTRO ────────────────────────────────────────────────┐
+     │ 1. FONTY — usuń <link> do Google Fonts, w layoucie:            │
+     │      import '@fontsource-variable/archivo';                    │
+     │      import '@fontsource/instrument-serif';                    │
+     │      import '@fontsource/instrument-serif/400-italic.css';     │
+     │    Uwaga: wariant variable rejestruje family 'Archivo          │
+     │    Variable' — zaktualizuj font-family w o-mnie.css.           │
+     │ 2. GSAP — usuń CDN, w skrypcie klienckim:                      │
+     │      import gsap from 'gsap';                                  │
+     │      import { ScrollTrigger } from 'gsap/ScrollTrigger';       │
+     │ 3. LENIS — po inicjalizacji Lenisa spnij ze ScrollTriggerem:   │
+     │      lenis.on('scroll', ScrollTrigger.update);                 │
+     │      gsap.ticker.add((t) => lenis.raf(t * 1000));              │
+     │      gsap.ticker.lagSmoothing(0);                              │
+     │    i wywołaj ScrollTrigger.refresh() po zbudowaniu sekcji.     │
+     │ 4. PODZIAŁ — sugerowane:                                       │
+     │      src/components/sections/AboutSection.astro  (markup+CSS)  │
+     │      src/scripts/about-scroll.ts                 (o-mnie.js)   │
+     │ 5. STYLE SCOPED — selektory zaczynające się od body.js muszą   │
+     │    być :global(body.js) w scoped <style> .astro, albo trzymaj  │
+     │    CSS sekcji w pliku globalnym.                               │
+     │ 6. KLASA .js — <script is:inline> zaraz po <body>:             │
+     │      document.body.classList.add('js');                        │
+     │    (bez JS strona renderuje statyczny układ mobilny — fallback)│
+     │ 7. OBRAZ — foto.png przez astro:assets <Image>, zachowaj       │
+     │    klasę om-photo; drugie wystąpienie (tło 04) ma alt="" i     │
+     │    aria-hidden, może zostać zwykłym <img> lub tłem CSS.        │
+     │ 8. ID — section id="omnie": dopasuj do swojej konwencji        │
+     │    kotwic (nawigacja / #kontakt CTA).                          │
+     └────────────────────────────────────────────────────────────────┘
+     ═══════════════════════════════════════════════════════════════════ -->
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>O mnie — referencja (desktop + mobile)</title>
+<!-- PORT: zamień na @fontsource (pkt 1) -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="o-mnie.css">
+</head>
+<body>
+<!-- PORT: w Astro jako <script is:inline> (pkt 6) -->
+<script>document.body.classList.add('js');</script>
+
+<section id="omnie" aria-label="O mnie">
+  <div class="om-stage">
+
+    <!-- atmosfera: bazowy żar (lewy dół) + żar narastający z portretem -->
+    <div class="om-atmo">
+      <span class="bl bl-base"></span>
+      <div class="om-ember">
+        <span class="bl bl-e1"></span>
+        <span class="bl bl-e2"></span>
+      </div>
+    </div>
+    <div class="om-vignette"></div>
+    <div class="om-mesh"></div>
+
+    <!-- widmowa typografia w tle -->
+    <div class="om-ghost" aria-hidden="true">o mnie</div>
+
+    <!-- portret (desktop: wyłania się z mgły scrubem; mobile: one-shot reveal) -->
+    <div class="om-photo-wrap">
+      <img class="om-photo" src="foto.png" alt="Mateusz Hadrian — portret">
+      <div class="om-photo-meta">
+        <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+          <line x1="10" y1="1" x2="10" y2="19" stroke="rgba(245,240,236,0.35)" stroke-width="1"></line>
+          <line x1="1" y1="10" x2="19" y2="10" stroke="rgba(245,240,236,0.35)" stroke-width="1"></line>
+        </svg>
+        <span class="om-caption">Mateusz Hadrian — portret · 2026</span>
+      </div>
+    </div>
+
+    <!-- chrome sekcji -->
+    <div class="om-tag">
+      <span class="t-num">04</span><span class="t-sl">/</span><span class="t-lbl">O mnie</span>
+    </div>
+    <div class="om-meta">Mateusz Hadrian — Software Developer</div>
+
+    <!-- rozdziały 01–03 (desktop: wymieniają się na przypiętej scenie) -->
+    <div class="om-chapters">
+      <article class="om-ch" data-ch="0">
+        <div class="ch-tag">01 · Kim jestem</div>
+        <h3 class="ch-head">solidna technologia, dopracowana <em class="sf">estetyka</em></h3>
+        <p class="ch-para">Od ponad 6 lat zajmuję się tworzeniem stron i aplikacji internetowych. Jako Software Developer dostarczam rozwiązania łączące solidną technologię z dopracowaną warstwą wizualną.</p>
+      </article>
+      <article class="om-ch" data-ch="1">
+        <div class="ch-tag">02 · Dla biznesu</div>
+        <h3 class="ch-head">nie wizytówka — <em class="sf">narzędzie</em></h3>
+        <p class="ch-para">Jeśli prowadzisz biznes i potrzebujesz strony, która szybko zaprezentuje Twoje najmocniejsze atuty i zbuduje profesjonalne pierwsze wrażenie – zajmuję się tym kompleksowo. Projektuję architekturę tak, aby działała nie tylko jako nowoczesna wizytówka, ale również wspierała kluczowe procesy w firmie poprzez dedykowane konfiguratory, systemy rezerwacji czy rozwiązania e-commerce.</p>
+      </article>
+      <article class="om-ch" data-ch="2">
+        <div class="ch-tag">03 · Inżynier × twórca</div>
+        <h3 class="ch-head">logika inżyniera, oko <em class="sf">twórcy</em></h3>
+        <p class="ch-para">Ścisłą logikę inżynierską łączę z perspektywą twórcy. Doświadczenie w produkcji muzycznej i realizacji wideo przekłada się na moje wyczucie detali, kompozycji i dynamiki. To bezpośrednio wpływa na płynność interakcji i animacji na tworzonych przeze mnie stronach. W codziennej pracy wykorzystuję zaawansowane narzędzia oparte na AI, optymalizując proces powstawania i utrzymania kodu.</p>
+      </article>
+    </div>
+
+    <!-- finał 04 · Kontakt (desktop: overlay na środku sceny;
+         mobile: blok w flow z zblurowanym portretem za treścią) -->
+    <div class="om-final">
+      <div class="ch-tag">04 · Kontakt</div>
+      <h3 class="ch-head">porozmawiajmy o Twoim <em class="sf">projekcie</em></h3>
+      <div class="om-final-body">
+        <div class="om-final-bg" aria-hidden="true"><img src="foto.png" alt=""></div>
+        <p class="ch-para">Jeśli planujesz realizację nowego projektu biznesowego lub szukasz wsparcia programistycznego do swojego zespołu – zapraszam do kontaktu.</p>
+        <a class="om-cta" href="#kontakt">Zapraszam do kontaktu <span class="arr">→</span></a>
+        <div class="om-sign">Mateusz Hadrian</div>
+      </div>
+    </div>
+
+    <!-- progres 01/04 (tylko desktop) -->
+    <div class="om-progress">
+      <div class="ticks"><i class="on"></i><i></i><i></i><i></i></div>
+      <span class="pcount">01 / 04</span>
+    </div>
+
+  </div>
+</section>
+
+<!-- PORT: zamień CDN na importy npm (pkt 2) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="o-mnie.js"></script>
+</body>
+</html>

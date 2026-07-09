@@ -1,0 +1,164 @@
+/* ═══════════════════════════════════════════════════════════════════
+   O MNIE — „Z mgły" · style (eksport referencyjny)
+   Wartości „zamrożone" z prototypu:
+     --omlen 440vh · mgła 155% (.om-ember) · zdjęcie 04: opacity 0.59
+   Układ bazowy = mobile / no-JS fallback; desktop w @media 861px+
+   pod body.js (patrz notki PORT DO ASTRO w o-mnie.html).
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --bg: #070507;
+  --bg-hero: #0A0709;
+  --ink: #F5F0EC;
+  --muted: rgba(245,240,236,0.62);
+  --faint: rgba(245,240,236,0.38);
+  --line: rgba(245,240,236,0.14);
+  --accent: #FF5A47;
+  --mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --serif-grad: linear-gradient(105deg, #FFF6F0 10%, #FFB3A6 90%);
+  --omlen: 440vh;          /* długość scrolla sekcji na desktopie */
+  --om-final-op: 0.59;     /* widoczność zblurowanego portretu w 04 (mobile) */
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg-hero); }
+body { font-family: 'Archivo', sans-serif; color: var(--ink); }
+/* PORT: z @fontsource-variable/archivo → font-family: 'Archivo Variable', 'Archivo', sans-serif */
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: #FFB3A6; }
+
+/* ═══════════ SEKCJA O MNIE ═══════════ */
+#omnie { position: relative; background: var(--bg); }
+.om-stage { position: relative; overflow: hidden; background: var(--bg); }
+
+/* ── atmosfera ── */
+.om-atmo, .om-ember { position: absolute; inset: 0; pointer-events: none; z-index: 1; }
+.om-ember { opacity: 1; transform: scale(1.193); }   /* mgła 155% (zapieczętowane) */
+.bl { position: absolute; border-radius: 50%; filter: blur(48px); }
+.bl-base { left: -18vw; bottom: -20vh; width: 38vw; height: 38vw;
+  background: radial-gradient(closest-side, rgba(130,20,32,0.30) 0%, rgba(0,0,0,0) 72%); }
+.bl-e1 { right: -8vw; top: 4vh; width: 58vw; height: 58vw;
+  background: radial-gradient(closest-side, rgba(214,38,38,0.52) 0%, rgba(0,0,0,0) 72%); }
+.bl-e2 { right: -4vw; bottom: -24vh; width: 36vw; height: 36vw;
+  background: radial-gradient(closest-side, rgba(255,90,71,0.26) 0%, rgba(0,0,0,0) 72%); }
+.om-vignette { position: absolute; inset: 0; pointer-events: none; z-index: 2;
+  background: radial-gradient(135% 100% at 50% 45%, rgba(0,0,0,0) 52%, rgba(0,0,0,0.55) 100%); }
+.om-mesh { position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  mix-blend-mode: multiply; opacity: 0.5;
+  background-image: radial-gradient(circle at center, rgba(0,0,0,0.96) 2.17px, rgba(0,0,0,0) 3.69px);
+  background-size: 10.41px 10.41px; }
+
+/* ── ghost „o mnie" ── */
+.om-ghost { position: absolute; z-index: 4; pointer-events: none; user-select: none;
+  font-weight: 800; line-height: 0.82; letter-spacing: -0.045em; white-space: nowrap;
+  color: transparent; -webkit-text-stroke: 1.5px rgba(245,240,236,0.09); }
+
+/* ── portret ── */
+.om-photo-wrap { position: relative; z-index: 5; }
+.om-photo { display: block; width: 100%; height: auto; user-select: none; pointer-events: none; }
+.om-photo-meta { position: absolute; z-index: 6; display: flex; align-items: center; gap: 14px; }
+.om-photo-meta svg { display: block; }
+.om-caption { font-family: var(--mono); font-size: 10px; letter-spacing: 0.24em;
+  color: rgba(245,240,236,0.45); text-transform: uppercase; white-space: nowrap; }
+
+/* ── chrome sekcji ── */
+.om-tag { z-index: 7; display: flex; align-items: baseline; gap: 14px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; }
+.om-tag .t-num { color: var(--accent); }
+.om-tag .t-sl { color: var(--faint); }
+.om-tag .t-lbl { color: var(--muted); }
+.om-meta { position: absolute; z-index: 7; font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.26em; color: var(--faint); text-transform: uppercase; }
+.om-progress { position: absolute; z-index: 7; display: flex; align-items: center; gap: 18px; }
+.om-progress .ticks { display: flex; gap: 7px; }
+.om-progress .ticks i { width: 26px; height: 2px; background: var(--line); transition: background 0.3s; }
+.om-progress .ticks i.on { background: var(--accent); }
+.om-progress .pcount { font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em;
+  color: var(--faint); font-variant-numeric: tabular-nums; }
+
+/* ── rozdziały ── */
+.ch-tag { font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em;
+  color: var(--accent); text-transform: uppercase; }
+.ch-head { margin: 0; font-weight: 800; line-height: 1.02; letter-spacing: -0.035em;
+  color: var(--ink); text-wrap: balance; }
+.ch-head .sf { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400;
+  font-size: 1.06em; letter-spacing: 0; background: var(--serif-grad);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+.ch-para { margin: 0; font-weight: 400; line-height: 1.62; color: var(--muted); }
+
+.om-cta { display: inline-flex; align-items: center; gap: 16px;
+  border-bottom: 1px solid var(--line); padding-bottom: 12px;
+  font-weight: 600; font-size: 20px; letter-spacing: -0.01em; color: var(--ink); }
+.om-cta:hover { color: var(--ink); }
+.om-cta .arr { color: var(--accent); transition: transform 0.25s; }
+.om-cta:hover .arr { transform: translateX(6px); }
+.om-sign { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-size: 34px;
+  line-height: 1; background: var(--serif-grad);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+
+/* ═══ UKŁAD BAZOWY: mobile / flow / fallback bez JS ═══
+   Kolejność w flow (order): tag → 01 → foto → 02 → 03 → 04 */
+.om-stage { display: flex; flex-direction: column; padding: 84px 26px 72px; gap: 34px; }
+.om-ghost { font-size: 200px; left: 14px; top: 96px; }
+.om-tag { order: 1; }
+.om-chapters { display: contents; }
+.om-ch { position: relative; z-index: 7; display: flex; flex-direction: column; gap: 16px; }
+.om-ch .ch-head { font-size: 42px; }
+.om-ch .ch-para { font-size: 16px; max-width: 560px; }
+.om-ch[data-ch="0"] { order: 2; margin-top: 130px; }
+.om-photo-wrap { order: 3; margin: 10px -26px -2px; }
+.om-ch[data-ch="1"] { order: 4; border-top: 1px solid var(--line); padding-top: 30px; }
+.om-ch[data-ch="2"] { order: 5; border-top: 1px solid var(--line); padding-top: 30px; }
+.om-photo { width: min(92vw, 420px); margin: 0 auto; }
+.om-photo-meta { right: 40px; top: 0; }
+.om-photo-meta svg { display: none; }
+
+/* finał 04: zblurowany portret za treścią (nie za nagłówkiem),
+   zmniejszony do bloku treści, dosunięty do prawej, lekko (34px)
+   wystaje ku nagłówkowi */
+.om-final { order: 6; position: relative; z-index: 7; display: flex; flex-direction: column; gap: 18px;
+  border-top: 1px solid var(--line); padding-top: 30px; }
+.om-final-body { position: relative; display: flex; flex-direction: column; gap: 18px; }
+.om-final-bg { position: absolute; z-index: -1; inset: -34px 0 0; pointer-events: none;
+  display: flex; justify-content: flex-end; align-items: flex-end; }
+.om-final-bg img { height: 100%; width: auto; max-width: 100%; object-fit: contain; object-position: right bottom;
+  filter: blur(4px) saturate(1.05); opacity: var(--om-final-op); }
+.om-final .ch-head { font-size: 44px; }
+.om-final .ch-para { font-size: 16px; max-width: 560px; }
+.om-final .om-cta { align-self: flex-start; margin-top: 8px; }
+.om-meta, .om-progress { display: none; }
+
+/* ═══ UKŁAD DESKTOP: przypięta scena (sticky) + stany scrolla ═══
+   861px musi zgadzać się z gsap.matchMedia w o-mnie.js.
+   PORT: w scoped <style> Astro pisz :global(body.js) ... */
+@media (min-width: 861px) {
+  body.js:not(.om-static) #omnie { height: var(--omlen); }
+  body.js:not(.om-static) .om-stage { position: sticky; top: 0; height: 100vh; display: block; padding: 0; }
+
+  body.js:not(.om-static) .om-ghost { font-size: min(28.5vw, 548px); left: 6.5vw; top: 27vh; }
+
+  body.js:not(.om-static) .om-tag { position: absolute; top: 8.8vh; left: 7.8vw; }
+  body.js:not(.om-static) .om-meta { display: flex; top: 8.8vh; right: 7.8vw; }
+  body.js:not(.om-static) .om-progress { display: flex; bottom: 7.6vh; left: 7.8vw; }
+
+  body.js:not(.om-static) .om-chapters { display: block; position: absolute; z-index: 7;
+    left: 7.8vw; top: 48%; width: min(46vw, 900px); height: 0; }
+  body.js:not(.om-static) .om-ch { position: absolute; left: 0; top: 0; margin: 0; padding: 0; border: 0; gap: 30px; }
+  body.js:not(.om-static) .om-ch .ch-head { font-size: min(4.8vw, 92px); }
+  body.js:not(.om-static) .om-ch .ch-para { font-size: clamp(15px, 0.94vw, 18px); max-width: 620px; }
+
+  body.js:not(.om-static) .om-photo-wrap { position: absolute; z-index: 5; margin: 0;
+    right: 2.6vw; bottom: -10px; width: min(48vw, 930px); order: 0; }
+  body.js:not(.om-static) .om-photo { width: 100%; margin: 0; }
+  body.js:not(.om-static) .om-photo-meta { position: absolute; right: 2vw; top: 3vh; }
+  body.js:not(.om-static) .om-photo-meta svg { display: block; }
+
+  body.js:not(.om-static) .om-final { position: absolute; inset: 0; z-index: 8; margin: 0; padding: 0; border: 0;
+    align-items: center; justify-content: center; text-align: center; gap: 34px; pointer-events: none; }
+  body.js:not(.om-static) .om-final.on { pointer-events: auto; }
+  body.js:not(.om-static) .om-final .ch-head { font-size: min(5.6vw, 108px); max-width: 62vw; }
+  body.js:not(.om-static) .om-final .ch-para { font-size: clamp(15px, 0.94vw, 18px); max-width: 620px; }
+  body.js:not(.om-static) .om-final .om-cta { align-self: center; margin-top: 4px; }
+  body.js:not(.om-static) .om-final .om-sign { position: absolute; bottom: 7.2vh; right: 7.8vw; }
+  body.js:not(.om-static) .om-final-bg { display: none; }
+  body.js:not(.om-static) .om-final-body { display: contents; }
+}

@@ -8,8 +8,9 @@ import { gotoReady, settle } from "../helpers/scroll";
 
 const FREEZE = fileURLToPath(new URL("../helpers/freeze.css", import.meta.url));
 
-// Kolejność jak w Home.astro (hero ma własny sweep w hero.spec.ts).
-const SECTIONS = ["audience", "services", "work", "about", "faq", "contact"];
+// Kolejność jak w Home.astro (hero i about mają własne sweepy w hero.spec.ts
+// i about.spec.ts — sekcje scrubowane, element-screenshot nie niesie informacji).
+const SECTIONS = ["audience", "services", "work", "faq", "contact"];
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
