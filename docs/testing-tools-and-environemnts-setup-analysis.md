@@ -513,7 +513,7 @@ projektu. Do tego czasu oba systemy żyją równolegle (stary jako plan B).
    | LCP | 2568 ms | 2573 ms | 1733 ms | 1713 ms | ≤ 3565 (m)³ / ≤ 2000 (d) |
    | TBT | 25 ms | 15 ms | 0 ms | 0 ms | podłoga: ≤ 150 (m) / ≤ 100 (d)¹ |
    | CLS | 0.0027 | 0.0173 | 0.0089 | 0.0098 | ≤ 0.02 |
-   | script | 68 KB | 68 KB | 68 KB | 68 KB | ≤ 75 KB |
+   | script | 68 KB | 68 KB | 68 KB | 68 KB | ≤ 75 KB⁴ |
    | total | 1801 KB | 1789 KB | 1716 KB | 1703 KB | ≤ 1982 (m) / ≤ 1890 KB (d) |
    | fonty (req) | 4 | 3 | 7 | 6 | warn: ≤ 5 (m) / ≤ 7 (d)² |
 
@@ -521,6 +521,7 @@ projektu. Do tego czasu oba systemy żyją równolegle (stary jako plan B).
    świadoma podłoga zamiast mnożnika. ² Desktop ładuje fonty drewelomet
    (LaptopSite) — baseline 7, korekta pierwotnego szkicu (6).
    ³ Pierwotnie ≤ 2960; re-baseline 2026-07-09 po dryfie runnerów (niżej).
+   ⁴ Od 2026-07-10 ≤ 86 800 B; re-baseline po sekcji Oferta (niżej).
 
    **Ratchet #1 po etapie 7 (2026-07-07, run 28894534750, mediany z 3):**
    preload fontu (I.4) zbił CLS na mobile `/en/` z 0.0173 → 0.0004, perf
@@ -537,6 +538,14 @@ projektu. Do tego czasu oba systemy żyją równolegle (stary jako plan B).
    = 3100 → nowy próg mobile 3100 × 1,15 ≈ **3565 ms**. To korekta na
    dryf infry, nie luzowanie po regresji; po najbliższej optymalizacji
    LCP (albo powrocie floty do formy) zacieśnić do świeżego baseline'u.
+
+   **Re-baseline script (2026-07-10, po sekcji Oferta):** PR #16
+   (feat/services-section-init) dodał moduły `services-scroll`/`services-config`
+   + handler kotwic — script wzrósł z 68 KB do **78 875 B** (run 29109723817,
+   oba URL-e identycznie; pozostałe metryki zielone, w tym perf i LCP).
+   Nowa funkcjonalność = nowy uzasadniony baseline, nie regresja → próg
+   78 875 × 1,1 ≈ **86 800 B** (oba profile — ten sam bundle). Decyzja
+   Mateusza; przy optymalizacji zacieśnić do świeżego pomiaru.
    - próg = baseline × 1,15 dla metryk czasowych, baseline + 10% dla wag
      zasobów — margines na szum runnera, zero fałszywych czerwonych;
    - **ratchet:** po każdej wdrożonej optymalizacji z Części I ponowny pomiar

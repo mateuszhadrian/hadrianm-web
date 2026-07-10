@@ -20,10 +20,9 @@ module.exports = {
         // Baseline 0 ms — podłoga 100 ms zamiast ×1,15 (szum runnera).
         "total-blocking-time": ["error", { maxNumericValue: 100 }],
         "cumulative-layout-shift": ["error", { maxNumericValue: 0.005 }],
-        "resource-summary:script:size": [
-          "error",
-          { maxNumericValue: 76800 }, // 68 KB × 1,1
-        ],
+        // Re-baseline 2026-07-10 po sekcji Oferta — ten sam bundle co
+        // mobile (szczegóły w lighthouserc.cjs): 78 875 × 1,1 ≈ 86 800.
+        "resource-summary:script:size": ["error", { maxNumericValue: 86800 }],
         "resource-summary:total:size": [
           "error",
           { maxNumericValue: 1935000 }, // 1716 KB × 1,1
