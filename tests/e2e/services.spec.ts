@@ -1,0 +1,70 @@
+// Sekcja „Oferta": kotwice CTA (#packages, #contact), fallback bez JS
+// (pełna treść widoczna — stany startowe animacji uzbraja dopiero klasa .js)
+// i wersja EN. Choreografię scrolla weryfikuje sweep tests/visual/services.spec.ts.
+import { expect, test } from "@playwright/test";
+import { assertPreview } from "../helpers/guards";
+import { gotoReady, settle } from "../helpers/scroll";
+
+test.beforeAll(async ({ browser }) => {
+  const page = await browser.newPage();
+  await assertPreview(page);
+  await page.close();
+});
+
+test("CTA procesu skacze do #packages (hash + pozycja)", async ({ page }) => {
+  await gotoReady(page);
+  const cta = page.locator("#services .of-cta");
+  await cta.scrollIntoViewIfNeeded();
+  // Reveal endcapu (klasa .on z progu ScrollTriggera) musi usiąść przed klikiem.
+  await settle(page, 800);
+  await cta.click();
+  await settle(page);
+  await expect(page).toHaveURL(/#packages$/);
+  const box = await page.locator("#packages").boundingBox();
+  expect(box).not.toBeNull();
+  // Skok immediate — cel ma zaczynać się na górze viewportu.
+  expect(Math.abs(box!.y)).toBeLessThanOrEqual(5);
+});
+
+test("CTA pakietu prowadzi do #contact", async ({ page }) => {
+  await gotoReady(page);
+  const cta = page.locator("#services .pk-col.mid .pk-cta");
+  await cta.scrollIntoViewIfNeeded();
+  await settle(page, 800);
+  await cta.click();
+  await settle(page);
+  await expect(page).toHaveURL(/#contact$/);
+  const box = await page.locator("#contact").boundingBox();
+  expect(box).not.toBeNull();
+  expect(Math.abs(box!.y)).toBeLessThanOrEqual(5);
+});
+
+test.describe("fallback bez JS", () => {
+  test.use({ javaScriptEnabled: false });
+
+  test("pełna treść sekcji jest widoczna statycznie (SEO)", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+    // Intro nieprzygaszone (split na spany robi dopiero JS) + proces + pakiety.
+    await expect(page.locator("#services .of-lead").first()).toContainText(
+      "Każda firma jest na innym etapie",
+    );
+    await expect(page.locator("#services .of-step")).toHaveCount(5);
+    await expect(
+      page.locator("#services .of-step article h3").last(),
+    ).toBeVisible();
+    await expect(page.locator("#services .pk-col")).toHaveCount(3);
+    await expect(page.locator("#services .of-cta")).toBeVisible();
+  });
+});
+
+test("wersja EN ma przetłumaczoną sekcję services", async ({ page }) => {
+  await gotoReady(page, "/en/");
+  await expect(page.locator("#services .pk-head h2")).toContainText(
+    "choose your",
+  );
+  await expect(
+    page.locator("#services .of-step article h3").first(),
+  ).toContainText("Conversation and goals");
+});
