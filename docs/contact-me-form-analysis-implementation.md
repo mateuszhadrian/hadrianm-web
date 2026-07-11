@@ -414,7 +414,9 @@ Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
 
 ### Etap 3 — [C]+[M] Testy i baseline'y
 
-> **Stan: 🟡 w toku (2026-07-11).** Kod testów gotowy i zielony lokalnie:
+> **Stan: ✅ wykonany (2026-07-11).** Baseline'y zaktualizowane w kolejności
+> z CI (linux workflow → darwin na końcu), PR #21 zmergowany z kompletem
+> zielonych checków. Szczegóły wykonania:
 > `tests/e2e/contact.spec.ts` (13 scenariuszy × 6 profili; Turnstile
 > stubowany route'em, endpoint mockowany przez `page.route`), sonda
 > `@prod-smoke` w `smoke.spec.ts` (skip bez `BASE_URL` — preview nie
@@ -423,11 +425,10 @@ Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
 > allowliście). Korekta wykonawcza: w `seo.spec.ts` przejściowy wyjątek
 > dla linków polityki prywatności (świadome okno 404 z §7/§10 — USUNĄĆ
 > w Etapie 5). Wpis visual dla `#contact` istniał już w
-> `sections.spec.ts`; do akceptacji Mateusza czeka aktualizacja
-> baseline'ów: `section-contact` (6 profili — stary baseline to
-> placeholder) + churny `section-work` i `faq-04-cta` (tylko
-> chromium-pixel-5; skutek zmiany wysokości strony). Po zgodzie:
-> workflow linux → darwin NA KOŃCU (pkt 3 niżej).
+> `sections.spec.ts`; zaktualizowane baseline'y (po akceptacji diffów):
+> `section-contact` (6 profili — stary baseline to placeholder) + churny
+> `section-work` i `faq-04-cta` (tylko chromium-pixel-5; skutek zmiany
+> wysokości strony).
 
 1. **e2e** (`tests/e2e/contact.spec.ts`) — scenariusze z checklisty README
    referencji: walidacja (pusty submit → 3 błędy + fokus; zły e-mail;
@@ -455,6 +456,16 @@ Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
    jakiegokolwiek maila** (ścieżka bot-trap kończy się przed Resend).
 
 ### Etap 4 — [M] Test end-to-end na preview i produkcji (~15 min)
+
+> **Stan: ✅ wykonany (2026-07-11).** Preview: wiadomość dotarła do `info@`
+> i potwierdzenie do nadawcy (W1/W3); po drodze wykryty i naprawiony
+> incydent autofillu (korekta niżej). Po merge'u PR #21: produkcja
+> zweryfikowana technicznie (assety + `/api/kontakt` sondą honeypot → 200),
+> `prod-smoke` i CI na main zielone (pierwsze przebiegi padły na wyścigu
+> z propagacją deployu / znanym flake'u CTA FAQ — reruny czyste), a Mateusz
+> potwierdził pełny test na `hadrianm.pl` (W1–W3 + ścieżka błędu — komplet).
+> Obserwacja: 401 na `challenges.cloudflare.com/...​/pat/...` w konsoli to
+> normalny protokół Private Access Token Turnstile'a, nie błąd.
 
 > ℹ️ **Korekta wykonawcza (2026-07-11, incydent z preview):** pierwszy test
 > Etapu 4 „zjadł" wiadomość — autouzupełnianie Chrome'a wypełniło offscreenowy
@@ -525,13 +536,13 @@ tylko debug — trwały rekord zgłoszenia to mail w skrzynce `info@`.
 
 ## 11. Checklista końcowa (definition of done)
 
-- [ ] Resend: domena `Verified`, klucz w sekretach Pages (Prod + Preview)
-- [ ] Turnstile: widget utworzony, secret w sekretach, sitekey w kodzie
-- [ ] Reguła WAF na `/api/kontakt` aktywna
-- [ ] `functions/api/kontakt.ts` + `src/lib/contact-form.ts` + testy unit zielone
-- [ ] Sekcja `#kontakt` PL/EN, reveal `info@` + telefon, footer, tryby statyczne
-- [ ] e2e + axe zielone; baseline'y visual darwin+linux zcommitowane (właściwa kolejność)
-- [ ] Etap 4 przeszedł: W1 ✅ W2 ✅ (Reply-To) W3 ✅ (potwierdzenie z treścią) + ścieżka błędu ✅
-- [ ] `@prod-smoke` obejmuje endpoint (honeypot-probe)
+- [x] Resend: domena `Verified`, klucz w sekretach Pages (Prod + Preview)
+- [x] Turnstile: widget utworzony, secret w sekretach, sitekey w kodzie
+- [x] Reguła WAF na `/api/kontakt` aktywna
+- [x] `functions/api/kontakt.ts` + `src/lib/contact-form.ts` + testy unit zielone
+- [x] Sekcja `#kontakt` PL/EN, reveal `info@` + telefon, footer, tryby statyczne
+- [x] e2e + axe zielone; baseline'y visual darwin+linux zcommitowane (właściwa kolejność)
+- [x] Etap 4 przeszedł: W1 ✅ W2 ✅ (Reply-To) W3 ✅ (potwierdzenie z treścią) + ścieżka błędu ✅
+- [x] `@prod-smoke` obejmuje endpoint (honeypot-probe)
 - [ ] Etap 5: polityka prywatności PL/EN na osobnym branchu, linki podmienione
-- [ ] `docs/README.md` — wpis o tym dokumencie aktualny
+- [x] `docs/README.md` — wpis o tym dokumencie aktualny
