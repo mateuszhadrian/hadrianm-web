@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontakt — referencja (hadventure)</title>
+
+<!-- PODGLĄD: Google Fonts CDN. W Astro → fontsource (patrz README pkt 3). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="kontakt.css">
+</head>
+<body>
+<!-- Marker "JS działa" — w Astro masz to już globalnie w layoutcie. -->
+<script>document.body.classList.add('js');</script>
+
+<!-- ══ TYLKO PODGLĄD: spacer do testu wejść scrollowych — NIE przenosić do Astro.
+     W realnej stronie nad sekcją kończy się panel FAQ (#100B0D). ══ -->
+<div aria-hidden="true" style="height: 60vh; background: #100B0D; border-bottom: 1px solid rgba(245,240,236,0.14); display: flex; align-items: flex-end; padding: 0 0 32px 70px;">
+  <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: rgba(245,240,236,0.38);">spacer podglądu — scroll ↓</span>
+</div>
+
+<!-- ═══════════════════ SEKCJA 06 / KONTAKT ═══════════════════
+     Finał strony: wraca na czerń #070507 po panelu FAQ, wchłania
+     footer. E-mail i telefon NIE istnieją w tym pliku w całości —
+     kontakt.js składa je z fragmentów dopiero po kliknięciu. -->
+<section id="kontakt" aria-label="Kontakt" data-screen-label="Kontakt — sekcja 06">
+
+  <div class="kt-atmo" aria-hidden="true"><span class="kt-bl b1"></span><span class="kt-bl b2"></span></div>
+  <div class="kt-mesh" aria-hidden="true"></div>
+
+  <div class="kt-tag" aria-hidden="true"><span class="t-num">06</span><span class="t-sl">/</span><span class="t-lbl">KONTAKT</span></div>
+  <div class="kt-meta" aria-hidden="true">Formularz · e-mail · telefon</div>
+  <div class="kt-ghost" aria-hidden="true">KONTAKT</div>
+
+  <div class="kt-grid">
+
+    <!-- lead -->
+    <div class="kt-lead">
+      <div class="kt-mono kick">Kontakt</div>
+      <h2>napisz <span class="sf">do mnie</span></h2>
+      <p class="kt-intro">Planujesz nowy projekt albo szukasz wsparcia programistycznego? Napisz — wracam z odpowiedzią w ciągu 24 godzin w dni robocze.</p>
+    </div>
+
+    <!-- side: status + dane -->
+    <div class="kt-side">
+      <div class="kt-status">
+        <div class="kt-st on"><span class="kt-dia" aria-hidden="true"></span>Przyjmuję nowe zlecenia</div>
+        <div class="kt-st off"><span class="kt-dia hollow" aria-hidden="true"></span>Odpowiadam do 24h w dni robocze</div>
+      </div>
+      <div class="kt-hr" aria-hidden="true"></div>
+
+      <div class="kt-rev" data-kind="email">
+        <span class="kt-x tl" aria-hidden="true"></span><span class="kt-x br" aria-hidden="true"></span>
+        <div class="kt-mono lbl">E-mail</div>
+        <span class="kt-val">mateusz@•••••••••.••</span>
+        <button class="kt-act" type="button" aria-label="Pokaż adres e-mail">[ POKAŻ ]</button>
+      </div>
+      <div class="kt-rev" data-kind="phone">
+        <span class="kt-x tl" aria-hidden="true"></span><span class="kt-x br" aria-hidden="true"></span>
+        <div class="kt-mono lbl">Telefon</div>
+        <span class="kt-val">+48 ••• ••• •••</span>
+        <button class="kt-act" type="button" aria-label="Pokaż numer telefonu">[ POKAŻ ]</button>
+      </div>
+    </div>
+
+    <!-- formularz -->
+    <div class="kt-frame">
+      <span class="kt-x tl" aria-hidden="true"></span><span class="kt-x tr" aria-hidden="true"></span>
+      <span class="kt-x bl" aria-hidden="true"></span><span class="kt-x br" aria-hidden="true"></span>
+
+      <div class="kt-formwrap">
+        <form class="kt-form" novalidate>
+          <!-- honeypot: boty wypełniają, ludzie nie widzą -->
+          <div class="kt-hp" aria-hidden="true">
+            <label for="kt-firma">Firma</label>
+            <input id="kt-firma" name="firma" type="text" tabindex="-1" autocomplete="off">
+          </div>
+
+          <div class="kt-f2 fld">
+            <div class="kt-f" data-f="name">
+              <label for="kt-name">Imię</label>
+              <div class="ctl"><input id="kt-name" name="name" type="text" placeholder="np. Anna" autocomplete="given-name"></div>
+              <div class="kt-err" aria-live="polite">Podaj imię</div>
+            </div>
+            <div class="kt-f" data-f="email">
+              <label for="kt-email">Twój e-mail</label>
+              <div class="ctl"><input id="kt-email" name="email" type="email" placeholder="adres do odpowiedzi" autocomplete="email"></div>
+              <div class="kt-err" aria-live="polite">Podaj poprawny adres e-mail</div>
+            </div>
+          </div>
+
+          <div class="kt-topic fld" role="radiogroup" aria-label="Czego dotyczy wiadomość">
+            <div class="glbl">Czego dotyczy wiadomość</div>
+            <div class="kt-chips">
+              <label class="kt-chip"><input type="radio" name="temat" value="Start"><span class="dia" aria-hidden="true"></span><span class="tx">Start</span></label>
+              <label class="kt-chip"><input type="radio" name="temat" value="Wizerunek"><span class="dia" aria-hidden="true"></span><span class="tx">Wizerunek</span></label>
+              <label class="kt-chip"><input type="radio" name="temat" value="Biznes"><span class="dia" aria-hidden="true"></span><span class="tx">Biznes</span></label>
+              <label class="kt-chip"><input type="radio" name="temat" value="Inny temat"><span class="dia" aria-hidden="true"></span><span class="tx">Inny temat</span></label>
+            </div>
+          </div>
+
+          <div class="kt-msg fld" data-f="msg">
+            <label for="kt-msg">Wiadomość</label>
+            <div class="box"><textarea id="kt-msg" name="message" placeholder="Napisz tu swoją wiadomość — odpowiadam najpóźniej w ciągu 24 godzin (w dni robocze), a na szybkie pytania zwykle od ręki."></textarea></div>
+            <div class="kt-err" aria-live="polite">Napisz kilka słów wiadomości</div>
+          </div>
+
+          <div class="kt-fbot fld">
+            <p class="kt-note">Wysyłając wiadomość akceptujesz <a href="#polityka">politykę prywatności</a> — Twoje dane wykorzystuję wyłącznie po to, żeby odpowiedzieć.</p>
+            <p class="kt-srv" role="alert" hidden>Nie udało się wysłać — spróbuj ponownie albo napisz bezpośrednio na e-mail</p>
+            <button class="kt-send" type="submit"><span class="lb">Wyślij wiadomość</span> <span class="arr" aria-hidden="true">→</span></button>
+          </div>
+        </form>
+
+        <!-- potwierdzenie -->
+        <div class="kt-done" role="status">
+          <span class="dia-lg" aria-hidden="true"></span>
+          <h3 tabindex="-1">Wiadomość wysłana</h3>
+          <p>Odezwę się najpóźniej w ciągu 24 godzin w dni robocze — zwykle znacznie szybciej.</p>
+          <button class="again" type="button">[ Wyślij kolejną ]</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer wchłonięty w sekcję -->
+  <footer class="kt-footer">
+    <div class="fline" aria-hidden="true"></div>
+    <div class="kt-frow">
+      <div class="c">© 2026 Mateusz Hadrian — hadrianm.pl</div>
+      <nav class="kt-soc" aria-label="Social media">
+        <a href="#github">GitHub <span class="aw" aria-hidden="true">↗</span></a>
+        <a href="#linkedin">LinkedIn <span class="aw" aria-hidden="true">↗</span></a>
+        <a href="#instagram">Instagram <span class="aw" aria-hidden="true">↗</span></a>
+      </nav>
+      <div class="kt-fleg">
+        <a href="#polityka">Polityka prywatności</a>
+        <a class="up" href="#top">Do góry ↑</a>
+      </div>
+    </div>
+  </footer>
+</section>
+
+<!-- PODGLĄD: GSAP z CDN. W Astro → importy z node_modules (README pkt 2). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="kontakt.js"></script>
+</body>
+</html>
