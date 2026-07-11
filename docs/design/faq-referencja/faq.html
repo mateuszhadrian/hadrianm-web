@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — referencja (hadventure)</title>
+
+<!-- PODGLĄD: Google Fonts CDN. W Astro → fontsource (patrz README pkt 3). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="faq.css">
+</head>
+<body>
+<!-- Marker "JS działa" — w Astro masz to już globalnie w layoutcie. -->
+<script>document.body.classList.add('js');</script>
+
+<!-- ═══════════════════ SEKCJA 05 / FAQ ═══════════════════
+     Samodzielny panel na cieplejszej czerni #100B0D; szew
+     (hairline + poświata) to border-top/bottom + ::before sekcji. -->
+<section id="faq" aria-label="FAQ — pytania i odpowiedzi">
+
+  <!-- atmosfera: mgła (statyczna, malowana raz) + mesh -->
+  <div class="fq-atmo" aria-hidden="true"><span class="fq-bl b1"></span><span class="fq-bl b2"></span></div>
+  <div class="fq-mesh" aria-hidden="true"></div>
+
+  <!-- chrome sekcji -->
+  <div class="fq-tag" aria-hidden="true"><span class="t-num">05</span><span class="t-sl">/</span><span class="t-lbl">FAQ</span></div>
+  <div class="fq-meta" aria-hidden="true">Najczęstsze pytania — zanim napiszesz</div>
+  <div class="fq-ghost" aria-hidden="true">FAQ</div>
+
+  <!-- nagłówek -->
+  <div class="fq-head">
+    <div class="fq-mono kick">FAQ — 06 pytań</div>
+    <h2>pytania i <span class="sf">odpowiedzi</span></h2>
+  </div>
+
+  <!-- rejestr: aria-expanded="true" w markupie = stan bez JS (wszystko
+       rozwinięte); faq.js przy inicie zamyka i ustawia "false". -->
+  <ol class="fq-list">
+    <li class="fq-item">
+      <div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="fq-a-1">
+        <span class="no">01</span>
+        <span class="qt">Ile czasu zajmuje stworzenie strony internetowej?</span>
+        <span class="fq-plus" aria-hidden="true"></span>
+      </button></h3>
+      <div class="fq-a" id="fq-a-1"><div>
+        <p>Czas realizacji zależy od wybranego pakietu. Najprostsze strony z pakietu "Start" są zazwyczaj gotowe w 1 do 2 tygodni. Projekty z pakietu "Wizerunek" i wyższych, które wymagają przygotowania indywidualnych makiet i zaprogramowania płynnych animacji, zajmują najczęściej od 3 do 6 tygodni. Dokładny harmonogram zawsze ustalamy przed rozpoczęciem prac.</p>
+      </div></div>
+    </li>
+    <li class="fq-item">
+      <div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="fq-a-2">
+        <span class="no">02</span>
+        <span class="qt">Czy będę mógł/mogła samodzielnie edytować stronę po jej oddaniu?</span>
+        <span class="fq-plus" aria-hidden="true"></span>
+      </button></h3>
+      <div class="fq-a" id="fq-a-2"><div>
+        <p>Tak. W pakietach od "Wizerunku" wzwyż standardowo wdrażam intuicyjny panel zarządzania (CMS). Po zakończeniu prac pokazuję, jak w prosty sposób – przypominający obsługę mediów społecznościowych – samodzielnie zmieniać teksty, dodawać zdjęcia czy aktualizować ofertę. Dla pakietu "Start" panel CMS jest dostępny jako opcja dodatkowa.</p>
+      </div></div>
+    </li>
+    <li class="fq-item">
+      <div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="fq-a-3">
+        <span class="no">03</span>
+        <span class="qt">Czy po zrobieniu strony muszę płacić jakiś abonament?</span>
+        <span class="fq-plus" aria-hidden="true"></span>
+      </button></h3>
+      <div class="fq-a" id="fq-a-3"><div>
+        <p>Samo stworzenie strony to opłata jednorazowa – nie pobieram od Ciebie żadnego comiesięcznego abonamentu. Musisz jednak pamiętać o standardowych, niezależnych ode mnie kosztach utrzymania strony w internecie: opłacie za serwer (hosting) oraz domenę (Twój adres np. twojafirma.pl). Są to opłaty uiszczane zwykle raz do roku. Pomagam dobrać szybki i opłacalny serwer, żeby te koszty były jak najniższe.</p>
+      </div></div>
+    </li>
+    <li class="fq-item">
+      <div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="fq-a-4">
+        <span class="no">04</span>
+        <span class="qt">Nie mam zdjęć ani tekstów do swojej nowej strony. Czy to problem?</span>
+        <span class="fq-plus" aria-hidden="true"></span>
+      </button></h3>
+      <div class="fq-a" id="fq-a-4"><div>
+        <p>Zupełnie nie. Jeśli masz własne materiały – świetnie, wykorzystamy je. Jeśli nie, mogę pomóc. Jako twórca zajmujący się również realizacją wideo i produkcją dźwięku, mogę zająć się stworzeniem dla Ciebie profesjonalnych zdjęć, nagraniem wideo w tle strony czy nawet skomponowaniem autorskiej oprawy dźwiękowej. Pomagam również w redagowaniu tekstów, tak aby przyciągały uwagę Twoich klientów.</p>
+      </div></div>
+    </li>
+    <li class="fq-item">
+      <div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="fq-a-5">
+        <span class="no">05</span>
+        <span class="qt">Czy moja strona będzie dobrze działać na smartfonach?</span>
+        <span class="fq-plus" aria-hidden="true"></span>
+      </button></h3>
+      <div class="fq-a" id="fq-a-5"><div>
+        <p>Tak, to absolutny priorytet i standard w każdym moim pakiecie. Strony projektuję w podejściu "Mobile First", co oznacza, że będą wyglądać i działać perfekcyjnie na każdym ekranie – od najmniejszego telefonu po duże monitory.</p>
+      </div></div>
+    </li>
+    <li class="fq-item">
+      <div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="fq-a-6">
+        <span class="no">06</span>
+        <span class="qt">Co w sytuacji, gdy po publikacji strony coś przestanie działać?</span>
+        <span class="fq-plus" aria-hidden="true"></span>
+      </button></h3>
+      <div class="fq-a" id="fq-a-6"><div>
+        <p>Po oddaniu gotowej strony i podpięciu Twojej domeny otrzymujesz ode mnie miesiąc darmowego wsparcia technicznego. Jeśli w tym czasie pojawią się jakieś problemy techniczne, rozwiązuję je w ramach umowy. Po upływie tego czasu możesz zawsze się do mnie odezwać – ewentualne poprawki lub rozbudowę strony wyceniam wtedy na bieżąco.</p>
+      </div></div>
+    </li>
+  </ol>
+  <div class="fq-line fq-endline" aria-hidden="true"></div>
+
+  <!-- domknięcie → kontakt -->
+  <div class="fq-cta">
+    <span class="fq-dia" aria-hidden="true"></span>
+    <div class="fq-mono">Nie znalazłeś odpowiedzi?</div>
+    <a class="fq-link" href="#kontakt">Napisz do mnie <span class="arr">→</span></a>
+  </div>
+</section>
+
+<!-- PODGLĄD: CDN. W Astro → import gsap z node_modules (README pkt 2). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="faq.js"></script>
+</body>
+</html>

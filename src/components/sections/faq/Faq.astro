@@ -1,37 +1,706 @@
 ---
+// Sekcja „FAQ" — wariant A „Rejestr" (port referencji
+// docs/design/faq-referencja/; decyzje: docs/analiza-sekcja-faq.md).
+// Samodzielny panel na cieplejszej czerni #100B0D; szew = hairline
+// (border-top/bottom) + gasnąca poświata akcentu (::before).
+// Markup + style tutaj; wejścia i tween akordeonu w faq-scroll.ts
+// (ładowany tylko przy prefers-reduced-motion: no-preference); sama
+// logika akordeonu w faq-accordion.ts (ładowana ZAWSZE — przy reduce
+// przełącza natychmiast). Bez JS sekcja renderuje pełną, rozwiniętą
+// treść (markup startuje z aria-expanded="true"; init zamyka).
 import { navItems, navLabel } from "@/i18n/nav";
-import type { Lang } from "@/i18n/utils";
+import { useTranslations, type Lang } from "@/i18n/utils";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
+const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "faq");
-const heading = item ? navLabel(item, lang) : "faq";
+const label = item ? navLabel(item, lang) : "FAQ";
+
+// Kontrakt liczby pytań z FAQ_ITEM_COUNT pilnuje tests/unit/faq-config.test.ts
+// (stagger --d w CSS niżej ma dokładnie tyle pozycji nth-child).
+const faqs = [
+  { q: t("faq.q1"), a: t("faq.a1") },
+  { q: t("faq.q2"), a: t("faq.a2") },
+  { q: t("faq.q3"), a: t("faq.a3") },
+  { q: t("faq.q4"), a: t("faq.a4") },
+  { q: t("faq.q5"), a: t("faq.a5") },
+  { q: t("faq.q6"), a: t("faq.a6") },
+].map((f, i) => ({ ...f, no: `0${i + 1}`, id: `fq-a-${i + 1}` }));
+
+// Dane strukturalne FAQPage (schema.org) z tych samych danych i18n co
+// markup — Google potrafi z nich budować rozwijane pytania w wynikach.
+const faqSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+});
 ---
 
-<section id="faq" class="faq">
-  <div class="faq__content">
-    <h2>{heading}</h2>
+<section id="faq" class="fq" aria-label={label}>
+  <script is:inline>
+    // Bez JS sekcja zostaje w pełni widoczna i rozwinięta (fallback SEO);
+    // klasa .js uzbraja stany startowe animacji i zamknięte odpowiedzi.
+    document.currentScript?.closest("section")?.classList.add("js");
+  </script>
+
+  <script type="application/ld+json" set:html={faqSchema} is:inline />
+
+  <!-- atmosfera: mgła (statyczna, cichsza niż w Ofercie) + mesh -->
+  <div class="fq-atmo" aria-hidden="true">
+    <span class="fq-bl b1"></span><span class="fq-bl b2"></span>
+  </div>
+  <div class="fq-mesh" aria-hidden="true"></div>
+
+  <!-- chrome sekcji -->
+  <div class="fq-tag">
+    <span class="t-num">05</span><span class="t-sl" aria-hidden="true">/</span
+    ><span class="t-lbl">{label}</span>
+  </div>
+  <div class="fq-meta" aria-hidden="true">{t("faq.meta")}</div>
+  <div class="fq-ghost" aria-hidden="true">{t("faq.ghost")}</div>
+
+  <!-- nagłówek -->
+  <div class="fq-head">
+    <div class="fq-mono kick">{t("faq.kick")}</div>
+    <h2>{t("faq.headLead")} <span class="sf">{t("faq.headAccent")}</span></h2>
+  </div>
+
+  <!-- rejestr: aria-expanded="true" w markupie = stan bez JS (wszystko
+       rozwinięte); faq-accordion.ts przy inicie zamyka i ustawia "false". -->
+  <ol class="fq-list">
+    {
+      faqs.map((f) => (
+        <li class="fq-item">
+          <div class="fq-line" aria-hidden="true" />
+          <h3>
+            <button
+              class="fq-q"
+              type="button"
+              aria-expanded="true"
+              aria-controls={f.id}
+            >
+              <span class="no">{f.no}</span>
+              <span class="qt">{f.q}</span>
+              <span class="fq-plus" aria-hidden="true" />
+            </button>
+          </h3>
+          <div class="fq-a" id={f.id}>
+            <div>
+              <p>{f.a}</p>
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+  <div class="fq-line fq-endline" aria-hidden="true"></div>
+
+  <!-- domknięcie → kontakt -->
+  <div class="fq-cta">
+    <span class="fq-dia" aria-hidden="true"></span>
+    <div class="fq-mono">{t("faq.ctaMono")}</div>
+    <a class="fq-link" href="#contact"
+      >{t("faq.ctaLink")} <span class="arr" aria-hidden="true">→</span></a
+    >
   </div>
 </section>
 
+<script>
+  import { initFaqAccordion } from "./faq-accordion";
+
+  // Animacje (wejścia + tween akordeonu) tylko przy dozwolonym ruchu —
+  // ta sama bramka co Lenis w BaseLayout. Przy reduce akordeon dalej
+  // DZIAŁA — przełącza natychmiast (klasy + CSS), bez GSAP w bundle'u.
+  const faqSection = document.querySelector<HTMLElement>("#faq");
+  if (faqSection) {
+    if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+      import("./faq-scroll").then((m) => m.initFaqScroll());
+    } else {
+      initFaqAccordion(faqSection);
+    }
+  }
+
+  // Kotwica CTA (#contact): skok jak w navbarze (Lenis immediate +
+  // podmiana hash), fallback natywny gdy Lenisa nie ma — wzorzec Oferty.
+  for (const a of document.querySelectorAll<HTMLAnchorElement>(
+    '#faq a[href^="#"]',
+  )) {
+    a.addEventListener("click", (e) => {
+      const id = a.getAttribute("href")?.slice(1);
+      const target = id ? document.getElementById(id) : null;
+      if (!target) return;
+      e.preventDefault();
+      if (window.__lenis) {
+        window.__lenis.scrollTo(target, { offset: 0, immediate: true });
+      } else {
+        target.scrollIntoView({ behavior: "auto", block: "start" });
+      }
+      history.replaceState(null, "", `#${id}`);
+    });
+  }
+</script>
+
 <style>
-  .faq {
+  /* ═══ Sekcja „FAQ" — wartości „zamrożone" z prototypu referencji:
+     breakpoint 861px · wejścia top 84/80/92% · stagger wierszy 0.07s ·
+     akordeon 0.55/0.45s · parallax ghosta −34→+44px.
+     Paleta/fonty z tokenów projektu (global.css); panel i mgła lokalne.
+     UWAGA: breakpointy @media (861px) MUSZĄ być równe FAQ_DESKTOP_MIN_PX
+     (faq-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
+  .fq {
+    --fq-panel: #100b0d; /* panel — o stopień cieplejszy niż tło strony */
+    --fq-cz: cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
-    min-height: 100svh;
+    overflow: hidden; /* ghost-typografia nie może rozpychać strony */
+    background: var(--fq-panel);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+    padding: 216px 150px 130px;
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+  }
+  /* szew: gasnąca poświata akcentu pod górną krawędzią panelu */
+  .fq::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 150px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 90, 71, 0.05),
+      rgba(255, 90, 71, 0)
+    );
+  }
+  .fq a {
+    text-decoration: none;
+  }
+  .fq button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .fq-q:focus-visible,
+  .fq-link:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
   }
 
-  .faq__content {
-    height: 100svh;
+  /* ── atmosfera: mgła cichsza niż w Ofercie, statyczna ──
+     blur blobów i mix-blend-mode mesha TYLKO na desktopie (niżej): na
+     telefonach duże warstwy filter/blend głodzą rasteryzację i
+     destabilizują syncTouch Lenisa (wzorzec Oferty/Audience). */
+  .fq-atmo {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .fq-bl {
+    position: absolute;
+    border-radius: 50%;
+  }
+  .fq-bl.b1 {
+    right: -14vw;
+    top: -18vw;
+    width: 46vw;
+    height: 46vw;
+    background: radial-gradient(
+      closest-side,
+      rgba(214, 38, 38, 0.2) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+  .fq-bl.b2 {
+    left: -13vw;
+    bottom: -16vw;
+    width: 40vw;
+    height: 40vw;
+    background: radial-gradient(
+      closest-side,
+      rgba(130, 20, 32, 0.18) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+  .fq-mesh {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.42;
+    background-image: radial-gradient(
+      circle at center,
+      rgba(0, 0, 0, 0.96) 2.17px,
+      rgba(0, 0, 0, 0) 3.69px
+    );
+    background-size: 10.41px 10.41px;
+  }
+
+  /* ── chrome sekcji ── */
+  .fq-tag {
+    position: absolute;
+    left: 150px;
+    top: 95px;
+    z-index: 9;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .fq-tag .t-num {
+    color: var(--accent);
+  }
+  .fq-tag .t-sl {
+    color: var(--faint);
+  }
+  .fq-tag .t-lbl {
+    color: var(--muted);
+  }
+  .fq-meta {
+    position: absolute;
+    right: 150px;
+    top: 97px;
+    z-index: 9;
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+  .fq-ghost {
+    position: absolute;
+    right: 130px;
+    top: 104px;
+    z-index: 4;
+    pointer-events: none;
+    user-select: none;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(200px, 15.6vw, 300px);
+    line-height: 0.82;
+    letter-spacing: -0.045em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(245, 240, 236, 0.09);
+  }
+
+  /* mono etykieta */
+  .fq-mono {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  /* ── nagłówek ── */
+  .fq-head {
+    position: relative;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .fq-head .kick {
+    color: var(--accent);
+  }
+  .fq-head h2 {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(52px, 4vw, 76px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+  }
+  .fq-head h2 .sf {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+
+  /* ── rejestr ── */
+  .fq-list {
+    position: relative;
+    z-index: 6;
+    margin: 66px 0 0;
+    list-style: none;
+    padding: 0;
+  }
+  .fq-line {
+    height: 1px;
+    background: var(--line);
+    position: relative;
+    z-index: 6;
+  }
+  .fq-item {
+    position: relative;
+  }
+  .fq-item h3 {
+    margin: 0;
+  }
+
+  .fq-q {
     display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: system-ui, sans-serif;
+    grid-template-columns: 110px 1fr 40px;
+    align-items: center;
+    text-align: left;
+    width: calc(100% + 40px);
+    margin: 0 -20px;
+    padding: 27px 20px;
+  }
+  .fq-q .no {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--faint);
+    transition: color 0.35s;
+  }
+  .fq-q .qt {
+    margin: 0;
+    font-weight: 700;
+    font-size: 27px;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: rgba(245, 240, 236, 0.86);
+    transition:
+      color 0.3s,
+      transform 0.35s var(--fq-cz);
+  }
+  .fq-item.open .fq-q .no {
+    color: var(--accent);
+  }
+  .fq-item.open .fq-q .qt {
+    color: var(--ink);
   }
 
-  .faq__content h2 {
-    font-size: clamp(1.25rem, 4vw, 2.25rem);
-    font-weight: 700;
+  /* plus → × */
+  .fq-plus {
+    position: relative;
+    justify-self: end;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.4s var(--fq-cz);
+  }
+  .fq-plus::before,
+  .fq-plus::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 18px;
+    height: 1.6px;
+    background: var(--faint);
+    transition: background 0.3s;
+    transform: translate(-50%, -50%);
+  }
+  .fq-plus::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+  .fq-item.open .fq-plus {
+    transform: rotate(45deg);
+  }
+  .fq-item.open .fq-plus::before,
+  .fq-item.open .fq-plus::after {
+    background: var(--accent);
+  }
+
+  @media (hover: hover) {
+    .fq-q:hover {
+      background: rgba(245, 240, 236, 0.022);
+    }
+    .fq-q:hover .qt {
+      color: var(--ink);
+      transform: translateX(8px);
+    }
+    .fq-q:hover .fq-plus::before,
+    .fq-q:hover .fq-plus::after {
+      background: var(--ink);
+    }
+    .fq-item.open .fq-q:hover .fq-plus::before,
+    .fq-item.open .fq-q:hover .fq-plus::after {
+      background: var(--accent);
+    }
+  }
+
+  /* odpowiedź: domyślnie (bez JS) rozwinięta; z JS wysokość 0 ↔ auto —
+     przy motion rozwija tween GSAP (faq-scroll.ts, pomiar tylko przy
+     kliknięciu), przy reduce przełącza sam CSS (natychmiast). */
+  .fq-a {
+    overflow: hidden;
+  }
+  .fq-a p {
+    margin: 2px 0 38px 110px;
+    max-width: 900px;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .fq.js .fq-a {
+    height: 0;
+  }
+  .fq.js .fq-item.open .fq-a {
+    height: auto;
+  }
+
+  /* ── domknięcie → kontakt ── */
+  .fq-cta {
+    position: relative;
+    z-index: 6;
+    margin-top: 84px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
+  .fq-dia {
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(var(--glow), 0.7);
+    transform: rotate(45deg);
+  }
+  .fq-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+    font-weight: 600;
+    font-size: 21px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .fq-link:hover {
+    color: var(--ink);
+  }
+  .fq-link .arr {
+    color: var(--accent);
+    transition: transform 0.25s;
+  }
+  .fq-link:hover .arr {
+    transform: translateX(6px);
+  }
+
+  /* desktop: blur blobów + blend mesha wracają na desktopowym GPU
+     (861px = FAQ_DESKTOP_MIN_PX) */
+  @media (min-width: 861px) {
+    .fq-bl {
+      filter: blur(48px);
+    }
+    .fq-mesh {
+      mix-blend-mode: multiply;
+    }
+  }
+
+  /* ═══ WEJŚCIA — stany początkowe tylko gdy: JS działa (klasa .js na
+     sekcji) + motion dozwolony. Animuje CSS transition; ScrollTrigger
+     w faq-scroll.ts jedynie dodaje klasy .on (toggleClass, once).
+     no-JS i prefers-reduced-motion renderują pełną, statyczną treść. ═══ */
+  @media (prefers-reduced-motion: no-preference) {
+    /* treść odpowiedzi: delikatny fade po rozwinięciu */
+    .fq.js .fq-a p {
+      opacity: 0;
+      transform: translateY(6px);
+      transition:
+        opacity 0.4s ease,
+        transform 0.4s var(--fq-cz);
+    }
+    .fq.js .fq-item.open .fq-a p {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.08s;
+    }
+
+    /* nagłówek + ghost */
+    .fq.js .fq-head {
+      opacity: 0;
+      transform: translateY(22px);
+      transition:
+        opacity 0.8s var(--fq-cz),
+        transform 0.8s var(--fq-cz);
+    }
+    .fq.js .fq-head.on {
+      opacity: 1;
+      transform: none;
+    }
+    .fq.js .fq-ghost {
+      opacity: 0;
+      transition: opacity 1.4s ease 0.15s;
+    }
+    .fq.js .fq-ghost.on {
+      opacity: 1;
+    }
+
+    /* wiersze: fade-up + rysująca się linia; stagger = transition-delay --d */
+    .fq.js .fq-item {
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity 0.8s var(--fq-cz) var(--d, 0s),
+        transform 0.8s var(--fq-cz) var(--d, 0s);
+    }
+    .fq.js .fq-item .fq-line {
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      transition: transform 0.95s var(--fq-cz) var(--d, 0s);
+    }
+    .fq.js .fq-list.on .fq-item {
+      opacity: 1;
+      transform: none;
+    }
+    .fq.js .fq-list.on .fq-item .fq-line {
+      transform: scaleX(1);
+    }
+    .fq-item:nth-child(1) {
+      --d: 0s;
+    }
+    .fq-item:nth-child(2) {
+      --d: 0.07s;
+    }
+    .fq-item:nth-child(3) {
+      --d: 0.14s;
+    }
+    .fq-item:nth-child(4) {
+      --d: 0.21s;
+    }
+    .fq-item:nth-child(5) {
+      --d: 0.28s;
+    }
+    .fq-item:nth-child(6) {
+      --d: 0.35s;
+    }
+    .fq.js .fq-endline {
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      transition: transform 0.95s var(--fq-cz) 0.42s;
+    }
+    .fq.js .fq-list.on + .fq-endline {
+      transform: scaleX(1);
+    }
+
+    /* CTA */
+    .fq.js .fq-cta {
+      opacity: 0;
+      transform: translateY(18px);
+      transition:
+        opacity 0.8s var(--fq-cz),
+        transform 0.8s var(--fq-cz);
+    }
+    .fq.js .fq-cta.on {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ═══ MOBILE (<861px) — wersja lekka: te same klasy .on, mniejsze
+     przesunięcia, bez meta, mały ghost; parallax ghosta wyłącza
+     faq-scroll.ts (matchMedia). Zero filtrów, zero mierzenia w rAF. ═══ */
+  @media (max-width: 860.98px) {
+    .fq {
+      padding: 140px 26px 90px;
+    }
+    .fq-tag {
+      left: 26px;
+      top: 56px;
+    }
+    .fq-meta {
+      display: none;
+    }
+    .fq-ghost {
+      right: 14px;
+      top: 66px;
+      font-size: 108px;
+      -webkit-text-stroke-width: 1.2px;
+    }
+    .fq-head h2 {
+      font-size: 40px;
+    }
+    .fq-list {
+      margin-top: 44px;
+    }
+    .fq-q {
+      grid-template-columns: 44px 1fr 30px;
+      width: 100%;
+      margin: 0;
+      padding: 19px 0;
+    }
+    .fq-q .no {
+      font-size: 10px;
+      letter-spacing: 0.24em;
+    }
+    .fq-q .qt {
+      font-size: 17px;
+      line-height: 1.4;
+    }
+    .fq-plus {
+      width: 14px;
+      height: 14px;
+    }
+    .fq-plus::before,
+    .fq-plus::after {
+      width: 14px;
+      height: 1.5px;
+    }
+    .fq-a p {
+      margin: 0 0 26px 44px;
+      font-size: 14.5px;
+      line-height: 1.62;
+    }
+    .fq-cta {
+      margin-top: 60px;
+    }
+    .fq-link {
+      font-size: 17px;
+    }
+  }
+
+  /* mobile: płytszy reveal wierszy — TYLKO przy dozwolonym ruchu (bramka
+     jak w Ofercie: reguła poza motion przesuwałaby treść przy reduce). */
+  @media (max-width: 860.98px) and (prefers-reduced-motion: no-preference) {
+    .fq.js .fq-item {
+      transform: translateY(16px);
+    }
+  }
+
+  /* wąski desktop: mniejsze marginesy */
+  @media (min-width: 861px) and (max-width: 1280px) {
+    .fq {
+      padding-left: 70px;
+      padding-right: 70px;
+    }
+    .fq-tag {
+      left: 70px;
+    }
+    .fq-meta {
+      right: 70px;
+    }
+    .fq-ghost {
+      right: 70px;
+    }
   }
 </style>
