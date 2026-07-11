@@ -21,11 +21,32 @@ test.beforeAll(async ({ browser }) => {
   await page.close();
 });
 
-/* ── stałe zgrane z implementacją (src/lib/contact-form.ts: MIN_FILL_MS
-   = 4000; contact-ui.ts liczy elapsed od initu przy load). Czekamy z
-   marginesem, żeby realna wysyłka nie wpadła w pułapkę „za szybko". ── */
-const ANTISPAM_WAIT_MS = 4200;
 const STUB_TOKEN = "e2e-turnstile-stub-token";
+
+/* ── ster zegara antyspamu: contact-ui.ts liczy elapsed z Date.now()
+   (próg MIN_FILL_MS = 4000 od initu strony). Wyścig z REALNYM czasem
+   flake'ował na CI (wolny runner webkit: networkidle + scroll + fill
+   przekraczały 4 s i „za szybki" submit przestawał być za szybki) —
+   shim z przestawnym offsetem czyni obie strony progu deterministycznymi:
+   skew −10⁷ ms = pułapka NA PEWNO wpada, +10⁷ ms = próg NA PEWNO minięty.
+   Offset jest stały między zmianami, więc nie rozjeżdża timerów UI. ── */
+const SKEW_TRAP_MS = -10_000_000;
+const SKEW_PASS_MS = 10_000_000;
+
+async function installClockSkew(page: Page): Promise<void> {
+  await page.addInitScript(() => {
+    const real = Date.now.bind(Date);
+    const w = window as unknown as { __skewMs: number };
+    w.__skewMs = 0;
+    Date.now = () => real() + w.__skewMs;
+  });
+}
+
+function setClockSkew(page: Page, ms: number): Promise<void> {
+  return page.evaluate((v) => {
+    (window as unknown as { __skewMs: number }).__skewMs = v;
+  }, ms);
+}
 
 /** Atrapa Turnstile: skrypt ładowany leniwie przez contact-ui.ts (pierwszy
  *  focus w formularzu) dostaje z route'a implementację, która na execute()
@@ -144,13 +165,15 @@ test("chipsy tematu: wybór przenosi .sel, jedno zaznaczenie naraz", async ({
 test("pułapka: submit < 4 s od załadowania → potwierdzenie BEZ requestu", async ({
   page,
 }) => {
+  await installClockSkew(page);
   await stubTurnstile(page);
   const mock = await mockEndpoint(page, () => ({ status: 200 }));
-  // Bez settle po scrollu — od initu strony (start zegara t0) do submitu
-  // musi minąć < 4 s; sam fill zajmuje ułamki sekundy.
-  await gotoReady(page);
-  await page.locator("#contact .kt-frame").scrollIntoViewIfNeeded();
+  await gotoContact(page);
+
   await fillForm(page);
+  // Cofnięty zegar = elapsed na pewno poniżej progu (deterministycznie,
+  // bez wyścigu z czasem ładowania na wolnych runnerach).
+  await setClockSkew(page, SKEW_TRAP_MS);
   await submitBtn(page).click();
 
   await expect(frame(page)).toHaveClass(/sent/);
@@ -161,6 +184,7 @@ test("pułapka: submit < 4 s od załadowania → potwierdzenie BEZ requestu", as
 test("pułapka: wypełniony honeypot → potwierdzenie BEZ requestu (mimo odczekania)", async ({
   page,
 }) => {
+  await installClockSkew(page);
   await stubTurnstile(page);
   const mock = await mockEndpoint(page, () => ({ status: 200 }));
   await gotoContact(page);
@@ -172,9 +196,9 @@ test("pułapka: wypełniony honeypot → potwierdzenie BEZ requestu (mimo odczek
     if (hp) hp.value = "Bot Sp. z o.o.";
   });
   await fillForm(page);
-  // Odczekujemy próg antyspamu, żeby wyizolować pułapkę honeypota od
+  // Zegar przestawiony ZA próg antyspamu — izoluje pułapkę honeypota od
   // pułapki „za szybko".
-  await page.waitForTimeout(ANTISPAM_WAIT_MS);
+  await setClockSkew(page, SKEW_PASS_MS);
   await submitBtn(page).click();
 
   await expect(frame(page)).toHaveClass(/sent/);
@@ -184,13 +208,14 @@ test("pułapka: wypełniony honeypot → potwierdzenie BEZ requestu (mimo odczek
 test("mock 200: wysyłka → .sent + fokus na h3; payload ma lang, elapsed i token Turnstile", async ({
   page,
 }) => {
+  await installClockSkew(page);
   await stubTurnstile(page);
   const mock = await mockEndpoint(page, () => ({ status: 200 }));
   await gotoContact(page);
 
   await fillForm(page);
   await page.locator("#contact .kt-chip").first().click();
-  await page.waitForTimeout(ANTISPAM_WAIT_MS);
+  await setClockSkew(page, SKEW_PASS_MS);
   await submitBtn(page).click();
 
   await expect(frame(page)).toHaveClass(/sent/);
@@ -212,6 +237,7 @@ test("mock 200: wysyłka → .sent + fokus na h3; payload ma lang, elapsed i tok
 test("mock 500: w trakcie disabled + „Wysyłam…”; błąd → .kt-srv, formularz aktywny; ponowna próba → .sent", async ({
   page,
 }) => {
+  await installClockSkew(page);
   await stubTurnstile(page);
   // Pierwszy POST pada (z opóźnieniem — łapiemy stan „w trakcie"), drugi wchodzi.
   const mock = await mockEndpoint(page, (n) =>
@@ -220,7 +246,7 @@ test("mock 500: w trakcie disabled + „Wysyłam…”; błąd → .kt-srv, form
   await gotoContact(page);
 
   await fillForm(page);
-  await page.waitForTimeout(ANTISPAM_WAIT_MS);
+  await setClockSkew(page, SKEW_PASS_MS);
   await submitBtn(page).click();
 
   // Stan „w trakcie": przycisk disabled, etykieta z data-sending, aria-busy.
@@ -249,16 +275,18 @@ test("mock 500: w trakcie disabled + „Wysyłam…”; błąd → .kt-srv, form
 test("[ Wyślij kolejną ]: reset pól, chipsów i zegara antyspamu", async ({
   page,
 }) => {
+  await installClockSkew(page);
   await stubTurnstile(page);
   const mock = await mockEndpoint(page, () => ({ status: 200 }));
-  await gotoReady(page);
-  await page.locator("#contact .kt-frame").scrollIntoViewIfNeeded();
+  await gotoContact(page);
 
-  // Do .sent najszybciej pułapką „za szybko" (bez requestu).
+  // Pierwsza wysyłka REALNA (zegar za progiem) — po niej [ Wyślij kolejną ].
   await page.locator("#contact .kt-chip").nth(2).click();
   await fillForm(page);
+  await setClockSkew(page, SKEW_PASS_MS);
   await submitBtn(page).click();
   await expect(frame(page)).toHaveClass(/sent/);
+  expect(mock.count()).toBe(1);
 
   await page.locator("#contact .kt-done .again").click();
   await expect(frame(page)).not.toHaveClass(/sent/);
@@ -268,14 +296,14 @@ test("[ Wyślij kolejną ]: reset pól, chipsów i zegara antyspamu", async ({
   await expect(page.locator("#contact .kt-chip.sel")).toHaveCount(0);
   await expect(page.locator("#kt-name")).toBeFocused();
 
-  // Zegar zresetowany: natychmiastowy drugi submit znów wpada w pułapkę
-  // „za szybko" — .sent bez requestu. (Bez resetu zegara elapsed liczyłby
-  // się od załadowania strony i poleciałby prawdziwy POST — licznik mocka
-  // wyłapałby regresję.)
+  // Zegar zresetowany: skew bez zmian, więc elapsed drugiego submitu to
+  // tylko czas wypełniania (≪ 4 s) → pułapka „za szybko", .sent BEZ
+  // drugiego requestu. Regresja (brak resetu t0) dałaby elapsed ~10⁷ ms
+  // i prawdziwy POST — licznik mocka by ją wyłapał.
   await fillForm(page);
   await submitBtn(page).click();
   await expect(frame(page)).toHaveClass(/sent/);
-  expect(mock.count()).toBe(0);
+  expect(mock.count()).toBe(1);
 });
 
 test("reveal e-mail: [ POKAŻ ] → wartość + mailto, [ KOPIUJ ] → [ SKOPIOWANO ] i powrót", async ({
@@ -348,6 +376,7 @@ test("antyscraping: pełny e-mail i telefon nie występują w źródle ani bundl
 });
 
 test("wersja EN: teksty sekcji + payload z lang=en", async ({ page }) => {
+  await installClockSkew(page);
   await stubTurnstile(page);
   const mock = await mockEndpoint(page, () => ({ status: 200 }));
   await gotoContact(page, "/en/");
@@ -362,7 +391,7 @@ test("wersja EN: teksty sekcji + payload z lang=en", async ({ page }) => {
   );
 
   await fillForm(page, { message: "English test message from Playwright." });
-  await page.waitForTimeout(ANTISPAM_WAIT_MS);
+  await setClockSkew(page, SKEW_PASS_MS);
   await submitBtn(page).click();
   await expect(frame(page)).toHaveClass(/sent/);
   await expect(page.locator("#contact .kt-done h3")).toHaveText("Message sent");
@@ -391,6 +420,7 @@ test.describe("prefers-reduced-motion: reduce — treść widoczna, funkcje dzia
   test("sekcja widoczna bez scrolla, reveal i pułapka formularza działają", async ({
     page,
   }) => {
+    await installClockSkew(page);
     await stubTurnstile(page);
     const mock = await mockEndpoint(page, () => ({ status: 200 }));
     await page.goto("/", { waitUntil: "networkidle" });
@@ -408,7 +438,8 @@ test.describe("prefers-reduced-motion: reduce — treść widoczna, funkcje dzia
     );
 
     await fillForm(page);
-    await submitBtn(page).click(); // < 4 s od loadu → pułapka
+    await setClockSkew(page, SKEW_TRAP_MS); // pułapka „za szybko" na pewno
+    await submitBtn(page).click();
     await expect(frame(page)).toHaveClass(/sent/);
     expect(mock.count()).toBe(0);
   });
