@@ -5,7 +5,7 @@
 // Decyzje: docs/analiza-sekcja-faq.md.
 import { expect, test, type Page } from "@playwright/test";
 import { assertPreview } from "../helpers/guards";
-import { gotoReady, settle } from "../helpers/scroll";
+import { gotoReady, settle, syncLenis } from "../helpers/scroll";
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
@@ -60,6 +60,9 @@ test("CTA (Napisz do mnie) skacze do #contact (hash + pozycja)", async ({
   const cta = page.locator("#faq .fq-link");
   await cta.scrollIntoViewIfNeeded();
   await settle(page, 800);
+  // Handler CTA liczy cel z wewnętrznej pozycji Lenisa — po natywnym
+  // scrollu Playwrighta trzeba ją zsynchronizować (patrz syncLenis).
+  await syncLenis(page);
   await cta.click();
   await settle(page);
   await expect(page).toHaveURL(/#contact$/);

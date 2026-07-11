@@ -3,7 +3,7 @@
 // i wersja EN. Choreografię scrolla weryfikuje sweep tests/visual/services.spec.ts.
 import { expect, test } from "@playwright/test";
 import { assertPreview } from "../helpers/guards";
-import { gotoReady, settle } from "../helpers/scroll";
+import { gotoReady, settle, syncLenis } from "../helpers/scroll";
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
@@ -17,6 +17,8 @@ test("CTA procesu skacze do #packages (hash + pozycja)", async ({ page }) => {
   await cta.scrollIntoViewIfNeeded();
   // Reveal endcapu (klasa .on z progu ScrollTriggera) musi usiąść przed klikiem.
   await settle(page, 800);
+  // Sync po natywnym scrollu — handler liczy cel z pozycji Lenisa.
+  await syncLenis(page);
   await cta.click();
   await settle(page);
   await expect(page).toHaveURL(/#packages$/);
@@ -31,6 +33,7 @@ test("CTA pakietu prowadzi do #contact", async ({ page }) => {
   const cta = page.locator("#services .pk-col.mid .pk-cta");
   await cta.scrollIntoViewIfNeeded();
   await settle(page, 800);
+  await syncLenis(page);
   await cta.click();
   await settle(page);
   await expect(page).toHaveURL(/#contact$/);

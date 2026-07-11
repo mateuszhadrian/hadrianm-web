@@ -11,6 +11,24 @@ export async function settle(page: Page, ms = 350): Promise<void> {
   await page.waitForTimeout(ms);
 }
 
+/**
+ * Zsynchronizuj wewnętrzny scroll Lenisa z realnym window.scrollY.
+ * Playwrightowe `scrollIntoViewIfNeeded()` scrolluje NATYWNIE, z pominięciem
+ * Lenisa — na wolnych runnerach CI jego sync z natywnego scrolla potrafi nie
+ * zdążyć przed klikiem w kotwicę, a handlery CTA liczą cel skoku z
+ * wewnętrznej pozycji Lenisa → lądowanie z offsetem (flaki CTA FAQ/Oferty
+ * na chromium-1920). Wywołaj po natywnym scrollu, przed klikiem w kotwicę.
+ * Realnych użytkowników desync nie dotyczy (scrollują PRZEZ Lenisa).
+ */
+export async function syncLenis(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const lenis = window.__lenis;
+    if (lenis && typeof lenis.scrollTo === "function") {
+      lenis.scrollTo(window.scrollY, { immediate: true, force: true });
+    }
+  });
+}
+
 /** Przewija stronę do pozycji y przez Lenisa i natywnie, potem settle. */
 export async function scrollPageTo(page: Page, y: number): Promise<void> {
   await page.evaluate((top) => {
