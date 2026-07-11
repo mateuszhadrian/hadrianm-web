@@ -306,6 +306,12 @@ wysyłkowej, więc nie ma kolizji:
 4. Zapisz **Site Key** (publiczny — trafi do kodu) i **Secret Key**
    (do sekretów Pages, punkt 0.3).
 
+> **Stan: ✅ wykonane (2026-07-11).** Etap 0 w całości (Resend zweryfikowany,
+> widget Turnstile utworzony, sekrety w Pages dla Production+Preview, reguła
+> WAF `kontakt-form-burst` wdrożona — na Free bez warunku Request Method,
+> sam URI Path). Site Key widgetu: `0x4AAAAAADz4VmJXKzTYru3e`.
+> KV (0.5) odłożone — funkcja działa bez bindingu.
+
 **0.3 Sekrety w projekcie Pages**
 
 1. Cloudflare → **Workers & Pages → hadrianm-web → Settings → Variables and
@@ -335,6 +341,10 @@ wysyłkowej, więc nie ma kolizji:
 
 ### Etap 1 — [C] Endpoint: `functions/api/kontakt.ts`
 
+> **Stan: ✅ wykonany (2026-07-11)** — endpoint + `src/lib/contact-form.ts`
+> + 15 testów unit (`tests/unit/contact-form.test.ts`); korekty wykonawcze
+> w pkt 2–3 niżej.
+
 1. **Pages Function** w katalogu `functions/` (root repo — Pages wykrywa go
    automatycznie obok statycznego `dist`; Astro pozostaje w 100% statyczne,
    bez adaptera i bez SSR):
@@ -343,15 +353,20 @@ wysyłkowej, więc nie ma kolizji:
    - wysyłka przez `fetch('https://api.resend.com/emails', …)` — dwa
      sekwencyjne wywołania (mail #1, potem #2), zero zależności npm,
    - `onRequest` dla pozostałych metod → 405.
-2. **Współdzielona logika walidacji** wyniesiona do czystego modułu (np.
-   `functions/_lib/contact.ts`): reguły pól, limity, escape HTML, budowa
-   treści maili PL/EN, detekcja bot-trap. Czysty TS bez zależności od
-   runtime'u → testowalny Vitestem.
-3. **Typy i typecheck:** devDependency `@cloudflare/workers-types` +
-   osobny `functions/tsconfig.json` (katalog `functions/` nie wchodzi w
-   `astro check`; do `pnpm typecheck` można dopiąć `tsc -p functions`
-   — do decyzji przy implementacji, żeby nie ruszać kontraktu CI).
-4. **Testy unit** (`tests/unit/contact-form.spec.ts`): walidacja (happy
+2. **Współdzielona logika walidacji** wyniesiona do czystego modułu
+   **`src/lib/contact-form.ts`** (ℹ️ korekta wykonawcza 2026-07-11: zamiast
+   planowanego `functions/_lib/contact.ts` — moduł w `src/` obejmują bez
+   dodatkowej konfiguracji `astro check`, ESLint i Vitest; funkcja importuje
+   go ścieżką względną, bundler Pages dołącza importy spoza `functions/`):
+   reguły pól, limity, escape HTML, budowa treści maili PL/EN, detekcja
+   bot-trap. Czysty TS bez zależności od runtime'u → testowalny Vitestem.
+3. **Typy i typecheck:** ℹ️ korekta wykonawcza — bez
+   `@cloudflare/workers-types` i osobnego tsconfiga: funkcja używa wyłącznie
+   standardowych API (Request/Response/FormData/fetch, lib DOM), a kontekst
+   Pages i binding KV są otypowane lokalnie w pliku funkcji. Katalog
+   `functions/` wchodzi w istniejący `astro check` (tsconfig `include: **/*`)
+   — kontrakt CI nietknięty.
+4. **Testy unit** (`tests/unit/contact-form.test.ts`): walidacja (happy
    path + każdy błąd), bot-trap (honeypot/elapsed), escape HTML, limity
    długości, szablony PL/EN (snapshot treści), stały subject maila #2.
 5. **Weryfikacja lokalna full-stack (opcjonalna):** `pnpm build` →
@@ -362,6 +377,20 @@ wysyłkowej, więc nie ma kolizji:
 ### Etap 2 — [C] Sekcja `#kontakt` — port referencji do Astro
 
 Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
+
+> **Stan: ✅ wykonany (2026-07-11).** Korekty wykonawcze względem planu:
+> (a) kotwica sekcji to **`#contact`** (nie `#kontakt` z referencji) — tak
+> celuje istniejący navbar (`src/i18n/nav.ts`) i CTA z FAQ; endpoint bez
+> zmian: `/api/kontakt`; (b) **bez `body.kt-static`** — FAQ też zrezygnował
+> z tego haka; tryby statyczne = klasa `.js` na sekcji + czysty CSS przy
+> reduce (wzorzec FAQ); (c) mono = token projektu `--font-mono`
+> (ui-monospace), nie Space Mono — spójnie z decyzją z sekcji FAQ;
+> (d) Turnstile ładowany leniwie (pierwszy focus w formularzu), render
+> jawny, egzekucja przy submit, timeout 90 s → token "" → serwerowe 403.
+> Zweryfikowane na preview (Playwright, PL+EN): walidacja, chipsy, pułapki
+> (submit <4 s → udawany sukces bez requestu), reveal `info@`/telefonu,
+> kopiowanie, ścieżka błędu (realny token Turnstile + 404 z preview →
+> `.kt-srv`), grep dist bez pełnych ciągów e-maila/telefonu.
 
 1. `src/components/sections/contact/Contact.astro` (+ skrypt TS wzorem
    pozostałych sekcji) — markup z `kontakt.html` bez spacera podglądu;
@@ -384,6 +413,21 @@ Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
    `/polityka-prywatnosci` (strona powstanie w Etapie 5).
 
 ### Etap 3 — [C]+[M] Testy i baseline'y
+
+> **Stan: 🟡 w toku (2026-07-11).** Kod testów gotowy i zielony lokalnie:
+> `tests/e2e/contact.spec.ts` (13 scenariuszy × 6 profili; Turnstile
+> stubowany route'em, endpoint mockowany przez `page.route`), sonda
+> `@prod-smoke` w `smoke.spec.ts` (skip bez `BASE_URL` — preview nie
+> serwuje Pages Functions; tylko chromium-1920 — reguła WAF blokuje
+> serie POST-ów), axe 0 naruszeń na doscrollowanej sekcji (bez zmian w
+> allowliście). Korekta wykonawcza: w `seo.spec.ts` przejściowy wyjątek
+> dla linków polityki prywatności (świadome okno 404 z §7/§10 — USUNĄĆ
+> w Etapie 5). Wpis visual dla `#contact` istniał już w
+> `sections.spec.ts`; do akceptacji Mateusza czeka aktualizacja
+> baseline'ów: `section-contact` (6 profili — stary baseline to
+> placeholder) + churny `section-work` i `faq-04-cta` (tylko
+> chromium-pixel-5; skutek zmiany wysokości strony). Po zgodzie:
+> workflow linux → darwin NA KOŃCU (pkt 3 niżej).
 
 1. **e2e** (`tests/e2e/contact.spec.ts`) — scenariusze z checklisty README
    referencji: walidacja (pusty submit → 3 błędy + fokus; zły e-mail;
@@ -411,6 +455,18 @@ Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
    jakiegokolwiek maila** (ścieżka bot-trap kończy się przed Resend).
 
 ### Etap 4 — [M] Test end-to-end na preview i produkcji (~15 min)
+
+> ℹ️ **Korekta wykonawcza (2026-07-11, incydent z preview):** pierwszy test
+> Etapu 4 „zjadł" wiadomość — autouzupełnianie Chrome'a wypełniło offscreenowy
+> honeypot `firma` (autofill ignoruje `autocomplete="off"` i wypełnia też
+> pola niewidoczne), więc kliencka pułapka §5.1 udała sukces bez requestu.
+> Naprawa: honeypot ma atrybut **`readonly`** (Chrome nie autofilluje pól
+> readonly), zdejmowany przy `focus` (bot piszący „po ludzku" nadal wpada;
+> bot POST-ujący wprost i tak nie omija testu serwerowego §5.2). Strażnik
+> regresu w `tests/e2e/contact.spec.ts`. Znane residuum: pułapka czasowa
+> < 4 s liczy od załadowania strony — użytkownik, który autofillem wyśle
+> w < 4 s, nadal dostanie cichy „sukces"; próg 4 s pozostaje decyzją z
+> referencji (do rewizji, jeśli powtórzy się w testach Mateusza).
 
 Na deployu preview PR-a (funkcja i sekrety Preview już działają):
 
@@ -472,7 +528,7 @@ tylko debug — trwały rekord zgłoszenia to mail w skrzynce `info@`.
 - [ ] Resend: domena `Verified`, klucz w sekretach Pages (Prod + Preview)
 - [ ] Turnstile: widget utworzony, secret w sekretach, sitekey w kodzie
 - [ ] Reguła WAF na `/api/kontakt` aktywna
-- [ ] `functions/api/kontakt.ts` + `functions/_lib/contact.ts` + testy unit zielone
+- [ ] `functions/api/kontakt.ts` + `src/lib/contact-form.ts` + testy unit zielone
 - [ ] Sekcja `#kontakt` PL/EN, reveal `info@` + telefon, footer, tryby statyczne
 - [ ] e2e + axe zielone; baseline'y visual darwin+linux zcommitowane (właściwa kolejność)
 - [ ] Etap 4 przeszedł: W1 ✅ W2 ✅ (Reply-To) W3 ✅ (potwierdzenie z treścią) + ścieżka błędu ✅
