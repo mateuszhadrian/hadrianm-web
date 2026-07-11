@@ -189,11 +189,21 @@ test("pułapka: wypełniony honeypot → potwierdzenie BEZ requestu (mimo odczek
   const mock = await mockEndpoint(page, () => ({ status: 200 }));
   await gotoContact(page);
 
+  // Strażnik regresu autofillu: honeypot MUSI startować jako readonly
+  // (Chrome nie autofilluje pól readonly — incydent z preview, Etap 4),
+  // a focus „po bocie" zdejmuje blokadę, żeby pułapka dalej łapała.
+  const hp = page.locator("#kt-firma");
+  await expect(hp).toHaveAttribute("readonly");
+  await page.evaluate(() =>
+    document.querySelector<HTMLInputElement>("#kt-firma")?.focus(),
+  );
+  await expect(hp).not.toHaveAttribute("readonly");
+
   // Honeypot jest poza ekranem (left: -9999px) — wartość wchodzi jak u bota,
   // wprost w DOM (fill() wymagałby widoczności).
   await page.evaluate(() => {
-    const hp = document.querySelector<HTMLInputElement>("#kt-firma");
-    if (hp) hp.value = "Bot Sp. z o.o.";
+    const el = document.querySelector<HTMLInputElement>("#kt-firma");
+    if (el) el.value = "Bot Sp. z o.o.";
   });
   await fillForm(page);
   // Zegar przestawiony ZA próg antyspamu — izoluje pułapkę honeypota od

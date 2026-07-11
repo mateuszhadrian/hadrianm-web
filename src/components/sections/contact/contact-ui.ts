@@ -143,6 +143,13 @@ function initForm(section: HTMLElement): void {
     return;
   }
 
+  /* honeypot jest readonly (autofill Chrome'a nie wypełnia readonly —
+     naprawa incydentu z preview, patrz komentarz w Contact.astro); focus
+     zdejmuje blokadę, żeby bot piszący „po ludzku" nadal się łapał */
+  hp.addEventListener("focus", () => hp.removeAttribute("readonly"), {
+    once: true,
+  });
+
   let t0 = Date.now();
   let busy = false;
   let widgetId: string | null = null;

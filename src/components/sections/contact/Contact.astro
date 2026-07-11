@@ -123,7 +123,13 @@ const socials = [
 
       <div class="kt-formwrap">
         <form class="kt-form" novalidate>
-          <!-- honeypot: boty wypełniają, ludzie nie widzą -->
+          <!-- honeypot: boty wypełniają, ludzie nie widzą. READONLY jest
+               kluczowe: autofill Chrome'a wypełnia też offscreenowe pola
+               „sekcji adresowej" (incydent z preview: autouzupełnianie
+               wpisało imię i nazwisko → udawany sukces bez wysyłki), ale
+               NIE rusza pól readonly. Bot, który focusuje i pisze, zdejmie
+               readonly (listener w contact-ui.ts) i dalej wpada w pułapkę;
+               bot POST-ujący wprost honeypota nie ominie tak czy siak. -->
           <div class="kt-hp" aria-hidden="true">
             <label for="kt-firma">{t("contact.hpLbl")}</label>
             <input
@@ -132,6 +138,7 @@ const socials = [
               type="text"
               tabindex="-1"
               autocomplete="off"
+              readonly
             />
           </div>
 

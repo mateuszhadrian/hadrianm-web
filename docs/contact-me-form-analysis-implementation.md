@@ -456,6 +456,18 @@ Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
 
 ### Etap 4 — [M] Test end-to-end na preview i produkcji (~15 min)
 
+> ℹ️ **Korekta wykonawcza (2026-07-11, incydent z preview):** pierwszy test
+> Etapu 4 „zjadł" wiadomość — autouzupełnianie Chrome'a wypełniło offscreenowy
+> honeypot `firma` (autofill ignoruje `autocomplete="off"` i wypełnia też
+> pola niewidoczne), więc kliencka pułapka §5.1 udała sukces bez requestu.
+> Naprawa: honeypot ma atrybut **`readonly`** (Chrome nie autofilluje pól
+> readonly), zdejmowany przy `focus` (bot piszący „po ludzku" nadal wpada;
+> bot POST-ujący wprost i tak nie omija testu serwerowego §5.2). Strażnik
+> regresu w `tests/e2e/contact.spec.ts`. Znane residuum: pułapka czasowa
+> < 4 s liczy od załadowania strony — użytkownik, który autofillem wyśle
+> w < 4 s, nadal dostanie cichy „sukces"; próg 4 s pozostaje decyzją z
+> referencji (do rewizji, jeśli powtórzy się w testach Mateusza).
+
 Na deployu preview PR-a (funkcja i sekrety Preview już działają):
 
 1. Wyślij z formularza prawdziwą wiadomość na własny adres testowy (np.
