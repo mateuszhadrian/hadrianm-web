@@ -306,6 +306,12 @@ wysyłkowej, więc nie ma kolizji:
 4. Zapisz **Site Key** (publiczny — trafi do kodu) i **Secret Key**
    (do sekretów Pages, punkt 0.3).
 
+> **Stan: ✅ wykonane (2026-07-11).** Etap 0 w całości (Resend zweryfikowany,
+> widget Turnstile utworzony, sekrety w Pages dla Production+Preview, reguła
+> WAF `kontakt-form-burst` wdrożona — na Free bez warunku Request Method,
+> sam URI Path). Site Key widgetu: `0x4AAAAAADz4VmJXKzTYru3e`.
+> KV (0.5) odłożone — funkcja działa bez bindingu.
+
 **0.3 Sekrety w projekcie Pages**
 
 1. Cloudflare → **Workers & Pages → hadrianm-web → Settings → Variables and
@@ -343,15 +349,20 @@ wysyłkowej, więc nie ma kolizji:
    - wysyłka przez `fetch('https://api.resend.com/emails', …)` — dwa
      sekwencyjne wywołania (mail #1, potem #2), zero zależności npm,
    - `onRequest` dla pozostałych metod → 405.
-2. **Współdzielona logika walidacji** wyniesiona do czystego modułu (np.
-   `functions/_lib/contact.ts`): reguły pól, limity, escape HTML, budowa
-   treści maili PL/EN, detekcja bot-trap. Czysty TS bez zależności od
-   runtime'u → testowalny Vitestem.
-3. **Typy i typecheck:** devDependency `@cloudflare/workers-types` +
-   osobny `functions/tsconfig.json` (katalog `functions/` nie wchodzi w
-   `astro check`; do `pnpm typecheck` można dopiąć `tsc -p functions`
-   — do decyzji przy implementacji, żeby nie ruszać kontraktu CI).
-4. **Testy unit** (`tests/unit/contact-form.spec.ts`): walidacja (happy
+2. **Współdzielona logika walidacji** wyniesiona do czystego modułu
+   **`src/lib/contact-form.ts`** (ℹ️ korekta wykonawcza 2026-07-11: zamiast
+   planowanego `functions/_lib/contact.ts` — moduł w `src/` obejmują bez
+   dodatkowej konfiguracji `astro check`, ESLint i Vitest; funkcja importuje
+   go ścieżką względną, bundler Pages dołącza importy spoza `functions/`):
+   reguły pól, limity, escape HTML, budowa treści maili PL/EN, detekcja
+   bot-trap. Czysty TS bez zależności od runtime'u → testowalny Vitestem.
+3. **Typy i typecheck:** ℹ️ korekta wykonawcza — bez
+   `@cloudflare/workers-types` i osobnego tsconfiga: funkcja używa wyłącznie
+   standardowych API (Request/Response/FormData/fetch, lib DOM), a kontekst
+   Pages i binding KV są otypowane lokalnie w pliku funkcji. Katalog
+   `functions/` wchodzi w istniejący `astro check` (tsconfig `include: **/*`)
+   — kontrakt CI nietknięty.
+4. **Testy unit** (`tests/unit/contact-form.test.ts`): walidacja (happy
    path + każdy błąd), bot-trap (honeypot/elapsed), escape HTML, limity
    długości, szablony PL/EN (snapshot treści), stały subject maila #2.
 5. **Weryfikacja lokalna full-stack (opcjonalna):** `pnpm build` →
@@ -472,7 +483,7 @@ tylko debug — trwały rekord zgłoszenia to mail w skrzynce `info@`.
 - [ ] Resend: domena `Verified`, klucz w sekretach Pages (Prod + Preview)
 - [ ] Turnstile: widget utworzony, secret w sekretach, sitekey w kodzie
 - [ ] Reguła WAF na `/api/kontakt` aktywna
-- [ ] `functions/api/kontakt.ts` + `functions/_lib/contact.ts` + testy unit zielone
+- [ ] `functions/api/kontakt.ts` + `src/lib/contact-form.ts` + testy unit zielone
 - [ ] Sekcja `#kontakt` PL/EN, reveal `info@` + telefon, footer, tryby statyczne
 - [ ] e2e + axe zielone; baseline'y visual darwin+linux zcommitowane (właściwa kolejność)
 - [ ] Etap 4 przeszedł: W1 ✅ W2 ✅ (Reply-To) W3 ✅ (potwierdzenie z treścią) + ścieżka błędu ✅
