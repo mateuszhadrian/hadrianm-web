@@ -72,5 +72,12 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
         import("@/scripts/smooth-scroll");
       }
     </script>
+    <script>
+      import { initBackLinks } from "@/scripts/back-link";
+
+      // Linki „wstecz" podstron (a[data-back]) → history.back() zamiast nowej
+      // nawigacji — przywraca miejsce scrolla poprzedniej strony (moduł).
+      initBackLinks();
+    </script>
   </body>
 </html>

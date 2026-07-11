@@ -240,7 +240,7 @@ export const ui = {
     "contact.doneP":
       "Odezwę się najpóźniej w ciągu 24 godzin w dni robocze — zwykle znacznie szybciej.",
     "contact.again": "[ Wyślij kolejną ]",
-    "contact.policyHref": "/polityka-prywatnosci",
+    "contact.policyHref": "/polityka-prywatnosci/",
     "contact.footPolicy": "Polityka prywatności",
     "contact.footUp": "Do góry ↑",
   },
@@ -475,7 +475,7 @@ export const ui = {
     "contact.doneP":
       "I'll get back to you within 24 hours on business days — usually much sooner.",
     "contact.again": "[ Send another ]",
-    "contact.policyHref": "/en/privacy-policy",
+    "contact.policyHref": "/en/privacy-policy/",
     "contact.footPolicy": "Privacy policy",
     "contact.footUp": "Back to top ↑",
   },

@@ -1,0 +1,473 @@
+---
+// Polityka prywatności (PL: /polityka-prywatnosci, EN: /en/privacy-policy).
+// Treść obu języków lokalnie w tym pliku (nie w i18n/ui.ts) — to dokument
+// prawny, nie tekst interfejsu; jeden plik = łatwy przegląd i wycofanie (D7).
+// Zakres merytoryczny: docs/contact-me-form-analysis-implementation.md §7.
+// E-mail administratora składany z fragmentów w JS (skrypt niżej) — pełny
+// adres nie może wystąpić w dist (kontrakt antyscrapingowy w
+// tests/e2e/contact.spec.ts); fallback bez JS wskazuje formularz kontaktowy.
+import BaseLayout from "@/layouts/BaseLayout.astro";
+
+interface Props {
+  lang: "pl" | "en";
+}
+const { lang } = Astro.props;
+
+type Section = {
+  h: string;
+  pre?: string[];
+  list?: string[];
+  post?: string[];
+};
+
+const content = {
+  pl: {
+    title: "Polityka prywatności — hadrianm.pl",
+    eyebrow: "OCHRONA DANYCH OSOBOWYCH",
+    headLead: "Polityka",
+    headAccent: "prywatności",
+    effective: "Obowiązuje od 11 lipca 2026 r.",
+    intro:
+      "Ta polityka opisuje, jak przetwarzane są dane osobowe przekazane przez formularz kontaktowy na stronie hadrianm.pl. Piszę ją prostym językiem — bez prawniczego szumu, ale z kompletem informacji wymaganych przez RODO.",
+    back: "hadrianm.pl",
+    backHref: "/",
+    langLabel: "EN",
+    langHref: "/en/privacy-policy/",
+    contactCta: "Formularz kontaktowy →",
+    contactHref: "/#contact",
+    mailFallback: "adres e-mail w sekcji kontakt strony głównej",
+    sections: [
+      {
+        h: "Administrator danych",
+        pre: [
+          "Administratorem Twoich danych osobowych jest <strong>Mateusz Hadrian</strong>, prowadzący działalność gospodarczą pod firmą Mateusz Hadrian, ul. Żmigrodzka 40/7, 51-120 Wrocław, NIP: 8322016376 — operator strony hadrianm.pl.",
+          'W sprawach dotyczących danych osobowych napisz na adres <span data-pp-mail></span> albo skorzystaj z <a href="/#contact">formularza kontaktowego</a>.',
+        ],
+      },
+      {
+        h: "Jakie dane przetwarzam",
+        pre: [
+          "Z formularza kontaktowego: imię lub nazwa, adres e-mail, opcjonalny temat oraz treść wiadomości.",
+          "Automatycznie, w warstwie technicznej: adres IP i podstawowe informacje o przeglądarce — wykorzystywane przez infrastrukturę Cloudflare (hosting, zapora WAF, mechanizm antybotowy Turnstile) wyłącznie do ochrony strony przed spamem i nadużyciami.",
+          "Strona nie prowadzi analityki, nie wyświetla reklam i nie używa plików cookie do celów marketingowych.",
+        ],
+      },
+      {
+        h: "Cel i podstawa prawna",
+        list: [
+          "<strong>Odpowiedź na Twoją wiadomość i dalsza korespondencja</strong> — art. 6 ust. 1 lit. f RODO (prawnie uzasadniony interes: komunikacja z osobą, która kieruje do mnie zapytanie), a gdy wiadomość dotyczy potencjalnej współpracy — art. 6 ust. 1 lit. b RODO (działania podjęte na Twoje żądanie przed zawarciem umowy).",
+          "<strong>Ochrona strony przed spamem, botami i nadużyciami</strong> — art. 6 ust. 1 lit. f RODO (prawnie uzasadniony interes: bezpieczeństwo usługi).",
+        ],
+      },
+      {
+        h: "Odbiorcy danych",
+        pre: [
+          "Korzystam z usług podmiotów przetwarzających, które obsługują techniczną stronę komunikacji:",
+        ],
+        list: [
+          "<strong>Resend</strong> (resend.com) — wysyłka wiadomości e-mail z formularza (powiadomienie do mnie i automatyczne potwierdzenie do Ciebie); infrastruktura wysyłkowa w regionie UE (Irlandia),",
+          "<strong>Cloudflare</strong> — hosting strony, zapora sieciowa i ochrona antybotowa (Turnstile),",
+          "<strong>OVH</strong> — skrzynka pocztowa, do której trafia i w której jest przechowywana korespondencja.",
+        ],
+        post: [
+          "Twoje dane nie są sprzedawane ani udostępniane nikomu do jego własnych celów (np. marketingowych).",
+        ],
+      },
+      {
+        h: "Przekazywanie danych poza EOG",
+        pre: [
+          "Resend i Cloudflare mają siedziby w USA, więc część danych może być przetwarzana poza Europejskim Obszarem Gospodarczym. Podstawą takiego transferu są standardowe klauzule umowne zatwierdzone przez Komisję Europejską (art. 46 ust. 2 lit. c RODO) oraz — w zakresie, w jakim dostawca posiada aktualną certyfikację — program EU-U.S. Data Privacy Framework. Skrzynka pocztowa (OVH) znajduje się w EOG.",
+        ],
+      },
+      {
+        h: "Jak długo przechowuję dane",
+        pre: [
+          "Formularz niczego nie zapisuje po drodze — wiadomość trafia bezpośrednio na moją skrzynkę e-mail. Korespondencję przechowuję tak długo, jak wymaga tego obsługa sprawy, a w razie nawiązania współpracy — przez okres przedawnienia ewentualnych roszczeń. Krótkotrwałe logi techniczne u dostawców (np. logi wysyłki) są usuwane automatycznie zgodnie z ich politykami retencji.",
+        ],
+      },
+      {
+        h: "Twoje prawa",
+        pre: ["W związku z przetwarzaniem danych masz prawo do:"],
+        list: [
+          "dostępu do swoich danych i otrzymania ich kopii,",
+          "sprostowania danych,",
+          "usunięcia danych,",
+          "ograniczenia przetwarzania,",
+          "sprzeciwu wobec przetwarzania opartego na prawnie uzasadnionym interesie,",
+          "przenoszenia danych.",
+        ],
+        post: [
+          'Żeby skorzystać z tych praw, po prostu napisz — dane kontaktowe w punkcie 01. Masz też prawo wnieść skargę do Prezesa Urzędu Ochrony Danych Osobowych (<a href="https://uodo.gov.pl" target="_blank" rel="noopener noreferrer">uodo.gov.pl</a>).',
+        ],
+      },
+      {
+        h: "Dobrowolność i decyzje automatyczne",
+        pre: [
+          "Podanie danych jest dobrowolne, ale bez adresu e-mail nie będę w stanie odpowiedzieć. Nie podejmuję decyzji w sposób zautomatyzowany i nie profiluję użytkowników — mechanizm antybotowy (Cloudflare Turnstile) ocenia wyłącznie, czy formularz wysyła człowiek.",
+        ],
+      },
+      {
+        h: "Zmiany tej polityki",
+        pre: [
+          "Aktualna wersja polityki jest zawsze dostępna pod tym adresem. Istotne zmiany będą odnotowane nową datą obowiązywania.",
+        ],
+      },
+    ] satisfies Section[],
+  },
+  en: {
+    title: "Privacy policy — hadrianm.pl",
+    eyebrow: "DATA PROTECTION",
+    headLead: "Privacy",
+    headAccent: "policy",
+    effective: "Effective from 11 July 2026",
+    intro:
+      "This policy explains how personal data submitted through the contact form on hadrianm.pl is processed. It is written in plain language — no legal noise, yet with the full set of information required by the GDPR.",
+    back: "hadrianm.pl",
+    backHref: "/en/",
+    langLabel: "PL",
+    langHref: "/polityka-prywatnosci/",
+    contactCta: "Contact form →",
+    contactHref: "/en/#contact",
+    mailFallback: "the e-mail address in the contact section of the homepage",
+    sections: [
+      {
+        h: "Data controller",
+        pre: [
+          "The controller of your personal data is <strong>Mateusz Hadrian</strong>, conducting business under the name Mateusz Hadrian, ul. Żmigrodzka 40/7, 51-120 Wrocław, Poland, tax ID (NIP): 8322016376 — operator of hadrianm.pl.",
+          'For any matter concerning your personal data, write to <span data-pp-mail></span> or use the <a href="/en/#contact">contact form</a>.',
+        ],
+      },
+      {
+        h: "What data I process",
+        pre: [
+          "From the contact form: your name, e-mail address, an optional topic and the message itself.",
+          "Automatically, at the technical layer: your IP address and basic browser information — used by the Cloudflare infrastructure (hosting, WAF firewall, the Turnstile anti-bot mechanism) solely to protect the site against spam and abuse.",
+          "The site runs no analytics, shows no ads and uses no cookies for marketing purposes.",
+        ],
+      },
+      {
+        h: "Purpose and legal basis",
+        list: [
+          "<strong>Replying to your message and further correspondence</strong> — Art. 6(1)(f) GDPR (legitimate interest: communicating with a person who contacts me), and where the message concerns potential cooperation — Art. 6(1)(b) GDPR (steps taken at your request prior to entering into a contract).",
+          "<strong>Protecting the site against spam, bots and abuse</strong> — Art. 6(1)(f) GDPR (legitimate interest: security of the service).",
+        ],
+      },
+      {
+        h: "Data recipients",
+        pre: [
+          "I use the following processors, which handle the technical side of the communication:",
+        ],
+        list: [
+          "<strong>Resend</strong> (resend.com) — delivery of form e-mails (the notification to me and the automatic confirmation to you); sending infrastructure in the EU region (Ireland),",
+          "<strong>Cloudflare</strong> — site hosting, firewall and anti-bot protection (Turnstile),",
+          "<strong>OVH</strong> — the mailbox where the correspondence arrives and is stored.",
+        ],
+        post: [
+          "Your data is never sold or shared with anyone for their own purposes (e.g. marketing).",
+        ],
+      },
+      {
+        h: "Transfers outside the EEA",
+        pre: [
+          "Resend and Cloudflare are US-based companies, so some data may be processed outside the European Economic Area. Such transfers rely on the Standard Contractual Clauses approved by the European Commission (Art. 46(2)(c) GDPR) and — to the extent the provider holds a current certification — the EU-U.S. Data Privacy Framework. The mailbox (OVH) is located within the EEA.",
+        ],
+      },
+      {
+        h: "How long I keep the data",
+        pre: [
+          "The form stores nothing along the way — your message goes straight to my mailbox. I keep the correspondence for as long as handling the matter requires and, if we start working together, for the limitation period of potential claims. Short-lived technical logs at the providers (e.g. delivery logs) are deleted automatically under their retention policies.",
+        ],
+      },
+      {
+        h: "Your rights",
+        pre: [
+          "In relation to the processing of your data, you have the right to:",
+        ],
+        list: [
+          "access your data and obtain a copy of it,",
+          "have your data rectified,",
+          "have your data erased,",
+          "restrict the processing,",
+          "object to processing based on legitimate interest,",
+          "data portability.",
+        ],
+        post: [
+          'To exercise these rights, simply write to me — contact details in section 01. You may also lodge a complaint with the President of the Polish Personal Data Protection Office (<a href="https://uodo.gov.pl" target="_blank" rel="noopener noreferrer">uodo.gov.pl</a>) or your local supervisory authority.',
+        ],
+      },
+      {
+        h: "Voluntary provision and automated decisions",
+        pre: [
+          "Providing your data is voluntary, but without an e-mail address I will not be able to reply. I make no automated decisions and do not profile users — the anti-bot mechanism (Cloudflare Turnstile) only assesses whether the form is submitted by a human.",
+        ],
+      },
+      {
+        h: "Changes to this policy",
+        pre: [
+          "The current version of this policy is always available at this address. Material changes will be marked with a new effective date.",
+        ],
+      },
+    ] satisfies Section[],
+  },
+} as const;
+
+const c = content[lang];
+---
+
+<BaseLayout title={c.title} lang={lang}>
+  <div class="pp">
+    <header class="pp-top">
+      <a class="pp-back" href={c.backHref} data-back
+        ><span class="arr" aria-hidden="true">←</span> {c.back}</a
+      >
+      <a class="pp-lang" href={c.langHref} lang={lang === "pl" ? "en" : "pl"}
+        >{c.langLabel}</a
+      >
+    </header>
+
+    <main class="pp-art">
+      <div class="pp-mono">{c.eyebrow}</div>
+      <h1>
+        {c.headLead}
+        <span class="sf">{c.headAccent}</span>
+      </h1>
+      <p class="pp-eff">{c.effective}</p>
+      <p class="pp-intro">{c.intro}</p>
+
+      {
+        c.sections.map((s, i) => (
+          <section class="pp-sec">
+            <h2>
+              <span class="num" aria-hidden="true">
+                {String(i + 1).padStart(2, "0")}
+              </span>
+              {s.h}
+            </h2>
+            {s.pre?.map((p) => (
+              <p set:html={p} />
+            ))}
+            {s.list && (
+              <ul>
+                {s.list.map((li) => (
+                  <li set:html={li} />
+                ))}
+              </ul>
+            )}
+            {s.post?.map((p) => (
+              <p set:html={p} />
+            ))}
+          </section>
+        ))
+      }
+    </main>
+
+    <footer class="pp-foot">
+      <div class="fline" aria-hidden="true"></div>
+      <div class="pp-frow">
+        <div class="c">© 2026 Mateusz Hadrian — hadrianm.pl</div>
+        <a href={c.contactHref}>{c.contactCta}</a>
+      </div>
+    </footer>
+  </div>
+</BaseLayout>
+
+<script>
+  // Antyscraping (kontrakt: tests/e2e/contact.spec.ts — grep dist bez pełnego
+  // adresu): e-mail składany z fragmentów jak w contact-ui.ts. Bez JS zostaje
+  // fallback wskazujący sekcję kontakt.
+  const FR = ["info", "hadrianm", "pl"];
+  const addr = `${FR[0]}@${FR[1]}.${FR[2]}`;
+  document.querySelectorAll("[data-pp-mail]").forEach((el) => {
+    const a = document.createElement("a");
+    a.href = `mailto:${addr}`;
+    a.textContent = addr;
+    el.replaceWith(a);
+  });
+</script>
+
+<style>
+  /* Prosty layout dokumentu na tokenach projektu (global.css); typografia
+     nagłówka = konwencja sekcji (display + serif italic accent, eyebrow mono).
+     Celowo bez animacji i bez navbara one-pagera — podstrona ma być lekka
+     i łatwa do redesignu (decyzja D7). */
+  .pp {
+    min-height: 100svh;
+    background: #070507;
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+  }
+
+  .pp-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 28px 24px 0;
+  }
+  .pp-top a {
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .pp-top a:hover,
+  .pp-top a:focus-visible {
+    color: var(--ink);
+  }
+  .pp-back .arr {
+    color: var(--accent);
+  }
+  .pp-lang {
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+  }
+
+  .pp-art {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 72px 24px 90px;
+  }
+  .pp-mono {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  h1 {
+    margin: 14px 0 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(38px, 5.4vw, 56px);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+  }
+  h1 .sf {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .pp-eff {
+    margin: 18px 0 0;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.08em;
+    color: var(--faint);
+  }
+  .pp-intro {
+    margin: 26px 0 0;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  .pp-sec {
+    margin-top: 54px;
+  }
+  .pp-sec h2 {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    margin: 0 0 16px;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 700;
+    font-size: 21px;
+    letter-spacing: -0.01em;
+  }
+  .pp-sec h2 .num {
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.1em;
+    color: var(--accent);
+  }
+  .pp-sec p,
+  .pp-sec li {
+    font-size: 15.5px;
+    line-height: 1.7;
+    color: rgba(245, 240, 236, 0.78);
+  }
+  .pp-sec p {
+    margin: 0 0 14px;
+  }
+  .pp-sec ul {
+    /* preflight Tailwinda zeruje list-style — przywracamy jawnie */
+    list-style: disc;
+    margin: 0 0 14px;
+    padding-left: 22px;
+  }
+  .pp-sec li {
+    margin-bottom: 8px;
+  }
+  .pp-sec li::marker {
+    color: var(--accent);
+  }
+  /* Treść sekcji renderowana przez set:html + link e-mail wstawiany w JS —
+     elementy bez atrybutu scope Astro, stąd :global (wzorzec .of-w z Oferty). */
+  .pp-sec :global(strong) {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .pp-sec :global(a) {
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-color: rgba(var(--glow), 0.55);
+    transition: text-decoration-color 0.2s;
+  }
+  .pp-sec :global(a:hover),
+  .pp-sec :global(a:focus-visible) {
+    text-decoration-color: var(--accent);
+  }
+
+  .pp-foot {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 0 24px 40px;
+  }
+  .fline {
+    height: 1px;
+    background: var(--line);
+  }
+  .pp-frow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    padding-top: 20px;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--faint);
+  }
+  .pp-frow a {
+    color: var(--muted);
+    text-decoration: none;
+    transition: color 0.2s;
+  }
+  .pp-frow a:hover,
+  .pp-frow a:focus-visible {
+    color: var(--ink);
+  }
+
+  @media (max-width: 640px) {
+    .pp-art {
+      padding-top: 54px;
+    }
+    .pp-sec {
+      margin-top: 44px;
+    }
+  }
+</style>
