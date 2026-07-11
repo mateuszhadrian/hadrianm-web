@@ -1,0 +1,194 @@
+/* ════════════════════════════════════════════════════════════════
+   FAQ (05) — wariant A "Rejestr" · style sekcji
+   Klasy fq-* — brak kolizji z Tailwindem; wrzuć jako global CSS
+   lub <style is:global>. Wartości ustalone w :root poniżej.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --bg: #070507;            /* tło strony */
+  --panel: #100B0D;         /* panel FAQ — o stopień cieplejszy/jaśniejszy */
+  --ink: #F5F0EC;
+  --muted: rgba(245,240,236,0.62);
+  --faint: rgba(245,240,236,0.38);
+  --line: rgba(245,240,236,0.15);
+  --seam: rgba(245,240,236,0.14);   /* hairline szwu */
+  --accent: #FF5A47;
+  --glow: 255,90,71;
+  --mono: 'Space Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --serif-grad: linear-gradient(105deg, #FFF6F0 10%, #FFB3A6 90%);
+  --cz: cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: var(--bg); }
+body { font-family: 'Archivo', sans-serif; color: var(--ink); overflow-x: hidden; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: #FFB3A6; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+button:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+
+.fq-mono { font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--faint); }
+
+/* ── panel + szew ── */
+#faq { position: relative; background: var(--panel);
+  border-top: 1px solid var(--seam); border-bottom: 1px solid var(--seam);
+  padding: 216px 150px 130px; }
+#faq::before { content: ''; position: absolute; left: 0; right: 0; top: 0; height: 150px;
+  pointer-events: none; z-index: 2;
+  background: linear-gradient(180deg, rgba(255,90,71,0.05), rgba(255,90,71,0)); }
+
+/* ── atmosfera: mgła cichsza niż w Ofercie, statyczna ── */
+.fq-atmo { position: absolute; inset: 0; pointer-events: none; z-index: 1; overflow: hidden; }
+.fq-bl { position: absolute; border-radius: 50%; filter: blur(48px); }
+.fq-bl.b1 { right: -14vw; top: -18vw; width: 46vw; height: 46vw;
+  background: radial-gradient(closest-side, rgba(214,38,38,0.20) 0%, rgba(0,0,0,0) 72%); }
+.fq-bl.b2 { left: -13vw; bottom: -16vw; width: 40vw; height: 40vw;
+  background: radial-gradient(closest-side, rgba(130,20,32,0.18) 0%, rgba(0,0,0,0) 72%); }
+.fq-mesh { position: absolute; inset: 0; pointer-events: none; z-index: 3;
+  mix-blend-mode: multiply; opacity: 0.42;
+  background-image: radial-gradient(circle at center, rgba(0,0,0,0.96) 2.17px, rgba(0,0,0,0) 3.69px);
+  background-size: 10.41px 10.41px; }
+
+/* ── chrome ── */
+.fq-tag { position: absolute; left: 150px; top: 95px; z-index: 9; display: flex; align-items: baseline; gap: 14px;
+  font-family: var(--mono); font-size: 12px; letter-spacing: 0.3em; text-transform: uppercase; }
+.fq-tag .t-num { color: var(--accent); }
+.fq-tag .t-sl { color: var(--faint); }
+.fq-tag .t-lbl { color: rgba(245,240,236,0.62); }
+.fq-meta { position: absolute; right: 150px; top: 97px; z-index: 9; font-family: var(--mono); font-size: 11px;
+  letter-spacing: 0.26em; color: var(--faint); text-transform: uppercase; }
+.fq-ghost { position: absolute; right: 130px; top: 104px; z-index: 4; pointer-events: none; user-select: none;
+  font-weight: 800; font-size: clamp(200px, 15.6vw, 300px); line-height: 0.82; letter-spacing: -0.045em;
+  color: transparent; -webkit-text-stroke: 1.5px rgba(245,240,236,0.09); }
+
+/* ── nagłówek ── */
+.fq-head { position: relative; z-index: 6; display: flex; flex-direction: column; gap: 18px; }
+.fq-head .kick { color: var(--accent); }
+.fq-head h2 { margin: 0; font-weight: 800; font-size: clamp(52px, 4vw, 76px); line-height: 1.02;
+  letter-spacing: -0.035em; color: var(--ink); }
+.fq-head h2 .sf { font-family: 'Instrument Serif', Georgia, serif; font-style: italic; font-weight: 400;
+  font-size: 1.06em; letter-spacing: 0; background: var(--serif-grad);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; color: transparent; }
+
+/* ── rejestr ── */
+.fq-list { position: relative; z-index: 6; margin: 66px 0 0; list-style: none; padding: 0; }
+.fq-line { height: 1px; background: var(--line); position: relative; z-index: 6; }
+.fq-item { position: relative; }
+.fq-item h3 { margin: 0; }
+
+.fq-q { display: grid; grid-template-columns: 110px 1fr 40px; align-items: center; text-align: left;
+  width: calc(100% + 40px); margin: 0 -20px; padding: 27px 20px; }
+.fq-q .no { font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em; color: var(--faint);
+  transition: color 0.35s; }
+.fq-q .qt { margin: 0; font-weight: 700; font-size: 27px; line-height: 1.25; letter-spacing: -0.02em;
+  color: rgba(245,240,236,0.86); transition: color 0.3s, transform 0.35s var(--cz); }
+.fq-item.open .fq-q .no { color: var(--accent); }
+.fq-item.open .fq-q .qt { color: var(--ink); }
+
+/* plus → × */
+.fq-plus { position: relative; justify-self: end; width: 18px; height: 18px;
+  transition: transform 0.4s var(--cz); }
+.fq-plus::before, .fq-plus::after { content: ''; position: absolute; left: 50%; top: 50%;
+  width: 18px; height: 1.6px; background: var(--faint); transition: background 0.3s;
+  transform: translate(-50%,-50%); }
+.fq-plus::after { transform: translate(-50%,-50%) rotate(90deg); }
+.fq-item.open .fq-plus { transform: rotate(45deg); }
+.fq-item.open .fq-plus::before, .fq-item.open .fq-plus::after { background: var(--accent); }
+
+@media (hover: hover) {
+  .fq-q:hover { background: rgba(245,240,236,0.022); }
+  .fq-q:hover .qt { color: var(--ink); transform: translateX(8px); }
+  .fq-q:hover .fq-plus::before, .fq-q:hover .fq-plus::after { background: var(--ink); }
+  .fq-item.open .fq-q:hover .fq-plus::before, .fq-item.open .fq-q:hover .fq-plus::after { background: var(--accent); }
+}
+
+/* odpowiedź: domyślnie (bez JS / fq-static) rozwinięta; z JS wysokość
+   0 ↔ auto rozwija tween GSAP w faq.js (pomiar tylko przy kliknięciu) */
+.fq-a { overflow: hidden; }
+.fq-a p { margin: 2px 0 38px 110px; max-width: 900px; font-size: 17px; line-height: 1.65;
+  color: var(--muted); text-wrap: pretty; }
+body.js:not(.fq-static) .fq-a { height: 0; }
+body.js:not(.fq-static) .fq-item.open .fq-a { height: auto; }
+
+/* ── domknięcie → kontakt ── */
+.fq-cta { position: relative; z-index: 6; margin-top: 84px; display: flex; flex-direction: column;
+  align-items: center; gap: 20px; text-align: center; }
+.fq-dia { width: 10px; height: 10px; background: var(--accent);
+  box-shadow: 0 0 18px rgba(var(--glow),0.7); transform: rotate(45deg); }
+.fq-link { display: inline-flex; align-items: center; gap: 14px; border-bottom: 1px solid var(--line);
+  padding-bottom: 10px; font-weight: 600; font-size: 21px; letter-spacing: -0.01em; color: var(--ink); }
+.fq-link:hover { color: var(--ink); }
+.fq-link .arr { color: var(--accent); transition: transform 0.25s; }
+.fq-link:hover .arr { transform: translateX(6px); }
+
+/* ════════════════════════════════════════════════════════════════
+   WEJŚCIA — stany początkowe tylko gdy: JS działa + motion OK
+   + brak body.fq-static. Animuje CSS transition; ScrollTrigger
+   w faq.js jedynie dodaje klasy .on (toggleClass, once).
+   ════════════════════════════════════════════════════════════════ */
+@media (prefers-reduced-motion: no-preference) {
+  /* treść odpowiedzi: delikatny fade po rozwinięciu */
+  body.js:not(.fq-static) .fq-a p { opacity: 0; transform: translateY(6px);
+    transition: opacity 0.4s ease, transform 0.4s var(--cz); }
+  body.js:not(.fq-static) .fq-item.open .fq-a p { opacity: 1; transform: none; transition-delay: 0.08s; }
+
+  /* nagłówek + ghost */
+  body.js:not(.fq-static) .fq-head { opacity: 0; transform: translateY(22px);
+    transition: opacity 0.8s var(--cz), transform 0.8s var(--cz); }
+  body.js:not(.fq-static) .fq-head.on { opacity: 1; transform: none; }
+  body.js:not(.fq-static) .fq-ghost { opacity: 0; transition: opacity 1.4s ease 0.15s; }
+  body.js:not(.fq-static) .fq-ghost.on { opacity: 1; }
+
+  /* wiersze: fade-up + rysująca się linia; stagger = transition-delay --d */
+  body.js:not(.fq-static) .fq-item { opacity: 0; transform: translateY(24px);
+    transition: opacity 0.8s var(--cz) var(--d, 0s), transform 0.8s var(--cz) var(--d, 0s); }
+  body.js:not(.fq-static) .fq-item .fq-line { transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform 0.95s var(--cz) var(--d, 0s); }
+  body.js:not(.fq-static) .fq-list.on .fq-item { opacity: 1; transform: none; }
+  body.js:not(.fq-static) .fq-list.on .fq-item .fq-line { transform: scaleX(1); }
+  .fq-item:nth-child(1) { --d: 0s; }
+  .fq-item:nth-child(2) { --d: 0.07s; }
+  .fq-item:nth-child(3) { --d: 0.14s; }
+  .fq-item:nth-child(4) { --d: 0.21s; }
+  .fq-item:nth-child(5) { --d: 0.28s; }
+  .fq-item:nth-child(6) { --d: 0.35s; }
+  body.js:not(.fq-static) .fq-endline { transform: scaleX(0); transform-origin: 0 50%;
+    transition: transform 0.95s var(--cz) 0.42s; }
+  body.js:not(.fq-static) .fq-list.on + .fq-endline { transform: scaleX(1); }
+
+  /* CTA */
+  body.js:not(.fq-static) .fq-cta { opacity: 0; transform: translateY(18px);
+    transition: opacity 0.8s var(--cz), transform 0.8s var(--cz); }
+  body.js:not(.fq-static) .fq-cta.on { opacity: 1; transform: none; }
+}
+
+/* ════════════════════════════════════════════════════════════════
+   MOBILE (<861px) — wersja lekka: te same klasy .on, mniejsze
+   przesunięcia, bez meta, mały ghost; parallax ghosta wyłącza JS
+   (matchMedia). Zero filtrów animowanych, zero mierzenia w rAF.
+   ════════════════════════════════════════════════════════════════ */
+@media (max-width: 860.98px) {
+  #faq { padding: 140px 26px 90px; }
+  .fq-tag { left: 26px; top: 56px; }
+  .fq-meta { display: none; }
+  .fq-ghost { right: 14px; top: 66px; font-size: 108px; -webkit-text-stroke-width: 1.2px; }
+  .fq-head h2 { font-size: 40px; }
+  .fq-list { margin-top: 44px; }
+  .fq-q { grid-template-columns: 44px 1fr 30px; width: 100%; margin: 0; padding: 19px 0; }
+  .fq-q .no { font-size: 10px; letter-spacing: 0.24em; }
+  .fq-q .qt { font-size: 17px; line-height: 1.4; }
+  .fq-plus { width: 14px; height: 14px; }
+  .fq-plus::before, .fq-plus::after { width: 14px; height: 1.5px; }
+  .fq-a p { margin: 0 0 26px 44px; font-size: 14.5px; line-height: 1.62; }
+  .fq-cta { margin-top: 60px; }
+  .fq-link { font-size: 17px; }
+  @media (prefers-reduced-motion: no-preference) {
+    body.js:not(.fq-static) .fq-item { transform: translateY(16px); }
+  }
+}
+
+/* wąski desktop */
+@media (min-width: 861px) and (max-width: 1280px) {
+  #faq { padding-left: 70px; padding-right: 70px; }
+  .fq-tag { left: 70px; }
+  .fq-meta { right: 70px; }
+  .fq-ghost { right: 70px; }
+}
