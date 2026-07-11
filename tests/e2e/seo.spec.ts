@@ -86,6 +86,14 @@ test("wszystkie wewnętrzne linki odpowiadają < 400", async ({
   page,
   request,
 }) => {
+  // ⚠️ PRZEJŚCIOWE: polityka prywatności powstaje na OSOBNYM branchu po
+  // merge'u sekcji kontaktu (Etap 5, decyzja D7 w
+  // docs/contact-me-form-analysis-implementation.md §7/§10 — świadome,
+  // krótkie okno 404). USUŃ ten wyjątek razem z powstaniem podstron.
+  const PENDING_POLICY = new Set([
+    "/polityka-prywatnosci",
+    "/en/privacy-policy",
+  ]);
   const hrefs = new Set<string>();
   for (const path of ["/", "/en/"]) {
     await gotoReady(page, path);
@@ -94,6 +102,7 @@ test("wszystkie wewnętrzne linki odpowiadają < 400", async ({
       .evaluateAll((els) => els.map((el) => el.getAttribute("href")))) {
       if (!href || !href.startsWith("/") || href.startsWith("//")) continue;
       if (href.includes("/cdn-cgi/")) continue; // tylko na produkcji Cloudflare
+      if (PENDING_POLICY.has(href)) continue;
       hrefs.add(href);
     }
   }

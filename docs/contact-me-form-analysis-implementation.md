@@ -414,6 +414,21 @@ Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
 
 ### Etap 3 — [C]+[M] Testy i baseline'y
 
+> **Stan: 🟡 w toku (2026-07-11).** Kod testów gotowy i zielony lokalnie:
+> `tests/e2e/contact.spec.ts` (13 scenariuszy × 6 profili; Turnstile
+> stubowany route'em, endpoint mockowany przez `page.route`), sonda
+> `@prod-smoke` w `smoke.spec.ts` (skip bez `BASE_URL` — preview nie
+> serwuje Pages Functions; tylko chromium-1920 — reguła WAF blokuje
+> serie POST-ów), axe 0 naruszeń na doscrollowanej sekcji (bez zmian w
+> allowliście). Korekta wykonawcza: w `seo.spec.ts` przejściowy wyjątek
+> dla linków polityki prywatności (świadome okno 404 z §7/§10 — USUNĄĆ
+> w Etapie 5). Wpis visual dla `#contact` istniał już w
+> `sections.spec.ts`; do akceptacji Mateusza czeka aktualizacja
+> baseline'ów: `section-contact` (6 profili — stary baseline to
+> placeholder) + churny `section-work` i `faq-04-cta` (tylko
+> chromium-pixel-5; skutek zmiany wysokości strony). Po zgodzie:
+> workflow linux → darwin NA KOŃCU (pkt 3 niżej).
+
 1. **e2e** (`tests/e2e/contact.spec.ts`) — scenariusze z checklisty README
    referencji: walidacja (pusty submit → 3 błędy + fokus; zły e-mail;
    czyszczenie błędu przy wpisywaniu), chipsy, honeypot/za-szybki-submit →
