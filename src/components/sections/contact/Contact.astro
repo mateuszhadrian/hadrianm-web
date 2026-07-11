@@ -1,37 +1,1371 @@
 ---
+// Sekcja „Kontakt" — wariant A „Split" (port referencji
+// docs/design/kontakt-referencja/; decyzje i plan:
+// docs/contact-me-form-analysis-implementation.md).
+// Finał strony: czerń #070507 po panelu FAQ (#100B0D), wchłonięty footer.
+// Markup + style tutaj; formularz/reveal w contact-ui.ts (ładowany
+// ZAWSZE — działa też przy reduce), wejścia w contact-scroll.ts
+// (dynamicznie, tylko przy prefers-reduced-motion: no-preference).
+// E-mail i telefon NIE istnieją w źródle w całości — contact-ui.ts
+// składa je z fragmentów po kliknięciu [ POKAŻ ] (antyscraping).
 import { navItems, navLabel } from "@/i18n/nav";
-import type { Lang } from "@/i18n/utils";
+import { useTranslations, type Lang } from "@/i18n/utils";
 
 interface Props {
   lang: Lang;
 }
 const { lang } = Astro.props;
+const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "contact");
-const heading = item ? navLabel(item, lang) : "contact";
+const label = item ? navLabel(item, lang) : "Kontakt";
+
+const topics = [
+  t("contact.topic1"),
+  t("contact.topic2"),
+  t("contact.topic3"),
+  t("contact.topic4"),
+];
+
+const socials = [
+  { name: "GitHub", href: "https://github.com/mateuszhadrian" },
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/in/mateusz-hadrian-554a1313a/",
+  },
+  { name: "Instagram", href: "https://www.instagram.com/hadrianm_" },
+];
 ---
 
-<section id="contact" class="contact">
-  <div class="contact__content">
-    <h2>{heading}</h2>
+<section id="contact" class="kt" aria-label={label}>
+  <script is:inline>
+    // Bez JS sekcja zostaje w pełni widoczna (fallback); klasa .js
+    // uzbraja stany startowe animacji wejść (wzorzec FAQ).
+    document.currentScript?.closest("section")?.classList.add("js");
+  </script>
+
+  <!-- atmosfera: ciepło od dołu, cicho u góry -->
+  <div class="kt-atmo" aria-hidden="true">
+    <span class="kt-bl b1"></span><span class="kt-bl b2"></span>
   </div>
+  <div class="kt-mesh" aria-hidden="true"></div>
+
+  <!-- chrome sekcji -->
+  <div class="kt-tag">
+    <span class="t-num">06</span><span class="t-sl" aria-hidden="true">/</span
+    ><span class="t-lbl">{label}</span>
+  </div>
+  <div class="kt-meta" aria-hidden="true">{t("contact.meta")}</div>
+  <div class="kt-ghost" aria-hidden="true">{t("contact.ghost")}</div>
+
+  <div class="kt-grid">
+    <!-- lead -->
+    <div class="kt-lead">
+      <div class="kt-mono kick">{t("contact.kick")}</div>
+      <h2>
+        {t("contact.headLead")}
+        <span class="sf">{t("contact.headAccent")}</span>
+      </h2>
+      <p class="kt-intro">{t("contact.intro")}</p>
+    </div>
+
+    <!-- side: status + dane (reveal) -->
+    <div class="kt-side">
+      <div class="kt-status">
+        <div class="kt-st on">
+          <span class="kt-dia" aria-hidden="true"></span>{t("contact.stOn")}
+        </div>
+        <div class="kt-st off">
+          <span class="kt-dia hollow" aria-hidden="true"></span>{
+            t("contact.stOff")
+          }
+        </div>
+      </div>
+      <div class="kt-hr" aria-hidden="true"></div>
+
+      <div class="kt-rev" data-kind="email">
+        <span class="kt-x tl" aria-hidden="true"></span>
+        <span class="kt-x br" aria-hidden="true"></span>
+        <div class="kt-mono lbl">{t("contact.emailLbl")}</div>
+        <span class="kt-val">info@•••••••••.••</span>
+        <button
+          class="kt-act"
+          type="button"
+          aria-label={t("contact.showEmailAria")}
+          data-copy={t("contact.copy")}
+          data-copied={t("contact.copied")}
+          data-aria-copy={t("contact.copyEmailAria")}
+          >{t("contact.reveal")}</button
+        >
+      </div>
+      <div class="kt-rev" data-kind="phone">
+        <span class="kt-x tl" aria-hidden="true"></span>
+        <span class="kt-x br" aria-hidden="true"></span>
+        <div class="kt-mono lbl">{t("contact.phoneLbl")}</div>
+        <span class="kt-val">+48 ••• ••• •••</span>
+        <button
+          class="kt-act"
+          type="button"
+          aria-label={t("contact.showPhoneAria")}
+          data-copy={t("contact.copy")}
+          data-copied={t("contact.copied")}
+          data-aria-copy={t("contact.copyPhoneAria")}
+          >{t("contact.reveal")}</button
+        >
+      </div>
+    </div>
+
+    <!-- ramka formularza -->
+    <div class="kt-frame">
+      <span class="kt-x tl" aria-hidden="true"></span>
+      <span class="kt-x tr" aria-hidden="true"></span>
+      <span class="kt-x bl" aria-hidden="true"></span>
+      <span class="kt-x br" aria-hidden="true"></span>
+
+      <div class="kt-formwrap">
+        <form class="kt-form" novalidate>
+          <!-- honeypot: boty wypełniają, ludzie nie widzą -->
+          <div class="kt-hp" aria-hidden="true">
+            <label for="kt-firma">{t("contact.hpLbl")}</label>
+            <input
+              id="kt-firma"
+              name="firma"
+              type="text"
+              tabindex="-1"
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="kt-f2 fld">
+            <div class="kt-f" data-f="name">
+              <label for="kt-name">{t("contact.nameLbl")}</label>
+              <div class="ctl">
+                <input
+                  id="kt-name"
+                  name="name"
+                  type="text"
+                  placeholder={t("contact.namePh")}
+                  autocomplete="given-name"
+                />
+              </div>
+              <div class="kt-err" aria-live="polite">
+                {t("contact.nameErr")}
+              </div>
+            </div>
+            <div class="kt-f" data-f="email">
+              <label for="kt-email">{t("contact.emailFieldLbl")}</label>
+              <div class="ctl">
+                <input
+                  id="kt-email"
+                  name="email"
+                  type="email"
+                  placeholder={t("contact.emailPh")}
+                  autocomplete="email"
+                />
+              </div>
+              <div class="kt-err" aria-live="polite">
+                {t("contact.emailErr")}
+              </div>
+            </div>
+          </div>
+
+          <div
+            class="kt-topic fld"
+            role="radiogroup"
+            aria-label={t("contact.topicLbl")}
+          >
+            <div class="glbl">{t("contact.topicLbl")}</div>
+            <div class="kt-chips">
+              {
+                topics.map((topic) => (
+                  <label class="kt-chip">
+                    <input type="radio" name="temat" value={topic} />
+                    <span class="dia" aria-hidden="true" />
+                    <span class="tx">{topic}</span>
+                  </label>
+                ))
+              }
+            </div>
+          </div>
+
+          <div class="kt-msg fld" data-f="msg">
+            <label for="kt-msg">{t("contact.msgLbl")}</label>
+            <div class="box">
+              <textarea
+                id="kt-msg"
+                name="message"
+                placeholder={t("contact.msgPh")}></textarea>
+            </div>
+            <div class="kt-err" aria-live="polite">{t("contact.msgErr")}</div>
+          </div>
+
+          <div class="kt-fbot fld">
+            <p class="kt-note">
+              {t("contact.notePre")}<a href={t("contact.policyHref")}
+                >{t("contact.noteLink")}</a
+              >{t("contact.notePost")}
+            </p>
+            <div class="kt-ts"></div>
+            <p class="kt-srv" role="alert" hidden>{t("contact.srvErr")}</p>
+            <button
+              class="kt-send"
+              type="submit"
+              data-send={t("contact.send")}
+              data-sending={t("contact.sending")}
+            >
+              <span class="lb">{t("contact.send")}</span>
+              <span class="arr" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </form>
+
+        <!-- potwierdzenie (crossfade — absolutne, nie zmienia wysokości) -->
+        <div class="kt-done" role="status">
+          <span class="dia-lg" aria-hidden="true"></span>
+          <h3 tabindex="-1">{t("contact.doneHead")}</h3>
+          <p>{t("contact.doneP")}</p>
+          <button class="again" type="button">{t("contact.again")}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer wchłonięty w sekcję (finał strony) -->
+  <footer class="kt-footer">
+    <div class="fline" aria-hidden="true"></div>
+    <div class="kt-frow">
+      <div class="c">© 2026 Mateusz Hadrian — hadrianm.pl</div>
+      <nav class="kt-soc" aria-label="Social media">
+        {
+          socials.map((s) => (
+            <a href={s.href} target="_blank" rel="noopener noreferrer">
+              {s.name}{" "}
+              <span class="aw" aria-hidden="true">
+                ↗
+              </span>
+            </a>
+          ))
+        }
+      </nav>
+      <div class="kt-fleg">
+        <a href={t("contact.policyHref")}>{t("contact.footPolicy")}</a>
+        <a class="up" href="#top">{t("contact.footUp")}</a>
+      </div>
+    </div>
+  </footer>
 </section>
 
+<script>
+  import { initContactUi } from "./contact-ui";
+
+  // Formularz i reveal działają ZAWSZE (to funkcja, nie dekoracja);
+  // choreografia wejść tylko przy dozwolonym ruchu — ta sama bramka
+  // co Lenis w BaseLayout (wzorzec FAQ).
+  const contactSection = document.querySelector<HTMLElement>("#contact");
+  if (contactSection) {
+    initContactUi(contactSection);
+    if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+      import("./contact-scroll").then((m) => m.initContactScroll());
+    }
+  }
+</script>
+
 <style>
-  .contact {
+  /* ═══ Sekcja „Kontakt" — wartości „zamrożone" z prototypu referencji:
+     breakpoint 861px · grid minmax(420,560)/minmax(520,1fr), gap 110px
+     (70px przy 861–1440) · wejścia top 84/88/82/97% · stagger pól --d =
+     0.10/0.16/0.22/0.28s · parallax ghosta −30→+40px · poświata finału
+     od dołu rgba(255,90,71,0.045) → 0 przez 210px.
+     Paleta/fonty z tokenów projektu (global.css); tło i mgła lokalne.
+     UWAGA: @media (861px) MUSI być równe CONTACT_DESKTOP_MIN_PX
+     (contact-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
+  .kt {
+    --kt-bg: #070507; /* finał wraca z panelu FAQ (#100B0D) na czerń */
+    --kt-cz: cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
-    min-height: 100svh;
+    overflow: hidden; /* ghost-typografia nie może rozpychać strony */
+    background: var(--kt-bg);
+    padding: 216px 150px 58px;
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+  }
+  /* poświata finału od dołu */
+  .kt::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 210px;
+    pointer-events: none;
+    z-index: 2;
+    background: linear-gradient(
+      0deg,
+      rgba(255, 90, 71, 0.045),
+      rgba(255, 90, 71, 0)
+    );
+  }
+  .kt a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .kt a:hover {
+    color: #ffb3a6;
+  }
+  .kt button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .kt button:focus-visible,
+  .kt a:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .kt input,
+  .kt textarea {
+    font: inherit;
+    color: var(--ink);
+    background: none;
+    border: 0;
+    outline: none;
+    border-radius: 0;
   }
 
-  .contact__content {
-    height: 100svh;
+  .kt-mono {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  /* ── atmosfera: blur blobów i blend mesha TYLKO na desktopie (niżej) —
+     na telefonach duże warstwy filter/blend głodzą rasteryzację
+     (wzorzec Oferty/Audience/FAQ). ── */
+  .kt-atmo {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 1;
+    overflow: hidden;
+  }
+  .kt-bl {
+    position: absolute;
+    border-radius: 50%;
+  }
+  .kt-bl.b1 {
+    left: 31vw;
+    bottom: -26vw;
+    width: 38vw;
+    height: 38vw;
+    background: radial-gradient(
+      closest-side,
+      rgba(214, 38, 38, 0.16) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+  .kt-bl.b2 {
+    right: -9vw;
+    top: -14vw;
+    width: 26vw;
+    height: 26vw;
+    background: radial-gradient(
+      closest-side,
+      rgba(130, 20, 32, 0.14) 0%,
+      rgba(0, 0, 0, 0) 72%
+    );
+  }
+  .kt-mesh {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 3;
+    opacity: 0.45;
+    background-image: radial-gradient(
+      circle at center,
+      rgba(0, 0, 0, 0.96) 2.17px,
+      rgba(0, 0, 0, 0) 3.69px
+    );
+    background-size: 10.41px 10.41px;
+  }
+
+  /* ── chrome ── */
+  .kt-tag {
+    position: absolute;
+    left: 150px;
+    top: 95px;
+    z-index: 9;
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .kt-tag .t-num {
+    color: var(--accent);
+  }
+  .kt-tag .t-sl {
+    color: var(--faint);
+  }
+  .kt-tag .t-lbl {
+    color: var(--muted);
+  }
+  .kt-meta {
+    position: absolute;
+    right: 150px;
+    top: 97px;
+    z-index: 9;
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+  .kt-ghost {
+    position: absolute;
+    right: 130px;
+    top: 104px;
+    z-index: 4;
+    pointer-events: none;
+    user-select: none;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(140px, 10.2vw, 196px);
+    line-height: 0.82;
+    letter-spacing: -0.045em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(245, 240, 236, 0.09);
+  }
+
+  /* ── siatka: lead + side po lewej, formularz po prawej ── */
+  .kt-grid {
+    position: relative;
+    z-index: 6;
     display: grid;
-    place-items: center;
-    color: #fff;
-    font-family: system-ui, sans-serif;
+    grid-template-columns: minmax(420px, 560px) minmax(520px, 1fr);
+    grid-template-areas: "lead frame" "side frame";
+    grid-template-rows: auto 1fr;
+    column-gap: 110px;
+    row-gap: 46px;
+    align-items: start;
+  }
+  .kt-grid > * {
+    min-width: 0;
   }
 
-  .contact__content h2 {
-    font-size: clamp(1.25rem, 4vw, 2.25rem);
+  /* lead: kicker + nagłówek + intro */
+  .kt-lead {
+    grid-area: lead;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+  .kt-lead .kick {
+    color: var(--accent);
+  }
+  .kt-lead h2 {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(48px, 3.3vw, 62px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+  }
+  .kt-lead h2 .sf {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .kt-intro {
+    margin: 16px 0 0;
+    max-width: 520px;
+    font-size: 17.5px;
+    line-height: 1.62;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /* ── side: status + dane ── */
+  .kt-side {
+    grid-area: side;
+    display: flex;
+    flex-direction: column;
+  }
+  .kt-status {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .kt-st {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+  }
+  .kt-st.on {
+    color: var(--ink);
+  }
+  .kt-st.off {
+    color: var(--faint);
+  }
+  .kt-dia {
+    width: 8px;
+    height: 8px;
+    flex-shrink: 0;
+    transform: rotate(45deg);
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(var(--glow), 0.7);
+  }
+  .kt-dia.hollow {
+    background: transparent;
+    box-shadow: inset 0 0 0 1.5px var(--line);
+  }
+  .kt-hr {
+    width: 520px;
+    max-width: 100%;
+    height: 1px;
+    background: var(--line);
+    margin: 44px 0 40px;
+  }
+
+  /* ── reveal danych: mini-panele z krzyżami ── */
+  .kt-rev {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 520px;
+    min-height: 140px;
+    padding: 24px 26px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    background: rgba(245, 240, 236, 0.015);
+    transition: box-shadow 0.25s;
+  }
+  .kt-rev:hover {
+    box-shadow: inset 0 0 0 1px rgba(245, 240, 236, 0.3);
+  }
+  .kt-rev + .kt-rev {
+    margin-top: 20px;
+  }
+  .kt-rev .lbl {
+    font-size: 9.5px;
+  }
+  .kt-val {
+    margin-top: 18px;
+    font-family: var(--font-mono), monospace;
+    font-size: 17px;
+    letter-spacing: 0.04em;
+    color: rgba(245, 240, 236, 0.3);
+  }
+  /* link tworzy runtime contact-ui.ts → :global (wzorzec Oferty) */
+  .kt-rev.open .kt-val,
+  .kt-val :global(a) {
+    color: var(--ink);
+  }
+  .kt-val :global(a:hover) {
+    color: var(--accent);
+  }
+  .kt-act {
+    margin-top: auto;
+    padding-top: 18px;
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    color: var(--faint);
+    white-space: nowrap;
+    border-bottom: 1px solid transparent;
+    transition:
+      color 0.25s,
+      border-color 0.25s;
+  }
+  .kt-act:hover {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .kt-act.ok {
+    color: var(--accent);
+  }
+
+  /* ── ramka formularza ── */
+  .kt-frame {
+    grid-area: frame;
+    position: relative;
+    align-self: start;
+    box-shadow: inset 0 0 0 1px var(--line);
+    background: rgba(245, 240, 236, 0.015);
+  }
+  .kt-x {
+    position: absolute;
+    width: 19px;
+    height: 19px;
+    pointer-events: none;
+    z-index: 7;
+  }
+  .kt-x::before,
+  .kt-x::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    background: rgba(245, 240, 236, 0.3);
+  }
+  .kt-x::before {
+    width: 19px;
+    height: 1px;
+    transform: translate(-50%, -50%);
+  }
+  .kt-x::after {
+    width: 1px;
+    height: 19px;
+    transform: translate(-50%, -50%);
+  }
+  .kt-x.tl {
+    left: 0;
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
+  .kt-x.tr {
+    left: 100%;
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
+  .kt-x.bl {
+    left: 0;
+    top: 100%;
+    transform: translate(-50%, -50%);
+  }
+  .kt-x.br {
+    left: 100%;
+    top: 100%;
+    transform: translate(-50%, -50%);
+  }
+
+  .kt-formwrap {
+    position: relative;
+    padding: 52px 60px;
+  }
+  .kt-form {
+    display: flex;
+    flex-direction: column;
+    gap: 38px;
+    transition: opacity 0.4s ease;
+  }
+
+  /* pola: podkreślenie */
+  .kt-f2 {
+    display: flex;
+    gap: 44px;
+  }
+  .kt-f {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+  }
+  .kt-f label {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+    transition: color 0.25s;
+  }
+  .kt-f .ctl {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 13px;
+    transition: border-color 0.25s;
+  }
+  .kt-f input {
+    width: 100%;
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+  .kt-f input::placeholder,
+  .kt-msg textarea::placeholder {
+    color: rgba(245, 240, 236, 0.3);
+    font-weight: 400;
+    opacity: 1;
+  }
+  .kt-f:focus-within label {
+    color: var(--accent);
+  }
+  .kt-f:focus-within .ctl {
+    border-bottom-color: var(--accent);
+  }
+  .kt-f.err .ctl {
+    border-bottom-color: var(--accent);
+  }
+  .kt-f input:-webkit-autofill {
+    -webkit-text-fill-color: var(--ink);
+    transition: background-color 9999s ease-in-out 0s;
+  }
+
+  /* błąd walidacji */
+  .kt-err {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--font-mono), monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    transition:
+      max-height 0.3s var(--kt-cz),
+      opacity 0.3s;
+  }
+  .kt-err::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    background: var(--accent);
+    transform: rotate(45deg);
+  }
+  .kt-f.err .kt-err,
+  .kt-msg.err .kt-err {
+    max-height: 24px;
+    opacity: 1;
+    margin-top: 2px;
+  }
+
+  /* chipsy tematu (radio) */
+  .kt-topic {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .kt-topic .glbl {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .kt-chips {
+    display: grid;
+    grid-template-columns: repeat(4, max-content);
+    gap: 12px;
+  }
+  .kt-chip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 11px 18px;
+    box-shadow: inset 0 0 0 1px var(--line);
+    cursor: pointer;
+    transition:
+      box-shadow 0.25s,
+      background 0.25s;
+  }
+  .kt-chip input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .kt-chip .dia {
+    display: none;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    transform: rotate(45deg);
+  }
+  .kt-chip .tx {
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.25s;
+  }
+  .kt-chip:hover {
+    box-shadow: inset 0 0 0 1px rgba(245, 240, 236, 0.42);
+  }
+  .kt-chip:hover .tx {
+    color: var(--ink);
+  }
+  .kt-chip.sel {
+    box-shadow: inset 0 0 0 1px var(--accent);
+    background: rgba(255, 90, 71, 0.06);
+  }
+  .kt-chip.sel .dia {
+    display: inline-block;
+  }
+  .kt-chip.sel .tx {
+    color: var(--ink);
+  }
+  .kt-chip:has(input:focus-visible) {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  /* wiadomość: wyróżnione pole */
+  .kt-msg {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .kt-msg label {
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+    transition: color 0.25s;
+  }
+  .kt-msg .box {
+    position: relative;
+    background: rgba(245, 240, 236, 0.035);
+    box-shadow: inset 0 0 0 1px rgba(245, 240, 236, 0.22);
+    transition:
+      box-shadow 0.25s,
+      background 0.25s;
+  }
+  .kt-msg .box::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    height: 2px;
+    background: var(--line);
+    transition: background 0.25s;
+  }
+  .kt-msg textarea {
+    display: block;
+    width: 100%;
+    min-height: 190px;
+    resize: vertical;
+    padding: 20px 22px;
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .kt-msg:focus-within label {
+    color: var(--accent);
+  }
+  .kt-msg:focus-within .box {
+    background: rgba(245, 240, 236, 0.05);
+    box-shadow: inset 0 0 0 1px rgba(255, 90, 71, 0.55);
+  }
+  .kt-msg:focus-within .box::before {
+    background: var(--accent);
+  }
+  .kt-msg.err .box {
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+
+  /* honeypot — niewidoczny dla ludzi */
+  .kt-hp {
+    position: absolute;
+    left: -9999px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+  }
+
+  /* stopka formularza: RODO + Turnstile + submit */
+  .kt-fbot {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 22px;
+  }
+  .kt-note {
+    margin: 0;
+    max-width: none;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--faint);
+    text-wrap: balance;
+  }
+  /* kontener Turnstile: pusty (przed pierwszym submitem) nie zabiera
+     miejsca; widget w trybie interaction-only pokazuje się tylko przy
+     podejrzanym ruchu */
+  .kt-ts:empty {
+    display: none;
+  }
+  .kt-send {
+    display: flex;
+    width: 100%;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    padding: 21px 26px;
+    box-shadow: inset 0 0 0 1px rgba(245, 240, 236, 0.26);
+    text-align: left;
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+    transition:
+      background 0.25s,
+      color 0.25s,
+      box-shadow 0.25s,
+      opacity 0.25s;
+  }
+  .kt-send .arr {
+    color: var(--accent);
+    transition:
+      color 0.25s,
+      transform 0.25s;
+  }
+  .kt-send:not(:disabled):hover {
+    background: var(--accent);
+    color: #070507;
+    box-shadow: inset 0 0 0 1px var(--accent);
+  }
+  .kt-send:not(:disabled):hover .arr {
+    color: #070507;
+    transform: translateX(5px);
+  }
+  .kt-send:disabled {
+    opacity: 0.55;
+    cursor: default;
+  }
+
+  /* błąd serwera (po nieudanym fetch) */
+  .kt-srv {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    margin: 0;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .kt-srv::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    background: var(--accent);
+    transform: rotate(45deg);
+  }
+  .kt-srv[hidden] {
+    display: none;
+  }
+
+  /* potwierdzenie po wysłaniu */
+  .kt-done {
+    position: absolute;
+    inset: 0;
+    z-index: 8;
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 22px;
+    text-align: center;
+    padding: 40px;
+    opacity: 0;
+    transition: opacity 0.45s ease 0.1s;
+  }
+  .kt-done .dia-lg {
+    width: 11px;
+    height: 11px;
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(var(--glow), 0.7);
+    transform: rotate(45deg);
+  }
+  .kt-done h3 {
+    margin: 0;
+    font-family: var(--font-mono), monospace;
     font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .kt-done h3:focus {
+    outline: none;
+  }
+  .kt-done p {
+    margin: 0;
+    max-width: 420px;
+    font-size: 16px;
+    line-height: 1.6;
+    color: var(--muted);
+  }
+  .kt-done .again {
+    font-family: var(--font-mono), monospace;
+    font-size: 10.5px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--faint);
+    border-bottom: 1px solid transparent;
+    padding-bottom: 2px;
+    transition:
+      color 0.25s,
+      border-color 0.25s;
+  }
+  .kt-done .again:hover {
+    color: var(--ink);
+    border-bottom-color: var(--accent);
+  }
+  .kt-frame.sent .kt-form {
+    opacity: 0;
+    pointer-events: none;
+  }
+  .kt-frame.sent .kt-done {
+    display: flex;
+    opacity: 1;
+  }
+
+  /* ── footer (wchłonięty) ── */
+  .kt-footer {
+    position: relative;
+    z-index: 6;
+    margin-top: 96px;
+  }
+  .kt-footer .fline {
+    height: 1px;
+    background: var(--line);
+  }
+  .kt-frow {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding-top: 26px;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .kt-frow .c {
+    color: var(--faint);
+  }
+  .kt-soc {
+    display: flex;
+    gap: 36px;
+  }
+  .kt-soc a {
+    color: var(--muted);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+  .kt-soc a .aw {
+    color: var(--accent);
+  }
+  .kt-soc a:hover {
+    color: var(--ink);
+  }
+  .kt-fleg {
+    display: flex;
+    gap: 36px;
+    align-items: center;
+  }
+  .kt-fleg a {
+    color: var(--faint);
+  }
+  .kt-fleg a:hover {
+    color: var(--ink);
+  }
+  .kt-fleg .up {
+    color: var(--muted);
+  }
+
+  /* desktop: blur blobów + blend mesha wracają na desktopowym GPU
+     (861px = CONTACT_DESKTOP_MIN_PX) */
+  @media (min-width: 861px) {
+    .kt-bl {
+      filter: blur(48px);
+    }
+    .kt-mesh {
+      mix-blend-mode: multiply;
+    }
+  }
+
+  /* ═══ WEJŚCIA — stany początkowe tylko gdy: JS działa (klasa .js na
+     sekcji) + motion dozwolony. Animuje CSS transition; ScrollTrigger
+     w contact-scroll.ts jedynie dodaje klasy .on (toggleClass, once).
+     no-JS i prefers-reduced-motion renderują pełną, statyczną treść —
+     formularz i reveal DZIAŁAJĄ dalej (contact-ui.ts zawsze). ═══ */
+  @media (prefers-reduced-motion: no-preference) {
+    .kt.js .kt-lead {
+      opacity: 0;
+      transform: translateY(22px);
+      transition:
+        opacity 0.8s var(--kt-cz),
+        transform 0.8s var(--kt-cz);
+    }
+    .kt.js .kt-lead.on {
+      opacity: 1;
+      transform: none;
+    }
+    .kt.js .kt-ghost {
+      opacity: 0;
+      transition: opacity 1.4s ease 0.15s;
+    }
+    .kt.js .kt-ghost.on {
+      opacity: 1;
+    }
+    .kt.js .kt-side {
+      opacity: 0;
+      transform: translateY(20px);
+      transition:
+        opacity 0.8s var(--kt-cz) 0.12s,
+        transform 0.8s var(--kt-cz) 0.12s;
+    }
+    .kt.js .kt-side.on {
+      opacity: 1;
+      transform: none;
+    }
+
+    .kt.js .kt-frame {
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity 0.85s var(--kt-cz),
+        transform 0.85s var(--kt-cz);
+    }
+    .kt.js .kt-frame .kt-x {
+      opacity: 0;
+      transition: opacity 0.6s ease var(--d, 0.3s);
+    }
+    .kt.js .kt-frame .fld {
+      opacity: 0;
+      transform: translateY(18px);
+      transition:
+        opacity 0.7s var(--kt-cz) var(--d, 0s),
+        transform 0.7s var(--kt-cz) var(--d, 0s);
+    }
+    .kt.js .kt-frame.on {
+      opacity: 1;
+      transform: none;
+    }
+    .kt.js .kt-frame.on .kt-x {
+      opacity: 1;
+    }
+    .kt.js .kt-frame.on .fld {
+      opacity: 1;
+      transform: none;
+    }
+    .kt-frame .fld:nth-of-type(1) {
+      --d: 0.1s;
+    }
+    .kt-frame .fld:nth-of-type(2) {
+      --d: 0.16s;
+    }
+    .kt-frame .fld:nth-of-type(3) {
+      --d: 0.22s;
+    }
+    .kt-frame .fld:nth-of-type(4) {
+      --d: 0.28s;
+    }
+
+    .kt.js .kt-footer {
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity 0.8s var(--kt-cz),
+        transform 0.8s var(--kt-cz);
+    }
+    .kt.js .kt-footer.on {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ═══ MOBILE (<861px) — stos: nagłówek → formularz → dane → footer.
+     Mniejsze przesunięcia wejść, mały ghost, footer w kolumnie. ═══ */
+  @media (max-width: 860.98px) {
+    .kt {
+      padding: 140px 26px 44px;
+    }
+    .kt-tag {
+      left: 26px;
+      top: 56px;
+    }
+    .kt-meta {
+      display: none;
+    }
+    .kt-ghost {
+      right: 14px;
+      top: 66px;
+      font-size: 74px;
+      -webkit-text-stroke-width: 1.2px;
+    }
+
+    .kt-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas: "lead" "frame" "side";
+      grid-template-rows: none;
+      row-gap: 56px;
+    }
+    .kt-lead h2 {
+      font-size: 42px;
+    }
+    .kt-intro {
+      font-size: 15.5px;
+      margin-top: 10px;
+    }
+
+    .kt-frame {
+      max-width: 640px;
+    }
+    .kt-formwrap {
+      padding: 34px 22px;
+    }
+    .kt-form {
+      gap: 32px;
+    }
+    .kt-f2 {
+      flex-direction: column;
+      gap: 32px;
+    }
+    .kt-f input {
+      font-size: 17px;
+    }
+    .kt-msg textarea {
+      min-height: 160px;
+      font-size: 16px;
+      padding: 16px 16px;
+    }
+    .kt-chips {
+      grid-template-columns: repeat(2, max-content);
+    }
+    .kt-chip {
+      padding: 12px 16px;
+    }
+    .kt-fbot {
+      gap: 18px;
+    }
+    .kt-send {
+      padding: 19px 20px;
+    }
+    .kt-note {
+      font-size: 12.5px;
+      text-wrap: balance;
+    }
+    .kt-x {
+      width: 15px;
+      height: 15px;
+    }
+    .kt-x::before {
+      width: 15px;
+    }
+    .kt-x::after {
+      height: 15px;
+    }
+
+    .kt-hr {
+      margin: 38px 0 34px;
+    }
+    .kt-rev {
+      max-width: none;
+      min-height: 122px;
+      padding: 20px 18px;
+    }
+    .kt-val {
+      font-size: 16px;
+    }
+
+    .kt-footer {
+      margin-top: 72px;
+    }
+    .kt-frow {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      padding-top: 22px;
+    }
+    .kt-soc {
+      flex-wrap: wrap;
+      gap: 16px 26px;
+    }
+    .kt-fleg {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  /* mobile: płytsze wejścia — TYLKO przy dozwolonym ruchu (bramka jak
+     w FAQ: reguła poza motion przesuwałaby treść przy reduce). */
+  @media (max-width: 860.98px) and (prefers-reduced-motion: no-preference) {
+    .kt.js .kt-lead,
+    .kt.js .kt-side {
+      transform: translateY(14px);
+    }
+    .kt.js .kt-frame {
+      transform: translateY(16px);
+    }
+    .kt.js .kt-frame .fld {
+      transform: translateY(12px);
+    }
+  }
+
+  /* na naprawdę szerokich ekranach nota mieści się w jednej linii */
+  @media (min-width: 1600px) {
+    .kt-note {
+      white-space: nowrap;
+      text-wrap: nowrap;
+    }
+  }
+  /* wąski desktop: mniejsze marginesy */
+  @media (min-width: 861px) and (max-width: 1440px) {
+    .kt {
+      padding-left: 70px;
+      padding-right: 70px;
+    }
+    .kt-tag {
+      left: 70px;
+    }
+    .kt-meta {
+      right: 70px;
+    }
+    .kt-ghost {
+      right: 70px;
+    }
+    .kt-grid {
+      column-gap: 70px;
+    }
+    .kt-formwrap {
+      padding: 44px 46px;
+    }
+  }
+  /* 1161–1440: dwie kolumny z gwarancją miejsca dla formularza */
+  @media (min-width: 1161px) and (max-width: 1440px) {
+    .kt-grid {
+      grid-template-columns: minmax(340px, 0.8fr) minmax(520px, 1.2fr);
+    }
+  }
+  /* 861–1160: jedna kolumna (desktopowa typografia) */
+  @media (min-width: 861px) and (max-width: 1160.98px) {
+    .kt-grid {
+      grid-template-columns: 1fr;
+      grid-template-areas: "lead" "frame" "side";
+      grid-template-rows: none;
+      row-gap: 64px;
+    }
+    .kt-frame {
+      max-width: 740px;
+    }
   }
 </style>

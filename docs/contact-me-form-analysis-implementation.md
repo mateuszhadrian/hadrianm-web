@@ -341,6 +341,10 @@ wysyłkowej, więc nie ma kolizji:
 
 ### Etap 1 — [C] Endpoint: `functions/api/kontakt.ts`
 
+> **Stan: ✅ wykonany (2026-07-11)** — endpoint + `src/lib/contact-form.ts`
+> + 15 testów unit (`tests/unit/contact-form.test.ts`); korekty wykonawcze
+> w pkt 2–3 niżej.
+
 1. **Pages Function** w katalogu `functions/` (root repo — Pages wykrywa go
    automatycznie obok statycznego `dist`; Astro pozostaje w 100% statyczne,
    bez adaptera i bez SSR):
@@ -373,6 +377,20 @@ wysyłkowej, więc nie ma kolizji:
 ### Etap 2 — [C] Sekcja `#kontakt` — port referencji do Astro
 
 Wg „Przeniesienie do Astro (skrót)" z README referencji, z decyzjami z §3:
+
+> **Stan: ✅ wykonany (2026-07-11).** Korekty wykonawcze względem planu:
+> (a) kotwica sekcji to **`#contact`** (nie `#kontakt` z referencji) — tak
+> celuje istniejący navbar (`src/i18n/nav.ts`) i CTA z FAQ; endpoint bez
+> zmian: `/api/kontakt`; (b) **bez `body.kt-static`** — FAQ też zrezygnował
+> z tego haka; tryby statyczne = klasa `.js` na sekcji + czysty CSS przy
+> reduce (wzorzec FAQ); (c) mono = token projektu `--font-mono`
+> (ui-monospace), nie Space Mono — spójnie z decyzją z sekcji FAQ;
+> (d) Turnstile ładowany leniwie (pierwszy focus w formularzu), render
+> jawny, egzekucja przy submit, timeout 90 s → token "" → serwerowe 403.
+> Zweryfikowane na preview (Playwright, PL+EN): walidacja, chipsy, pułapki
+> (submit <4 s → udawany sukces bez requestu), reveal `info@`/telefonu,
+> kopiowanie, ścieżka błędu (realny token Turnstile + 404 z preview →
+> `.kt-srv`), grep dist bez pełnych ciągów e-maila/telefonu.
 
 1. `src/components/sections/contact/Contact.astro` (+ skrypt TS wzorem
    pozostałych sekcji) — markup z `kontakt.html` bez spacera podglądu;
