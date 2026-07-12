@@ -31,6 +31,11 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
 - Flaky klatki hero desktop 05–09 (ekran telefonu + ambient, ~0.5–2%):
   mają podwyższony próg w hero.spec.ts; FAIL tam najpierw porównaj
   z przebiegiem kontrolnym, dopiero potem podejrzewaj regresję.
+- Flaky klatki hero pixel-5 00–03 (loteria maszyn runnerów GH: różne CPU →
+  inne zaokrąglenia AA serifowego akcentu przy ułamkowym DPR 2.75; ~0.35%
+  diffu, deterministycznie per maszyna): próg 0.01 w hero.spec.ts. NIE
+  regeneruj baseline'u na ten objaw — workflow trafi na inną maszynę i „nie
+  zobaczy" zmian (potwierdzone 2026-07-12); kontrola: rerun joba na main.
 - Wideo na zrzutach zawsze przez maskę (klatka wideo to loteria);
   odtwarzanie sprawdza funkcjonalnie `tests/e2e/hero-functional.spec.ts`.
 - NIE emuluj `prefers-reduced-motion: reduce` (bramka w BaseLayout = testy

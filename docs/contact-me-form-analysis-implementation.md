@@ -267,7 +267,9 @@ wysyłkowej, więc nie ma kolizji:
   okres przechowywania (korespondencja w skrzynce), prawa osoby.
 - ⚠️ Do czasu Etapu 5 link będzie prowadził w próżnię (404 na produkcji po
   merge'u sekcji). Świadomy, krótki stan przejściowy — Etap 5 powinien wejść
-  możliwie szybko po Etapie 4.
+  możliwie szybko po Etapie 4. ℹ️ **Zamknięte 2026-07-11** — podstrony
+  istnieją (Etap 5 ✅), linki celują w `/polityka-prywatnosci/` i
+  `/en/privacy-policy/`.
 
 ## 8. Plan wdrożenia — etapy
 
@@ -498,6 +500,32 @@ Na deployu preview PR-a (funkcja i sekrety Preview już działają):
 
 ### Etap 5 — [C]+[M] Polityka prywatności (NA KOŃCU, osobny branch)
 
+> **Stan: ✅ wykonany (2026-07-11)** — branch `feat/privacy-policy`. Podstrony
+> `/polityka-prywatnosci/` i `/en/privacy-policy/`; treść (9 punktów zakresu
+> §7, dane administratora z NIP i adresem) **zaakceptowana przez Mateusza**.
+> Wykonanie i korekty wykonawcze:
+> (a) treść obu języków lokalnie w `src/components/PolicyPage.astro` (nie w
+> `i18n/ui.ts`) — dokument prawny w jednym pliku, łatwy przegląd i wycofanie
+> (D7); strony to cienkie wrappery; prosty layout na tokenach, bez navbara
+> one-pagera i bez animacji;
+> (b) e-mail administratora składany w JS z fragmentów (wzorzec
+> `contact-ui.ts`) — pełny adres nie występuje w dist (kontrakt
+> antyscrapingowy w `contact.spec.ts`); pokazywany od razu po załadowaniu
+> (dokument prawny), nie za [ POKAŻ ];
+> (c) linki `contact.policyHref` w i18n celowały już we właściwe ścieżki —
+> dodano trailing slash (`/polityka-prywatnosci/`), bo canonical ma format
+> katalogowy, a Pages robiłby 308 na wariancie bez slasha;
+> (d) BONUS poza planem: globalny mechanizm „wstecz" podstron —
+> `src/scripts/back-link.ts` podpięty w `BaseLayout` (delegacja); każdy
+> `a[data-back]` robi `history.back()` gdy referrer jest same-origin
+> (natywne scroll restoration przywraca miejsce na stronie głównej), href
+> zostaje fallbackiem; przyszłe podstrony dostają to samym atrybutem;
+> (e) wyjątek `PENDING_POLICY` usunięty z `seo.spec.ts` (crawl obejmuje
+> podstrony); nowy `tests/e2e/policy.spec.ts` (meta/i18n, 9 sekcji, dane
+> administratora, mailto z JS, nawigacja + powrót z przywróceniem scrolla;
+> chromium-1920). Bez wpisów visual — strony statyczne, proste (opcja na
+> później). Pełne e2e + visual + unit zielone lokalnie.
+
 Zgodnie z D7 — **osobny branch i osobny commit**, po zakończeniu sekcji:
 
 1. [C] Podstrony `/polityka-prywatnosci` (PL) i `/en/privacy-policy` (EN)
@@ -544,5 +572,5 @@ tylko debug — trwały rekord zgłoszenia to mail w skrzynce `info@`.
 - [x] e2e + axe zielone; baseline'y visual darwin+linux zcommitowane (właściwa kolejność)
 - [x] Etap 4 przeszedł: W1 ✅ W2 ✅ (Reply-To) W3 ✅ (potwierdzenie z treścią) + ścieżka błędu ✅
 - [x] `@prod-smoke` obejmuje endpoint (honeypot-probe)
-- [ ] Etap 5: polityka prywatności PL/EN na osobnym branchu, linki podmienione
+- [x] Etap 5: polityka prywatności PL/EN na osobnym branchu, linki podmienione
 - [x] `docs/README.md` — wpis o tym dokumencie aktualny
