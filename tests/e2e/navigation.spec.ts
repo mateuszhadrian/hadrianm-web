@@ -1,7 +1,12 @@
 // Nawigacja: anchory, chowanie paska przy scrollu (desktop), menu mobilne.
 import { expect, test } from "@playwright/test";
 import { assertPreview, collectPageIssues } from "../helpers/guards";
-import { gotoReady, scrollPageTo, settle } from "../helpers/scroll";
+import {
+  expectSectionAtTop,
+  gotoReady,
+  scrollPageTo,
+  settle,
+} from "../helpers/scroll";
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
@@ -19,10 +24,9 @@ test.describe("nawigacja desktop", () => {
     await page.locator('.nav-link[href="#work"]').click();
     await settle(page);
     await expect(page).toHaveURL(/#work$/);
-    const box = await page.locator("#work").boundingBox();
-    expect(box).not.toBeNull();
-    // Skok immediate — sekcja ma zaczynać się na górze viewportu.
-    expect(Math.abs(box!.y)).toBeLessThanOrEqual(5);
+    // Skok immediate — sekcja ma siąść na górze viewportu (retry: sporadyczny
+    // brak precyzji Lenisa pod obciążeniem N warstw tła).
+    await expectSectionAtTop(page, "work");
   });
 
   test("pasek chowa się przy scrollu w dół i wraca przy scrollu w górę", async ({
@@ -65,9 +69,7 @@ test.describe("nawigacja mobile", () => {
       "data-open",
       "",
     );
-    const box = await page.locator("#contact").boundingBox();
-    expect(box).not.toBeNull();
-    expect(Math.abs(box!.y)).toBeLessThanOrEqual(5);
+    await expectSectionAtTop(page, "contact");
   });
 });
 

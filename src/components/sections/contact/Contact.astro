@@ -43,12 +43,6 @@ const socials = [
     document.currentScript?.closest("section")?.classList.add("js");
   </script>
 
-  <!-- atmosfera: ciepło od dołu, cicho u góry -->
-  <div class="kt-atmo" aria-hidden="true">
-    <span class="kt-bl b1"></span><span class="kt-bl b2"></span>
-  </div>
-  <div class="kt-mesh" aria-hidden="true"></div>
-
   <!-- chrome sekcji -->
   <div class="kt-tag">
     <span class="t-num">06</span><span class="t-sl" aria-hidden="true">/</span
@@ -286,31 +280,16 @@ const socials = [
      UWAGA: @media (861px) MUSI być równe CONTACT_DESKTOP_MIN_PX
      (contact-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
   .kt {
-    --kt-bg: #070507; /* finał wraca z panelu FAQ (#100B0D) na czerń */
     --kt-cz: cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     overflow: hidden; /* ghost-typografia nie może rozpychać strony */
-    background: var(--kt-bg);
     padding: 216px 150px 58px;
     color: var(--ink);
     font-family: var(--font-body), sans-serif;
   }
-  /* poświata finału od dołu */
-  .kt::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 210px;
-    pointer-events: none;
-    z-index: 2;
-    background: linear-gradient(
-      0deg,
-      rgba(255, 90, 71, 0.045),
-      rgba(255, 90, 71, 0)
-    );
-  }
+  /* Tło sekcji: przezroczyste — widać globalny ambient (bg-stage, wariant
+     red) sterowany crossfadem. Lokalna atmosfera (mgła/mesh) i poświata
+     finału usunięte. */
   .kt a {
     color: var(--accent);
     text-decoration: none;
@@ -346,56 +325,6 @@ const socials = [
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--faint);
-  }
-
-  /* ── atmosfera: blur blobów i blend mesha TYLKO na desktopie (niżej) —
-     na telefonach duże warstwy filter/blend głodzą rasteryzację
-     (wzorzec Oferty/Audience/FAQ). ── */
-  .kt-atmo {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    overflow: hidden;
-  }
-  .kt-bl {
-    position: absolute;
-    border-radius: 50%;
-  }
-  .kt-bl.b1 {
-    left: 31vw;
-    bottom: -26vw;
-    width: 38vw;
-    height: 38vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(214, 38, 38, 0.16) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .kt-bl.b2 {
-    right: -9vw;
-    top: -14vw;
-    width: 26vw;
-    height: 26vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(130, 20, 32, 0.14) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .kt-mesh {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3;
-    opacity: 0.45;
-    background-image: radial-gradient(
-      circle at center,
-      rgba(0, 0, 0, 0.96) 2.17px,
-      rgba(0, 0, 0, 0) 3.69px
-    );
-    background-size: 10.41px 10.41px;
   }
 
   /* ── chrome ── */
@@ -560,7 +489,8 @@ const socials = [
     min-height: 140px;
     padding: 24px 26px;
     box-shadow: inset 0 0 0 1px var(--line);
-    background: rgba(245, 240, 236, 0.015);
+    /* Solidne tło sekcji sprzed ambientu; obwódka/krzyże bez zmian. */
+    background: #070507;
     transition: box-shadow 0.25s;
   }
   .kt-rev:hover {
@@ -614,7 +544,8 @@ const socials = [
     position: relative;
     align-self: start;
     box-shadow: inset 0 0 0 1px var(--line);
-    background: rgba(245, 240, 236, 0.015);
+    /* Solidne tło sekcji sprzed ambientu; narożne krzyże/obwódka bez zmian. */
+    background: #070507;
   }
   .kt-x {
     position: absolute;
@@ -1096,17 +1027,6 @@ const socials = [
   }
   .kt-fleg .up {
     color: var(--muted);
-  }
-
-  /* desktop: blur blobów + blend mesha wracają na desktopowym GPU
-     (861px = CONTACT_DESKTOP_MIN_PX) */
-  @media (min-width: 861px) {
-    .kt-bl {
-      filter: blur(48px);
-    }
-    .kt-mesh {
-      mix-blend-mode: multiply;
-    }
   }
 
   /* ═══ WEJŚCIA — stany początkowe tylko gdy: JS działa (klasa .js na

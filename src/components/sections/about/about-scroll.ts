@@ -39,8 +39,6 @@ export function initAboutScroll(): void {
     photo: q(".om-photo"),
     photoVeil: q(".om-photo-veil"),
     photoMeta: q(".om-photo-meta"),
-    e1: q(".bl-e1"),
-    e2: q(".bl-e2"),
     chapters: qa(".om-ch"),
     final: q(".om-final"),
     finalBg: q(".om-final-bg"),
@@ -55,26 +53,13 @@ export function initAboutScroll(): void {
     !els.photo ||
     !els.photoVeil ||
     !els.photoMeta ||
-    !els.e1 ||
-    !els.e2 ||
     !els.final ||
     !els.pcount ||
     els.chapters.length !== 3
   ) {
     return;
   }
-  const {
-    stage,
-    ghost,
-    tag,
-    photoW,
-    photo,
-    photoVeil,
-    photoMeta,
-    e1,
-    e2,
-    final,
-  } = els;
+  const { stage, ghost, tag, photoW, photo, photoVeil, photoMeta, final } = els;
   const pcount = els.pcount;
 
   /* ── progres 01–04 (desktop) ── */
@@ -101,7 +86,6 @@ export function initAboutScroll(): void {
       xPercent: 5,
       filter: "blur(16px)",
     });
-    gsap.set([e1, e2], { opacity: 0.16 });
 
     const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
 
@@ -144,15 +128,6 @@ export function initAboutScroll(): void {
         duration: 0.11,
         ease: "power1.inOut",
       },
-      0.82,
-    );
-
-    /* żar: narasta z portretem, wycofuje się w finale */
-    tl.to(e1, { opacity: 0.85, duration: 0.3, ease: "power1.inOut" }, 0.3);
-    tl.to(e2, { opacity: 0.7, duration: 0.26, ease: "power1.inOut" }, 0.36);
-    tl.to(
-      [e1, e2],
-      { opacity: 0.3, duration: 0.12, ease: "power1.inOut" },
       0.82,
     );
 

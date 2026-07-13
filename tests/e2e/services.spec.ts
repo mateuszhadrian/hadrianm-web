@@ -3,7 +3,12 @@
 // i wersja EN. Choreografię scrolla weryfikuje sweep tests/visual/services.spec.ts.
 import { expect, test } from "@playwright/test";
 import { assertPreview } from "../helpers/guards";
-import { gotoReady, settle, syncLenis } from "../helpers/scroll";
+import {
+  expectSectionAtTop,
+  gotoReady,
+  settle,
+  syncLenis,
+} from "../helpers/scroll";
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
@@ -22,10 +27,9 @@ test("CTA procesu skacze do #packages (hash + pozycja)", async ({ page }) => {
   await cta.click();
   await settle(page);
   await expect(page).toHaveURL(/#packages$/);
-  const box = await page.locator("#packages").boundingBox();
-  expect(box).not.toBeNull();
-  // Skok immediate — cel ma zaczynać się na górze viewportu.
-  expect(Math.abs(box!.y)).toBeLessThanOrEqual(5);
+  // Skok immediate — cel ma siąść na górze viewportu (retry: sporadyczny brak
+  // precyzji Lenisa pod obciążeniem N warstw tła).
+  await expectSectionAtTop(page, "packages");
 });
 
 test("CTA pakietu prowadzi do #contact", async ({ page }) => {
@@ -37,9 +41,7 @@ test("CTA pakietu prowadzi do #contact", async ({ page }) => {
   await cta.click();
   await settle(page);
   await expect(page).toHaveURL(/#contact$/);
-  const box = await page.locator("#contact").boundingBox();
-  expect(box).not.toBeNull();
-  expect(Math.abs(box!.y)).toBeLessThanOrEqual(5);
+  await expectSectionAtTop(page, "contact");
 });
 
 test.describe("fallback bez JS", () => {

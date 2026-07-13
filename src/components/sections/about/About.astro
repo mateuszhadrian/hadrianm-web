@@ -51,17 +51,6 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
     document.currentScript?.closest("section")?.classList.add("js");
   </script>
   <div class="om-stage">
-    <!-- atmosfera: bazowy żar (lewy dół) + żar narastający z portretem -->
-    <div class="om-atmo" aria-hidden="true">
-      <span class="bl bl-base"></span>
-      <div class="om-ember">
-        <span class="bl bl-e1"></span>
-        <span class="bl bl-e2"></span>
-      </div>
-    </div>
-    <div class="om-vignette" aria-hidden="true"></div>
-    <div class="om-mesh" aria-hidden="true"></div>
-
     <!-- widmowa typografia w tle -->
     <div class="om-ghost" aria-hidden="true">{t("about.ghost")}</div>
 
@@ -198,105 +187,17 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
      UWAGA: breakpointy @media (861px) MUSZĄ być równe ABOUT_DESKTOP_MIN_PX
      (about-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
   .om {
-    --om-bg: #070507;
     --om-final-op: 0.59; /* widoczność zblurowanego portretu w finale (mobile) */
     --omlen: 440vh; /* długość scrolla sekcji na desktopie */
     position: relative;
-    background: var(--om-bg);
     color: var(--ink);
     font-family: var(--font-body), sans-serif;
   }
+  /* Tło sekcji: przezroczyste — widać globalny ambient (bg-stage, wariant
+     red) sterowany crossfadem. Lokalna atmosfera (żar/winieta/mesh) usunięta. */
   .om-stage {
     position: relative;
     overflow: hidden;
-    background: var(--om-bg);
-  }
-
-  /* ── atmosfera ── */
-  .om-atmo,
-  .om-ember {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-  }
-  .om-ember {
-    opacity: 1;
-    transform: scale(1.193); /* mgła 155% (zapieczętowane) */
-  }
-  .bl {
-    position: absolute;
-    border-radius: 50%;
-    /* blur żaru TYLKO na desktopie (niżej): na telefonach duże warstwy
-       filter: blur głodzą rasteryzację (analogia: flatten hero na Androidzie)
-       i destabilizują syncTouch Lenisa; miękkość daje sam radial-gradient,
-       na małym ekranie różnica jest niezauważalna. */
-  }
-  .bl-base {
-    left: -18vw;
-    bottom: -20vh;
-    width: 38vw;
-    height: 38vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(130, 20, 32, 0.3) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .bl-e1 {
-    right: -8vw;
-    top: 4vh;
-    width: 58vw;
-    height: 58vw;
-    /* Statyczne opacity (stan „po wyłonieniu") — na mobile żar w ogóle nie
-       jest animowany (płynność syncTouch), a flow no-JS/reduce dostaje ten
-       sam stonowany wygląd. Desktopowa scena i tak nadpisuje inline (gsap). */
-    opacity: 0.65;
-    background: radial-gradient(
-      closest-side,
-      rgba(214, 38, 38, 0.52) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .bl-e2 {
-    right: -4vw;
-    bottom: -24vh;
-    width: 36vw;
-    height: 36vw;
-    opacity: 0.55;
-    background: radial-gradient(
-      closest-side,
-      rgba(255, 90, 71, 0.26) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .om-vignette {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2;
-    background: radial-gradient(
-      135% 100% at 50% 45%,
-      rgba(0, 0, 0, 0) 52%,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-  .om-mesh {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3;
-    /* BEZ mix-blend-mode: multiply z czystej czerni (rgba(0,0,0,α)) daje
-       wynik identyczny ze zwykłym kryciem (backdrop×(1−α)), a blend wymusza
-       kompozycję offscreen całej ~2400px sekcji na mobile. Desktop dostaje
-       multiply niżej — tam odpowiada 1:1 referencji i nic nie kosztuje. */
-    opacity: 0.5;
-    background-image: radial-gradient(
-      circle at center,
-      rgba(0, 0, 0, 0.96) 2.17px,
-      rgba(0, 0, 0, 0) 3.69px
-    );
-    background-size: 10.41px 10.41px;
   }
 
   /* ── ghost „o mnie" ── */
@@ -608,18 +509,10 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
     .om-photo-wrap {
       margin-inline: 0;
     }
-    /* Pełna atmosfera 1:1 z referencją — desktopowe GPU udźwignie blur
-       i blend; na mobile są zdjęte (patrz komentarze wyżej). */
-    .bl {
-      filter: blur(48px);
-    }
-    .om-mesh {
-      mix-blend-mode: multiply;
-    }
   }
 
-  /* Stany docelowe przy reduced-motion realizuje bazowy CSS (statyczny żar
-     przy .bl-e1/.bl-e2, veil opacity: 0) — bez dodatkowych reguł. */
+  /* Stany docelowe przy reduced-motion realizuje bazowy CSS
+     (veil opacity: 0) — bez dodatkowych reguł. */
 
   /* ═══ UKŁAD DESKTOP: przypięta scena (sticky) + stany scrolla ═══
      Wyłącznie przy dozwolonym ruchu i działającym JS (klasa .js) —
