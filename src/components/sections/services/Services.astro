@@ -156,7 +156,6 @@ const extras = [
           <span class="sf">{t("services.pk.headAccent")}</span>
         </h2>
       </div>
-      <div class="pk-note">{t("services.pk.note")}</div>
     </div>
 
     <div class="pk-grid">
@@ -628,26 +627,20 @@ const extras = [
     -webkit-text-fill-color: transparent;
     color: transparent;
   }
-  .pk-note {
-    font-family: var(--font-mono), monospace;
-    font-size: 10.5px;
-    letter-spacing: 0.22em;
-    color: var(--faint);
-    text-transform: uppercase;
-    padding-bottom: 12px;
-    text-align: right;
-    white-space: pre-line; /* łamanie z i18n (\n) — jak <br> w referencji */
-  }
-
   .pk-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 60px;
+    /* węższa szczelina = szersze karty */
+    gap: 40px;
   }
   .pk-col {
     position: relative;
     border-top: 2px solid rgba(245, 240, 236, 0.3);
-    padding: 165px 8px 0;
+    /* Wypełniona karta: oddech po bokach; dół = odstęp CTA→divider nad nim
+       (.pk-cta padding-top 20px), by domknięcie było symetryczne. */
+    padding: 165px 24px 20px;
+    /* Solidne tło sekcji sprzed ambientu — karta „na tle ambientu”. */
+    background: #070507;
     transition: transform 0.35s ease;
   }
   .pk-col:hover {
@@ -811,7 +804,8 @@ const extras = [
     padding: 34px 46px;
     border: 1px dashed rgba(245, 240, 236, 0.28);
     border-radius: 3px;
-    background: rgba(245, 240, 236, 0.015);
+    /* Lekko przezroczyste tło (ambient prześwituje odrobinę); dashed border zostaje. */
+    background: rgba(7, 5, 7, 0.7);
     transition: border-color 0.35s;
   }
   .pk-dedy:hover {
@@ -1048,10 +1042,6 @@ const extras = [
     }
     .pk-head h2 {
       font-size: 44px;
-    }
-    .pk-note {
-      text-align: left;
-      padding-bottom: 0;
     }
     .pk-grid {
       grid-template-columns: 1fr;
