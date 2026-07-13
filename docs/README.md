@@ -41,7 +41,7 @@
 | `analiza-android-obudowy-3d-glodza-rasteryzacje.md` | Wdrożone — mobile jest płaskie (`perspective: none`, `transform-style: flat`, bez ekstruzji) |
 | `on_mobile_devices_video_analysis.md` | Wdrożone 2026-06-23 + późniejsze zmiany (ciągłe odtwarzanie, spłaszczenie, `--k`) |
 | `drewelomet-anim-analysis.md` | Plan wdrożony; nieaktualne: `normalizeScroll` (usunięty), sekcja `Problem` (nie powstała) |
-| `analiza-tlo-hero-animowane-chmury.md` | Wdrożone jako `AmbientBackground.astro` (nie w `Hero.astro`); breakpoint tła 768 px ≠ próg sceny 760 px |
+| `analiza-tlo-hero-animowane-chmury.md` | Wdrożone jako `AmbientBackground.astro` (nie w `Hero.astro`); breakpoint tła 768 px ≠ próg sceny 760 px; od 2026-07-13 warianty red/blue (`ambient-palette.ts`) |
 | `analiza-refactor-hero-podzial-i-design-system.md` | Plan wykonany i pogłębiony przez „odkruszenie"; inne finalne nazwy faz |
 
 ## 🗄️ Historyczne — nie opierać na nich ustaleń
