@@ -1,5 +1,26 @@
 ---
+// Tło ambient w dwóch wariantach kolorystycznych (red/blue) — mechanika
+// (gradienty, animacje, kropki, winieta) jest wspólna, różnią się wyłącznie
+// kolory z ambient-palette.ts (jedyne źródło prawdy, także dla skryptu
+// capture-ambient-bg.mjs generującego statyczne tekstury mobile).
+import { AMBIENT_VARIANTS, type AmbientVariantName } from "./ambient-palette";
 
+interface Props {
+  variant: AmbientVariantName;
+}
+const { variant } = Astro.props;
+const v = AMBIENT_VARIANTS[variant];
+
+// Zmienne CSS na elemencie root: para oklch/rgb per kolor — o tym, która
+// trafia do gradientów, decyduje @supports w arkuszu (zmienne-aliasy --c-*).
+const vars: Record<string, string> = {
+  ink: v.ink,
+  mobileBg: `url("${v.mobileImage}")`,
+};
+for (const [key, color] of Object.entries(v.colors)) {
+  vars[`${key}Ok`] = color.oklch;
+  vars[`${key}Rgb`] = color.rgb;
+}
 ---
 
 <div class="ambient-bg" aria-hidden="true">
@@ -10,13 +31,23 @@
   <div class="ambient-bg__dots"></div>
 </div>
 
-<style>
+<style define:vars={vars}>
   .ambient-bg {
     position: absolute;
     inset: 0;
     background: #000000;
     overflow: clip;
     isolation: isolate;
+    /* Aliasy kolorów: domyślnie oklch; przeglądarki bez oklch dostają rgb
+       w @supports niżej. Gradienty używają WYŁĄCZNIE --c-*. */
+    --c-a1: var(--a1Ok);
+    --c-a2: var(--a2Ok);
+    --c-a3: var(--a3Ok);
+    --c-b1: var(--b1Ok);
+    --c-b2: var(--b2Ok);
+    --c-b3: var(--b3Ok);
+    --c-c1: var(--c1Ok);
+    --c-d1: var(--d1Ok);
   }
 
   .ambient-bg::after {
@@ -25,7 +56,7 @@
     inset: 0;
     z-index: 3;
     pointer-events: none;
-    box-shadow: inset 0 0 90px 14px #070506;
+    box-shadow: inset 0 0 90px 14px var(--ink);
   }
 
   .ambient-bg__clouds {
@@ -48,21 +79,9 @@
     bottom: -10%;
     left: -15%;
     background:
-      radial-gradient(
-        55% 65% at 35% 65%,
-        oklch(0.395 0.143 21.99),
-        transparent 72%
-      ),
-      radial-gradient(
-        50% 45% at 62% 40%,
-        oklch(0.3 0.07 14 / 0.5),
-        transparent 78%
-      ),
-      radial-gradient(
-        34% 42% at 18% 88%,
-        oklch(0.42 0.09 18 / 0.65),
-        transparent 68%
-      );
+      radial-gradient(55% 65% at 35% 65%, var(--c-a1), transparent 72%),
+      radial-gradient(50% 45% at 62% 40%, var(--c-a2), transparent 78%),
+      radial-gradient(34% 42% at 18% 88%, var(--c-a3), transparent 68%);
     animation: drift-a 2s ease-in-out infinite alternate;
   }
 
@@ -72,21 +91,9 @@
     width: 80%;
     height: 94%;
     background:
-      radial-gradient(
-        62% 55% at 65% 38%,
-        oklch(0.686 0.204 29.765),
-        transparent 74%
-      ),
-      radial-gradient(
-        48% 50% at 38% 58%,
-        oklch(0.3 0.07 22 / 0.45),
-        transparent 80%
-      ),
-      radial-gradient(
-        30% 38% at 85% 18%,
-        oklch(0.43 0.092 28 / 0.6),
-        transparent 66%
-      );
+      radial-gradient(62% 55% at 65% 38%, var(--c-b1), transparent 74%),
+      radial-gradient(48% 50% at 38% 58%, var(--c-b2), transparent 80%),
+      radial-gradient(30% 38% at 85% 18%, var(--c-b3), transparent 66%);
     animation: drift-b 2s ease-in-out infinite alternate;
   }
 
@@ -97,11 +104,7 @@
     width: 60%;
     height: 50%;
     will-change: transform;
-    background: radial-gradient(
-      closest-side,
-      oklch(0.468 0.147 21.133 / 0.85),
-      transparent 70%
-    );
+    background: radial-gradient(closest-side, var(--c-c1), transparent 70%);
     animation: drift-c 3s ease-in-out infinite alternate;
   }
 
@@ -112,11 +115,7 @@
     width: 60%;
     height: 50%;
     will-change: transform;
-    background: radial-gradient(
-      closest-side,
-      oklch(0.42 0.091 26.222 / 0.68),
-      transparent 70%
-    );
+    background: radial-gradient(closest-side, var(--c-d1), transparent 70%);
     animation: drift-c 4s ease-in-out infinite alternate;
   }
 
@@ -150,7 +149,11 @@
     inset: 0;
     z-index: 2;
     pointer-events: none;
-    background-image: radial-gradient(circle, #070506 0 1.1px, transparent 4px);
+    background-image: radial-gradient(
+      circle,
+      var(--ink) 0 1.1px,
+      transparent 4px
+    );
     background-size: 10px 9px;
     -webkit-mask-image: radial-gradient(
       ellipse 100% 95% at 50% 45%,
@@ -174,19 +177,27 @@
   }
 
   /* Mobile: zamiast czterech animowanych, kompozytowanych warstw gradientowych
-     + maski kropek — jedna płaska, statyczna tekstura. Zero animacji:
-     minimalne GPU/CPU. Wygląd identyczny (grafika = render tych warstw).
-     Regeneracja: node scripts/capture-ambient-bg.mjs */
+     + maski kropek — jedna płaska, statyczna tekstura (per wariant). Zero
+     animacji: minimalne GPU/CPU. Wygląd identyczny (grafika = render tych
+     warstw). Regeneracja: node scripts/capture-ambient-bg.mjs */
   @media (max-width: 768px) {
     .ambient-bg {
       background:
-        center / cover no-repeat url("/ambient-bg-mobile.webp"),
+        center / cover no-repeat var(--mobileBg),
         #000000;
     }
     .ambient-bg::after,
     .ambient-bg__clouds,
     .ambient-bg__dots {
       display: none;
+    }
+    /* Warstwa nieaktywna nie pobiera tekstury (od rozdziału red/blue to
+       osobne pliki — eager fetch obu psuł budżet LCP mobile). Obraz dociąga
+       się, gdy pre-warm crossfade'u zdejmie is-inactive ~1 viewport przed
+       fade-in; do tego czasu warstwa i tak ma opacity 0, a przenikanie
+       idzie przez czerń. */
+    :global(.bg-layer.is-inactive) .ambient-bg {
+      background-image: none;
     }
   }
 
@@ -197,48 +208,20 @@
     animation-play-state: paused;
   }
 
+  /* Fallback bez oklch: te same gradienty, kolory rgb z palety (przeliczone
+     z oklch przez Chromium). Uwaga: kolory MUSZĄ iść przez aliasy --c-*,
+     bo var() z niewspieranym oklch nie cofa się do wcześniejszej deklaracji
+     background (IACVT) — podmieniamy więc źródło aliasu, nie deklaracje. */
   @supports not (color: oklch(0 0 0)) {
-    .ambient-bg__clouds::before {
-      background:
-        radial-gradient(55% 65% at 35% 65%, rgb(130, 20, 32), transparent 72%),
-        radial-gradient(
-          50% 45% at 62% 40%,
-          rgba(75, 29, 35, 0.5),
-          transparent 78%
-        ),
-        radial-gradient(
-          34% 42% at 18% 88%,
-          rgba(118, 54, 58, 0.65),
-          transparent 68%
-        );
-    }
-    .ambient-bg__clouds::after {
-      background:
-        radial-gradient(62% 55% at 65% 38%, rgb(255, 90, 71), transparent 74%),
-        radial-gradient(
-          48% 50% at 38% 58%,
-          rgba(75, 29, 29, 0.45),
-          transparent 80%
-        ),
-        radial-gradient(
-          30% 38% at 85% 18%,
-          rgba(122, 58, 50, 0.6),
-          transparent 66%
-        );
-    }
-    .ambient-bg__cloud-c {
-      background: radial-gradient(
-        closest-side,
-        rgba(156, 44, 52, 0.85),
-        transparent 70%
-      );
-    }
-    .ambient-bg__cloud-d {
-      background: radial-gradient(
-        closest-side,
-        rgba(119, 55, 50, 0.68),
-        transparent 70%
-      );
+    .ambient-bg {
+      --c-a1: var(--a1Rgb);
+      --c-a2: var(--a2Rgb);
+      --c-a3: var(--a3Rgb);
+      --c-b1: var(--b1Rgb);
+      --c-b2: var(--b2Rgb);
+      --c-b3: var(--b3Rgb);
+      --c-c1: var(--c1Rgb);
+      --c-d1: var(--d1Rgb);
     }
   }
 </style>
