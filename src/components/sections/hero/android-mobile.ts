@@ -32,7 +32,7 @@ export interface MobilePhase3Params {
   /** Koniec przytrzymania / start zmniejszania. */
   holdEnd: number;
   videos: MobileVideoSpec[];
-  /** Pasek postępu (może nie istnieć w DOM); kulkę pozycjonuje CSS przez --p. */
+  /** Pasek postępu (może nie istnieć w DOM); romb i wypełnienie pozycjonuje CSS przez --p. */
   progressEl: HTMLElement | null;
   /** Pełny zakres paska postępu (vh od górnej krawędzi #hero). */
   barStartVh: number;
