@@ -191,6 +191,14 @@ for (const [key, color] of Object.entries(v.colors)) {
     .ambient-bg__dots {
       display: none;
     }
+    /* Warstwa nieaktywna nie pobiera tekstury (od rozdziału red/blue to
+       osobne pliki — eager fetch obu psuł budżet LCP mobile). Obraz dociąga
+       się, gdy pre-warm crossfade'u zdejmie is-inactive ~1 viewport przed
+       fade-in; do tego czasu warstwa i tak ma opacity 0, a przenikanie
+       idzie przez czerń. */
+    :global(.bg-layer.is-inactive) .ambient-bg {
+      background-image: none;
+    }
   }
 
   :global(.bg-layer.is-inactive) .ambient-bg__clouds::before,
