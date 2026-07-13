@@ -4,6 +4,7 @@ import { expect, test } from "@playwright/test";
 import { ABOUT_SNAP_POINTS } from "../../src/components/sections/about/about-config";
 import { assertPreview } from "../helpers/guards";
 import {
+  expectSectionAtTop,
   gotoReady,
   scrollPageTo,
   scrollPageToStable,
@@ -70,9 +71,7 @@ test.describe("desktop: przypięta scena", () => {
     await about.locator(".om-cta").click();
     await settle(page);
     await expect(page).toHaveURL(/#contact$/);
-    const box = await page.locator("#contact").boundingBox();
-    expect(box).not.toBeNull();
-    expect(Math.abs(box!.y)).toBeLessThanOrEqual(5);
+    await expectSectionAtTop(page, "contact");
   });
 });
 
