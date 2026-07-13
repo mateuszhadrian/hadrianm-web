@@ -32,7 +32,9 @@ html {
   /* foreground / brand */
   --ink: #f5f0ec;
   --muted: rgba(245, 240, 236, 0.58);
-  --faint: rgba(245, 240, 236, 0.34);
+  /* 0.5 = ~4.8:1 na czerni/#070507 → drobny druk (metki, kickery, liczniki)
+     spełnia WCAG AA. Podniesione z 0.34 (2.69:1) po podmianie teł na ambient. */
+  --faint: rgba(245, 240, 236, 0.5);
   --line: rgba(245, 240, 236, 0.14);
 
   /* accent */

@@ -8,13 +8,21 @@ import { gotoReady } from "../helpers/scroll";
 
 const A11Y_PROJECTS = ["chromium-1920", "chromium-pixel-5"];
 
-// RATCHET — znane naruszenia stanu wyjściowego (2026-07-07): przygaszone
-// etykiety na tokenie --faint (#535250 na czerni, kontrast 2.69:1) to świadomy
-// wybór designu. Poprawa = zmiana wyglądu → decyzja Mateusza. Test bramkuje
-// wyłącznie NOWE naruszenia; usunięcie wpisu stąd wolno tylko po realnej
-// poprawie kontrastu (wtedy ratchet się zacieśnia).
+// RATCHET — Test bramkuje wyłącznie NOWE naruszenia; usunięcie wpisu stąd
+// wolno tylko po realnej poprawie kontrastu (wtedy ratchet się zacieśnia).
+//
+// 2026-07-13: token --faint podniesiony 0.34→0.5 (2.69:1 → ~4.8:1), więc cały
+// drobny druk (metki/kickery/liczniki, w tym dawne .work__eyebrow/.rz-card__year)
+// spełnia AA — te wpisy USUNIĘTE (ratchet zacieśniony).
+//
+// Pozostają .of-w / .acc: słowa akapitów intro Oferty w stanie startowym
+// animacji „czytania scrollem” (opacity 0.14, akcent .acc 0.24). Efekt istnieje
+// TYLKO przy prefers-reduced-motion: no-preference (reduce/no-JS = pełny
+// kontrast od razu), a czytnik ekranu ma pełny tekst zawsze; słowa rozjaśniają
+// się do --ink/--accent przy scrollu. Podniesienie krycia do AA (~0.49)
+// zabiłoby efekt → świadomy wyjątek. (.acc występuje tylko w tym intro.)
 const KNOWN_VIOLATIONS: Record<string, RegExp[]> = {
-  "color-contrast": [/\.work__eyebrow/, /\.rz-card__year/],
+  "color-contrast": [/\.of-w/, /\.acc\b/],
 };
 
 function isKnown(ruleId: string, target: string): boolean {
