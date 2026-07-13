@@ -21,11 +21,29 @@ const t = useTranslations(lang);
 
 <BaseLayout title={t("meta.title")} lang={lang}>
   <div class="bg-stage" aria-hidden="true">
+    <!-- Jedna warstwa ambientu na sekcję; crossfade (bg-crossfade.ts) sam
+         podłącza każdą warstwę po [data-bg] do #id sekcji i liczy jej opacity
+         ze scrolla. Naprzemienny rytm kolorów: red → blue → red → … -->
     <div class="bg-layer" data-bg="hero">
+      <AmbientBackground variant="red" />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="audience">
+      <AmbientBackground variant="blue" />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="services">
       <AmbientBackground variant="red" />
     </div>
     <div class="bg-layer is-inactive" data-bg="work">
       <AmbientBackground variant="blue" />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="about">
+      <AmbientBackground variant="red" />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="faq">
+      <AmbientBackground variant="blue" />
+    </div>
+    <div class="bg-layer is-inactive" data-bg="contact">
+      <AmbientBackground variant="red" />
     </div>
   </div>
 

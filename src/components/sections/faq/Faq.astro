@@ -52,12 +52,6 @@ const faqSchema = JSON.stringify({
 
   <script type="application/ld+json" set:html={faqSchema} is:inline />
 
-  <!-- atmosfera: mgła (statyczna, cichsza niż w Ofercie) + mesh -->
-  <div class="fq-atmo" aria-hidden="true">
-    <span class="fq-bl b1"></span><span class="fq-bl b2"></span>
-  </div>
-  <div class="fq-mesh" aria-hidden="true"></div>
-
   <!-- chrome sekcji -->
   <div class="fq-tag">
     <span class="t-num">05</span><span class="t-sl" aria-hidden="true">/</span
@@ -155,33 +149,15 @@ const faqSchema = JSON.stringify({
      UWAGA: breakpointy @media (861px) MUSZĄ być równe FAQ_DESKTOP_MIN_PX
      (faq-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
   .fq {
-    --fq-panel: #100b0d; /* panel — o stopień cieplejszy niż tło strony */
     --fq-cz: cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     overflow: hidden; /* ghost-typografia nie może rozpychać strony */
-    background: var(--fq-panel);
-    border-top: 1px solid var(--line);
-    border-bottom: 1px solid var(--line);
     padding: 216px 150px 130px;
     color: var(--ink);
     font-family: var(--font-body), sans-serif;
   }
-  /* szew: gasnąca poświata akcentu pod górną krawędzią panelu */
-  .fq::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    height: 150px;
-    pointer-events: none;
-    z-index: 2;
-    background: linear-gradient(
-      180deg,
-      rgba(255, 90, 71, 0.05),
-      rgba(255, 90, 71, 0)
-    );
-  }
+  /* Tło sekcji: przezroczyste — widać globalny ambient (bg-stage, wariant
+     blue) sterowany crossfadem. Lokalny panel, bordery, szew i mgła usunięte. */
   .fq a {
     text-decoration: none;
   }
@@ -196,57 +172,6 @@ const faqSchema = JSON.stringify({
   .fq-link:focus-visible {
     outline: 1px solid var(--accent);
     outline-offset: 4px;
-  }
-
-  /* ── atmosfera: mgła cichsza niż w Ofercie, statyczna ──
-     blur blobów i mix-blend-mode mesha TYLKO na desktopie (niżej): na
-     telefonach duże warstwy filter/blend głodzą rasteryzację i
-     destabilizują syncTouch Lenisa (wzorzec Oferty/Audience). */
-  .fq-atmo {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-    overflow: hidden;
-  }
-  .fq-bl {
-    position: absolute;
-    border-radius: 50%;
-  }
-  .fq-bl.b1 {
-    right: -14vw;
-    top: -18vw;
-    width: 46vw;
-    height: 46vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(214, 38, 38, 0.2) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .fq-bl.b2 {
-    left: -13vw;
-    bottom: -16vw;
-    width: 40vw;
-    height: 40vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(130, 20, 32, 0.18) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .fq-mesh {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3;
-    opacity: 0.42;
-    background-image: radial-gradient(
-      circle at center,
-      rgba(0, 0, 0, 0.96) 2.17px,
-      rgba(0, 0, 0, 0) 3.69px
-    );
-    background-size: 10.41px 10.41px;
   }
 
   /* ── chrome sekcji ── */
@@ -504,17 +429,6 @@ const faqSchema = JSON.stringify({
   }
   .fq-link:hover .arr {
     transform: translateX(6px);
-  }
-
-  /* desktop: blur blobów + blend mesha wracają na desktopowym GPU
-     (861px = FAQ_DESKTOP_MIN_PX) */
-  @media (min-width: 861px) {
-    .fq-bl {
-      filter: blur(48px);
-    }
-    .fq-mesh {
-      mix-blend-mode: multiply;
-    }
   }
 
   /* ═══ WEJŚCIA — stany początkowe tylko gdy: JS działa (klasa .js na

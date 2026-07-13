@@ -41,8 +41,6 @@ export function initAudienceScroll(): void {
     cards: qa(".dk-card"),
     cap: q(".dk-cap"),
     captext: q(".dk-cap .captext"),
-    e1: q(".bl-e1"),
-    e2: q(".bl-e2"),
     chapters: qa(".dk-ch"),
     ticks: qa(".dk-progress .ticks i"),
     pcount: q(".dk-progress .pcount"),
@@ -54,8 +52,6 @@ export function initAudienceScroll(): void {
     !els.backs ||
     !els.cap ||
     !els.captext ||
-    !els.e1 ||
-    !els.e2 ||
     !els.pcount ||
     !els.tag ||
     els.digits.length !== 3 ||
@@ -65,7 +61,7 @@ export function initAudienceScroll(): void {
   ) {
     return;
   }
-  const { stage, ghost, backs, cap, captext, e1, e2, tag } = els;
+  const { stage, ghost, backs, cap, captext, tag } = els;
   const pcount = els.pcount;
 
   /* Podpisy „DOWÓD x/03" pod stosem — teksty i18n niesie markup
@@ -119,12 +115,10 @@ export function initAudienceScroll(): void {
     gsap.set(els.digits, { autoAlpha: 0 });
     gsap.set(backs, { autoAlpha: 0.65, filter: "blur(5px)" });
     gsap.set(cap, { autoAlpha: 0 });
-    gsap.set(e1, { opacity: 0.38 });
-    gsap.set(e2, { opacity: 0.2 });
 
     const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
 
-    /* intro schodzi, talia znika, mgła narasta */
+    /* intro schodzi, talia znika */
     tl.to(
       chs[0],
       { autoAlpha: 0, y: -44, duration: 0.05, ease: "power2.in" },
@@ -136,8 +130,6 @@ export function initAudienceScroll(): void {
       { autoAlpha: 0, scale: 0.96, duration: 0.06, ease: "power1.inOut" },
       0.11,
     );
-    tl.to(e1, { opacity: 0.85, duration: 0.25, ease: "power1.inOut" }, 0.1);
-    tl.to(e2, { opacity: 0.65, duration: 0.2, ease: "power1.inOut" }, 0.14);
 
     /* karta 1 — efekt WOW */
     tl.to(
@@ -293,7 +285,6 @@ export function initAudienceScroll(): void {
       { yPercent: -1.6, rotation: -1.5, duration: 0.09, ease: "power1.inOut" },
       0.88,
     );
-    tl.to([e1, e2], { opacity: 0.3, duration: 0.1, ease: "power1.inOut" }, 0.9);
 
     /* Testowy wyłącznik snapa (?nosnap — wzorzec About): programowy scroll
        w testach przegrywa na wolnych runnerach CI wyścig ze snapem.

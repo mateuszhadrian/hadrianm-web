@@ -78,17 +78,6 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
     document.currentScript?.closest("section")?.classList.add("js");
   </script>
   <div class="dk-stage">
-    <!-- atmosfera: bazowy żar (lewy dół) + żar narastający z kartami -->
-    <div class="dk-atmo" aria-hidden="true">
-      <span class="bl bl-base"></span>
-      <div class="dk-ember">
-        <span class="bl bl-e1"></span>
-        <span class="bl bl-e2"></span>
-      </div>
-    </div>
-    <div class="dk-vignette" aria-hidden="true"></div>
-    <div class="dk-mesh" aria-hidden="true"></div>
-
     <!-- widmowa typografia: napis intro + cyfry 1/2/3 (desktop) -->
     <div class="dk-ghostintro" aria-hidden="true">{t("audience.ghost")}</div>
     <div class="dk-digitwrap" aria-hidden="true">
@@ -222,97 +211,20 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
      UWAGA: breakpointy @media (861px) MUSZĄ być równe AUDIENCE_DESKTOP_MIN_PX
      (audience-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
   .dk {
-    --dk-bg: #070507;
     --dklen: 700vh; /* długość jazdy przypiętej sceny (desktop) */
     --dkcw: min(36.5vw, 700px); /* szerokość karty na stosie */
     --rk: 0.12; /* zaokrąglenia okien/UI: 0 = ostre, 1 = pełne */
     --rkp: 0.9px; /* promień „pilli" (wyliczone: pow(--rk, 2.2) × 99px) */
     --mkch: 32px; /* wysokość paska okna przeglądarki (chrome) */
     position: relative;
-    background: var(--dk-bg);
     color: var(--ink);
     font-family: var(--font-body), sans-serif;
   }
+  /* Tło sekcji: przezroczyste — widać globalny ambient (bg-stage, wariant
+     blue) sterowany crossfadem. Lokalna atmosfera (mgła/winieta/mesh) usunięta. */
   .dk-stage {
     position: relative;
     overflow: hidden;
-    background: var(--dk-bg);
-  }
-
-  /* ── atmosfera: bloby czerwonej mgły + winieta + siatka kropek ── */
-  .dk-atmo,
-  .dk-ember {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 1;
-  }
-  .bl {
-    position: absolute;
-    border-radius: 50%;
-    /* blur żaru TYLKO na desktopie (niżej): na telefonach duże warstwy
-       filter: blur głodzą rasteryzację i destabilizują syncTouch Lenisa;
-       miękkość daje sam radial-gradient (wzorzec About). */
-  }
-  .bl-base {
-    left: -18vw;
-    bottom: -20vh;
-    width: 38vw;
-    height: 38vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(130, 20, 32, 0.3) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .bl-e1 {
-    right: -10vw;
-    top: 0;
-    width: 56vw;
-    height: 56vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(214, 38, 38, 0.52) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .bl-e2 {
-    right: 4vw;
-    bottom: -26vh;
-    width: 36vw;
-    height: 36vw;
-    background: radial-gradient(
-      closest-side,
-      rgba(255, 90, 71, 0.26) 0%,
-      rgba(0, 0, 0, 0) 72%
-    );
-  }
-  .dk-vignette {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 2;
-    background: radial-gradient(
-      135% 100% at 50% 45%,
-      rgba(0, 0, 0, 0) 52%,
-      rgba(0, 0, 0, 0.55) 100%
-    );
-  }
-  .dk-mesh {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-    z-index: 3;
-    /* mix-blend-mode: multiply tylko na desktopie (niżej) — z czystej czerni
-       daje wynik identyczny ze zwykłym kryciem, a blend wymusza kompozycję
-       offscreen całej sekcji na mobile (wzorzec About). */
-    opacity: 0.5;
-    background-image: radial-gradient(
-      circle at center,
-      rgba(0, 0, 0, 0.96) 2.17px,
-      rgba(0, 0, 0, 0) 3.69px
-    );
-    background-size: 10.41px 10.41px;
   }
 
   /* ── widmowa typografia: napis intro + cyfry 1/2/3 ── */
@@ -627,12 +539,6 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
   @media (min-width: 861px) {
     .dk-stage {
       padding: 96px clamp(26px, 7vw, 120px) 84px;
-    }
-    .bl {
-      filter: blur(48px);
-    }
-    .dk-mesh {
-      mix-blend-mode: multiply;
     }
   }
 
