@@ -26,6 +26,9 @@ jobs:
   e2e:
     needs: quality
     runs-on: ubuntu-latest
+    # Normalny czas joba: ~13 min (install z cache 1–3 min + e2e + visual).
+    # Backstop na zawieszenia infrastruktury (apt/CDN wisiały >1h, 2026-07-13).
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -50,7 +53,10 @@ jobs:
       # potrzebne — Playwright bierze zależności z repozytoriów Ubuntu.
       - name: Wyłącz feedy packages.microsoft.com (flaky)
         run: sudo bash -c 'grep -rl packages.microsoft.com /etc/apt/sources.list.d/ | xargs -r rm -f'
+      # Z cache 1–3 min; zimny cache (bump Playwrighta) do ~6 min. Dłużej =
+      # zawieszony apt/CDN — lepiej ubić i zrobić rerun niż czekać godzinę.
       - run: pnpm exec playwright install --with-deps chromium webkit firefox
+        timeout-minutes: 10
       - run: pnpm test:e2e
       # Testy wizualne: baseline'y *-linux.png w repo (aktualizacja TYLKO
       # przez workflow update-visual-baselines.yml — patrz .claude/rules/testing.md)
