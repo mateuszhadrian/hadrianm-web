@@ -12,6 +12,8 @@ import "@fontsource/space-mono/latin-400.css";
 
 import "@/styles/global.css";
 
+import Toast from "@/components/ui/toast/Toast.astro";
+
 // Preload głównego kroju above-the-fold (Archivo latin) — skraca okno
 // font-display:swap (mniejszy „przeskok" z fontu systemowego). Import ?url
 // zamiast hardkodu: hash pliku woff2 zmienia się co build.
@@ -66,6 +68,7 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
   </head>
   <body>
     <slot />
+    <Toast />
     <script>
       // Lenis ładowany dynamicznie przy dozwolonym ruchu (config dobiera sam).
       if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {

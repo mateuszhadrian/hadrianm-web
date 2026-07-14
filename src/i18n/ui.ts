@@ -240,6 +240,12 @@ export const ui = {
     "contact.doneP":
       "Odezwę się najpóźniej w ciągu 24 godzin w dni robocze — zwykle znacznie szybciej.",
     "contact.again": "[ Wyślij kolejną ]",
+    "contact.toastValTitle": "Uzupełnij formularz",
+    "contact.toastValMsg": "Sprawdź zaznaczone pola i spróbuj ponownie.",
+    "contact.toastErrTitle": "Nie udało się wysłać",
+    "contact.toastErrMsg": "Sprawdź połączenie i spróbuj ponownie.",
+    "contact.toastOkTitle": "Wiadomość wysłana",
+    "contact.toastOkMsg": "Odezwę się w ciągu 24h w dni robocze.",
     "contact.policyHref": "/polityka-prywatnosci/",
     "contact.footPolicy": "Polityka prywatności",
     "contact.footUp": "Do góry ↑",
@@ -475,6 +481,13 @@ export const ui = {
     "contact.doneP":
       "I'll get back to you within 24 hours on business days — usually much sooner.",
     "contact.again": "[ Send another ]",
+    "contact.toastValTitle": "Check the form",
+    "contact.toastValMsg":
+      "Please review the highlighted fields and try again.",
+    "contact.toastErrTitle": "Sending failed",
+    "contact.toastErrMsg": "Check your connection and try again.",
+    "contact.toastOkTitle": "Message sent",
+    "contact.toastOkMsg": "I'll get back to you within 24h on business days.",
     "contact.policyHref": "/en/privacy-policy/",
     "contact.footPolicy": "Privacy policy",
     "contact.footUp": "Back to top ↑",

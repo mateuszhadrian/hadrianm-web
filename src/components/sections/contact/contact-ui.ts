@@ -9,6 +9,7 @@
 // Teksty UI (etykiety [ KOPIUJ ] / „Wysyłam…") przychodzą przez
 // data-atrybuty z Contact.astro — moduł nie zna i18n.
 import { EMAIL_RE, MESSAGE_MIN, MIN_FILL_MS } from "@/lib/contact-form";
+import { toast } from "@/components/ui/toast/toast";
 import {
   CONTACT_ENDPOINT,
   TURNSTILE_SITE_KEY,
@@ -143,6 +144,17 @@ function initForm(section: HTMLElement): void {
     return;
   }
 
+  /* Teksty toastów (PL/EN) przychodzą z data-* na formularzu — moduł nie
+     zna i18n (ten sam wzorzec co etykiety przycisku). */
+  const tstr = {
+    valTitle: form.dataset.toastValTitle ?? "",
+    valMsg: form.dataset.toastValMsg ?? "",
+    errTitle: form.dataset.toastErrTitle ?? "",
+    errMsg: form.dataset.toastErrMsg ?? "",
+    okTitle: form.dataset.toastOkTitle ?? "",
+    okMsg: form.dataset.toastOkMsg ?? "",
+  };
+
   /* honeypot jest readonly (autofill Chrome'a nie wypełnia readonly —
      naprawa incydentu z preview, patrz komentarz w Contact.astro); focus
      zdejmuje blokadę, żeby bot piszący „po ludzku" nadal się łapał */
@@ -251,6 +263,8 @@ function initForm(section: HTMLElement): void {
     frame!
       .querySelector<HTMLElement>(".kt-done h3")
       ?.focus({ preventScroll: true });
+    // Toast success obok panelu potwierdzenia (panel = główne potwierdzenie).
+    toast.success(tstr.okMsg, { title: tstr.okTitle });
   }
 
   async function handleSubmit(): Promise<void> {
@@ -264,6 +278,12 @@ function initForm(section: HTMLElement): void {
     setErr(fMsg!, !okMsg);
     if (!okName || !okMail || !okMsg) {
       form!.querySelector<HTMLElement>(".err input, .err textarea")?.focus();
+      // Toast warning obok błędów pod polami; klucz = jeden aktywny naraz
+      // (wielokrotny submit nie stackuje toastów).
+      toast.warning(tstr.valMsg, {
+        title: tstr.valTitle,
+        key: "contact-validation",
+      });
       return;
     }
 
@@ -290,6 +310,8 @@ function initForm(section: HTMLElement): void {
       showDone();
     } catch {
       srvErr!.hidden = false;
+      // Toast error obok trwałego komunikatu .kt-srv (z fallbackiem na e-mail).
+      toast.error(tstr.errMsg, { title: tstr.errTitle });
     } finally {
       setBusy(false);
       resetTurnstile();
