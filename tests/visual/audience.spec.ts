@@ -3,9 +3,11 @@
 // w punktach osi scrolla sekcji. Desktop: DOKŁADNIE punkty spoczynku snapa
 // (AUDIENCE_SNAP_POINTS) — snap do bieżącej pozycji jest no-opem, więc klatka
 // nie dryfuje między przebiegami. Mobile: flow — punkty pokrywają rozdziały
-// z oknami po crossfade blur→sharp. freeze.css gasi też marquee i kursor
-// mocków (czasowe animacje CSS) — determinizm klatek desktop.
-// Decyzje: docs/analiza-sekcja-dla-kogo.md §IV.
+// z oknami po wjeździe (once:true, x osiada na 0). freeze.css gasi resztki
+// animacji CSS — determinizm klatek desktop.
+// Decyzje: docs/analiza-sekcja-dla-kogo.md §IV oraz
+// docs/analiza-podmiana-ekranow-lumea-dla-kogo.md (jasne ekrany LUMÉA,
+// mobile: wjazd okien L/R/L zamiast crossfade blur→sharp).
 import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
 import {
