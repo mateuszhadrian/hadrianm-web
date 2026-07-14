@@ -1,0 +1,237 @@
+---
+// RealizacjeKaruzela.astro — pozioma karuzela realizacji (mobile).
+// Karty ze snapowaniem + "peek" następnej realizacji, kropki, strzałki boczne
+// (znikają na krańcach), kafel CTA "Więcej" na końcu, tap w kartę → bottom sheet.
+//
+// Użycie:
+//   ---
+//   import RealizacjeKaruzela from '../components/realizacje/RealizacjeKaruzela.astro';
+//   ---
+//   <RealizacjeKaruzela moreHref="/realizacje" imgBase="/realizacje/img" />
+//
+// Domyślnie pokazywana tylko na mobile (patrz .rz-kar__mobile-only w README).
+
+import RealizacjaCard from './RealizacjaCard.astro';
+import RealizacjaSheet from './RealizacjaSheet.astro';
+import { REALIZACJE } from '../data/realizacje';
+
+// Style (globalne klasy .rz-*)
+import '../styles/realizacje-karuzela.css';
+// Fonty — jeśli ładujesz je globalnie w layoucie, usuń te importy
+import '@fontsource-variable/archivo';
+import '@fontsource/instrument-serif';
+import '@fontsource/instrument-serif/400-italic.css';
+
+interface Props {
+  /** Dokąd prowadzi kafel „Więcej” (na razie placeholder) */
+  moreHref?: string;
+  /** Katalog z obrazami realizacji (public/) */
+  imgBase?: string;
+  /** Czy renderować dekoracyjne tło „Czerwona Mgła” (wyłącz, jeśli strona ma własne) */
+  withBackground?: boolean;
+}
+const { moreHref = '#', imgBase = '/realizacje/img', withBackground = true } = Astro.props;
+const dotsCount = REALIZACJE.length + 1;
+---
+
+<section class="rz-kar">
+  {
+    withBackground && (
+      <div class="rz-kar__bg" aria-hidden="true">
+        <div class="rz-kar__blob rz-kar__blob--1"></div>
+        <div class="rz-kar__blob rz-kar__blob--2"></div>
+        <div class="rz-kar__blob rz-kar__blob--3"></div>
+        <div class="rz-kar__vignette"></div>
+        <div class="rz-kar__grid"></div>
+      </div>
+    )
+  }
+
+  <div class="rz-kar__inner">
+    <header class="rz-kar__head">
+      <div class="rz-kar__eyebrow">ZREALIZOWANE ZLECENIA</div>
+      <h2 class="rz-kar__title">zobacz wybrane <em>realizacje</em></h2>
+      <p class="rz-kar__lead">
+        Wybrane projekty z ostatnich miesięcy. Przesuń w bok, a dotknij, by zobaczyć szczegóły.
+      </p>
+    </header>
+
+    <div class="rz-kar__viewport">
+      <div class="rzc-scroll" data-lenis-prevent>
+        {REALIZACJE.map((r, i) => <RealizacjaCard r={r} index={i} imgBase={imgBase} />)}
+        <a class="rzc-cta-card" href={moreHref}>
+          <span class="rzc-cta-ring">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
+          </span>
+          <span>
+            <span class="rzc-cta-card__big">Więcej</span>
+            <span class="rzc-cta-card__sub">realizacji</span>
+          </span>
+        </a>
+      </div>
+
+      <button type="button" class="rzc-arrow rzc-arrow--prev" aria-label="Poprzednia" hidden>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
+      </button>
+      <button type="button" class="rzc-arrow rzc-arrow--next" aria-label="Następna">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
+      </button>
+    </div>
+
+    <div class="rzc-dots">
+      {
+        Array.from({ length: dotsCount }).map((_, i) => (
+          <button
+            type="button"
+            class={`rzc-dot${i === 0 ? ' is-active' : ''}`}
+            data-rz-goto={i}
+            aria-label={`Przejdź do ${i + 1}`}
+          />
+        ))
+      }
+    </div>
+  </div>
+
+  {REALIZACJE.map((r) => <RealizacjaSheet r={r} imgBase={imgBase} />)}
+</section>
+
+<script>
+  type LenisLike = { stop: () => void; start: () => void };
+
+  function initKaruzela(kar: HTMLElement) {
+    const track = kar.querySelector<HTMLElement>('.rzc-scroll');
+    const prev = kar.querySelector<HTMLButtonElement>('.rzc-arrow--prev');
+    const next = kar.querySelector<HTMLButtonElement>('.rzc-arrow--next');
+    const dots = Array.from(kar.querySelectorAll<HTMLButtonElement>('.rzc-dot'));
+    if (!track || !prev || !next) return;
+
+    const kids = Array.from(track.children) as HTMLElement[];
+    const count = kids.length;
+
+    // Skalowanie urządzeń: --lw z szerokości kontenera, ograniczone przez data-cap
+    function sizeDuos(scope: ParentNode) {
+      scope.querySelectorAll<HTMLElement>('.rz-duo').forEach((d) => {
+        const cap = parseFloat(d.dataset.cap || '210');
+        const holder = d.parentElement;
+        const w = holder ? holder.clientWidth : cap;
+        if (!w) return;
+        d.style.setProperty('--lw', Math.round(Math.max(150, Math.min(cap, w))) + 'px');
+      });
+    }
+
+    let idx = 0;
+    const base = () => kids[0].offsetLeft;
+    function setIdx(i: number) {
+      idx = Math.max(0, Math.min(count - 1, i));
+      dots.forEach((d, j) => d.classList.toggle('is-active', j === idx));
+      prev!.hidden = idx === 0;
+      next!.hidden = idx === count - 1;
+    }
+    function readIdx() {
+      const b = base();
+      let best = Infinity;
+      let bi = 0;
+      kids.forEach((el, i) => {
+        const dist = Math.abs(el.offsetLeft - b - track!.scrollLeft);
+        if (dist < best) {
+          best = dist;
+          bi = i;
+        }
+      });
+      if (bi !== idx) setIdx(bi);
+    }
+    function goTo(i: number) {
+      const t = Math.max(0, Math.min(count - 1, i));
+      track!.scrollTo({ left: kids[t].offsetLeft - base(), behavior: 'smooth' });
+    }
+
+    let raf = 0;
+    track.addEventListener(
+      'scroll',
+      () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(readIdx);
+      },
+      { passive: true },
+    );
+    prev.addEventListener('click', () => goTo(idx - 1));
+    next.addEventListener('click', () => goTo(idx + 1));
+    kar.querySelector('.rzc-dots')?.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-rz-goto]');
+      if (b) goTo(Number(b.dataset.rzGoto));
+    });
+
+    // Blokada scrolla tła (współpraca z Lenis, jeśli jest w window.lenis)
+    const lenis = (window as unknown as { lenis?: LenisLike }).lenis;
+    function lockScroll(on: boolean) {
+      document.documentElement.style.overflow = on ? 'hidden' : '';
+      if (lenis) on ? lenis.stop() : lenis.start();
+    }
+
+    // Bottom sheet
+    let openSheet: HTMLElement | null = null;
+    function open(id: string) {
+      const s = kar.querySelector<HTMLElement>(`[data-rz-sheet="${id}"]`);
+      if (!s) return;
+      openSheet = s;
+      s.hidden = false;
+      lockScroll(true);
+      sizeDuos(s);
+      requestAnimationFrame(() => requestAnimationFrame(() => s.classList.add('is-open')));
+    }
+    function close() {
+      const s = openSheet;
+      if (!s) return;
+      openSheet = null;
+      s.classList.remove('is-open');
+      let ended = false;
+      const done = () => {
+        s.hidden = true;
+        lockScroll(false);
+        s.removeEventListener('transitionend', onEnd);
+      };
+      const onEnd = (e: TransitionEvent) => {
+        if (e.target === s) {
+          ended = true;
+          done();
+        }
+      };
+      s.addEventListener('transitionend', onEnd);
+      setTimeout(() => {
+        if (!ended) done();
+      }, 400);
+    }
+
+    track.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>('[data-rz-open]');
+      if (b) open(REALIZACJE_IDS[Number(b.dataset.rzOpen)]);
+    });
+    kar.addEventListener('click', (e) => {
+      const el = e.target as HTMLElement;
+      if (el.closest('[data-rz-close]')) close();
+      else if (el.classList.contains('rz-sheet-overlay')) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && openSheet) close();
+    });
+
+    sizeDuos(track);
+    setIdx(0);
+    let rt = 0;
+    window.addEventListener('resize', () => {
+      clearTimeout(rt);
+      rt = window.setTimeout(() => {
+        sizeDuos(track);
+        if (openSheet) sizeDuos(openSheet);
+        readIdx();
+      }, 150);
+    });
+  }
+
+  // Kolejność id realizacji = kolejność kart (indeks z data-rz-open)
+  const REALIZACJE_IDS = Array.from(document.querySelectorAll('[data-rz-sheet]')).map(
+    (n) => (n as HTMLElement).dataset.rzSheet as string,
+  );
+
+  document.querySelectorAll<HTMLElement>('.rz-kar').forEach(initKaruzela);
+</script>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Realizacje — karuzela mobile (podgląd)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles/realizacje-karuzela.css">
+<style>
+  html,body{margin:0;background:#0A0709;}
+  /* Podgląd: ograniczamy do szerokości telefonu, żeby oddać widok mobilny */
+  .preview-frame{max-width:440px;margin:0 auto;min-height:100vh;}
+</style>
+</head>
+<body>
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" fill="#0A0709"></rect>
+    <rect x="18" y="34" width="44" height="34" rx="4" fill="#1a1418" stroke="#E3BE7F" stroke-width="1.4"></rect>
+    <rect x="68" y="38" width="22" height="26" rx="3" fill="#140f11" stroke="rgba(245,240,236,0.4)" stroke-width="1.2"></rect>
+    <text x="50" y="24" font-family="Georgia, serif" font-style="italic" font-size="11" fill="#E3BE7F" text-anchor="middle">karuzela</text>
+  </svg>
+</template>
+
+<div class="preview-frame">
+  <section class="rz-kar" id="rzKar">
+    <div class="rz-kar__bg" aria-hidden="true">
+      <div class="rz-kar__blob rz-kar__blob--1"></div>
+      <div class="rz-kar__blob rz-kar__blob--2"></div>
+      <div class="rz-kar__blob rz-kar__blob--3"></div>
+      <div class="rz-kar__vignette"></div>
+      <div class="rz-kar__grid"></div>
+    </div>
+    <div class="rz-kar__inner">
+      <header class="rz-kar__head">
+        <div class="rz-kar__eyebrow">ZREALIZOWANE ZLECENIA</div>
+        <h2 class="rz-kar__title">zobacz wybrane <em>realizacje</em></h2>
+        <p class="rz-kar__lead">Wybrane projekty z ostatnich miesięcy. Przesuń w bok, a dotknij, by zobaczyć szczegóły.</p>
+      </header>
+      <div class="rz-kar__viewport">
+        <div class="rzc-scroll" id="rzScroll" data-lenis-prevent></div>
+        <button type="button" class="rzc-arrow rzc-arrow--prev" id="rzPrev" aria-label="Poprzednia" hidden></button>
+        <button type="button" class="rzc-arrow rzc-arrow--next" id="rzNext" aria-label="Następna"></button>
+      </div>
+      <div class="rzc-dots" id="rzDots"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+/* ── Dane realizacji (w projekcie: data/realizacje.ts) ── */
+const MORE_HREF = '#';
+const IMG = 'img/';
+const REALIZACJE = [
+  {
+    id:'aura', name:'Aura Aesthetics', category:'Moda & Beauty', year:'2025',
+    blurb:'Gabinet medycyny estetycznej — delikatna, elegancka odsłona marki premium.',
+    home:{d:'aura-home-d.jpg',m:'aura-home-m.jpg'},
+    screens:[
+      {label:'Strona główna',d:'aura-home-d.jpg',m:'aura-home-m.jpg'},
+      {label:'Galeria zabiegów',d:'aura-gallery-d.jpg',m:'aura-gallery-m.jpg'},
+      {label:'Rezerwacja online',d:'aura-order-d.jpg',m:'aura-order-m.jpg'},
+    ],
+    intro:'Klientka prowadząca gabinet medycyny estetycznej potrzebowała strony, która odda premium charakter marki i pozwoli pacjentkom rezerwować wizyty online — bez telefonów i wiadomości.',
+    results:[{metric:'98/100',label:'Wynik w Google PageSpeed (mobile)'},{metric:'+42%',label:'Więcej rezerwacji online w 3 miesiące'},{metric:'3 tyg.',label:'Od projektu do publikacji'}],
+    quote:'Strona wygląda dokładnie tak elegancko jak mój gabinet. Pacjentki same się zapisują, a ja mam więcej czasu dla nich.',
+    author:'Marta Kowalczyk', role:'Właścicielka, Aura Aesthetics',
+    scope:['Projekt UI/UX','Wdrożenie frontendowe','System rezerwacji','Optymalizacja SEO'], liveUrl:'#',
+  },
+  {
+    id:'dab', name:'Dąb & Forma', category:'Wnętrza & Meble', year:'2025',
+    blurb:'Manufaktura mebli z litego drewna — surowy, architektoniczny minimalizm.',
+    home:{d:'dab-home-d.jpg',m:'dab-home-m.jpg'},
+    screens:[
+      {label:'Strona główna',d:'dab-home-d.jpg',m:'dab-home-m.jpg'},
+      {label:'Kolekcje',d:'dab-gallery-d.jpg',m:'dab-gallery-m.jpg'},
+      {label:'Formularz wyceny',d:'dab-order-d.jpg',m:'dab-order-m.jpg'},
+    ],
+    intro:'Manufaktura mebli na zamówienie chciała witryny, która podkreśli rzemiosło i jakość materiałów oraz uprości zbieranie zapytań o wycenę projektów B2B i B2C.',
+    results:[{metric:'0,9 s',label:'Czas ładowania strony głównej'},{metric:'+30%',label:'Więcej zapytań z formularza wyceny'},{metric:'4 tyg.',label:'Pełna realizacja projektu'}],
+    quote:'Wreszcie strona, która wygląda jak nasze meble — prosto, mocno i bez zbędnych ozdobników. Zapytania o wyceny ruszyły od pierwszego tygodnia.',
+    author:'Tomasz Wiśniewski', role:'Założyciel, Dąb & Forma',
+    scope:['Projekt UI/UX','Wdrożenie frontendowe','Katalog produktów','Formularz wyceny'], liveUrl:'#',
+  },
+  {
+    id:'sielski', name:'Sielski Zakątek', category:'Turystyka & Wypoczynek', year:'2024',
+    blurb:'Agroturystyka w sercu gór — ciepły, rustykalny klimat i prosta rezerwacja.',
+    home:{d:'sielski-home-d.jpg',m:'sielski-home-m.jpg'},
+    screens:[
+      {label:'Strona główna',d:'sielski-home-d.jpg',m:'sielski-home-m.jpg'},
+      {label:'Atrakcje',d:'sielski-gallery-d.jpg',m:'sielski-gallery-m.jpg'},
+      {label:'Rezerwacja noclegu',d:'sielski-order-d.jpg',m:'sielski-order-m.jpg'},
+    ],
+    intro:'Gospodarstwo agroturystyczne potrzebowało ciepłej, klimatycznej strony, która sprzeda spokój wsi i pozwoli gościom rezerwować pobyt bezpośrednio — z pominięciem prowizji portali.',
+    results:[{metric:'+55%',label:'Rezerwacji bezpośrednich (bez portali)'},{metric:'4,9/5',label:'Średnia ocena gości po pobycie'},{metric:'3 tyg.',label:'Od briefu do startu sezonu'}],
+    quote:'Goście mówią, że zakochali się w nas już na stronie. Rezerwują wprost u nas, więc nie oddajemy prowizji portalom.',
+    author:'Anna i Piotr Górscy', role:'Gospodarze, Sielski Zakątek',
+    scope:['Projekt UI/UX','Wdrożenie frontendowe','Kalendarz rezerwacji','Sesja & galeria zdjęć'], liveUrl:'#',
+  },
+];
+
+/* ── Ikony ── */
+const svg = (p,s=16)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+const IC = {
+  arrow:(s)=>svg('<path d="M5 12h13M13 6l6 6-6 6"/>',s),
+  close:(s)=>svg('<path d="M18 6L6 18M6 6l12 12"/>',s),
+  check:(s)=>`<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>`,
+  ext:(s)=>svg('<path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/>',s),
+};
+
+/* ── Budowniczy urządzeń (laptop + telefon) ── */
+function duo(d,m,alt,cap){
+  return `<div class="rz-duo" data-cap="${cap}">
+    <div class="rz-floor"></div>
+    <div class="rz-media-inner">
+      <div class="rz-laptop">
+        <div class="rz-laptop-lid"><div class="rz-screen"><img src="${IMG+d}" alt="${alt} — desktop" loading="lazy" draggable="false"><span class="rz-reflect"></span></div></div>
+        <div class="rz-laptop-base"><span class="rz-laptop-notch"></span></div>
+      </div>
+      <div class="rz-phone"><div class="rz-screen"><img src="${IMG+m}" alt="${alt} — mobile" loading="lazy" draggable="false"><span class="rz-punch"></span><span class="rz-reflect"></span></div></div>
+    </div>
+  </div>`;
+}
+
+const initials = (n)=>n.split(/[\s&]+/).filter(Boolean).slice(0,2).map(w=>w[0]).join('').toUpperCase();
+
+/* ── Karty + kafel CTA ── */
+function cardHTML(r,i){
+  return `<button type="button" class="rz-card rzc-card" data-rz-open="${i}">
+    <div class="rz-media">${duo(r.home.d,r.home.m,r.name,210)}</div>
+    <div class="rzc-card__body">
+      <div class="rzc-card__meta"><span class="rzc-card__cat">${r.category}</span><span class="rzc-card__sep">·</span><span class="rzc-card__year">${r.year}</span></div>
+      <h3 class="rzc-card__name">${r.name}</h3>
+      <p class="rzc-card__blurb">${r.blurb}</p>
+      <span class="rz-cta"><span>Zobacz realizację</span><span class="rz-cta-arrow">${IC.arrow(15)}</span></span>
+    </div>
+  </button>`;
+}
+function ctaCardHTML(){
+  return `<a class="rzc-cta-card" href="${MORE_HREF}">
+    <span class="rzc-cta-ring">${IC.arrow(24)}</span>
+    <span><span class="rzc-cta-card__big">Więcej</span><span class="rzc-cta-card__sub" style="display:block">realizacji</span></span>
+  </a>`;
+}
+
+/* ── Bottom sheet ── */
+function sheetHTML(r){
+  const screens = r.screens.map(s=>`<div class="rz-screenset">
+    <div class="rz-screenset__label"><span>${s.label}</span><span class="rz-screenset__rule"></span></div>
+    <div class="rz-screenset__media">${duo(s.d,s.m,r.name+' — '+s.label,260)}</div>
+  </div>`).join('');
+  const results = r.results.map(x=>`<div class="rz-results__cell"><div class="rz-results__metric">${x.metric}</div><div class="rz-results__label">${x.label}</div></div>`).join('');
+  const scope = r.scope.map(s=>`<div class="rz-scope__item">${IC.check(17)}<span>${s}</span></div>`).join('');
+  return `<div class="rz-sheet-overlay" data-rz-sheet="${r.id}" hidden>
+    <div class="rz-sheet" role="dialog" aria-modal="true" aria-label="${r.name}">
+      <div class="rz-sheet__smudge" aria-hidden="true"></div>
+      <div class="rz-sheet__grip"><span></span>
+        <button type="button" class="rz-sheet__x" data-rz-close aria-label="Zamknij">${IC.close(20)}</button>
+      </div>
+      <div class="rz-sheet__scroll">
+        <div>
+          <div class="rz-mh__meta"><span class="rz-mh__cat">${r.category}</span><span class="rz-mh__sep">·</span><span class="rz-mh__year">${r.year}</span></div>
+          <h2 class="rz-mh__title">${r.name}</h2>
+          <p class="rz-mh__intro">${r.intro}</p>
+        </div>
+        <div><div class="rz-eyebrow">Podgląd strony</div><div class="rz-screens">${screens}</div></div>
+        <div><div class="rz-eyebrow">Liczby i wyniki</div><div class="rz-results">${results}</div></div>
+        <div class="rz-quote"><p>„${r.quote}”</p><div class="rz-quote__by"><div class="rz-quote__ini">${initials(r.author)}</div><div><div class="rz-quote__name">${r.author}</div><div class="rz-quote__role">${r.role}</div></div></div></div>
+        <div><div class="rz-eyebrow">Zakres prac</div><div class="rz-scope">${scope}</div></div>
+        <a class="rz-livecta" href="${r.liveUrl}" target="_blank" rel="noopener noreferrer"><span>Zobacz stronę na żywo</span><span class="rz-livecta__arrow">${IC.ext(16)}</span></a>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ── Render + logika ── */
+(function(){
+  const kar = document.getElementById('rzKar');
+  const track = document.getElementById('rzScroll');
+  const dotsEl = document.getElementById('rzDots');
+  const prev = document.getElementById('rzPrev');
+  const next = document.getElementById('rzNext');
+
+  track.innerHTML = REALIZACJE.map(cardHTML).join('') + ctaCardHTML();
+  prev.innerHTML = IC.arrow(16); next.innerHTML = IC.arrow(16);
+  kar.insertAdjacentHTML('beforeend', REALIZACJE.map(sheetHTML).join(''));
+
+  const kids = Array.from(track.children);
+  const count = kids.length;
+  dotsEl.innerHTML = kids.map((_,i)=>`<button type="button" class="rzc-dot${i===0?' is-active':''}" data-rz-goto="${i}" aria-label="Przejdź do ${i+1}"></button>`).join('');
+  const dots = Array.from(dotsEl.children);
+
+  function sizeDuos(scope){
+    (scope||document).querySelectorAll('.rz-duo').forEach(d=>{
+      const cap = parseFloat(d.dataset.cap||'210');
+      const holder = d.parentElement;
+      const w = holder ? holder.clientWidth : cap;
+      if(!w) return;
+      d.style.setProperty('--lw', Math.round(Math.max(150, Math.min(cap, w))) + 'px');
+    });
+  }
+
+  let idx = 0;
+  function base(){ return kids[0].offsetLeft; }
+  function setIdx(i){
+    idx = Math.max(0, Math.min(count-1, i));
+    dots.forEach((d,j)=>d.classList.toggle('is-active', j===idx));
+    prev.hidden = idx===0;
+    next.hidden = idx===count-1;
+  }
+  function readIdx(){
+    const b = base(); let best=Infinity, bi=0;
+    kids.forEach((el,i)=>{ const dist=Math.abs((el.offsetLeft-b)-track.scrollLeft); if(dist<best){best=dist;bi=i;} });
+    if(bi!==idx) setIdx(bi);
+  }
+  function goTo(i){
+    i = Math.max(0, Math.min(count-1, i));
+    track.scrollTo({ left: kids[i].offsetLeft - base(), behavior: 'smooth' });
+  }
+
+  let raf; track.addEventListener('scroll', ()=>{ cancelAnimationFrame(raf); raf=requestAnimationFrame(readIdx); }, {passive:true});
+  prev.addEventListener('click', ()=>goTo(idx-1));
+  next.addEventListener('click', ()=>goTo(idx+1));
+  dotsEl.addEventListener('click', e=>{ const b=e.target.closest('[data-rz-goto]'); if(b) goTo(+b.dataset.rzGoto); });
+
+  /* Sheet open/close */
+  let openSheet = null;
+  function open(id){
+    const s = kar.querySelector(`[data-rz-sheet="${id}"]`); if(!s) return;
+    openSheet = s; s.hidden = false; document.body.style.overflow='hidden';
+    sizeDuos(s);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>s.classList.add('is-open')));
+  }
+  function close(){
+    const s = openSheet; if(!s) return; openSheet=null;
+    s.classList.remove('is-open');
+    const done=()=>{ s.hidden=true; document.body.style.overflow=''; s.removeEventListener('transitionend',onEnd); };
+    let ended=false; const onEnd=(e)=>{ if(e.target===s){ ended=true; done(); } };
+    s.addEventListener('transitionend', onEnd);
+    setTimeout(()=>{ if(!ended) done(); }, 400);
+  }
+  track.addEventListener('click', e=>{ const b=e.target.closest('[data-rz-open]'); if(b) open(REALIZACJE[+b.dataset.rzOpen].id); });
+  kar.addEventListener('click', e=>{ if(e.target.closest('[data-rz-close]')) close(); else if(e.target.classList.contains('rz-sheet-overlay')) close(); });
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape' && openSheet) close(); });
+
+  sizeDuos();
+  setIdx(0);
+  let rt; window.addEventListener('resize', ()=>{ clearTimeout(rt); rt=setTimeout(()=>{ sizeDuos(); if(openSheet) sizeDuos(openSheet); readIdx(); }, 150); });
+})();
+</script>
+</body>
+</html>

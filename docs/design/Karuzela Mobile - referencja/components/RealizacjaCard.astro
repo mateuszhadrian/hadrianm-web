@@ -1,0 +1,37 @@
+---
+// RealizacjaCard.astro — pojedyncza karta w karuzeli. Tap otwiera bottom sheet (data-rz-open).
+import DeviceDuo from './DeviceDuo.astro';
+import type { Realizacja } from '../data/realizacje';
+interface Props {
+  r: Realizacja;
+  index: number;
+  imgBase: string;
+}
+const { r, index, imgBase } = Astro.props;
+---
+
+<button type="button" class="rz-card rzc-card" data-rz-open={index}>
+  <div class="rz-media">
+    <DeviceDuo
+      desktop={`${imgBase}/${r.home.desktop}`}
+      mobile={`${imgBase}/${r.home.mobile}`}
+      alt={r.name}
+      cap={210}
+    />
+  </div>
+  <div class="rzc-card__body">
+    <div class="rzc-card__meta">
+      <span class="rzc-card__cat">{r.category}</span>
+      <span class="rzc-card__sep">·</span>
+      <span class="rzc-card__year">{r.year}</span>
+    </div>
+    <h3 class="rzc-card__name">{r.name}</h3>
+    <p class="rzc-card__blurb">{r.blurb}</p>
+    <span class="rz-cta">
+      <span>Zobacz realizację</span>
+      <span class="rz-cta-arrow">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h13M13 6l6 6-6 6"></path></svg>
+      </span>
+    </span>
+  </div>
+</button>

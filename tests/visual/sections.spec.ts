@@ -66,11 +66,13 @@ test.describe("nakładki WorkDetail", () => {
   test("otwarty BottomSheet vs baseline", async ({ page, isMobile }) => {
     test.skip(!isMobile, "sheet tylko na mobile");
     await prepare(page);
-    const card = page.locator("[data-work-slug]").first();
+    // Mobile: sheet otwiera tap w kartę karuzeli (.wk-car). Galeria desktopowa
+    // jest tu ukryta (display:none) — celujemy w kartę karuzeli.
+    const card = page.locator(".wk-car [data-work-slug]").first();
     await card.scrollIntoViewIfNeeded();
-    // Guard „strona w ruchu" w Work.astro: odczekaj zanim CTA zadziała.
+    // Guard „strona w ruchu" w WorkCarousel: odczekaj zanim tap zadziała.
     await page.waitForTimeout(300);
-    await card.locator(".rz-card__cta").click();
+    await card.click();
     await expect(page.locator("#work-sheet")).toHaveClass(/is-open/);
     await settle(page);
     // Zrzut viewportu — jak w modalu (stabilność > kadr samego panelu).

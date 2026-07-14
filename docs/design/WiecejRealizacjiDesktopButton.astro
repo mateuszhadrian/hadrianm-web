@@ -1,0 +1,90 @@
+---
+/**
+ * WiecejRealizacjiButton.astro
+ * CTA "Więcej realizacji" — wariant "Kafel" (kompaktowy kafelek z pierścieniem strzałki).
+ * Wyeksportowane z prototypu jako referencja 1:1.
+ *
+ * Stack: Astro + Tailwind v4. Font: Archivo (@fontsource-variable/archivo).
+ * Motyw: "Czerwona Mgła" — kolory wystawione jako zmienne CSS (patrz <style> niżej),
+ * żeby łatwo je podmienić na globalne tokeny projektu.
+ *
+ * Użycie:
+ *   ---
+ *   import WiecejRealizacjiButton from "@/components/WiecejRealizacjiButton.astro";
+ *   ---
+ *   <WiecejRealizacjiButton href="/realizacje" />
+ */
+interface Props {
+  /** Docelowy adres podstrony (na razie placeholder). */
+  href?: string;
+  /** Etykieta przycisku. */
+  label?: string;
+  /** Dodatkowe klasy — np. do pozycjonowania w layoutcie. */
+  class?: string;
+}
+
+const {
+  href = "#",
+  label = "Więcej realizacji",
+  class: className = "",
+} = Astro.props;
+---
+
+<a
+  href={href}
+  class:list={[
+    "rz-more-kafel group flex w-[300px] flex-col items-center gap-4 rounded-lg border px-7 py-8 text-center no-underline transition-[border-color,background] duration-300 motion-reduce:transition-none",
+    className,
+  ]}
+>
+  <span
+    class="rz-ring grid h-[60px] w-[60px] place-items-center rounded-full border-[1.5px] transition-transform duration-300 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:-translate-y-[3px] motion-reduce:transition-none motion-reduce:group-hover:translate-y-0"
+  >
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+      class="block transition-transform duration-300 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:translate-x-1.5 motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+      aria-hidden="true"
+    >
+      <path d="M5 12h13M13 6l6 6-6 6"></path>
+    </svg>
+  </span>
+  <span class="text-[22px] font-extrabold leading-[1.05] tracking-[-0.02em]">
+    {label}
+  </span>
+</a>
+
+<style>
+  .rz-more-kafel {
+    /* — Tokeny motywu (podmień na globalne zmienne projektu) — */
+    --rz-ink: #f5f0ec;
+    --rz-line: rgba(245, 240, 236, 0.14);
+    --rz-line-hover: rgba(245, 240, 236, 0.3);
+    --rz-accent: #e3be7f;
+    --rz-accent-rgb: 227, 190, 127;
+
+    color: var(--rz-ink);
+    border-color: var(--rz-line);
+    background: linear-gradient(
+      180deg,
+      rgba(var(--rz-accent-rgb), 0.07),
+      rgba(245, 240, 236, 0.03)
+    );
+    font-family: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  }
+
+  .rz-more-kafel:hover {
+    border-color: var(--rz-line-hover);
+  }
+
+  .rz-ring {
+    border-color: var(--rz-accent);
+    color: var(--rz-accent);
+  }
+</style>
