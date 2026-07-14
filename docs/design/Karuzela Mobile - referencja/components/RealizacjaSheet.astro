@@ -1,0 +1,110 @@
+---
+// RealizacjaSheet.astro — bottom sheet ze szczegółami realizacji (ukryty do czasu tapnięcia karty).
+import DeviceDuo from './DeviceDuo.astro';
+import type { Realizacja } from '../data/realizacje';
+interface Props {
+  r: Realizacja;
+  imgBase: string;
+}
+const { r, imgBase } = Astro.props;
+const initials = r.author
+  .split(/[\s&]+/)
+  .filter(Boolean)
+  .slice(0, 2)
+  .map((w) => w[0])
+  .join('')
+  .toUpperCase();
+---
+
+<div class="rz-sheet-overlay" data-rz-sheet={r.id} hidden>
+  <div class="rz-sheet" role="dialog" aria-modal="true" aria-label={r.name}>
+    <div class="rz-sheet__smudge" aria-hidden="true"></div>
+    <div class="rz-sheet__grip">
+      <span></span>
+      <button type="button" class="rz-sheet__x" data-rz-close aria-label="Zamknij">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+      </button>
+    </div>
+    <div class="rz-sheet__scroll" data-lenis-prevent>
+      <div>
+        <div class="rz-mh__meta">
+          <span class="rz-mh__cat">{r.category}</span>
+          <span class="rz-mh__sep">·</span>
+          <span class="rz-mh__year">{r.year}</span>
+        </div>
+        <h2 class="rz-mh__title">{r.name}</h2>
+        <p class="rz-mh__intro">{r.intro}</p>
+      </div>
+
+      <div>
+        <div class="rz-eyebrow">Podgląd strony</div>
+        <div class="rz-screens">
+          {
+            r.screens.map((s) => (
+              <div class="rz-screenset">
+                <div class="rz-screenset__label">
+                  <span>{s.label}</span>
+                  <span class="rz-screenset__rule"></span>
+                </div>
+                <div class="rz-screenset__media">
+                  <DeviceDuo
+                    desktop={`${imgBase}/${s.desktop}`}
+                    mobile={`${imgBase}/${s.mobile}`}
+                    alt={`${r.name} — ${s.label}`}
+                    cap={260}
+                  />
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <div>
+        <div class="rz-eyebrow">Liczby i wyniki</div>
+        <div class="rz-results">
+          {
+            r.results.map((x) => (
+              <div class="rz-results__cell">
+                <div class="rz-results__metric">{x.metric}</div>
+                <div class="rz-results__label">{x.label}</div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <div class="rz-quote">
+        <p>„{r.quote}”</p>
+        <div class="rz-quote__by">
+          <div class="rz-quote__ini">{initials}</div>
+          <div>
+            <div class="rz-quote__name">{r.author}</div>
+            <div class="rz-quote__role">{r.role}</div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="rz-eyebrow">Zakres prac</div>
+        <div class="rz-scope">
+          {
+            r.scope.map((s) => (
+              <div class="rz-scope__item">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"></path></svg>
+                <span>{s}</span>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+
+      <a class="rz-livecta" href={r.liveUrl} target="_blank" rel="noopener noreferrer">
+        <span>Zobacz stronę na żywo</span>
+        <span class="rz-livecta__arrow">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"></path></svg>
+        </span>
+      </a>
+    </div>
+  </div>
+</div>

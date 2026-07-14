@@ -1,0 +1,33 @@
+---
+// DeviceDuo.astro — laptop + telefon "na wprost". Rozmiary liczone z jednej zmiennej --lw
+// (ustawianej skryptem po stronie klienta). `cap` = maksymalna szerokość laptopa w px.
+interface Props {
+  desktop: string;
+  mobile: string;
+  alt?: string;
+  cap?: number;
+}
+const { desktop, mobile, alt = '', cap = 210 } = Astro.props;
+---
+
+<div class="rz-duo" data-cap={cap}>
+  <div class="rz-floor"></div>
+  <div class="rz-media-inner">
+    <div class="rz-laptop">
+      <div class="rz-laptop-lid">
+        <div class="rz-screen">
+          <img src={desktop} alt={`${alt} — desktop`} loading="lazy" draggable="false" />
+          <span class="rz-reflect"></span>
+        </div>
+      </div>
+      <div class="rz-laptop-base"><span class="rz-laptop-notch"></span></div>
+    </div>
+    <div class="rz-phone">
+      <div class="rz-screen">
+        <img src={mobile} alt={`${alt} — mobile`} loading="lazy" draggable="false" />
+        <span class="rz-punch"></span>
+        <span class="rz-reflect"></span>
+      </div>
+    </div>
+  </div>
+</div>
