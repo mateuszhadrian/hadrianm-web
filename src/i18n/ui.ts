@@ -200,7 +200,7 @@ export const ui = {
     "contact.headLead": "napisz",
     "contact.headAccent": "do mnie",
     "contact.intro":
-      "Planujesz nowy projekt albo szukasz wsparcia programistycznego? Napisz — wracam z odpowiedzią w ciągu 24 godzin w dni robocze.",
+      "Niezależnie czy masz już gotową wizję projektu, czy dopiero szukasz najlepszego rozwiązania dla swojej firmy – napisz. Przeanalizuję Twój pomysł i wspólnie ustalimy plan działania.",
     "contact.stOn": "Przyjmuję nowe zlecenia",
     "contact.stOff": "Odpowiadam do 24h w dni robocze",
     "contact.emailLbl": "E-mail",
@@ -443,7 +443,7 @@ export const ui = {
     "contact.headLead": "get",
     "contact.headAccent": "in touch",
     "contact.intro":
-      "Planning a new project or looking for development support? Write to me — I get back within 24 hours on business days.",
+      "Whether you already have a clear vision for your project or you're still looking for the best solution for your business – write to me. I'll look into your idea and together we'll map out a plan of action.",
     "contact.stOn": "Taking on new projects",
     "contact.stOff": "I reply within 24h on business days",
     "contact.emailLbl": "E-mail",
