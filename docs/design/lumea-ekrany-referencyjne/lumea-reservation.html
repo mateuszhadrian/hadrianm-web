@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LUMÉA — reservation (rezerwuj-wizyte)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cream:#F3ECE2;--paper:#F7F1E9;--ink:#2C2620;--muted:rgba(44,38,32,0.62);--faint:rgba(44,38,32,0.40);--line:rgba(44,38,32,0.14);--gold:#A9855A;--gold-lt:#C6A574;--blush:#C58C7C;--serif:'Cormorant Garamond',Georgia,serif;--sans:'Jost',sans-serif;--photo:url('assets/lumea-recepcja.jpg');--silk:url('assets/lumea-silk.jpg')}
+*{box-sizing:border-box}
+html,body{margin:0;width:880px;height:574px;overflow:hidden;background:#EDE7DB}
+.lumea{position:relative;width:880px;height:574px;overflow:hidden;background:var(--paper);color:var(--ink);font-family:var(--sans)}
+.lumea .brand{font-family:var(--serif);font-weight:500;font-size:23px;letter-spacing:0.30em;text-transform:uppercase;line-height:1;color:var(--ink)}
+.lumea .nav{display:flex;align-items:center;gap:26px;font-family:var(--sans);font-size:11px;font-weight:400;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted)}
+.lumea .eyebrow{font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.36em;text-transform:uppercase;color:var(--gold)}
+.lumea .h1{font-family:var(--serif);font-weight:400;font-size:58px;line-height:1.0;letter-spacing:-0.005em;color:var(--ink);margin:0;text-wrap:balance}
+.lumea .h1 em{font-style:italic;font-weight:500}
+.lumea .lede{font-family:var(--serif);font-weight:300;font-size:19px;line-height:1.5;color:var(--muted);margin:0}
+.lumea .consult{display:flex;align-items:center;gap:6px;height:52px;padding:6px 6px 6px 20px;border-radius:99px;background:rgba(255,255,255,0.72);border:1px solid rgba(44,38,32,0.14);backdrop-filter:blur(6px);width:max-content}
+.lumea .consult input{border:0;background:transparent;outline:none;width:150px;font-family:var(--sans);font-size:13px;font-weight:400;letter-spacing:0.05em;color:var(--ink)}
+.lumea .consult input::placeholder{color:var(--faint)}
+.lumea .consult button{border:0;cursor:pointer;height:40px;padding:0 22px;border-radius:99px;background:var(--gold);font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:#FBF6EF}
+.lumea .fcard{position:absolute;left:436px;bottom:60px;z-index:5;width:236px;padding:16px 18px;border-radius:16px;background:rgba(255,255,255,0.86);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.6);box-shadow:0 24px 60px rgba(60,40,20,0.22)}
+.lumea .fcard .stars{color:var(--gold);letter-spacing:3px;font-size:12px}
+.lumea .fcard .q{margin-top:8px;font-family:var(--serif);font-style:italic;font-weight:400;font-size:17px;line-height:1.4;color:var(--ink)}
+.lumea .fcard .a{margin-top:12px;font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:0.2em;text-transform:uppercase;color:var(--gold)}
+.lumea .top{position:absolute;left:0;right:0;top:0;z-index:4;display:flex;align-items:center;justify-content:space-between;padding:26px 42px}
+.lumea .kadr{position:absolute;right:40px;top:104px;bottom:40px;width:470px;border-radius:18px;overflow:hidden;box-shadow:0 30px 70px rgba(60,40,20,0.28)}
+.lumea .photo{position:absolute;inset:0;background:var(--photo) center/cover no-repeat;filter:saturate(1.05)}
+.lumea .block{position:absolute;left:44px;top:146px;z-index:4;display:flex;flex-direction:column;gap:18px;width:318px}
+.lumea .b{display:block;background:rgba(44,38,32,var(--o,0.14));border-radius:6px;flex-shrink:0}
+.lumea .dot{display:block;width:9px;height:9px;border-radius:50%;background:var(--gold);flex-shrink:0}
+.lumea .mklab{font-family:var(--sans);font-size:9px;font-weight:500;letter-spacing:0.22em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+.lumea .mkc-caret{display:block;width:2px;height:24px;background:var(--gold);margin-left:2px}
+.lumea .tg{position:relative;width:34px;height:18px;border-radius:99px;background:rgba(44,38,32,0.16);flex-shrink:0}
+.lumea .tg i{position:absolute;top:2px;left:2px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,0.2)}
+.lumea .tg.on{background:var(--gold)}
+.lumea .tg.on i{left:18px}
+.lumea .btn-gold{border-radius:10px;background:var(--gold);display:flex;align-items:center;justify-content:center;color:#FBF6EF;font-family:var(--sans);font-size:10px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase}
+.lumea .cms-side{position:absolute;left:0;top:0;bottom:0;width:200px;background:#EFE7DB;border-right:1px solid var(--line);padding:26px 20px}
+.lumea .cms-nav{display:flex;flex-direction:column;gap:6px;margin-top:26px}
+.lumea .cms-nav .it{padding:9px 12px;border-radius:9px;font-family:var(--sans);font-size:10px;font-weight:500;letter-spacing:0.16em;text-transform:uppercase;color:var(--faint)}
+.lumea .cms-nav .it.on{background:rgba(169,133,90,0.14);box-shadow:inset 2px 0 0 var(--gold);color:var(--ink)}
+.lumea .cms-main{position:absolute;left:200px;right:0;top:0;bottom:0;padding:26px 34px}
+.lumea .pill{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:99px;border:1px solid var(--line)}
+.lumea .field{border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1px var(--gold);padding:0 16px;height:54px;display:flex;align-items:center;gap:4px}
+.lumea .drop{border-radius:12px;border:1px dashed rgba(44,38,32,0.26);background:rgba(255,255,255,0.45);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.lumea .toast{position:absolute;padding:7px 13px;border-radius:9px;border:1px solid rgba(169,133,90,0.45);background:#fff}
+.lumea .mkt-card{position:absolute;border-radius:14px;background:#fff;padding:20px;box-sizing:border-box;box-shadow:0 20px 50px rgba(60,40,20,0.16),inset 0 0 0 1px rgba(44,38,32,0.06)}
+.lumea .mkt-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:7px}
+.lumea .mkt-grid span{height:26px;border-radius:6px;background:rgba(44,38,32,0.05)}
+.lumea .mkt-grid span.alt{background:rgba(44,38,32,0.09)}
+.lumea .mkt-grid span.sel{background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--sans);font-size:9px;font-weight:600;box-shadow:0 0 14px rgba(169,133,90,0.45)}
+.lumea .slider{position:relative;height:14px}
+.lumea .slider .track{position:absolute;left:0;right:0;top:6px;height:4px;border-radius:99px;background:rgba(44,38,32,0.12)}
+.lumea .slider .fill{position:absolute;left:0;top:6px;height:4px;border-radius:99px;background:var(--gold)}
+.lumea .slider .knob{position:absolute;top:0;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 0 0 1px var(--gold),0 2px 6px rgba(0,0,0,0.18)}
+.lumea .price{font-family:var(--serif);font-weight:600;font-size:24px;letter-spacing:-0.01em;color:var(--ink)}
+.lumea:not(.v4){background:var(--silk) center/cover}
+.lumea:not(.v4)::before{content:'';position:absolute;inset:0;z-index:0;background:rgba(247,241,233,0.52)}
+.lumea:not(.v4) > *{z-index:1}
+.lumea:not(.v4) .field,.lumea:not(.v4) .drop,.lumea:not(.v4) .toast,.lumea:not(.v4) .mkt-card{background:rgba(255,255,255,0.74);backdrop-filter:blur(9px)}
+.lumea:not(.v4) .cms-side{background:rgba(239,231,219,0.62);backdrop-filter:blur(9px)}
+@keyframes cbl{0%,100%{opacity:1}50%{opacity:0}}
+@media (prefers-reduced-motion:no-preference){.lumea .mkc-caret{animation:cbl 1.1s steps(2,jump-none) infinite}}
+</style>
+</head>
+<body>
+<div class="lumea tools">
+  <div class="mkt-card" style="left:62px;top:80px;width:330px;height:318px;transform:rotate(-2deg)">
+    <div style="display:flex;justify-content:space-between;margin-bottom:16px"><span class="mklab" style="color:var(--ink)">Rezerwacje</span><span class="mklab" style="color:var(--faint)">Październik</span></div>
+    <div class="mkt-grid"><span class="alt"></span><span></span><span></span><span></span><span></span><span class="alt"></span><span></span><span></span><span></span><span class="sel">14</span><span class="alt"></span><span></span><span></span><span></span><span></span><span class="alt"></span><span></span><span></span><span></span><span></span><span class="alt"></span><span></span><span></span><span></span><span></span><span class="alt"></span><span></span><span></span></div>
+    <div style="margin-top:16px"><span class="mklab" style="font-size:8.5px;color:var(--gold)">Wt 14 — 14:30 · Potwierdzona</span></div>
+  </div>
+  <div class="mkt-card" style="left:452px;top:54px;width:318px;height:272px;transform:rotate(2deg)">
+    <div class="mklab" style="margin-bottom:18px;color:var(--ink)">Konfigurator zabiegu</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:15px"><span class="b" style="width:120px;height:9px;--o:0.2"></span><span class="tg on"><i></i></span></div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:15px"><span class="b" style="width:94px;height:9px;--o:0.2"></span><span class="tg"><i></i></span></div>
+    <div class="slider" style="margin-bottom:16px"><span class="track"></span><span class="fill" style="width:58%"></span><span class="knob" style="left:58%"></span></div>
+    <div style="border-top:1px solid var(--line);padding-top:14px;display:flex;align-items:baseline;justify-content:space-between"><span class="mklab" style="color:var(--faint)">Suma</span><span class="price">600 zł</span></div>
+  </div>
+  <div class="mkt-card" style="left:420px;top:362px;width:352px;height:158px;transform:rotate(-1deg);padding:18px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:13px"><span class="mklab" style="color:var(--ink)">Voucher podarunkowy</span><span style="font-family:var(--sans);font-size:11px;font-weight:500;letter-spacing:0.08em;color:var(--ink)">300 zł</span></div>
+    <div class="btn-gold" style="height:40px;margin-bottom:10px;letter-spacing:0.2em">Kup teraz →</div>
+    <span class="mklab" style="font-size:8px;color:var(--faint)">BLIK · Karta · Przelew</span>
+  </div>
+</div>
+</body>
+</html>

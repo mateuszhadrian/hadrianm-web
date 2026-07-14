@@ -80,24 +80,11 @@ export function initAudienceScroll(): void {
     if (i > 0) captext.textContent = caps[i - 1] ?? "";
   }
 
-  /* Kanwa mocka ma stałe 880×574 — skalujemy ją do szerokości okna.
-     ResizeObserver zamiast nasłuchu resize: łapie też zmianę --dkcw. */
-  let mockObserver: ResizeObserver | null = null;
-  function fitMocks(): void {
-    for (const body of qa(".mk-body")) {
-      const fit = body.querySelector<HTMLElement>(".mk-fit");
-      if (fit && body.clientWidth > 0) {
-        fit.style.transform = `scale(${body.clientWidth / 880})`;
-      }
-    }
-  }
-
-  /* ═══ DESKTOP: przypięta scena + scrub ═══ */
+  /* ═══ DESKTOP: przypięta scena + scrub ═══
+     Okna kart to teraz obrazy (AudienceMockWindow) o natywnym kadrze 880×574
+     i szerokości 100% — nie ma już kanwy .mk-fit do skalowania (fitMocks
+     usunięty wraz z inline-mockami). */
   function buildDesktop(): void {
-    fitMocks();
-    mockObserver = new ResizeObserver(fitMocks);
-    for (const body of qa(".mk-body")) mockObserver.observe(body);
-
     const F = AUDIENCE_FAN;
     const [c1, c2, c3] = els.cards;
     const chs = els.chapters;
@@ -113,7 +100,9 @@ export function initAudienceScroll(): void {
       filter: "blur(10px)",
     });
     gsap.set(els.digits, { autoAlpha: 0 });
-    gsap.set(backs, { autoAlpha: 0.65, filter: "blur(5px)" });
+    // Podgląd intro = wyraźny wachlarz (przygaszenie tylnych kart + blur robi
+    // CSS per .dk-back). Bez heavy blura kontenera — ma być czytelny.
+    gsap.set(backs, { autoAlpha: 1 });
     gsap.set(cap, { autoAlpha: 0 });
 
     const tl = gsap.timeline({ defaults: { ease: "power2.out" } });
@@ -172,7 +161,10 @@ export function initAudienceScroll(): void {
         yPercent: 7.2,
         rotation: -6.5,
         opacity: 0.5,
-        filter: "blur(1px) brightness(0.8) saturate(0.7)",
+        // Tylko blur — ta sama lista funkcji co stan wyjściowy „blur(0px)".
+        // Dopisanie brightness/saturate robiło GSAP-owi mismatch listy filtrów
+        // (przez klatkę brightness(0) = czerń → błysk). Przygaszenie: opacity.
+        filter: "blur(1.5px)",
         duration: 0.08,
         ease: "power1.inOut",
       },
@@ -217,7 +209,8 @@ export function initAudienceScroll(): void {
         yPercent: 4.5,
         rotation: 4.5,
         opacity: 0.55,
-        filter: "blur(1px) brightness(0.8) saturate(0.7)",
+        // jw. — tylko blur, żeby nie migało na czarno przy cofaniu karty
+        filter: "blur(1.5px)",
         duration: 0.08,
         ease: "power1.inOut",
       },
@@ -319,11 +312,14 @@ export function initAudienceScroll(): void {
      Budżet jak w About — NAJWAŻNIEJSZA jest płynność syncTouch, świadomie
      kosztem bogactwa animacji względem referencji:
      — ghost i żar W PEŁNI statyczne (CSS) — zero pracy przy tickach scrolla,
-     — reveal = JEDEN tween (autoAlpha+y) na cały blok, bez kaskady
-       per-element i bez animacji rotacji okna,
-     — „wyostrzenie z mgły" okna = czysty opacity-crossfade dwóch WYPIECZONYCH
-       obrazków (lay-blur → lay-sharp), zero filter w runtime,
+     — reveal tekstu = JEDEN tween (autoAlpha+y) na cały blok,
+     — okno-ekran WJEŻDŻA z boku (transform.x): rozdz. 01 z lewej, 02 z prawej,
+       03 z lewej — tańsze niż crossfade blura i ZERO filter w runtime
+       (twarda zasada: nigdy nie animować filter na mobile). Rotacja stała
+       w tweenie (nie koliduje z wjazdem); .dk-stage ma overflow:hidden, więc
+       start poza kadrem nie robi poziomego scrolla,
      — once: true — po pierwszym pokazaniu NIC już nie animuje. */
+  const SLIDE_PX = 48; // dystans wjazdu okna zza krawędzi
   function buildMobile(): void {
     gsap.fromTo(
       tag,
@@ -338,9 +334,8 @@ export function initAudienceScroll(): void {
     );
 
     for (const block of els.chapters) {
+      const chIdx = Number(block.dataset.ch);
       const win = block.querySelector<HTMLElement>(".dkm-win");
-      const sharp = win?.querySelector<HTMLElement>(".lay-sharp");
-      const blur = win?.querySelector<HTMLElement>(".lay-blur");
       const tlm = gsap.timeline({
         defaults: { ease: "power3.out" },
         scrollTrigger: { trigger: block, start: "top 84%", once: true },
@@ -351,18 +346,14 @@ export function initAudienceScroll(): void {
         { autoAlpha: 1, y: 0, duration: 0.6 },
         0,
       );
-      if (sharp && blur) {
+      if (win) {
+        // 01→lewa, 02→prawa, 03→lewa; rotacja stała = dir * 1.5°.
+        const dir = chIdx % 2 === 1 ? -1 : 1;
         tlm.fromTo(
-          blur,
-          { opacity: 0.92 },
-          { opacity: 0, duration: 1, ease: "power1.inOut" },
-          0.3,
-        );
-        tlm.fromTo(
-          sharp,
-          { opacity: 0.15 },
-          { opacity: 1, duration: 1, ease: "power1.inOut" },
-          0.3,
+          win,
+          { autoAlpha: 0, x: dir * SLIDE_PX, rotation: dir * 1.5 },
+          { autoAlpha: 1, x: 0, rotation: dir * 1.5, duration: 0.7 },
+          0.1,
         );
       }
     }
@@ -384,9 +375,7 @@ export function initAudienceScroll(): void {
       if (isDesktop) buildDesktop();
       else buildMobile();
       return () => {
-        // Stan poza kontrolą gsap (setStage, fitMocks) — sprzątamy sami.
-        mockObserver?.disconnect();
-        mockObserver = null;
+        // Stan poza kontrolą gsap (setStage) — sprzątamy sami.
         els.ticks.forEach((t, k) => t.classList.toggle("on", k === 0));
         pcount.textContent = "01 / 04";
         captext.textContent = caps[0] ?? "";
