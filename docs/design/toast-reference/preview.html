@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toast „Wash" — podgląd referencji</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* Preview używa DOKŁADNIE tego samego toast.css (wklejonego niżej w @layer).
+   To tylko chrome demo — nie część referencji. */
+*{box-sizing:border-box}
+html,body{margin:0;background:#070507;min-height:100vh}
+body{font-family:'Archivo',system-ui,sans-serif;color:#f5f0ec;-webkit-font-smoothing:antialiased}
+.demo-atmo{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.demo-atmo span{position:absolute;left:26vw;bottom:-24vw;width:44vw;height:44vw;border-radius:50%;filter:blur(60px);background:radial-gradient(closest-side,rgba(214,38,38,0.12),transparent 72%)}
+.demo-wrap{position:relative;z-index:2;max-width:760px;margin:0 auto;padding:80px 32px 120px}
+.demo-tag{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:0.3em;text-transform:uppercase;color:#FF5A47;margin-bottom:18px}
+.demo-wrap h1{font-weight:700;font-size:clamp(32px,5vw,52px);letter-spacing:-0.03em;margin:0 0 16px}
+.demo-wrap p{color:rgba(245,240,236,0.62);font-size:16px;line-height:1.6;max-width:560px;margin:0 0 40px}
+.demo-btns{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:44px}
+.demo-btns button{display:inline-flex;align-items:center;gap:9px;padding:12px 18px;background:none;color:rgba(245,240,236,0.62);
+  box-shadow:inset 0 0 0 1px rgba(245,240,236,0.15);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.16em;
+  text-transform:uppercase;cursor:pointer;transition:color .2s,box-shadow .2s}
+.demo-btns button .d{width:6px;height:6px;transform:rotate(45deg)}
+.demo-btns button:hover{color:#f5f0ec}
+.b-success .d{background:oklch(0.8 0.15 155)} .b-error .d{background:oklch(0.68 0.2 27)}
+.b-warning .d{background:oklch(0.83 0.14 80)} .b-info .d{background:oklch(0.75 0.12 232)}
+.b-success:hover{box-shadow:inset 0 0 0 1px oklch(0.8 0.15 155)} .b-error:hover{box-shadow:inset 0 0 0 1px oklch(0.68 0.2 27)}
+.b-warning:hover{box-shadow:inset 0 0 0 1px oklch(0.83 0.14 80)} .b-info:hover{box-shadow:inset 0 0 0 1px oklch(0.75 0.12 232)}
+.demo-note{font-family:'Space Mono',monospace;font-size:11px;letter-spacing:0.1em;color:rgba(245,240,236,0.38);line-height:1.9}
+.demo-note code{color:rgba(245,240,236,0.62)}
+.demo-note b{color:#FF5A47;font-weight:400}
+</style>
+<link rel="stylesheet" href="toast.css">
+</head>
+<body>
+<div class="demo-atmo" aria-hidden="true"><span></span></div>
+<div class="demo-wrap">
+  <div class="demo-tag">Referencja · wariant D — Wash</div>
+  <h1>Podgląd toasta</h1>
+  <p>Ten plik używa tego samego <code>toast.css</code>, który znajdziesz w pakiecie. Logika poniżej to inline-port <code>toast.ts</code> (dla podglądu bez bundlera). W realnym kodzie importujesz moduł TS.</p>
+  <div class="demo-btns">
+    <button class="b-success" data-t="success"><span class="d"></span>success</button>
+    <button class="b-error" data-t="error"><span class="d"></span>error</button>
+    <button class="b-warning" data-t="warning"><span class="d"></span>warning</button>
+    <button class="b-info" data-t="info"><span class="d"></span>info</button>
+    <button data-t="stack"><span class="d" style="background:rgba(245,240,236,0.5)"></span>kilka na raz</button>
+  </div>
+  <div class="demo-note">
+    Desktop → <b>prawy górny róg</b> &nbsp;·&nbsp; zmniejsz okno < 640px → <b>góra, wyśrodkowane</b><br>
+    Hover na toaście <b>pauzuje</b> pasek postępu &nbsp;·&nbsp; × zamyka od razu
+  </div>
+</div>
+
+<script>
+/* Inline-port toast.ts (JS) — tylko na potrzeby tego podglądu.
+   Źródło prawdy: toast.ts. */
+(function(){
+  var GLYPH={success:'✓',error:'✕',warning:'!',info:'i'};
+  var DEFAULT_TITLE={success:'Gotowe',error:'Coś poszło nie tak',warning:'Uwaga',info:'Informacja'};
+  var DEMO_MSG={
+    success:'Wiadomość wysłana — odezwę się w ciągu 24h.',
+    error:'Nie udało się wysłać. Sprawdź sieć i spróbuj ponownie.',
+    warning:'Uzupełnij zaznaczone pola przed wysłaniem.',
+    info:'Wersja robocza zapisana lokalnie.'
+  };
+  var MAX=4, region=null;
+  function ensure(){ if(region&&document.body.contains(region))return region;
+    region=document.createElement('div'); region.className='toast-region';
+    region.setAttribute('role','region'); region.setAttribute('aria-label','Powiadomienia');
+    region.setAttribute('aria-live','polite'); document.body.appendChild(region); return region; }
+  function esc(s){var d=document.createElement('div');d.textContent=s;return d.innerHTML;}
+  function dismiss(el){ if(el.dataset.gone)return; el.dataset.gone='1'; el.dataset.state='leaving';
+    var r=function(){el.remove();}; el.addEventListener('transitionend',r,{once:true}); setTimeout(r,700); }
+  function show(cfg){
+    var type=cfg.type, title=cfg.title||DEFAULT_TITLE[type], message=cfg.message||'', duration=cfg.duration==null?5000:cfg.duration;
+    var host=ensure(), el=document.createElement('div');
+    el.className='toast'; el.dataset.type=type; el.setAttribute('role',type==='error'?'alert':'status');
+    el.innerHTML='<div class="toast__icon" aria-hidden="true">'+GLYPH[type]+'</div>'
+      +'<div class="toast__body"><div class="toast__title">'+esc(title)+'</div>'
+      +(message?'<div class="toast__msg">'+esc(message)+'</div>':'')+'</div>'
+      +'<button class="toast__close" type="button" aria-label="Zamknij powiadomienie">×</button>'
+      +(duration>0?'<div class="toast__progress" aria-hidden="true"></div>':'');
+    if(duration>0)el.style.setProperty('--toast-duration',duration+'ms');
+    host.appendChild(el);
+    while(host.children.length>MAX){ if(host.firstElementChild)host.firstElementChild.remove(); else break; }
+    requestAnimationFrame(function(){requestAnimationFrame(function(){el.dataset.state='visible';});});
+    if(duration>0){var p=el.querySelector('.toast__progress'); p&&p.addEventListener('animationend',function(){dismiss(el);});}
+    el.querySelector('.toast__close').addEventListener('click',function(){dismiss(el);});
+    return el;
+  }
+  document.querySelector('.demo-btns').addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b)return; var t=b.dataset.t;
+    if(t==='stack'){ ['success','info','warning','error'].forEach(function(tp,i){ setTimeout(function(){ show({type:tp,message:DEMO_MSG[tp]}); },i*260); }); }
+    else show({type:t,message:DEMO_MSG[t]});
+  });
+})();
+</script>
+</body>
+</html>

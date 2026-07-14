@@ -116,7 +116,16 @@ const socials = [
       <span class="kt-x br" aria-hidden="true"></span>
 
       <div class="kt-formwrap">
-        <form class="kt-form" novalidate>
+        <form
+          class="kt-form"
+          novalidate
+          data-toast-val-title={t("contact.toastValTitle")}
+          data-toast-val-msg={t("contact.toastValMsg")}
+          data-toast-err-title={t("contact.toastErrTitle")}
+          data-toast-err-msg={t("contact.toastErrMsg")}
+          data-toast-ok-title={t("contact.toastOkTitle")}
+          data-toast-ok-msg={t("contact.toastOkMsg")}
+        >
           <!-- honeypot: boty wypełniają, ludzie nie widzą. READONLY jest
                kluczowe: autofill Chrome'a wypełnia też offscreenowe pola
                „sekcji adresowej" (incydent z preview: autouzupełnianie

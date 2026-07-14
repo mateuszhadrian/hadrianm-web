@@ -1,0 +1,23 @@
+---
+/**
+ * Toast.astro — montaż reużywalnego systemu powiadomień „Wash".
+ * ---------------------------------------------------------------------------
+ * Wstaw RAZ w layoucie (BaseLayout.astro), tuż przed </body>. Ładuje style
+ * globalne i publikuje `window.__toast` do użycia z dowolnego skryptu
+ * klienta (inline / vanilla). W kodzie z importami ESM wołaj moduł wprost:
+ *
+ *     import { toast } from "@/components/ui/toast/toast";
+ *     toast.success("Wiadomość wysłana");
+ *
+ * Komponent nie renderuje żadnego widocznego markupu — region toastów
+ * powstaje dynamicznie przy pierwszym wywołaniu.
+ */
+import "./toast.css";
+---
+
+<script>
+  import { toast } from "./toast";
+  // Ekspozycja globalna — spójnie z window.__lenis / window.overlay.
+  // Kod z importami ESM nie musi jej używać (wtedy tree-shaking pomija).
+  window.__toast = toast;
+</script>

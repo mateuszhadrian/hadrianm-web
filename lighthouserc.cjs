@@ -36,8 +36,12 @@ module.exports = {
         // Re-baseline 2026-07-10 po sekcji Oferta (PR #16, run 29109723817):
         // services-scroll + config + handler kotwic podniosły script do
         // 78 875 B (oba URL-e identycznie) → próg 78 875 × 1,1 ≈ 86 800.
-        // Po optymalizacji zacieśnić do nowego zmierzonego baseline'u.
-        "resource-summary:script:size": ["error", { maxNumericValue: 86800 }],
+        // Re-baseline 2026-07-14 po komponencie Toast (reużywalny system
+        // powiadomień; ~1,1 KB gzip doliczane przy starcie, montowany globalnie
+        // w BaseLayout): zmierzone 86 941 B (run 29331137496) → próg
+        // 86 941 × 1,1 ≈ 95 700. Rozmiar bundle'a jest deterministyczny (nie
+        // dryf runnera). Po optymalizacji zacieśnić do nowego baseline'u.
+        "resource-summary:script:size": ["error", { maxNumericValue: 95700 }],
         "resource-summary:total:size": [
           "error",
           { maxNumericValue: 2030000 }, // 1801 KB × 1,1

@@ -316,6 +316,71 @@ test("[ Wyślij kolejną ]: reset pól, chipsów i zegara antyspamu", async ({
   expect(mock.count()).toBe(1);
 });
 
+const toastOf = (page: Page, type: string) =>
+  page.locator(`.toast-region .toast[data-type="${type}"]`);
+
+test("toast warning: pusty submit → toast walidacji; ponowny klik NIE stackuje (dedup)", async ({
+  page,
+}) => {
+  await stubTurnstile(page);
+  const mock = await mockEndpoint(page, () => ({ status: 200 }));
+  await gotoContact(page);
+
+  // Pusty submit: obok błędów pod polami wyskakuje jeden toast warning.
+  await submitBtn(page).click();
+  const warn = toastOf(page, "warning");
+  await expect(warn).toHaveCount(1);
+  await expect(warn.locator(".toast__title")).toHaveText("Uzupełnij formularz");
+
+  // Ponowny pusty submit: klucz dedup → nadal JEDEN toast (bez stackowania).
+  await submitBtn(page).click();
+  await expect(toastOf(page, "warning")).toHaveCount(1);
+
+  // Walidacja kliencka nie wypuściła requestu.
+  expect(mock.count()).toBe(0);
+});
+
+test("toast success: wysyłka 200 → toast success obok panelu .sent", async ({
+  page,
+}) => {
+  await installClockSkew(page);
+  await stubTurnstile(page);
+  const mock = await mockEndpoint(page, () => ({ status: 200 }));
+  await gotoContact(page);
+
+  await fillForm(page);
+  await setClockSkew(page, SKEW_PASS_MS);
+  await submitBtn(page).click();
+
+  await expect(frame(page)).toHaveClass(/sent/);
+  const ok = toastOf(page, "success");
+  await expect(ok).toBeVisible();
+  await expect(ok).toHaveAttribute("role", "status");
+  await expect(ok.locator(".toast__title")).toHaveText("Wiadomość wysłana");
+  expect(mock.count()).toBe(1);
+});
+
+test("toast error: mock 500 → toast error (role=alert) obok .kt-srv", async ({
+  page,
+}) => {
+  await installClockSkew(page);
+  await stubTurnstile(page);
+  const mock = await mockEndpoint(page, () => ({ status: 500 }));
+  await gotoContact(page);
+
+  await fillForm(page);
+  await setClockSkew(page, SKEW_PASS_MS);
+  await submitBtn(page).click();
+
+  // Trwały komunikat serwerowy ORAZ transientny toast error.
+  await expect(page.locator("#contact .kt-srv")).toBeVisible();
+  const err = toastOf(page, "error");
+  await expect(err).toBeVisible();
+  await expect(err).toHaveAttribute("role", "alert");
+  await expect(frame(page)).not.toHaveClass(/sent/);
+  expect(mock.count()).toBe(1);
+});
+
 test("reveal e-mail: [ POKAŻ ] → wartość + mailto, [ KOPIUJ ] → [ SKOPIOWANO ] i powrót", async ({
   page,
 }) => {
@@ -452,6 +517,27 @@ test.describe("prefers-reduced-motion: reduce — treść widoczna, funkcje dzia
     await submitBtn(page).click();
     await expect(frame(page)).toHaveClass(/sent/);
     expect(mock.count()).toBe(0);
+  });
+
+  test("toast przy reduce: pojawia się i SAM znika (timer JS, nie animationend)", async ({
+    page,
+  }) => {
+    await page.goto("/", { waitUntil: "networkidle" });
+
+    // Przy reduce pasek postępu ma animation:none — auto-znikaniem steruje
+    // timer JS (referencja tu nie znikała wcale; świadoma naprawa).
+    await page.evaluate(() =>
+      (
+        window as unknown as {
+          __toast?: { info(m: string, o?: { duration?: number }): void };
+        }
+      ).__toast?.info("Test", { duration: 400 }),
+    );
+    const t = page.locator(".toast-region .toast");
+    await expect(t).toBeVisible();
+    // Brak slajdu przy reduce: transform zneutralizowany (matrix tożsamościowy).
+    await expect(t).toHaveCSS("transform", "none");
+    await expect(t).toHaveCount(0, { timeout: 4000 });
   });
 });
 
