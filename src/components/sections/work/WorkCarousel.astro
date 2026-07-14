@@ -1,0 +1,387 @@
+---
+// Pozioma karuzela realizacji (mobile, ≤760 px). Karty ze snapowaniem +
+// „peek" następnej, kropki, boczne strzałki (znikają na krańcach), a na końcu
+// kafel CTA „Więcej realizacji". Tap w kartę → BottomSheet z WorkDetail
+// (współdzielony helper openWorkDetail). Reduced-motion: wygląd zachowany,
+// animacje/smooth-scroll wyłączone. Wzorzec: docs/design/Karuzela Mobile - referencja/.
+import WorkCarouselCard from "./WorkCarouselCard.astro";
+import WorkMoreButton from "./WorkMoreButton.astro";
+import type { LocalizedProject } from "./work-data";
+
+interface Props {
+  projects: LocalizedProject[];
+  cta: string;
+  moreHref?: string;
+  moreBig: string;
+  moreSub: string;
+  moreLabel: string;
+  prevLabel: string;
+  nextLabel: string;
+  gotoLabel: string;
+}
+const {
+  projects,
+  cta,
+  moreHref = "#",
+  moreBig,
+  moreSub,
+  moreLabel,
+  prevLabel,
+  nextLabel,
+  gotoLabel,
+} = Astro.props;
+
+// Kropek tyle, ile slajdów: karty + kafel „Więcej".
+const dotsCount = projects.length + 1;
+---
+
+<div class="wk-car">
+  <div class="wk-car__viewport">
+    <div class="wk-car__track" data-lenis-prevent-horizontal>
+      {
+        projects.map((project) => (
+          <WorkCarouselCard project={project} cta={cta} />
+        ))
+      }
+      <WorkMoreButton
+        variant="slide"
+        href={moreHref}
+        bigLabel={moreBig}
+        subLabel={moreSub}
+        label={moreLabel}
+        class="wk-car__more"
+      />
+    </div>
+
+    <button
+      type="button"
+      class="wk-car__arrow wk-car__arrow--prev"
+      aria-label={prevLabel}
+      hidden
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h13M13 6l6 6-6 6"></path>
+      </svg>
+    </button>
+    <button
+      type="button"
+      class="wk-car__arrow wk-car__arrow--next"
+      aria-label={nextLabel}
+    >
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h13M13 6l6 6-6 6"></path>
+      </svg>
+    </button>
+  </div>
+
+  <div class="wk-car__dots">
+    {
+      Array.from({ length: dotsCount }).map((_, i) => (
+        <button
+          type="button"
+          class:list={["wk-car__dot", { "is-active": i === 0 }]}
+          data-goto={i}
+          aria-label={`${gotoLabel} ${i + 1}`}
+        />
+      ))
+    }
+  </div>
+</div>
+
+<style>
+  .wk-car {
+    --wk-peek: 50px;
+    --wk-gap: 16px;
+    --wk-pad: 22px;
+    max-width: 460px;
+    margin: 0 auto;
+  }
+  /* Karuzela = tylko mobile; na desktop widoczna jest galeria + kafel. */
+  @media (min-width: 761px) {
+    .wk-car {
+      display: none;
+    }
+  }
+
+  .wk-car__viewport {
+    position: relative;
+    margin-top: 30px;
+  }
+
+  /* Ścieżka przewijania (snap + peek następnej karty). */
+  .wk-car__track {
+    display: flex;
+    gap: var(--wk-gap);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: var(--wk-pad);
+    padding: 4px var(--wk-pad) 8px;
+    align-items: stretch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+  .wk-car__track::-webkit-scrollbar {
+    display: none;
+  }
+  .wk-car__track > * {
+    flex: 0 0 calc(100% - var(--wk-pad) - var(--wk-gap) - var(--wk-peek));
+    scroll-snap-align: start;
+    /* Każde machnięcie zatrzymuje się na krawędzi karty (jak tap w strzałkę),
+       bez przeskakiwania kilku kart naraz. */
+    scroll-snap-stop: always;
+  }
+
+  /* Strzałki boczne (znikają na krańcach — atrybut [hidden]). */
+  .wk-car__arrow {
+    position: absolute;
+    top: 44%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    z-index: 5;
+    background: rgba(20, 14, 15, 0.62);
+    border: 1px solid var(--line);
+    color: var(--ink);
+    cursor: pointer;
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+    transition: background 0.2s;
+  }
+  .wk-car__arrow--prev {
+    left: 8px;
+  }
+  .wk-car__arrow--next {
+    right: 8px;
+  }
+  .wk-car__arrow[hidden] {
+    display: none;
+  }
+  .wk-car__arrow svg {
+    display: block;
+  }
+  .wk-car__arrow--prev svg {
+    transform: scaleX(-1);
+  }
+  .wk-car__arrow:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  @media (hover: hover) {
+    .wk-car__arrow:hover {
+      background: rgba(30, 22, 23, 0.85);
+    }
+  }
+
+  /* Kropki. */
+  .wk-car__dots {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 22px 22px 0;
+  }
+  .wk-car__dot {
+    appearance: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    height: 6px;
+    width: 6px;
+    border-radius: 999px;
+    background: rgba(245, 240, 236, 0.24);
+    transition:
+      width 0.3s cubic-bezier(0.2, 0.7, 0.2, 1),
+      background 0.3s;
+  }
+  .wk-car__dot.is-active {
+    width: 20px;
+    background: var(--accent-gold);
+  }
+  .wk-car__dot:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wk-car__track {
+      scroll-behavior: auto;
+    }
+    .wk-car__arrow,
+    .wk-car__dot {
+      transition: none;
+    }
+  }
+</style>
+
+<script>
+  import { openWorkDetail } from "./open-detail";
+
+  const reduceMQ = matchMedia("(prefers-reduced-motion: reduce)");
+
+  // Guard „strona w ruchu": tuż po scrollu strony (pęd pionowy) dotknięcie ma
+  // najpierw zatrzymać przewijanie, a nie otwierać nakładkę.
+  let pageScrolling = false;
+  let scrollTimer = 0;
+  addEventListener(
+    "scroll",
+    () => {
+      pageScrolling = true;
+      clearTimeout(scrollTimer);
+      scrollTimer = window.setTimeout(() => {
+        pageScrolling = false;
+      }, 110);
+    },
+    { passive: true },
+  );
+
+  function initCarousel(root: HTMLElement) {
+    const track = root.querySelector<HTMLElement>(".wk-car__track");
+    const prev = root.querySelector<HTMLButtonElement>(".wk-car__arrow--prev");
+    const next = root.querySelector<HTMLButtonElement>(".wk-car__arrow--next");
+    const dots = Array.from(
+      root.querySelectorAll<HTMLButtonElement>(".wk-car__dot"),
+    );
+    if (!track || !prev || !next) return;
+
+    const kids = Array.from(track.children) as HTMLElement[];
+    const count = kids.length;
+    const base = () => kids[0].offsetLeft;
+
+    let idx = 0;
+    function setIdx(i: number) {
+      idx = Math.max(0, Math.min(count - 1, i));
+      dots.forEach((d, j) => d.classList.toggle("is-active", j === idx));
+    }
+    // Strzałki wg realnej pozycji scrolla, nie indeksu: ostatni slajd („Więcej")
+    // przez „peek" nie dociera do lewej krawędzi, więc indeks nigdy nie sięga
+    // count-1 — a strzałka w prawo ma zniknąć dokładnie na maksymalnym przesunięciu.
+    function updateArrows() {
+      const max = track!.scrollWidth - track!.clientWidth;
+      prev!.hidden = track!.scrollLeft <= 1;
+      next!.hidden = track!.scrollLeft >= max - 1;
+    }
+    function readIdx() {
+      const b = base();
+      let best = Infinity;
+      let bi = 0;
+      kids.forEach((el, i) => {
+        const dist = Math.abs(el.offsetLeft - b - track!.scrollLeft);
+        if (dist < best) {
+          best = dist;
+          bi = i;
+        }
+      });
+      if (bi !== idx) setIdx(bi);
+    }
+    function goTo(i: number) {
+      const t = Math.max(0, Math.min(count - 1, i));
+      track!.scrollTo({
+        left: kids[t].offsetLeft - base(),
+        behavior: reduceMQ.matches ? "auto" : "smooth",
+      });
+    }
+
+    let raf = 0;
+    track.addEventListener(
+      "scroll",
+      () => {
+        cancelAnimationFrame(raf);
+        raf = requestAnimationFrame(() => {
+          readIdx();
+          updateArrows();
+        });
+      },
+      { passive: true },
+    );
+    prev.addEventListener("click", () => goTo(idx - 1));
+    next.addEventListener("click", () => goTo(idx + 1));
+    root.querySelector(".wk-car__dots")?.addEventListener("click", (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>("[data-goto]");
+      if (b) goTo(Number(b.dataset.goto));
+    });
+
+    // ── Tap vs swipe: otwieraj sheet tylko przy „czystym" tapnięciu ──
+    let pDown = false;
+    let swiped = false;
+    let downX = 0;
+    let downY = 0;
+    track.addEventListener(
+      "pointerdown",
+      (e) => {
+        pDown = true;
+        swiped = false;
+        downX = e.clientX;
+        downY = e.clientY;
+      },
+      { passive: true },
+    );
+    track.addEventListener(
+      "pointermove",
+      (e) => {
+        if (!pDown) return;
+        if (
+          Math.abs(e.clientX - downX) > 10 ||
+          Math.abs(e.clientY - downY) > 10
+        )
+          swiped = true;
+      },
+      { passive: true },
+    );
+    addEventListener("pointerup", () => {
+      pDown = false;
+    });
+    addEventListener("pointercancel", () => {
+      pDown = false;
+      swiped = true;
+    });
+
+    track.addEventListener("click", (e) => {
+      const card = (e.target as HTMLElement).closest<HTMLElement>(
+        "[data-work-slug]",
+      );
+      if (!card) return;
+      if (swiped || pageScrolling) return; // swipe / pęd strony → nie otwieraj
+      const slug = card.dataset.workSlug;
+      if (!slug) return;
+      openWorkDetail(slug, card.dataset.workName ?? "");
+    });
+
+    setIdx(0);
+    updateArrows();
+    let rt = 0;
+    addEventListener("resize", () => {
+      clearTimeout(rt);
+      rt = window.setTimeout(() => {
+        readIdx();
+        updateArrows();
+      }, 150);
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>(".wk-car").forEach(initCarousel);
+</script>

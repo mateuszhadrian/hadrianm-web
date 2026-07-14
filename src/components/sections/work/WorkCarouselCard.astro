@@ -1,0 +1,190 @@
+---
+// Kompaktowa karta realizacji w karuzeli mobilnej. Tap → BottomSheet
+// (obsługa w WorkCarousel.astro: data-work-slug / data-work-name).
+// Bez tagów (świadomie — patrz docs/analiza-realizacje-karuzela-mobile.md).
+import WorkDeviceDuo from "./WorkDeviceDuo.astro";
+import type { LocalizedProject } from "./work-data";
+
+interface Props {
+  project: LocalizedProject;
+  cta: string;
+}
+const { project, cta } = Astro.props;
+
+// Obraz kafelka bierzemy z ekranu „home" (fallback: pierwszy) — jak w WorkCard.
+const cover =
+  project.screens.find((s) => s.key === "home") ?? project.screens[0];
+---
+
+<button
+  type="button"
+  class="wk-car-card"
+  data-work-slug={project.slug}
+  data-work-name={project.name}
+  aria-label={`${project.name} — ${cta}`}
+>
+  <span class="wk-car-card__media">
+    <WorkDeviceDuo
+      desktop={cover.desktop}
+      mobile={cover.mobile}
+      altDesktop={`${project.name} — desktop`}
+      altMobile={`${project.name} — mobile`}
+    />
+  </span>
+
+  <span class="wk-car-card__body">
+    <span class="wk-car-card__meta">
+      <span class="wk-car-card__cat">{project.category}</span>
+      <span class="wk-car-card__sep" aria-hidden="true">·</span>
+      <span class="wk-car-card__year">{project.year}</span>
+    </span>
+    <span class="wk-car-card__name">{project.name}</span>
+    <span class="wk-car-card__blurb">{project.blurb}</span>
+    <span class="wk-car-card__cta">
+      <span>{cta}</span>
+      <svg
+        class="wk-car-card__arrow"
+        width="15"
+        height="15"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2.2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path d="M5 12h13M13 6l6 6-6 6"></path>
+      </svg>
+    </span>
+  </span>
+</button>
+
+<style>
+  .wk-car-card {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    /* Bez height:100% — kafle zrównuje align-items:stretch toru (height:100%
+       na <button> łamał stretch → nierówne wysokości, rozjechane CTA). */
+    background: rgba(245, 240, 236, 0.04);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 22px 16px 24px;
+    /* nie pozwól, by natywne highlight/callout wchodziły w drogę tap-vs-swipe */
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .wk-car-card__media {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+  /* Skalowanie urządzeń pod wąską kartę karuzeli (czysty CSS, bez JS). */
+  .wk-car-card__media :global(.wd) {
+    --lap-w: clamp(180px, 62vw, 246px);
+    transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+    will-change: transform;
+  }
+  .wk-car-card:active .wk-car-card__media :global(.wd) {
+    transform: scale(0.99);
+  }
+
+  .wk-car-card__body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    flex: 1;
+  }
+  .wk-car-card__meta {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+  }
+  .wk-car-card__cat {
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--accent-gold);
+  }
+  .wk-car-card__sep {
+    color: var(--faint);
+  }
+  .wk-car-card__year {
+    letter-spacing: 0.14em;
+    color: var(--faint);
+  }
+  .wk-car-card__name {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.03;
+    font-size: 25px;
+    color: var(--ink);
+  }
+  .wk-car-card__blurb {
+    font-family: var(--font-body), sans-serif;
+    font-weight: 500;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--muted);
+    text-wrap: pretty;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .wk-car-card__cta {
+    margin-top: auto;
+    align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 8px;
+    transition: border-color 0.25s;
+  }
+  .wk-car-card__arrow {
+    display: block;
+    color: var(--accent-gold);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  @media (hover: hover) {
+    .wk-car-card:hover .wk-car-card__media :global(.wd) {
+      transform: scale(1.02);
+    }
+    .wk-car-card:hover .wk-car-card__cta {
+      border-bottom-color: rgba(245, 240, 236, 0.34);
+    }
+    .wk-car-card:hover .wk-car-card__arrow {
+      transform: translateX(6px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wk-car-card__media :global(.wd),
+    .wk-car-card__cta,
+    .wk-car-card__arrow {
+      transition: none;
+    }
+    .wk-car-card:active .wk-car-card__media :global(.wd),
+    .wk-car-card:hover .wk-car-card__media :global(.wd) {
+      transform: none;
+    }
+  }
+</style>

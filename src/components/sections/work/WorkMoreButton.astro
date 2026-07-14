@@ -1,0 +1,184 @@
+---
+// CTA „Więcej realizacji" — placeholder pod przyszłą podstronę z pełną listą
+// realizacji. Dwa warianty:
+//   • "tile"  — kafel pod galerią (desktop), wzorzec z
+//               docs/design/WiecejRealizacjiDesktopButton.astro,
+//   • "slide" — ostatni slajd karuzeli (mobile), wzorzec z .rzc-cta-card.
+// Na razie `href="#"`; klik jest neutralizowany (data-work-more → preventDefault),
+// żeby w przyszłości wystarczyło podmienić `href` na „/realizacje".
+interface Props {
+  variant?: "tile" | "slide";
+  href?: string;
+  /** Etykieta wariantu „tile". */
+  label?: string;
+  /** Duży napis wariantu „slide". */
+  bigLabel?: string;
+  /** Mono-podpis pod dużym napisem („slide"). */
+  subLabel?: string;
+  class?: string;
+}
+const {
+  variant = "tile",
+  href = "#",
+  label = "",
+  bigLabel = "",
+  subLabel = "",
+  class: className,
+} = Astro.props;
+---
+
+<a
+  href={href}
+  data-work-more
+  class:list={[`wk-more wk-more--${variant}`, className]}
+>
+  <span class="wk-more__ring" aria-hidden="true">
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2.2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <path d="M5 12h13M13 6l6 6-6 6"></path>
+    </svg>
+  </span>
+  {
+    variant === "slide" ? (
+      <span class="wk-more__stack">
+        <span class="wk-more__big">{bigLabel}</span>
+        <span class="wk-more__sub">{subLabel}</span>
+      </span>
+    ) : (
+      <span class="wk-more__label">{label}</span>
+    )
+  }
+</a>
+
+<style>
+  .wk-more {
+    color: var(--ink);
+    text-decoration: none;
+    border: 1px solid var(--line);
+    background: linear-gradient(
+      180deg,
+      rgba(var(--accent-gold-rgb), 0.07),
+      rgba(245, 240, 236, 0.03)
+    );
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    transition:
+      border-color 0.3s,
+      background 0.3s;
+  }
+  .wk-more__ring {
+    display: grid;
+    place-items: center;
+    border-radius: 999px;
+    border: 1.5px solid var(--accent-gold);
+    color: var(--accent-gold);
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+  .wk-more__ring svg {
+    display: block;
+    transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1);
+  }
+
+  /* ── Wariant „tile" (kafel pod galerią, desktop) ── */
+  .wk-more--tile {
+    width: 300px;
+    gap: 16px;
+    border-radius: 8px;
+    padding: 32px 28px;
+  }
+  .wk-more--tile .wk-more__ring {
+    width: 60px;
+    height: 60px;
+  }
+  .wk-more__label {
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  /* ── Wariant „slide" (ostatni slajd karuzeli, mobile) ── */
+  /* Bez height:100% — slajd wypełnia wysokość rzędu przez align-items:stretch
+     toru, a treść (pierścień + etykieta) centruje justify-content:center. */
+  .wk-more--slide {
+    gap: 20px;
+    border-radius: 6px;
+    padding: 30px 22px;
+  }
+  .wk-more--slide .wk-more__ring {
+    width: 66px;
+    height: 66px;
+  }
+  .wk-more__big {
+    display: block;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: 30px;
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .wk-more__sub {
+    display: block;
+    margin-top: 11px;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  @media (hover: hover) {
+    .wk-more:hover {
+      border-color: rgba(245, 240, 236, 0.3);
+    }
+    .wk-more--tile:hover .wk-more__ring {
+      transform: translateY(-3px);
+    }
+    .wk-more--tile:hover .wk-more__ring svg {
+      transform: translateX(4px);
+    }
+    .wk-more--slide:hover .wk-more__ring {
+      transform: translateX(5px);
+    }
+  }
+
+  .wk-more:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .wk-more,
+    .wk-more__ring,
+    .wk-more__ring svg {
+      transition: none;
+    }
+    .wk-more:hover .wk-more__ring,
+    .wk-more:hover .wk-more__ring svg {
+      transform: none;
+    }
+  }
+</style>
+
+<script>
+  // Placeholder: dopóki nie ma podstrony /realizacje, klik nie nawiguje.
+  // Delegacja na document — Astro dedupuje ten sam moduł mimo wielu instancji.
+  document.addEventListener("click", (e) => {
+    const more = (e.target as HTMLElement).closest<HTMLAnchorElement>(
+      "[data-work-more]",
+    );
+    if (more && more.getAttribute("href") === "#") e.preventDefault();
+  });
+</script>

@@ -2,8 +2,9 @@
 import { getCollection } from "astro:content";
 import { useTranslations, type Lang } from "@/i18n/utils";
 import { localizeProject } from "./work-data";
-import { siteConfig } from "@/config/site";
 import WorkCard from "./WorkCard.astro";
+import WorkCarousel from "./WorkCarousel.astro";
+import WorkMoreButton from "./WorkMoreButton.astro";
 import WorkDetail from "./WorkDetail.astro";
 import Modal from "@/components/ui/Modal.astro";
 import BottomSheet from "@/components/ui/BottomSheet.astro";
@@ -15,11 +16,16 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const entries = await getCollection("realizacje");
+// Strona główna pokazuje TYLKO pierwsze 3 realizacje (wg `order`). Pełna lista
+// trafi na przyszłą podstronę /realizacje (przycisk „Więcej realizacji").
 const projects = entries
   .map((e) => e.data)
   .sort((a, b) => a.order - b.order)
-  .map((p) => localizeProject(p, lang));
-const showComingSoon = siteConfig.work.showComingSoonTile;
+  .map((p) => localizeProject(p, lang))
+  .slice(0, 3);
+
+// „Więcej realizacji" na razie nigdzie nie prowadzi (placeholder pod podstronę).
+const moreHref = "#";
 ---
 
 <section id="work" class="work">
@@ -37,21 +43,36 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
     <p class="work__intro">{t("work.intro")}</p>
   </header>
 
-  <div class="work__gallery">
-    {
-      projects.map((project, i) => (
-        <WorkCard project={project} index={i} cta={t("work.cta")} />
-      ))
-    }
-    {
-      showComingSoon && (
-        <div class="work__soon" aria-hidden="true">
-          <span class="work__soon-plus">+</span>
-          <span class="work__soon-label">{t("work.soon")}</span>
-        </div>
-      )
-    }
+  {
+    /* Desktop (≥761px): naprzemienne kafle + kafel „Więcej realizacji" pod spodem. */
+  }
+  <div class="work__desktop">
+    <div class="work__gallery">
+      {
+        projects.map((project, i) => (
+          <WorkCard project={project} index={i} cta={t("work.cta")} />
+        ))
+      }
+    </div>
+    <div class="work__more-wrap">
+      <WorkMoreButton variant="tile" href={moreHref} label={t("work.more")} />
+    </div>
   </div>
+
+  {
+    /* Mobile (≤760px): pozioma karuzela z kafelkiem „Więcej" jako ostatni slajd. */
+  }
+  <WorkCarousel
+    projects={projects}
+    cta={t("work.cta")}
+    moreHref={moreHref}
+    moreBig={t("work.moreBig")}
+    moreSub={t("work.moreSub")}
+    moreLabel={t("work.more")}
+    prevLabel={t("work.prev")}
+    nextLabel={t("work.next")}
+    gotoLabel={t("work.goto")}
+  />
 
   {/* Treść szczegółów per realizacja — klonowana do nakładki po kliknięciu. */}
   {
@@ -77,65 +98,19 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
 </section>
 
 <script>
-  // Podpięcie kafelków galerii do modala (desktop) / bottom sheeta (mobile).
-  // Treść jest klonowana z <template data-work-detail> do hosta nakładki tuż
-  // przed otwarciem i czyszczona po zamknięciu (zwalnia obrazy/DOM).
+  // Galeria desktopowa: klik w kafel → Modal z WorkDetail (współdzielony helper).
+  // Karuzela mobilna ma własną obsługę tapnięcia (WorkCarousel.astro).
+  import { openWorkDetail, sheetMQ } from "./open-detail";
+
   const gallery = document.querySelector<HTMLElement>(".work__gallery");
-  const sheetMQ = matchMedia("(max-width: 760px)");
-
-  // „Strona w ruchu": dopóki trwa scroll (pęd), dotknięcie ma najpierw zatrzymać
-  // przewijanie, a nie otwierać nakładkę. Po ~110 ms od ostatniego scrolla
-  // uznajemy stronę za nieruchomą i pozwalamy otworzyć.
-  let scrolling = false;
-  let scrollTimer = 0;
-  addEventListener(
-    "scroll",
-    () => {
-      scrolling = true;
-      clearTimeout(scrollTimer);
-      scrollTimer = window.setTimeout(() => {
-        scrolling = false;
-      }, 110);
-    },
-    { passive: true },
-  );
-
-  function hostOf(id: string) {
-    return document
-      .getElementById(id)
-      ?.querySelector<HTMLElement>("[data-work-host]");
-  }
-
-  function openDetail(slug: string, name: string) {
-    const tpl = document.querySelector<HTMLTemplateElement>(
-      `template[data-work-detail="${slug}"]`,
-    );
-    if (!tpl || !window.overlay) return;
-
-    const id = sheetMQ.matches ? "work-sheet" : "work-modal";
-    const host = hostOf(id);
-    if (!host) return;
-
-    host.replaceChildren(tpl.content.cloneNode(true));
-    window.overlay.open(id, {
-      label: name,
-      onClose: () => host.replaceChildren(),
-    });
-  }
-
   gallery?.addEventListener("click", (e) => {
-    const targetEl = e.target as HTMLElement;
-    const card = targetEl.closest<HTMLElement>("[data-work-slug]");
+    const card = (e.target as HTMLElement).closest<HTMLElement>(
+      "[data-work-slug]",
+    );
     if (!card) return;
-    // Na mobile otwieraj wyłącznie przyciskiem CTA „Zobacz realizację",
-    // nie dotknięciem całego kafelka.
-    if (sheetMQ.matches && !targetEl.closest(".rz-card__cta")) return;
-    // Tylko mobile: nie otwieraj, gdy strona jeszcze pędzi scrollem — pozwól ją
-    // najpierw zatrzymać tym dotknięciem. Na desktopie klik działa zawsze.
-    if (sheetMQ.matches && scrolling) return;
     const slug = card.dataset.workSlug;
     if (!slug) return;
-    openDetail(slug, card.dataset.workName ?? "");
+    openWorkDetail(slug, card.dataset.workName ?? "");
   });
 
   // Zmiana progu (modal ↔ sheet) przy otwartej nakładce: zamknij, by nie
@@ -214,27 +189,19 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
     padding: clamp(48px, 6vw, 90px) 6vw 0;
   }
 
-  .work__soon {
+  /* Kafel „Więcej realizacji" pod galerią (desktop). */
+  .work__more-wrap {
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    gap: 12px;
-    min-height: 150px;
-    border: 1px dashed rgba(245, 240, 236, 0.18);
-    border-radius: 4px;
-    color: var(--faint);
+    margin-top: clamp(64px, 8vw, 110px);
+    padding: 0 6vw;
   }
-  .work__soon-plus {
-    font-size: 26px;
-    font-weight: 300;
-    line-height: 1;
-  }
-  .work__soon-label {
-    font-family: var(--font-mono), monospace;
-    font-size: 10px;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+
+  /* Desktop pokazuje galerię + kafel; mobile — tylko karuzelę. */
+  @media (max-width: 760px) {
+    .work__desktop {
+      display: none;
+    }
   }
 
   @media (max-width: 760px) {
@@ -274,12 +241,6 @@ const showComingSoon = siteConfig.work.showComingSoonTile;
       max-width: 340px;
       margin-top: 18px;
       font-size: 15px;
-    }
-    .work__gallery {
-      --work-gap: 42px;
-      --work-head-gap: 72px;
-      gap: var(--work-gap);
-      padding: var(--work-head-gap) 22px 0;
     }
   }
 </style>
