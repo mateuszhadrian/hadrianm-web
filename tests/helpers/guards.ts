@@ -1,5 +1,5 @@
 // Strażniki wspólne dla testów Playwright (port wzorców z verify-hero.mjs).
-import type { Page } from "@playwright/test";
+import { test, type Page } from "@playwright/test";
 
 /** Strażnik preview: testy biegają na buildzie produkcyjnym (pnpm preview),
  *  NIGDY na dev serverze. Astro dev wstrzykuje klienta Vite — wykrywamy go
@@ -21,6 +21,26 @@ export async function assertPreview(page: Page): Promise<void> {
         "pnpm preview --port 4399.",
     );
   }
+}
+
+/** Rejestruje wspólny `beforeAll` ze strażnikiem preview — wywołaj na topie
+ *  pliku speca zamiast kopiować blok hooka. */
+export function usePreviewGuard(): void {
+  test.beforeAll(async ({ browser }) => {
+    const page = await browser.newPage();
+    await assertPreview(page);
+    await page.close();
+  });
+}
+
+/** Rejestruje `beforeEach` pomijający testy poza projektem chromium-1920 —
+ *  dla speców niezależnych od profilu (meta/treść), które wystarczy
+ *  przebiec raz. `reason` pojawia się w raporcie jako powód skipa. */
+export function useChromium1920Only(reason: string): void {
+  // eslint-disable-next-line no-empty-pattern -- Playwright wymaga destrukturyzacji fixtures
+  test.beforeEach(async ({}, testInfo) => {
+    test.skip(testInfo.project.name !== "chromium-1920", reason);
+  });
 }
 
 /** Kolektor problemów strony: console.error + pageerror + 404 (poza

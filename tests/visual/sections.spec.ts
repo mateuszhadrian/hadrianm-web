@@ -1,12 +1,10 @@
 // Zrzuty stabilnych sekcji po hero + nakładki WorkDetail — na WSZYSTKICH
 // 6 profilach. Diff per sekcja (screenshot elementu, nie całej strony) →
 // czytelniejsze raporty. Determinizm: freeze.css (czasowe animacje CSS off).
-import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
-import { assertPreview } from "../helpers/guards";
+import { usePreviewGuard } from "../helpers/guards";
 import { gotoReady, settle } from "../helpers/scroll";
-
-const FREEZE = fileURLToPath(new URL("../helpers/freeze.css", import.meta.url));
+import { FREEZE } from "../helpers/visual";
 
 // Kolejność jak w Home.astro (hero, audience, services, about i faq mają
 // własne sweepy w hero.spec.ts, audience.spec.ts, services.spec.ts,
@@ -14,12 +12,10 @@ const FREEZE = fileURLToPath(new URL("../helpers/freeze.css", import.meta.url));
 // niesie informacji).
 const SECTIONS = ["work", "contact"];
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
+// Celowo NIE prepareSweep: element-screenshoty i tak poprzedza
+// scrollIntoView + settle, więc czekanie na repaint po freeze jest zbędne.
 async function prepare(page: Page) {
   await gotoReady(page);
   await page.addStyleTag({ path: FREEZE });

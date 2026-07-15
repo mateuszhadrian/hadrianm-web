@@ -1,6 +1,6 @@
 // Nawigacja: anchory, chowanie paska przy scrollu (desktop), menu mobilne.
 import { expect, test } from "@playwright/test";
-import { assertPreview, collectPageIssues } from "../helpers/guards";
+import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
 import {
   expectSectionAtTop,
   gotoReady,
@@ -8,11 +8,7 @@ import {
   settle,
 } from "../helpers/scroll";
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 test.describe("nawigacja desktop", () => {
   test.skip(({ isMobile }) => !!isMobile, "tylko układ desktop/tablet");

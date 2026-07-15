@@ -7,63 +7,36 @@
 // z checklisty jest niedeterministyczna — pomijamy); tween wysokości
 // akordeonu jest JS-owy (GSAP) — dogania settle. Decyzje:
 // docs/analiza-sekcja-faq.md §III.4.
-import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
-import { assertPreview } from "../helpers/guards";
-import { gotoReady, scrollPageTo, settle } from "../helpers/scroll";
-
-// Te same profile co sweepy hero/audience/services/about.
-const FAQ_PROJECTS = ["chromium-1920", "webkit-iphone-14", "chromium-pixel-5"];
+import { usePreviewGuard } from "../helpers/guards";
+import { scrollPageTo, settle } from "../helpers/scroll";
+import {
+  prepareSweep,
+  sectionAnchors,
+  SWEEP_PROJECTS,
+} from "../helpers/visual";
 
 // Tween akordeonu (0.55 s) + ScrollTrigger.refresh() po nim muszą usiąść.
 const SETTLE_MS = 1500;
 
-const FREEZE = fileURLToPath(new URL("../helpers/freeze.css", import.meta.url));
-
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 test("sweep scrolla sekcji FAQ vs baseline", async ({ page }, testInfo) => {
   test.skip(
-    !FAQ_PROJECTS.includes(testInfo.project.name),
+    !SWEEP_PROJECTS.includes(testInfo.project.name),
     "sweep FAQ tylko na profilach hero (desktop/iPhone/Pixel)",
   );
   test.setTimeout(240_000);
 
-  await gotoReady(page);
-  await page.addStyleTag({ path: FREEZE });
-  await page.waitForTimeout(400);
+  await prepareSweep(page);
 
-  // Kotwice klatek: pozycja dokumentowa elementu + przesunięcie w vh —
-  // odporne na zmiany długości treści (PL/EN) i wysokości sekcji.
-  const anchors = await page.evaluate(() => {
-    const sec = document.querySelector<HTMLElement>("#faq");
-    if (!sec) return null;
-    const abs = (s: string) => {
-      const el = sec.querySelector<HTMLElement>(s);
-      return el ? el.getBoundingClientRect().top + window.scrollY : null;
-    };
-    return {
-      head: abs(".fq-head"),
-      item3: abs(".fq-item:nth-child(3)"),
-      cta: abs(".fq-cta"),
-      vh: window.innerHeight,
-      max: document.documentElement.scrollHeight - window.innerHeight,
-    };
+  // Kotwice klatek: patrz sectionAnchors (klatki celują w elementy,
+  // nie w ułamki osi — sekcja we flow).
+  const { anchors, vh, max } = await sectionAnchors(page, "#faq", {
+    head: ".fq-head",
+    item3: ".fq-item:nth-child(3)",
+    cta: ".fq-cta",
   });
-  if (
-    !anchors ||
-    anchors.head === null ||
-    anchors.item3 === null ||
-    anchors.cta === null
-  ) {
-    throw new Error("Brak #faq lub jego elementów na stronie");
-  }
-
-  const { vh, max } = anchors;
   const clamp = (y: number) => Math.max(0, Math.min(y, max));
   const shoot = (name: string) =>
     // Prefiks „faq-": snapshoty wszystkich speców trafiają do wspólnego

@@ -2,7 +2,7 @@
 // (pełna treść widoczna — stany startowe animacji uzbraja dopiero klasa .js)
 // i wersja EN. Choreografię scrolla weryfikuje sweep tests/visual/services.spec.ts.
 import { expect, test } from "@playwright/test";
-import { assertPreview } from "../helpers/guards";
+import { usePreviewGuard } from "../helpers/guards";
 import {
   expectSectionAtTop,
   gotoReady,
@@ -10,11 +10,7 @@ import {
   syncLenis,
 } from "../helpers/scroll";
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 test("CTA procesu skacze do #packages (hash + pozycja)", async ({ page }) => {
   await gotoReady(page);

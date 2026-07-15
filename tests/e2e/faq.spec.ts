@@ -4,7 +4,7 @@
 // Choreografię wejść weryfikuje sweep tests/visual/faq.spec.ts.
 // Decyzje: docs/analiza-sekcja-faq.md.
 import { expect, test, type Page } from "@playwright/test";
-import { assertPreview } from "../helpers/guards";
+import { usePreviewGuard } from "../helpers/guards";
 import {
   expectSectionAtTop,
   gotoReady,
@@ -12,11 +12,7 @@ import {
   syncLenis,
 } from "../helpers/scroll";
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 const item = (page: Page, n: number) =>
   page.locator(`#faq .fq-item:nth-child(${n})`);

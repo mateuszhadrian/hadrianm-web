@@ -2,7 +2,7 @@
 // odblokowuje CTA), reveale mobile, CTA → #contact (skok jak w navbarze).
 import { expect, test } from "@playwright/test";
 import { ABOUT_SNAP_POINTS } from "../../src/components/sections/about/about-config";
-import { assertPreview } from "../helpers/guards";
+import { usePreviewGuard } from "../helpers/guards";
 import {
   expectSectionAtTop,
   gotoReady,
@@ -11,11 +11,7 @@ import {
   settle,
 } from "../helpers/scroll";
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 /** Absolutna pozycja scrolla dla ułamka osi sekcji #about. */
 async function aboutScrollAt(

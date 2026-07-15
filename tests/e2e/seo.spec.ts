@@ -2,17 +2,14 @@
 // robots.txt (blokada /admin), crawl wewnętrznych linków (< 400).
 // Meta są identyczne między projektami — biega tylko na chromium-1920.
 import { expect, test } from "@playwright/test";
+import { useChromium1920Only } from "../helpers/guards";
 import { gotoReady } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
 
-// eslint-disable-next-line no-empty-pattern -- Playwright wymaga destrukturyzacji fixtures
-test.beforeEach(async ({}, testInfo) => {
-  test.skip(
-    testInfo.project.name !== "chromium-1920",
-    "meta/sitemap/crawl są niezależne od profilu — jeden projekt wystarczy",
-  );
-});
+useChromium1920Only(
+  "meta/sitemap/crawl są niezależne od profilu — jeden projekt wystarczy",
+);
 
 for (const { path, locale } of [
   { path: "/", locale: "pl_PL" },
