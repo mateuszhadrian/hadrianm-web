@@ -10,6 +10,13 @@
 > Formaty zweryfikowane z oficjalną dokumentacją Claude Code (2.1.200+,
 > lipiec 2026): https://code.claude.com/docs/en/memory.md ·
 > /skills.md · /hooks-guide.md · /settings.md · /sub-agents.md · /mcp.md
+>
+> ℹ️ AKTUALIZACJA 2026-07-16: wklejone niżej treści plików (CLAUDE.md,
+> rules, skille) to snapshoty ze stanu 2026-07-06 — NIE kopiuj ich
+> ponownie; źródłem prawdy są aktualne pliki w repo. Najważniejsze
+> różnice: schemat Zod żyje w `src/content.schema.ts` (`content.config.ts`
+> tylko go importuje; korekta z refactoru part6), a `scripts/verify-hero.mjs`
+> został wycofany na rzecz `tests/visual/hero.spec.ts` (2026-07-07).
 
 ---
 

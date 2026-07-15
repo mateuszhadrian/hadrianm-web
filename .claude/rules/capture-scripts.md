@@ -18,6 +18,11 @@ paths:
 - Po nagraniu weryfikuj `ffprobe` (wymiary, fps, czas) i rozmiar plików —
   pipeline enkoduje dwuprzebiegowo pod twardy limit wagi.
 - Preferowane wejście: skill `/capture-devices` (ma pre-checki).
+- `capture-ambient-bg.mjs` (`pnpm capture:ambient-bg`) to INNY pipeline:
+  samowystarczalny (Playwright + sharp, paleta z `ambient-palette.ts`) —
+  bez dev servera, ffmpeg/cwebp i skilla `/capture-devices`; regeneruje
+  `public/ambient-bg-mobile-{red,blue}.webp` po zmianie wyglądu
+  `AmbientBackground` / palety.
 
 ## Siatka regresyjna hero
 
