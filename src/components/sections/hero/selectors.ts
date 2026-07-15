@@ -34,7 +34,7 @@ export const SEL = {
   fit: ".hero__devices .fit",
   fitInScene: ".fit",
   camera: ".hero__devices .camera",
-  gsapCamera: '[data-gsap="camera"]',
+  gsapCamera: "[data-gsap='camera']",
   gsapLaptop: "[data-gsap='laptop']",
   gsapPhone: "[data-gsap='phone']",
   gsapLaptopBase: "[data-gsap='laptop-base']",

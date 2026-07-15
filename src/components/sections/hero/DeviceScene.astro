@@ -15,7 +15,7 @@ import PhoneSite from "./PhoneSite.astro";
         <div class="device-glow--lap"></div>
         <div class="extrude lid" data-extrude>
           <div class="face">
-            <div class="screen screen--laptop" data-gsap="screen-laptop">
+            <div class="screen screen--laptop">
               <LaptopSite />
               <!-- Mobile: nagranie animacji laptopa (desktop nie ładuje — preload=none,
                    src wpinany z JS w gałęzi mobile). Poster = pierwsza klatka. -->
@@ -28,7 +28,6 @@ import PhoneSite from "./PhoneSite.astro";
                 preload="none"
                 poster="/drewelomet/video/laptop.webp"
                 data-src="/drewelomet/video/laptop.mp4"></video>
-              <div class="screen__glass"></div>
             </div>
           </div>
         </div>
@@ -43,7 +42,7 @@ import PhoneSite from "./PhoneSite.astro";
         <div class="device-glow--ph"></div>
         <div class="extrude body" data-extrude>
           <div class="face">
-            <div class="screen screen--phone" data-gsap="screen-phone">
+            <div class="screen screen--phone">
               <PhoneSite />
               <!-- Mobile: nagranie animacji telefonu (jak wyżej). -->
               <video
@@ -56,7 +55,6 @@ import PhoneSite from "./PhoneSite.astro";
                 poster="/drewelomet/video/phone.webp"
                 data-src="/drewelomet/video/phone.mp4"></video>
               <div class="punch"></div>
-              <div class="screen__glass"></div>
             </div>
           </div>
         </div>
@@ -216,11 +214,6 @@ import PhoneSite from "./PhoneSite.astro";
   }
   .screen--phone {
     container-type: size;
-  }
-  .screen__glass {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
   }
   .screen__video {
     position: absolute;

@@ -206,6 +206,10 @@ for (const [key, color] of Object.entries(v.colors)) {
   :global(.bg-layer.is-inactive) .ambient-bg__cloud-c,
   :global(.bg-layer.is-inactive) .ambient-bg__cloud-d {
     animation-play-state: paused;
+    /* Nieaktywna warstwa (opacity 0) nie potrzebuje promocji GPU chmur —
+       bez tego desktop trzyma do ~28 warstw kompozycji (7 teł × 4 chmury);
+       Home.astro zdejmuje will-change tylko z samej .bg-layer. */
+    will-change: auto;
   }
 
   /* Fallback bez oklch: te same gradienty, kolory rgb z palety (przeliczone

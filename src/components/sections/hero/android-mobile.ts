@@ -141,6 +141,9 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
     );
   });
 
+  // pomijaj redundantne zapisy --p (wzorzec lastScale wyżej) — po zaokrągleniu
+  // do 4 miejsc sąsiednie klatki często dają tę samą wartość
+  let lastP = "";
   const progressTrigger =
     hero && progressEl
       ? ScrollTrigger.create({
@@ -149,7 +152,10 @@ export function initMobilePhase3(p: MobilePhase3Params): () => void {
           end: () => "top+=" + p.barEndVh * window.innerHeight + " top",
           scrub: true,
           onUpdate: (self) => {
-            progressEl.style.setProperty("--p", self.progress.toFixed(4));
+            const prog = self.progress.toFixed(4);
+            if (prog === lastP) return;
+            lastP = prog;
+            progressEl.style.setProperty("--p", prog);
           },
           onToggle: (self) =>
             progressEl.classList.toggle("is-active", self.isActive),
