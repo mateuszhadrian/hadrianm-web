@@ -25,6 +25,40 @@ const TOUCH_INERTIA_EXPONENT = 1.95; // zasięg machnięcia; wyżej = dalej
 
 const isTouch = navigator.maxTouchPoints > 0;
 
+// Guard pinch/zoom: Lenis 1.3.x nie rozpoznaje wielodotyku (VirtualScroll
+// czyta tylko targetTouches[0]) i przechwytuje panowanie po powiększeniu
+// strony. Opcja `prevent` -> Lenis ignoruje zdarzenie BEZ preventDefault,
+// więc natywny pan/zoom działa (lenis.stop() by tu NIE zadziałał: w stanie
+// stopped Lenis nadal preventuje i zablokowałby natywne panowanie).
+let multiTouch = false;
+const vv = window.visualViewport;
+const isZoomed = () => (vv?.scale ?? 1) > 1.01;
+
+if (isTouch) {
+  const opts = { capture: true, passive: true } as const;
+  window.addEventListener(
+    "touchstart",
+    (e) => {
+      if (e.touches.length > 1) multiTouch = true;
+    },
+    opts,
+  );
+  window.addEventListener(
+    "touchend",
+    (e) => {
+      if (e.touches.length === 0) multiTouch = false;
+    },
+    opts,
+  );
+  window.addEventListener(
+    "touchcancel",
+    (e) => {
+      if (e.touches.length === 0) multiTouch = false;
+    },
+    opts,
+  );
+}
+
 const reduceMQ = window.matchMedia("(prefers-reduced-motion: reduce)");
 
 let lenis: Lenis | null = null;
@@ -40,6 +74,7 @@ function start() {
           touchMultiplier: TOUCH_MULTIPLIER,
           syncTouchLerp: SYNC_TOUCH_LERP,
           touchInertiaExponent: TOUCH_INERTIA_EXPONENT,
+          prevent: () => multiTouch || isZoomed(),
         }
       : { lerp: WHEEL_LERP, smoothWheel: true, syncTouch: false },
   );
