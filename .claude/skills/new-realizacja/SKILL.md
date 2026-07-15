@@ -18,7 +18,8 @@ klienta (autor, rola PL/EN), zakres prac PL/EN, opcjonalnie liveUrl.
 - Ujednolić format do WebP/wysokiej jakości JPEG; sensowne wymiary źródła:
   desktop ~1920 px szer., mobile ~800 px szer. (serving robi Cloudflare
   Image Transformations przez `imgAt()` — do R2 idzie JEDEN oryginał).
-- Do konwersji użyj `sharp` przez node (wzorce w `scripts/optimize-*.mjs`).
+- Do konwersji użyj `sharp` przez node (wzorzec w
+  `scripts/prepare-about-photo.mjs`).
 - Pliki wynikowe zostaw w katalogu wskazanym przez Mateusza (NIE w repo).
 
 ## 3. Wpis w panelu — robi Mateusz, Ty pilnujesz zasad

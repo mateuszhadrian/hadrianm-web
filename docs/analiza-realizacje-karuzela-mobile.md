@@ -35,7 +35,10 @@
 4. **Limit 3**: `projects.slice(0, 3)` w `Work.astro`.
 5. **Kafel „coming soon"** USUNIĘTY ze strony głównej (+ parametr
    `showComingSoonTile` z `src/config/site.ts`; sam plik zostaje pod przyszłe
-   parametry). i18n `work.soon` usunięte.
+   parametry). i18n `work.soon` usunięte. _⚠️ NIEAKTUALNE (2026-07-15):
+   `src/config/site.ts` (pusty placeholder) ostatecznie usunięty w refactorze
+   porządkującym — `docs/first-bigger-improvement-refactor-analysis.md` §6.1;
+   przy przyszłej potrzebie parametrów utworzyć plik od nowa._
 6. **„Więcej" na mobile**: tylko jako ostatni slajd karuzeli (nie pod spodem).
 7. **Tło „Czerwona Mgła"**: całkowicie zignorowane — globalny
    `AmbientBackground` jak w reszcie strony.
@@ -85,6 +88,7 @@ Zmiany:
   dodaj `WorkCarousel` (hidden ≥761); skrypt galerii → `openWorkDetail`
   (desktop modal); `<template>`/`Modal`/`BottomSheet` bez zmian.
 - `src/config/site.ts` — usuń `showComingSoonTile` (plik zostaje).
+  _⚠️ NIEAKTUALNE (2026-07-15): plik ostatecznie usunięty (refactor §6.1)._
 - `src/i18n/ui.ts` — dodaj `work.more`, `work.moreBig`, `work.moreSub`,
   `work.prev`, `work.next`, `work.goto` (PL+EN); usuń `work.soon`.
 

@@ -1031,6 +1031,12 @@ Kompletna lista miejsc do parametryzacji — to jest checklista ekstrakcji:
 
 ### 7.2. Kroki utworzenia template repo
 
+> ℹ️ **AKTUALIZACJA (2026-07-15):** `src/config/site.ts` (pusty placeholder)
+> został usunięty w refactorze porządkującym
+> (`docs/first-bigger-improvement-refactor-analysis.md` §6.1) — krok 1
+> oznacza dziś UTWORZENIE tego pliku od nowa, nie rozszerzenie istniejącego.
+> Dotyczy też wzmianek o `site.ts` w 7.1/kroku 4/kroku 6 i tabeli Etapu 7.
+
 1. **(w hadrianm-web, przygotowanie)** Rozszerz `src/config/site.ts` o
    pełny obiekt konfiguracyjny (nazwa, domena, e-mail kontaktowy, socials)
    i podmień twarde wystąpienia w komponentach na importy z niego. To

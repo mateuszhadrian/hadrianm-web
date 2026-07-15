@@ -8,7 +8,7 @@
 export const SERVICES_DESKTOP_MIN_PX = 861;
 
 /** Trigger ScrollTriggera (start/end względem viewportu) + scrub. */
-export interface ScrubRange {
+interface ScrubRange {
   start: string;
   end: string;
   scrub: number;

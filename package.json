@@ -32,7 +32,6 @@
     "test:visual": "playwright test tests/visual",
     "test:visual:update": "playwright test tests/visual --update-snapshots",
     "test:smoke:prod": "BASE_URL=https://hadrianm.pl playwright test tests/e2e --grep @prod-smoke",
-    "optimize:drewelomet": "node scripts/optimize-drewelomet.mjs",
     "capture:devices": "node scripts/capture-device-videos.mjs",
     "capture:ambient-bg": "node scripts/capture-ambient-bg.mjs",
     "prepare": "husky"
