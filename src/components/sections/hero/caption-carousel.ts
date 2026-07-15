@@ -180,13 +180,22 @@ export const initCaptionCarousel = (b: Base) => {
     render(capProxy.u);
   };
   ScrollTrigger.addEventListener("refresh", onRefresh);
+  // Latch na wyścig fonts.ready vs teardown: gdy kontekst matchMedia zdąży
+  // się cofnąć (resize/rotacja przez próg 760px) zanim fonty się doładują,
+  // stale domknięcie nałożyłoby desktopowe style inline na mobilny layout.
+  let dead = false;
   document.fonts?.ready.then(() => {
+    if (dead) return;
     measure();
     render(capProxy.u);
+    // Globalny refresh to zamierzony WYJĄTEK od zasady „bez ScrollTrigger.refresh()
+    // po fonts.ready" (timeline-base.ts): desktop-only, jednorazowy, a geometria
+    // karuzeli (wysokości/środki wierszy) realnie zmienia się po doładowaniu fontów.
     ScrollTrigger.refresh();
   });
 
   return () => {
+    dead = true;
     ScrollTrigger.removeEventListener("refresh", onRefresh);
     copy.classList.remove("is-carousel");
     copy.style.removeProperty("height");

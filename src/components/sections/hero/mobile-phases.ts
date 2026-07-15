@@ -224,16 +224,29 @@ export const initDividers = (hero: HTMLElement | null, refs: DeviceRefs) => {
   if (!stageEl) devWarnMissing("stage");
   if (!div02) devWarnMissing("copyRow2");
   if (!div03) devWarnMissing("copyRow3");
+  // Hot path scrolla (onUpdate na Androidzie): wszystkie odczyty geometrii
+  // PRZED zapisami (przeplot read/write wymuszał reflow per-frame) + pomijanie
+  // redundantnych zapisów `top` (wzorzec lastScale z android-mobile.ts).
+  let lastTop02 = "";
+  let lastTop03 = "";
   const placeDividers = () => {
     if (!stageEl) return;
     const stageTop = stageEl.getBoundingClientRect().top;
-    if (refs.laptop && div02) {
-      const lapBottom = refs.laptop.getBoundingClientRect().bottom - stageTop;
-      div02.style.top = lapBottom + GAP_LAP_DIV + "px";
+    const lapBottom = refs.laptop?.getBoundingClientRect().bottom;
+    const phBottom = refs.phone?.getBoundingClientRect().bottom;
+    if (div02 && lapBottom !== undefined) {
+      const top = lapBottom - stageTop + GAP_LAP_DIV + "px";
+      if (top !== lastTop02) {
+        lastTop02 = top;
+        div02.style.top = top;
+      }
     }
-    if (refs.phone && div03) {
-      const phBottom = refs.phone.getBoundingClientRect().bottom - stageTop;
-      div03.style.top = phBottom + GAP_PH_DIV + "px";
+    if (div03 && phBottom !== undefined) {
+      const top = phBottom - stageTop + GAP_PH_DIV + "px";
+      if (top !== lastTop03) {
+        lastTop03 = top;
+        div03.style.top = top;
+      }
     }
   };
   const dividerTrigger =
