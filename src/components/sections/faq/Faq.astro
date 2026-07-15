@@ -107,6 +107,7 @@ const faqSchema = JSON.stringify({
 </section>
 
 <script>
+  import { handleAnchorClick } from "@/scripts/anchors";
   import { initFaqAccordion } from "./faq-accordion";
 
   // Animacje (wejścia + tween akordeonu) tylko przy dozwolonym ruchu —
@@ -121,23 +122,13 @@ const faqSchema = JSON.stringify({
     }
   }
 
-  // Kotwica CTA (#contact): skok jak w navbarze (Lenis immediate +
-  // podmiana hash), fallback natywny gdy Lenisa nie ma — wzorzec Oferty.
+  // Kotwica CTA (#contact): wspólny handler kotwic (@/scripts/anchors).
   for (const a of document.querySelectorAll<HTMLAnchorElement>(
     '#faq a[href^="#"]',
   )) {
-    a.addEventListener("click", (e) => {
-      const id = a.getAttribute("href")?.slice(1);
-      const target = id ? document.getElementById(id) : null;
-      if (!target) return;
-      e.preventDefault();
-      if (window.__lenis) {
-        window.__lenis.scrollTo(target, { offset: 0, immediate: true });
-      } else {
-        target.scrollIntoView({ behavior: "auto", block: "start" });
-      }
-      history.replaceState(null, "", `#${id}`);
-    });
+    a.addEventListener("click", (e) =>
+      handleAnchorClick(e, a.getAttribute("href")),
+    );
   }
 </script>
 

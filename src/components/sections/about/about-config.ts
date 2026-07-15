@@ -1,8 +1,5 @@
-// Oś scrolla sekcji „O mnie" — stałe współdzielone przez moduł animacji
-// (about-scroll.ts), style (About.astro) i sweep wizualny
-// (tests/visual/about.spec.ts). Wartości „zamrożone" z prototypu referencji
-// (docs/design/o mnie/o-mnie-referencja/) — decyzje portu:
-// docs/analiza-sekcja-o-mnie.md.
+// Oś scrolla sekcji „O mnie" — stałe współdzielone przez moduł animacji,
+// style i sweep wizualny; decyzje portu: docs/analiza-sekcja-o-mnie.md.
 
 /** Próg desktop/mobile w px — MUSI być równy @media (min-width) w About.astro. */
 export const ABOUT_DESKTOP_MIN_PX = 861;

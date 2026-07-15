@@ -157,27 +157,21 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
 </section>
 
 <script>
+  import { handleAnchorClick } from "@/scripts/anchors";
+
   // Animacje tylko przy dozwolonym ruchu — ta sama bramka co Lenis
   // w BaseLayout; przy reduce statyczny układ realizuje czysty CSS.
   if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
     import("./about-scroll").then((m) => m.initAboutScroll());
   }
 
-  // CTA finału: skok jak w navbarze (Lenis immediate + podmiana hash),
-  // fallback natywny gdy Lenisa nie ma (reduce / awaria JS nie dotyczy —
-  // wtedy działa goła kotwica).
+  // CTA finału (#contact): wspólny handler kotwic (@/scripts/anchors).
   const cta = document.querySelector<HTMLAnchorElement>("#about .om-cta");
-  cta?.addEventListener("click", (e) => {
-    const target = document.getElementById("contact");
-    if (!target) return;
-    e.preventDefault();
-    if (window.__lenis) {
-      window.__lenis.scrollTo(target, { offset: 0, immediate: true });
-    } else {
-      target.scrollIntoView({ behavior: "auto", block: "start" });
-    }
-    history.replaceState(null, "", "#contact");
-  });
+  if (cta) {
+    cta.addEventListener("click", (e) =>
+      handleAnchorClick(e, cta.getAttribute("href")),
+    );
+  }
 </script>
 
 <style>

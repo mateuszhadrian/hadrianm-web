@@ -6,12 +6,15 @@
 // Mobile: zwykły flow; lekkie dwukierunkowe reveale (transform/opacity),
 // blur wyłącznie w jednorazowym wyłonieniu portretu (bez scrubu).
 //
-// Moduł ładowany DYNAMICZNIE tylko przy prefers-reduced-motion: no-preference
-// (bramka w About.astro — wzorzec jak Lenis w BaseLayout); przy reduce układ
-// statyczny realizuje czysty CSS. Warunek motionOK w matchMedia niżej to pas
-// bezpieczeństwa na zmianę preferencji w trakcie sesji (gsap sam rewertuje).
+// Ładowany DYNAMICZNIE z bramki motion w About.astro; pas bezpieczeństwa
+// motionOK w runtime: motionMedia() w @/scripts/section-helpers.
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  makeProgress,
+  motionMedia,
+  scopedQueries,
+} from "@/scripts/section-helpers";
 import {
   ABOUT_CH_IN,
   ABOUT_CH_OUT,
@@ -27,9 +30,7 @@ export function initAboutScroll(): void {
   const section = document.querySelector<HTMLElement>("#about");
   if (!section) return;
 
-  const q = (s: string) => section.querySelector<HTMLElement>(s);
-  const qa = (s: string) =>
-    Array.from(section.querySelectorAll<HTMLElement>(s));
+  const { q, qa } = scopedQueries(section);
 
   const els = {
     stage: q(".om-stage"),
@@ -63,14 +64,10 @@ export function initAboutScroll(): void {
   const pcount = els.pcount;
 
   /* ── progres 01–04 (desktop) ── */
-  let stageIdx = -1;
-  function setStage(i: number): void {
-    if (i === stageIdx) return;
-    stageIdx = i;
-    els.ticks.forEach((t, k) => t.classList.toggle("on", k === i));
-    pcount.textContent = `${String(i + 1).padStart(2, "0")} / 04`;
-    final.classList.toggle("on", i === 3); // CTA klikalne dopiero w finale
-  }
+  const progress = makeProgress(els.ticks, pcount, 4, {
+    // CTA klikalne dopiero w finale
+    onChange: (i) => final.classList.toggle("on", i === 3),
+  });
 
   /* ═══ DESKTOP: przypięta scena + scrub ═══ */
   function buildDesktop(): void {
@@ -182,7 +179,7 @@ export function initAboutScroll(): void {
       onUpdate(self) {
         const p = self.progress;
         const [s1, s2, s3] = ABOUT_STAGE_THRESHOLDS;
-        setStage(p < s1 ? 0 : p < s2 ? 1 : p < s3 ? 2 : 3);
+        progress.set(p < s1 ? 0 : p < s2 ? 1 : p < s3 ? 2 : 3);
       },
     });
   }
@@ -253,29 +250,15 @@ export function initAboutScroll(): void {
   }
 
   /* ═══ matchMedia: desktop / mobile (reduce → moduł w ogóle nieładowany) ═══ */
-  const mm = gsap.matchMedia();
-  mm.add(
-    {
-      isDesktop: `(min-width: ${ABOUT_DESKTOP_MIN_PX}px)`,
-      motionOK: "(prefers-reduced-motion: no-preference)",
-    },
-    (ctx) => {
-      const { isDesktop, motionOK } = ctx.conditions as {
-        isDesktop: boolean;
-        motionOK: boolean;
-      };
-      if (!motionOK) return;
-      if (isDesktop) buildDesktop();
-      else buildMobile();
-      return () => {
-        // Klasy stanu poza kontrolą gsap (setStage) — sprzątamy sami.
-        els.ticks.forEach((t, k) => t.classList.toggle("on", k === 0));
-        final.classList.remove("on");
-        pcount.textContent = "01 / 04";
-        stageIdx = -1;
-      };
-    },
-  );
+  motionMedia(ABOUT_DESKTOP_MIN_PX, (isDesktop) => {
+    if (isDesktop) buildDesktop();
+    else buildMobile();
+    return () => {
+      // Klasy stanu poza kontrolą gsap (progress) — sprzątamy sami.
+      progress.reset();
+      final.classList.remove("on");
+    };
+  });
 
   // Pozycje triggerów po zbudowaniu sekcji (notka PORT w referencji).
   ScrollTrigger.refresh();
