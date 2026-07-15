@@ -1,8 +1,5 @@
-// Oś scrolla sekcji „Dla kogo" — stałe współdzielone przez moduł animacji
-// (audience-scroll.ts), style (Audience.astro) i sweep wizualny
-// (tests/visual/audience.spec.ts). Wartości „zamrożone" z prototypu referencji
-// (docs/design/dla-kogo-referencja/) — decyzje portu:
-// docs/analiza-sekcja-dla-kogo.md.
+// Oś scrolla sekcji „Dla kogo" — stałe współdzielone przez moduł animacji,
+// style i sweep wizualny; decyzje portu: docs/analiza-sekcja-dla-kogo.md.
 
 /** Próg desktop/mobile w px — MUSI być równy @media (min-width) w Audience.astro. */
 export const AUDIENCE_DESKTOP_MIN_PX = 861;

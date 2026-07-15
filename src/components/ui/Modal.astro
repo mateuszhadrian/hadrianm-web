@@ -2,6 +2,8 @@
 // Generyczny modal (desktop). Reużywalny szkielet — treść przez <slot/>.
 // Sterowany przez window.overlay.open(id) / .close(id) (scripts/overlay.ts):
 // Esc, klik w tło, przycisk ×, focus-trap i blokada scrolla obsługiwane wspólnie.
+import CloseIcon from "./CloseIcon.astro";
+
 interface Props {
   id: string;
   closeLabel?: string;
@@ -30,19 +32,7 @@ const { id, closeLabel = "Zamknij", panelClass } = Astro.props;
       data-overlay-autofocus
       aria-label={closeLabel}
     >
-      <svg
-        width="20"
-        height="20"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="2.2"
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        aria-hidden="true"
-      >
-        <path d="M18 6L6 18M6 6l12 12"></path>
-      </svg>
+      <CloseIcon />
     </button>
     <div class="ov-card__content">
       <slot />

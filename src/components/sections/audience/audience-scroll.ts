@@ -9,12 +9,15 @@
 // w pliku + ostry) — crossfade WYŁĄCZNIE opacity, przeglądarka nie liczy
 // żadnego blura. NIGDY nie animować filter na mobile.
 //
-// Moduł ładowany DYNAMICZNIE tylko przy prefers-reduced-motion: no-preference
-// (bramka w Audience.astro — wzorzec About); przy reduce układ statyczny
-// realizuje czysty CSS. Warunek motionOK w matchMedia niżej to pas
-// bezpieczeństwa na zmianę preferencji w trakcie sesji (gsap sam rewertuje).
+// Ładowany DYNAMICZNIE z bramki motion w Audience.astro; pas bezpieczeństwa
+// motionOK w runtime: motionMedia() w @/scripts/section-helpers.
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  makeProgress,
+  motionMedia,
+  scopedQueries,
+} from "@/scripts/section-helpers";
 import {
   AUDIENCE_DESKTOP_MIN_PX,
   AUDIENCE_FAN,
@@ -29,9 +32,7 @@ export function initAudienceScroll(): void {
   const section = document.querySelector<HTMLElement>("#audience");
   if (!section) return;
 
-  const q = (s: string) => section.querySelector<HTMLElement>(s);
-  const qa = (s: string) =>
-    Array.from(section.querySelectorAll<HTMLElement>(s));
+  const { q, qa } = scopedQueries(section);
 
   const els = {
     stage: q(".dk-stage"),
@@ -69,16 +70,13 @@ export function initAudienceScroll(): void {
   const caps = [cap.dataset.cap1, cap.dataset.cap2, cap.dataset.cap3];
 
   /* ── progres 01–04 + podpis pod stosem (desktop) ── */
-  let stageIdx = -1;
-  function setStage(i: number): void {
-    if (i === stageIdx) return;
-    stageIdx = i;
-    els.ticks.forEach((t, k) => t.classList.toggle("on", k === i));
-    pcount.textContent = `${String(i + 1).padStart(2, "0")} / 04`;
+  const progress = makeProgress(els.ticks, pcount, 4, {
     /* Wstecz do stanu 0 tekst zostaje na caps[0] (ustawiony przy 1) —
        to poprawny podpis karty 1; zachowanie 1:1 z referencją. */
-    if (i > 0) captext.textContent = caps[i - 1] ?? "";
-  }
+    onChange: (i) => {
+      if (i > 0) captext.textContent = caps[i - 1] ?? "";
+    },
+  });
 
   /* ═══ DESKTOP: przypięta scena + scrub ═══
      Okna kart to obrazy (AudienceMockWindow) o natywnym kadrze 880×574
@@ -302,7 +300,7 @@ export function initAudienceScroll(): void {
       onUpdate(self) {
         const p = self.progress;
         const [s1, s2, s3] = AUDIENCE_STAGE_THRESHOLDS;
-        setStage(p < s1 ? 0 : p < s2 ? 1 : p < s3 ? 2 : 3);
+        progress.set(p < s1 ? 0 : p < s2 ? 1 : p < s3 ? 2 : 3);
       },
     });
   }
@@ -359,29 +357,15 @@ export function initAudienceScroll(): void {
   }
 
   /* ═══ matchMedia: desktop / mobile (reduce → moduł w ogóle nieładowany) ═══ */
-  const mm = gsap.matchMedia();
-  mm.add(
-    {
-      isDesktop: `(min-width: ${AUDIENCE_DESKTOP_MIN_PX}px)`,
-      motionOK: "(prefers-reduced-motion: no-preference)",
-    },
-    (ctx) => {
-      const { isDesktop, motionOK } = ctx.conditions as {
-        isDesktop: boolean;
-        motionOK: boolean;
-      };
-      if (!motionOK) return;
-      if (isDesktop) buildDesktop();
-      else buildMobile();
-      return () => {
-        // Stan poza kontrolą gsap (setStage) — sprzątamy sami.
-        els.ticks.forEach((t, k) => t.classList.toggle("on", k === 0));
-        pcount.textContent = "01 / 04";
-        captext.textContent = caps[0] ?? "";
-        stageIdx = -1;
-      };
-    },
-  );
+  motionMedia(AUDIENCE_DESKTOP_MIN_PX, (isDesktop) => {
+    if (isDesktop) buildDesktop();
+    else buildMobile();
+    return () => {
+      // Stan poza kontrolą gsap (progress) — sprzątamy sami.
+      progress.reset();
+      captext.textContent = caps[0] ?? "";
+    };
+  });
 
   // Pozycje triggerów po zbudowaniu sekcji (wzorzec About).
   ScrollTrigger.refresh();

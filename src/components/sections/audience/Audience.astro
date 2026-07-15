@@ -88,7 +88,8 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
       }
     </div>
 
-    <!-- stos kart-dowodów (desktop); podpis DOWÓD x/03 podmienia setStage() -->
+    <!-- stos kart-dowodów (desktop); podpis DOWÓD x/03 podmienia onChange
+         progresu w audience-scroll.ts -->
     <div class="dk-stack" aria-hidden="true">
       {
         screens.map((s) => (
@@ -166,26 +167,21 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
 </section>
 
 <script>
+  import { handleAnchorClick } from "@/scripts/anchors";
+
   // Animacje tylko przy dozwolonym ruchu — ta sama bramka co Lenis
   // w BaseLayout; przy reduce statyczny układ realizuje czysty CSS.
   if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
     import("./audience-scroll").then((m) => m.initAudienceScroll());
   }
 
-  // CTA: skok jak w navbarze (Lenis immediate + podmiana hash),
-  // fallback natywny gdy Lenisa nie ma.
+  // CTA (#services): wspólny handler kotwic (@/scripts/anchors).
   const cta = document.querySelector<HTMLAnchorElement>("#audience .dk-cta");
-  cta?.addEventListener("click", (e) => {
-    const target = document.getElementById("services");
-    if (!target) return;
-    e.preventDefault();
-    if (window.__lenis) {
-      window.__lenis.scrollTo(target, { offset: 0, immediate: true });
-    } else {
-      target.scrollIntoView({ behavior: "auto", block: "start" });
-    }
-    history.replaceState(null, "", "#services");
-  });
+  if (cta) {
+    cta.addEventListener("click", (e) =>
+      handleAnchorClick(e, cta.getAttribute("href")),
+    );
+  }
 </script>
 
 <style>

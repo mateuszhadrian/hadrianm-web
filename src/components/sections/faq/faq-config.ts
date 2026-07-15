@@ -1,7 +1,5 @@
-// Oś sekcji „FAQ" — stałe współdzielone przez moduł animacji (faq-scroll.ts),
-// akordeon (faq-accordion.ts przez faq-scroll.ts), style (Faq.astro) i testy.
-// Wartości „zamrożone" z prototypu referencji (docs/design/faq-referencja/,
-// FQ_CFG w faq.js) — decyzje portu: docs/analiza-sekcja-faq.md.
+// Oś sekcji „FAQ" — stałe współdzielone przez moduł animacji, akordeon,
+// style i testy; decyzje portu: docs/analiza-sekcja-faq.md.
 
 /** Próg desktop/mobile w px — MUSI być równy @media (min-width) w Faq.astro. */
 export const FAQ_DESKTOP_MIN_PX = 861;

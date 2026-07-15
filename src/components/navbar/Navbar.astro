@@ -500,6 +500,8 @@ const t = {
 </style>
 
 <script>
+  import { handleAnchorClick, scrollToAnchor } from "@/scripts/anchors";
+
   type State = "desktop" | "tablet" | "mobile";
 
   const root = document.querySelector<HTMLElement>("[data-nav]");
@@ -695,31 +697,8 @@ const t = {
     );
 
     // ── przewijanie do sekcji / na górę ──
-    // Klik w nawigację = skok natychmiastowy na każdym urządzeniu (desktop też).
-    // Na desktopie Lenis nadal obsługuje płynny scroll kółkiem, ale skok z menu
-    // robimy bez animacji (immediate), żeby nie przewijać przez całą sekcję.
-    function scrollToTarget(target: HTMLElement | number) {
-      const lenis = window.__lenis;
-      if (lenis) {
-        lenis.scrollTo(target, { offset: 0, immediate: true });
-        return;
-      }
-      if (typeof target === "number") {
-        window.scrollTo({ top: target, behavior: "auto" });
-      } else {
-        target.scrollIntoView({ behavior: "auto", block: "start" });
-      }
-    }
-
-    // Przechwytuje klik w kotwicę (#sekcja) i przewija do niej zamiast skoku.
-    function handleAnchorClick(e: MouseEvent, href: string | null) {
-      if (!href || !href.startsWith("#")) return;
-      const el = document.getElementById(href.slice(1));
-      if (!el) return;
-      e.preventDefault();
-      scrollToTarget(el);
-      history.replaceState(null, "", href); // odśwież URL bez dodatkowego skoku
-    }
+    // Wspólny handler kotwic (@/scripts/anchors): Lenis immediate + podmiana
+    // hash, fallback natywny.
 
     // desktop / tablet: linki w pasku
     links
@@ -744,7 +723,7 @@ const t = {
     brand.addEventListener("click", (e) => {
       e.preventDefault();
       closeMenu();
-      scrollToTarget(0);
+      scrollToAnchor(0);
       history.replaceState(
         null,
         "",

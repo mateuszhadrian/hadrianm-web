@@ -358,6 +358,16 @@ tweenów). Sugerowana lokalizacja: `src/scripts/section-helpers.ts`
 
 ### 3.5 [ŚREDNI, OSTROŻNIE] Wspólne komponenty Astro `SectionTag` / `SectionProgress`
 
+> ⚠️ **Korekta z wdrożenia (2026-07-15, Etap 4b):** premisa „bajt-identyczne
+> poza z-index i liczbą ticków" NIE potwierdziła się w kodzie: `.of-tag` ma
+> w bazie własne `position/left/top`, `.of-progress` jest `fixed`
+> z transition i regułą `.of.of-prog-on`, a `.ch-para` About↔Audience różni
+> się CELOWO kolorem (komentarz w Audience.astro). Realna identyczność
+> tag/progres/`.ch-*` to 2 wystąpienia (About↔Audience), poniżej progu ≥3
+> — decyzją Mateusza (wariant A) wdrożono z tej sekcji wyłącznie `CloseIcon`
+> (`src/components/ui/CloseIcon.astro`); resztę odłożono do czasu trzeciej
+> identycznej sekcji (wzorzec `createPinnedScrub`, §3.4).
+
 Markup + CSS bajt-identyczne (poza `z-index` i liczbą ticków) w trzech
 sekcjach: tag `About.astro:103–106`+CSS`263–281` ↔
 `Audience.astro:111–114`+`234–252` ↔ `Services.astro:99–102`+`291–310`;

@@ -9,6 +9,7 @@
 // Teksty UI (etykiety [ KOPIUJ ] / „Wysyłam…") przychodzą przez
 // data-atrybuty z Contact.astro — moduł nie zna i18n.
 import { EMAIL_RE, MESSAGE_MIN, MIN_FILL_MS } from "@/lib/contact-form";
+import { scrollToAnchor } from "@/scripts/anchors";
 import { toast } from "@/components/ui/toast/toast";
 import {
   CONTACT_ENDPOINT,
@@ -339,17 +340,13 @@ function initForm(section: HTMLElement): void {
     });
 }
 
-/* ── 3. „Do góry ↑" — Lenis jak w navbarze/FAQ, fallback natywny ── */
+/* ── 3. „Do góry ↑" — wspólny skok (@/scripts/anchors), URL bez hasha ── */
 function initFooterTop(section: HTMLElement): void {
   section
     .querySelector<HTMLAnchorElement>(".kt-fleg .up")
     ?.addEventListener("click", (e) => {
       e.preventDefault();
-      if (window.__lenis) {
-        window.__lenis.scrollTo(0, { immediate: true });
-      } else {
-        window.scrollTo({ top: 0, behavior: "auto" });
-      }
+      scrollToAnchor(0);
       history.replaceState(null, "", window.location.pathname);
     });
 }

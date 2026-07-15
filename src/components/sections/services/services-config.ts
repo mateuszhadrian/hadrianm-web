@@ -1,8 +1,5 @@
-// Oś scrolla sekcji „Oferta" — stałe współdzielone przez moduł animacji
-// (services-scroll.ts), style (Services.astro) i sweep wizualny
-// (tests/visual/services.spec.ts). Wartości „zamrożone" z prototypu referencji
-// (docs/design/oferta-referencja/, OF_CFG w oferta.js) — decyzje portu:
-// docs/analiza-sekcja-oferta.md.
+// Oś scrolla sekcji „Oferta" — stałe współdzielone przez moduł animacji,
+// style i sweep wizualny; decyzje portu: docs/analiza-sekcja-oferta.md.
 
 /** Próg desktop/mobile w px — MUSI być równy @media (min-width) w Services.astro. */
 export const SERVICES_DESKTOP_MIN_PX = 861;

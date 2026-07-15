@@ -11,12 +11,16 @@
 // zero pinów, zero mierzenia w rAF (budżet iPhone SE 2020 / tanie Androidy).
 // Pakiety: bez animacji scrollowych (tylko hover w CSS).
 //
-// Moduł ładowany DYNAMICZNIE tylko przy prefers-reduced-motion: no-preference
-// (bramka w Services.astro — wzorzec Audience/About); przy reduce i bez JS
-// statyczny, w pełni widoczny układ realizuje czysty CSS. Warunek motionOK
-// w matchMedia niżej to pas bezpieczeństwa na zmianę preferencji w sesji.
+// Ładowany DYNAMICZNIE z bramki motion w Services.astro; pas bezpieczeństwa
+// motionOK w runtime: motionMedia() w @/scripts/section-helpers.
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ghostParallax,
+  makeProgress,
+  motionMedia,
+  scopedQueries,
+} from "@/scripts/section-helpers";
 import {
   SERVICES_DESKTOP_MIN_PX,
   SERVICES_GHOST_PARALLAX,
@@ -73,9 +77,7 @@ export function initServicesScroll(): void {
   const section = document.querySelector<HTMLElement>("#services");
   if (!section) return;
 
-  const q = (s: string) => section.querySelector<HTMLElement>(s);
-  const qa = (s: string) =>
-    Array.from(section.querySelectorAll<HTMLElement>(s));
+  const { q, qa } = scopedQueries(section);
 
   const els = {
     intro: q(".of-intro"),
@@ -174,59 +176,30 @@ export function initServicesScroll(): void {
     );
   }
 
-  /* ── progres 01–05 (desktop, fixed) ── */
-  let stepIdx = -1;
-  function setStep(i: number): void {
-    if (i === stepIdx) return;
-    stepIdx = i;
-    pcount.textContent = `0${i + 1} / 05`;
-    els.ticks.forEach((t, k) => t.classList.toggle("on", k <= i));
-  }
+  /* ── progres 01–05 (desktop, fixed; ticki kumulatywnie do bieżącego) ── */
+  const progress = makeProgress(els.ticks, pcount, 5, { cumulative: true });
 
   /* ═══ DESKTOP ═══ */
   function buildDesktop(): void {
     readTween(SERVICES_READ);
 
     /* ghost „oferta": leniwy parallax */
-    gsap.fromTo(
-      ghost,
-      { y: 0 },
-      {
-        y: 90,
-        ease: "none",
-        scrollTrigger: {
-          trigger: intro,
-          start: "top bottom",
-          end: "bottom top",
-          scrub: true,
-        },
-      },
-    );
+    ghostParallax(ghost, intro, [0, 90]);
 
     threadTween(SERVICES_THREAD);
 
     /* cyfry-ghost: parallax ±SERVICES_GHOST_PARALLAX */
     for (const g of els.ghostds) {
-      gsap.fromTo(
-        g,
-        { y: SERVICES_GHOST_PARALLAX },
-        {
-          y: -SERVICES_GHOST_PARALLAX,
-          ease: "none",
-          scrollTrigger: {
-            trigger: g.parentElement,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-        },
-      );
+      ghostParallax(g, g.parentElement!, [
+        SERVICES_GHOST_PARALLAX,
+        -SERVICES_GHOST_PARALLAX,
+      ]);
     }
 
     stepTriggers(false);
 
     /* progres: widoczny w trakcie procesu, ticki wg progu `lit` kroku */
-    setStep(0);
+    progress.set(0);
     ScrollTrigger.create({
       trigger: proces,
       start: "top 55%",
@@ -237,8 +210,8 @@ export function initServicesScroll(): void {
       ScrollTrigger.create({
         trigger: step,
         start: SERVICES_STEP_LIT,
-        onEnter: () => setStep(i),
-        onLeaveBack: () => setStep(Math.max(0, i - 1)),
+        onEnter: () => progress.set(i),
+        onLeaveBack: () => progress.set(Math.max(0, i - 1)),
       });
     });
   }
@@ -251,32 +224,18 @@ export function initServicesScroll(): void {
   }
 
   /* ═══ matchMedia: desktop / mobile (reduce → moduł w ogóle nieładowany) ═══ */
-  const mm = gsap.matchMedia();
-  mm.add(
-    {
-      isDesktop: `(min-width: ${SERVICES_DESKTOP_MIN_PX}px)`,
-      motionOK: "(prefers-reduced-motion: no-preference)",
-    },
-    (ctx) => {
-      const { isDesktop, motionOK } = ctx.conditions as {
-        isDesktop: boolean;
-        motionOK: boolean;
-      };
-      if (!motionOK) return;
-      if (isDesktop) buildDesktop();
-      else buildMobile();
-      return () => {
-        // Stan poza kontrolą gsap (klasy on/lit/of-prog-on, ticki) — sprzątamy sami.
-        section.classList.remove("of-prog-on");
-        for (const step of els.steps) step.classList.remove("on", "lit");
-        endcap.classList.remove("on");
-        introhint.classList.remove("on");
-        els.ticks.forEach((t, k) => t.classList.toggle("on", k === 0));
-        pcount.textContent = "01 / 05";
-        stepIdx = -1;
-      };
-    },
-  );
+  motionMedia(SERVICES_DESKTOP_MIN_PX, (isDesktop) => {
+    if (isDesktop) buildDesktop();
+    else buildMobile();
+    return () => {
+      // Stan poza kontrolą gsap (klasy on/lit/of-prog-on, ticki) — sprzątamy sami.
+      section.classList.remove("of-prog-on");
+      for (const step of els.steps) step.classList.remove("on", "lit");
+      endcap.classList.remove("on");
+      introhint.classList.remove("on");
+      progress.reset();
+    };
+  });
 
   // Pozycje triggerów po zbudowaniu sekcji (wzorzec About/Audience).
   ScrollTrigger.refresh();

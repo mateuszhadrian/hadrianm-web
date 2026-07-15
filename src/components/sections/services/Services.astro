@@ -237,29 +237,22 @@ const extras = [
 </section>
 
 <script>
+  import { handleAnchorClick } from "@/scripts/anchors";
+
   // Animacje tylko przy dozwolonym ruchu — ta sama bramka co Lenis
   // w BaseLayout; przy reduce statyczny układ realizuje czysty CSS.
   if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
     import("./services-scroll").then((m) => m.initServicesScroll());
   }
 
-  // Kotwice CTA sekcji (#packages, #contact): skok jak w navbarze
-  // (Lenis immediate + podmiana hash), fallback natywny gdy Lenisa nie ma.
+  // Kotwice CTA sekcji (#packages, #contact): wspólny handler kotwic
+  // (@/scripts/anchors).
   for (const a of document.querySelectorAll<HTMLAnchorElement>(
     '#services a[href^="#"]',
   )) {
-    a.addEventListener("click", (e) => {
-      const id = a.getAttribute("href")?.slice(1);
-      const target = id ? document.getElementById(id) : null;
-      if (!target) return;
-      e.preventDefault();
-      if (window.__lenis) {
-        window.__lenis.scrollTo(target, { offset: 0, immediate: true });
-      } else {
-        target.scrollIntoView({ behavior: "auto", block: "start" });
-      }
-      history.replaceState(null, "", `#${id}`);
-    });
+    a.addEventListener("click", (e) =>
+      handleAnchorClick(e, a.getAttribute("href")),
+    );
   }
 </script>
 

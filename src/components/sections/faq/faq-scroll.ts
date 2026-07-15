@@ -14,13 +14,17 @@
 // więc triggery sekcji niżej (Kontakt) muszą dostać świeże pozycje
 // (Lenis sam nadąża).
 //
-// Moduł ładowany DYNAMICZNIE tylko przy prefers-reduced-motion:
-// no-preference (bramka w Faq.astro — wzorzec Audience/Services/About);
-// przy reduce akordeon działa bez tweenów (sam faq-accordion.ts), a pełną
-// widoczność treści realizuje czysty CSS. Warunek motionOK w matchMedia
-// niżej to pas bezpieczeństwa na zmianę preferencji w trakcie sesji.
+// Ładowany DYNAMICZNIE z bramki motion w Faq.astro (przy reduce akordeon
+// działa bez tweenów — sam faq-accordion.ts); pas bezpieczeństwa motionOK
+// w runtime: motionMedia() w @/scripts/section-helpers.
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import {
+  ghostParallax,
+  motionMedia,
+  revealOnce,
+  scopedQueries,
+} from "@/scripts/section-helpers";
 import { initFaqAccordion, type FaqHeightAnimator } from "./faq-accordion";
 import {
   FAQ_CLOSE_DUR,
@@ -38,7 +42,7 @@ export function initFaqScroll(): void {
   const section = document.querySelector<HTMLElement>("#faq");
   if (!section) return;
 
-  const q = (s: string) => section.querySelector<HTMLElement>(s);
+  const { q } = scopedQueries(section);
   const head = q(".fq-head");
   const ghost = q(".fq-ghost");
   const list = q(".fq-list");
@@ -83,60 +87,15 @@ export function initFaqScroll(): void {
   initFaqAccordion(section, animator);
 
   /* ── wejścia: 3 × once → klasa .on (animuje CSS transition) ── */
-  if (head && ghost) {
-    ScrollTrigger.create({
-      trigger: head,
-      start: FAQ_HEAD_START,
-      once: true,
-      toggleClass: { targets: [head, ghost], className: "on" },
-    });
-  }
-  if (list) {
-    ScrollTrigger.create({
-      trigger: list,
-      start: FAQ_LIST_START,
-      once: true,
-      toggleClass: { targets: list, className: "on" },
-    });
-  }
-  if (cta) {
-    ScrollTrigger.create({
-      trigger: cta,
-      start: FAQ_CTA_START,
-      once: true,
-      toggleClass: { targets: cta, className: "on" },
-    });
-  }
+  if (head && ghost) revealOnce(head, FAQ_HEAD_START, [head, ghost]);
+  if (list) revealOnce(list, FAQ_LIST_START);
+  if (cta) revealOnce(cta, FAQ_CTA_START);
 
   /* ── desktop: leniwy parallax ghosta (sam transform, scrub) ── */
-  const mm = gsap.matchMedia();
-  mm.add(
-    {
-      isDesktop: `(min-width: ${FAQ_DESKTOP_MIN_PX}px)`,
-      motionOK: "(prefers-reduced-motion: no-preference)",
-    },
-    (ctx) => {
-      const { isDesktop, motionOK } = ctx.conditions as {
-        isDesktop: boolean;
-        motionOK: boolean;
-      };
-      if (!motionOK || !isDesktop || !ghost) return;
-      gsap.fromTo(
-        ghost,
-        { y: FAQ_GHOST_PARALLAX[0] },
-        {
-          y: FAQ_GHOST_PARALLAX[1],
-          ease: "none",
-          scrollTrigger: {
-            trigger: section,
-            start: "top bottom",
-            end: "bottom top",
-            scrub: true,
-          },
-        },
-      );
-    },
-  );
+  motionMedia(FAQ_DESKTOP_MIN_PX, (isDesktop) => {
+    if (!isDesktop || !ghost) return;
+    ghostParallax(ghost, section, FAQ_GHOST_PARALLAX);
+  });
 
   // Pozycje triggerów po zbudowaniu sekcji (wzorzec pozostałych sekcji).
   ScrollTrigger.refresh();
