@@ -15,5 +15,13 @@ paths:
 - Lenis ładowany tylko przy `prefers-reduced-motion: no-preference`
   (bramka w `BaseLayout`); instancja wystawiona jako `window.__lenis`
   (używa jej navbar do `scrollTo`).
+- Guard pinch/zoom (`multiTouch`/`isZoomed` + opcja `prevent` w gałęzi
+  touch) to NAPRAWIONY BUG (wystrzał scrolla po pinchu; analiza §2.1
+  w `docs/first-bigger-improvement-refactor-analysis.md`) — NIE usuwać
+  przy refaktorach. Lenis 1.3.x czyta tylko `targetTouches[0]`, więc
+  pinch generuje szarpane delty, a `touchInertiaExponent` je potęguje.
+  NIE zastępować `lenis.stop()` — w stanie stopped Lenis nadal robi
+  `preventDefault` i zablokowałby natywne panowanie po zoomie; `prevent`
+  ignoruje zdarzenie bez `preventDefault`.
 - Każda zmiana stałych = test na fizycznym macOS (gładkie kółko), myszy
   z zapadkami i telefonie (wybieg po machnięciu).
