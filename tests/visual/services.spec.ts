@@ -6,71 +6,38 @@
 // transitions → stany toggleClass (on/lit) siadają natychmiast; scrubowane
 // tweeny (słowa intro, nić) dogania settle. Decyzje:
 // docs/analiza-sekcja-oferta.md §III.
-import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
-import { assertPreview } from "../helpers/guards";
-import { gotoReady, scrollPageTo, settle } from "../helpers/scroll";
-
-// Te same profile co sweepy hero/audience/about (desktop/iPhone/Pixel).
-const SERVICES_PROJECTS = [
-  "chromium-1920",
-  "webkit-iphone-14",
-  "chromium-pixel-5",
-];
+import { usePreviewGuard } from "../helpers/guards";
+import { scrollPageTo, settle } from "../helpers/scroll";
+import {
+  prepareSweep,
+  sectionAnchors,
+  SWEEP_PROJECTS,
+} from "../helpers/visual";
 
 // Scrub intro (0.45 s) i nici (0.5 s) — lerp asymptotyczny musi usiąść.
 const SETTLE_MS = 2000;
 
-const FREEZE = fileURLToPath(new URL("../helpers/freeze.css", import.meta.url));
-
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 test("sweep scrolla sekcji oferta vs baseline", async ({ page }, testInfo) => {
   test.skip(
-    !SERVICES_PROJECTS.includes(testInfo.project.name),
+    !SWEEP_PROJECTS.includes(testInfo.project.name),
     "sweep services tylko na profilach hero (desktop/iPhone/Pixel)",
   );
   test.setTimeout(240_000);
 
-  await gotoReady(page);
-  await page.addStyleTag({ path: FREEZE });
-  await page.waitForTimeout(400);
+  await prepareSweep(page);
 
-  // Kotwice klatek: pozycja dokumentowa elementu + przesunięcie w vh —
-  // odporne na zmiany długości treści (PL/EN) i wysokości sekcji.
-  const anchors = await page.evaluate(() => {
-    const sec = document.querySelector<HTMLElement>("#services");
-    if (!sec) return null;
-    const abs = (s: string) => {
-      const el = sec.querySelector<HTMLElement>(s);
-      return el ? el.getBoundingClientRect().top + window.scrollY : null;
-    };
-    return {
-      intro: abs(".of-intro"),
-      step2: abs(".of-step:nth-child(2)"),
-      endcap: abs(".of-endcap"),
-      packages: abs("#packages"),
-      extra: abs(".pk-extra"),
-      vh: window.innerHeight,
-      max: document.documentElement.scrollHeight - window.innerHeight,
-    };
+  // Kotwice klatek: patrz sectionAnchors (klatki celują w elementy,
+  // nie w ułamki osi — sekcja we flow).
+  const { anchors, vh, max } = await sectionAnchors(page, "#services", {
+    intro: ".of-intro",
+    step2: ".of-step:nth-child(2)",
+    endcap: ".of-endcap",
+    packages: "#packages",
+    extra: ".pk-extra",
   });
-  if (
-    !anchors ||
-    anchors.intro === null ||
-    anchors.step2 === null ||
-    anchors.endcap === null ||
-    anchors.packages === null ||
-    anchors.extra === null
-  ) {
-    throw new Error("Brak #services lub jego elementów na stronie");
-  }
-
-  const { vh, max } = anchors;
   const frames: Array<{ name: string; y: number }> = [
     // Intro w połowie zakresu czytania (start top 58% → end bottom 44%).
     { name: "01-intro-mid", y: anchors.intro - vh * 0.1 },

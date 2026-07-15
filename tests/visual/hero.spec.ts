@@ -5,14 +5,10 @@
 //
 // Baseline'y per-platform (darwin/linux) — procedura aktualizacji:
 // docs/testing-tools-and-environemnts-setup-analysis.md §III.4c.
-import { fileURLToPath } from "node:url";
 import { expect, test } from "@playwright/test";
-import { assertPreview } from "../helpers/guards";
-import { gotoReady, heroScrollRange, scrollPageTo } from "../helpers/scroll";
-
-// Odpowiedniki profili verify-hero (desktop/iPhone/Pixel) — pozostałe
-// projekty pomijamy, żeby nie mnożyć baseline'ów hero ponad potrzebę.
-const HERO_PROJECTS = ["chromium-1920", "webkit-iphone-14", "chromium-pixel-5"];
+import { usePreviewGuard } from "../helpers/guards";
+import { heroScrollRange, scrollPageTo } from "../helpers/scroll";
+import { prepareSweep, SWEEP_PROJECTS } from "../helpers/visual";
 
 // Punkty sweepa jako ułamek zakresu scrolla hero (offsetHeight − innerHeight);
 // ostatni > 1 = tuż za odpięciem sticky (clamp do maks. scrolla strony).
@@ -37,24 +33,16 @@ const FLAKY_RATIO = 0.02;
 const FLAKY_PIXEL5_FRAMES = new Set([0, 1, 2, 3]);
 const FLAKY_PIXEL5_RATIO = 0.01;
 
-const FREEZE = fileURLToPath(new URL("../helpers/freeze.css", import.meta.url));
-
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 test("sweep scrolla hero vs baseline", async ({ page }, testInfo) => {
   test.skip(
-    !HERO_PROJECTS.includes(testInfo.project.name),
+    !SWEEP_PROJECTS.includes(testInfo.project.name),
     "sweep hero tylko na odpowiednikach profili verify-hero",
   );
   test.setTimeout(240_000);
 
-  await gotoReady(page);
-  await page.addStyleTag({ path: FREEZE });
-  await page.waitForTimeout(400);
+  await prepareSweep(page);
 
   const range = await heroScrollRange(page);
   const mask = [page.locator(".screen__video")];

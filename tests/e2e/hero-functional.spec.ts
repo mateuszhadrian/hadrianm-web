@@ -2,7 +2,7 @@
 // wideo mobilne gra w środku sweepa, sticky odpina się na końcu osi,
 // zero błędów konsoli/404 w całym przejeździe.
 import { expect, test } from "@playwright/test";
-import { assertPreview, collectPageIssues } from "../helpers/guards";
+import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
 import {
   gotoReady,
   heroScrollRange,
@@ -10,11 +10,7 @@ import {
   settle,
 } from "../helpers/scroll";
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 test.describe("mobile: wideo ekranów urządzeń", () => {
   test.skip(({ isMobile }) => !isMobile, "wideo tylko w układzie mobile");

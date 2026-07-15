@@ -6,17 +6,14 @@
 // seo.spec.ts biega tylko na chromium-1920.
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
+import { useChromium1920Only } from "../helpers/guards";
 import { gotoReady } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
 
-// eslint-disable-next-line no-empty-pattern -- Playwright wymaga destrukturyzacji fixtures
-test.beforeEach(async ({}, testInfo) => {
-  test.skip(
-    testInfo.project.name !== "chromium-1920",
-    "treść/meta polityki są niezależne od profilu — jeden projekt wystarczy",
-  );
-});
+useChromium1920Only(
+  "treść/meta polityki są niezależne od profilu — jeden projekt wystarczy",
+);
 
 const PAGES = [
   {

@@ -12,14 +12,11 @@
 import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
-import { assertPreview } from "../helpers/guards";
+import { CONTACT_DESKTOP_MIN_PX } from "../../src/components/sections/contact/contact-config";
+import { usePreviewGuard } from "../helpers/guards";
 import { gotoReady, settle } from "../helpers/scroll";
 
-test.beforeAll(async ({ browser }) => {
-  const page = await browser.newPage();
-  await assertPreview(page);
-  await page.close();
-});
+usePreviewGuard();
 
 const STUB_TOKEN = "e2e-turnstile-stub-token";
 
@@ -477,7 +474,7 @@ test("mobile: meta ukryta, desktop: widoczna", async ({ page }) => {
   await gotoContact(page);
   const width = page.viewportSize()?.width ?? 0;
   const meta = page.locator("#contact .kt-meta");
-  if (width < 861) {
+  if (width < CONTACT_DESKTOP_MIN_PX) {
     await expect(meta).toBeHidden();
   } else {
     await expect(meta).toBeVisible();
