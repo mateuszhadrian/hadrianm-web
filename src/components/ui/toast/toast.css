@@ -8,8 +8,7 @@
 
    Paleta/typografia z tokenów projektu (global.css): --ink jako inkt tekstu,
    font-body (Archivo Variable) na treść, font-mono (systemowy) na glif.
-   Kolory typów w oklch z fallbackiem sRGB (iOS < 15.4), wzorzec jak
-   sekcyjne --sec-* w global.css.
+   Kolory typów w oklch z fallbackiem sRGB (iOS < 15.4).
    ============================================================================ */
 
 @layer components {

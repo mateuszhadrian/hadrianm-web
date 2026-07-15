@@ -81,9 +81,8 @@ export function initAudienceScroll(): void {
   }
 
   /* ═══ DESKTOP: przypięta scena + scrub ═══
-     Okna kart to teraz obrazy (AudienceMockWindow) o natywnym kadrze 880×574
-     i szerokości 100% — nie ma już kanwy .mk-fit do skalowania (fitMocks
-     usunięty wraz z inline-mockami). */
+     Okna kart to obrazy (AudienceMockWindow) o natywnym kadrze 880×574
+     i szerokości 100%. */
   function buildDesktop(): void {
     const F = AUDIENCE_FAN;
     const [c1, c2, c3] = els.cards;

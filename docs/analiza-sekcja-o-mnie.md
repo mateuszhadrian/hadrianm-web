@@ -35,7 +35,9 @@
    `src/assets/about/` + `astro:assets <Image>` (srcset build-time).
    Ścieżka R2/`imgAt()` pozostaje wyłącznie dla realizacji.
 3. **Pipeline obrazu** — skrypt dev-only `scripts/prepare-about-photo.mjs`
-   (sharp, jak `optimize-drewelomet*.mjs`), źródło: PNG z referencji
+   (sharp; _ℹ️ AKTUALIZACJA (2026-07-15): porównanie do
+   `optimize-drewelomet*.mjs` nieaktualne — skrypty usunięte w refactorze
+   porządkującym, §6.4_), źródło: PNG z referencji
    (1510×1509, alfa, 2.6 MB). Generuje i commituje się do
    `src/assets/about/`:
    - `portrait.webp` — bezstratnie wyglądający webp z alfą (q≈90) jako
@@ -74,7 +76,9 @@
    (brak warstwy `data-bg="about"` = warstwa work naturalnie gaśnie przy
    wjeździe about). Tokeny `--sec-about-*` (teal) NIE są używane — design
    sekcji ma własny czerwony żar; do ewentualnego sprzątnięcia, gdy
-   zapadnie decyzja o tłach pozostałych sekcji.
+   zapadnie decyzja o tłach pozostałych sekcji. _ℹ️ AKTUALIZACJA
+   (2026-07-15): sprzątnięte — cały blok `--sec-*` usunięty z `global.css`
+   (refactor porządkujący, §6.2)._
 10. **Kolory/fonty z tokenów projektu** — `--ink`, `--muted`, `--faint`,
     `--line`, `--accent`, `--accent-gradient`, `--font-*` z `global.css`
     pokrywają się z paletą referencji (drobne różnice alfa w `--muted`

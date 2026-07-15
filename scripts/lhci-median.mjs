@@ -1,5 +1,7 @@
 // Mediany kluczowych metryk z przebiegów Lighthouse CI (pomiar bazowy +
 // ratchet — docs/testing-tools-and-environemnts-setup-analysis.md §III.5).
+// Narzędzie MANUALNE — nie jest wpięte w CI (w ci.yml występuje tylko
+// w komentarzu); służy do ręcznego ratchetowania budżetów lighthouserc*.
 //
 // Użycie: pnpm exec lhci collect --config=<cfg> [--numberOfRuns=5]
 //         node scripts/lhci-median.mjs [katalog=.lighthouseci]
