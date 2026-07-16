@@ -1,15 +1,18 @@
 // Sekcja „Oferta" — animacje scrolla (port oferta.js z referencji
-// docs/design/oferta-referencja/; decyzje: docs/analiza-sekcja-oferta.md).
+// docs/design/oferta-referencja/; decyzje: docs/analiza-sekcja-oferta.md,
+// podział na warianty: docs/analiza-podstrony-oferta.md).
 //
-// Desktop (≥SERVICES_DESKTOP_MIN_PX): zero pinów — wszystko w naturalnym flow.
-// Intro: słowa (spany .of-w) zapala jeden tween ze staggerem pod scrubem;
-// nić = scaleY na .of-fill (czysty transform); kroki/węzły dostają klasy
-// on/lit z progów ScrollTriggera (animuje CSS transition); cyfry-ghost mają
-// leniwy parallax; fixed progres 01–05 włącza klasa of-prog-on NA SEKCJI.
-// Mobile: wersja lekka — zapalanie ZDANIAMI (kilka spanów zamiast ~80),
-// nić = ten sam pojedynczy scaleY, kroki wyłącznie toggleClass. Zero filtrów,
-// zero pinów, zero mierzenia w rAF (budżet iPhone SE 2020 / tanie Androidy).
-// Pakiety: bez animacji scrollowych (tylko hover w CSS).
+// Dwa animowane warianty (bramka data-variant w Services.astro; wariant
+// packages jest statyczny i tego modułu nie ładuje):
+// - teaser (strona główna): słowa intro (spany .of-w) zapala jeden tween ze
+//   staggerem pod scrubem (mobile: zdaniami — kilka spanów zamiast ~80),
+//   ghost „oferta" ma leniwy parallax (desktop), para CTA dostaje reveal
+//   klasą on (animuje CSS transition);
+// - process (/proces-wspolpracy/): nić = scaleY na .of-fill (czysty
+//   transform); kroki/węzły dostają klasy on/lit z progów ScrollTriggera;
+//   cyfry-ghost mają leniwy parallax (desktop); fixed progres 01–05 włącza
+//   klasa of-prog-on NA SEKCJI. Mobile: nić + toggleClass, zero filtrów,
+//   zero pinów (budżet iPhone SE 2020 / tanie Androidy).
 //
 // Ładowany DYNAMICZNIE z bramki motion w Services.astro; pas bezpieczeństwa
 // motionOK w runtime: motionMedia() w @/scripts/section-helpers.
@@ -73,16 +76,65 @@ function splitLit(section: HTMLElement, mode: "words" | "sentences"): void {
   }
 }
 
-export function initServicesScroll(): void {
-  const section = document.querySelector<HTMLElement>("#services");
-  if (!section) return;
-
+/* ═══ TEASER (strona główna): intro czytane scrollem + reveal pary CTA ═══ */
+function initTeaser(section: HTMLElement): void {
   const { q, qa } = scopedQueries(section);
-
   const els = {
     intro: q(".of-intro"),
-    introhint: q(".of-introhint"),
     ghost: q(".of-ghost"),
+    ctas: q(".of-ctas"),
+  };
+  if (!els.intro || !els.ghost || !els.ctas) return;
+  const { intro, ghost, ctas } = els;
+
+  const isMobileNow = !matchMedia(`(min-width: ${SERVICES_DESKTOP_MIN_PX}px)`)
+    .matches;
+  splitLit(section, isMobileNow ? "sentences" : "words");
+
+  /* Zapalanie intro pod scrubem — wspólny kształt tweena desktop/mobile. */
+  function readTween(cfg: typeof SERVICES_READ): void {
+    const spans = qa(".of-lit .of-w");
+    gsap.to(spans, {
+      opacity: 1,
+      ease: "none",
+      duration: cfg.duration,
+      stagger: { each: cfg.span / Math.max(spans.length, 1) },
+      scrollTrigger: {
+        trigger: intro,
+        start: cfg.start,
+        end: cfg.end,
+        scrub: cfg.scrub,
+      },
+    });
+  }
+
+  motionMedia(SERVICES_DESKTOP_MIN_PX, (isDesktop) => {
+    readTween(isDesktop ? SERVICES_READ : SERVICES_READ_MOBILE);
+
+    /* ghost „oferta": leniwy parallax (desktop) */
+    if (isDesktop) ghostParallax(ghost, intro, [0, 90]);
+
+    /* para CTA: reveal jak dawny introhint (animuje CSS transition) */
+    ScrollTrigger.create({
+      trigger: ctas,
+      start: "top 92%",
+      toggleClass: { targets: ctas, className: "on" },
+    });
+
+    return () => {
+      // Stan poza kontrolą gsap (klasa on) — sprzątamy sami.
+      ctas.classList.remove("on");
+    };
+  });
+
+  // Pozycje triggerów po zbudowaniu sekcji (wzorzec About/Audience).
+  ScrollTrigger.refresh();
+}
+
+/* ═══ PROCESS (/proces-wspolpracy/): nić + kroki + progres ═══ */
+function initProcess(section: HTMLElement): void {
+  const { q, qa } = scopedQueries(section);
+  const els = {
     proces: q(".of-proces"),
     fill: q(".of-fill"),
     steps: qa(".of-step"),
@@ -92,9 +144,6 @@ export function initServicesScroll(): void {
     pcount: q(".of-progress .pcount"),
   };
   if (
-    !els.intro ||
-    !els.introhint ||
-    !els.ghost ||
     !els.proces ||
     !els.fill ||
     !els.endcap ||
@@ -105,17 +154,13 @@ export function initServicesScroll(): void {
   ) {
     return;
   }
-  const { intro, introhint, ghost, proces, fill, endcap } = els;
+  const { proces, fill, endcap } = els;
   const pcount = els.pcount;
   // Alias po zawężeniu typu: deklaracje function niżej (hoisting) nie widzą
   // narrowingu `section` z wczesnego returnu.
   const root = section;
 
-  const isMobileNow = !matchMedia(`(min-width: ${SERVICES_DESKTOP_MIN_PX}px)`)
-    .matches;
-  splitLit(section, isMobileNow ? "sentences" : "words");
-
-  /* ── wspólne: kroki + węzły + endcap + hint (toggleClass, animuje CSS) ── */
+  /* kroki + węzły + endcap (toggleClass, animuje CSS) */
   function stepTriggers(isMobile: boolean): void {
     for (const step of els.steps) {
       ScrollTrigger.create({
@@ -133,28 +178,6 @@ export function initServicesScroll(): void {
       trigger: endcap,
       start: "top 88%",
       toggleClass: { targets: endcap, className: "on" },
-    });
-    ScrollTrigger.create({
-      trigger: introhint,
-      start: "top 92%",
-      toggleClass: { targets: introhint, className: "on" },
-    });
-  }
-
-  /* Zapalanie intro pod scrubem — wspólny kształt tweena desktop/mobile. */
-  function readTween(cfg: typeof SERVICES_READ): void {
-    const spans = qa(".of-lit .of-w");
-    gsap.to(spans, {
-      opacity: 1,
-      ease: "none",
-      duration: cfg.duration,
-      stagger: { each: cfg.span / Math.max(spans.length, 1) },
-      scrollTrigger: {
-        trigger: intro,
-        start: cfg.start,
-        end: cfg.end,
-        scrub: cfg.scrub,
-      },
     });
   }
 
@@ -179,64 +202,53 @@ export function initServicesScroll(): void {
   /* ── progres 01–05 (desktop, fixed; ticki kumulatywnie do bieżącego) ── */
   const progress = makeProgress(els.ticks, pcount, 5, { cumulative: true });
 
-  /* ═══ DESKTOP ═══ */
-  function buildDesktop(): void {
-    readTween(SERVICES_READ);
+  motionMedia(SERVICES_DESKTOP_MIN_PX, (isDesktop) => {
+    threadTween(isDesktop ? SERVICES_THREAD : SERVICES_THREAD_MOBILE);
+    stepTriggers(!isDesktop);
 
-    /* ghost „oferta": leniwy parallax */
-    ghostParallax(ghost, intro, [0, 90]);
+    if (isDesktop) {
+      /* cyfry-ghost: parallax ±SERVICES_GHOST_PARALLAX */
+      for (const g of els.ghostds) {
+        ghostParallax(g, g.parentElement!, [
+          SERVICES_GHOST_PARALLAX,
+          -SERVICES_GHOST_PARALLAX,
+        ]);
+      }
 
-    threadTween(SERVICES_THREAD);
-
-    /* cyfry-ghost: parallax ±SERVICES_GHOST_PARALLAX */
-    for (const g of els.ghostds) {
-      ghostParallax(g, g.parentElement!, [
-        SERVICES_GHOST_PARALLAX,
-        -SERVICES_GHOST_PARALLAX,
-      ]);
+      /* progres: widoczny w trakcie procesu, ticki wg progu `lit` kroku */
+      progress.set(0);
+      ScrollTrigger.create({
+        trigger: proces,
+        start: "top 55%",
+        end: "bottom 65%",
+        onToggle: (self) => root.classList.toggle("of-prog-on", self.isActive),
+      });
+      els.steps.forEach((step, i) => {
+        ScrollTrigger.create({
+          trigger: step,
+          start: SERVICES_STEP_LIT,
+          onEnter: () => progress.set(i),
+          onLeaveBack: () => progress.set(Math.max(0, i - 1)),
+        });
+      });
     }
 
-    stepTriggers(false);
-
-    /* progres: widoczny w trakcie procesu, ticki wg progu `lit` kroku */
-    progress.set(0);
-    ScrollTrigger.create({
-      trigger: proces,
-      start: "top 55%",
-      end: "bottom 65%",
-      onToggle: (self) => root.classList.toggle("of-prog-on", self.isActive),
-    });
-    els.steps.forEach((step, i) => {
-      ScrollTrigger.create({
-        trigger: step,
-        start: SERVICES_STEP_LIT,
-        onEnter: () => progress.set(i),
-        onLeaveBack: () => progress.set(Math.max(0, i - 1)),
-      });
-    });
-  }
-
-  /* ═══ MOBILE — wersja lekka ═══ */
-  function buildMobile(): void {
-    readTween(SERVICES_READ_MOBILE);
-    threadTween(SERVICES_THREAD_MOBILE);
-    stepTriggers(true);
-  }
-
-  /* ═══ matchMedia: desktop / mobile (reduce → moduł w ogóle nieładowany) ═══ */
-  motionMedia(SERVICES_DESKTOP_MIN_PX, (isDesktop) => {
-    if (isDesktop) buildDesktop();
-    else buildMobile();
     return () => {
-      // Stan poza kontrolą gsap (klasy on/lit/of-prog-on, ticki) — sprzątamy sami.
-      section.classList.remove("of-prog-on");
+      // Stan poza kontrolą gsap (klasy on/lit/of-prog-on, ticki) — sami.
+      root.classList.remove("of-prog-on");
       for (const step of els.steps) step.classList.remove("on", "lit");
       endcap.classList.remove("on");
-      introhint.classList.remove("on");
       progress.reset();
     };
   });
 
   // Pozycje triggerów po zbudowaniu sekcji (wzorzec About/Audience).
   ScrollTrigger.refresh();
+}
+
+export function initServicesScroll(): void {
+  const section = document.querySelector<HTMLElement>("#services");
+  if (!section) return;
+  if (section.dataset.variant === "teaser") initTeaser(section);
+  else if (section.dataset.variant === "process") initProcess(section);
 }

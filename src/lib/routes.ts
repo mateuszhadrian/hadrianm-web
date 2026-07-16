@@ -17,3 +17,13 @@ export const AUDIENCE_PATH: Record<Lang, string> = {
   pl: "/dla-kogo/",
   en: "/en/who-its-for/",
 };
+
+export const SERVICES_PROCESS_PATH: Record<Lang, string> = {
+  pl: "/proces-wspolpracy/",
+  en: "/en/process/",
+};
+
+export const SERVICES_PACKAGES_PATH: Record<Lang, string> = {
+  pl: "/pakiety/",
+  en: "/en/packages/",
+};

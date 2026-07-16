@@ -88,7 +88,14 @@ export const ui = {
     "services.lead2acc": "standard, nie płatna opcja.",
     "services.close":
       "Wybierz pakiet dopasowany do Twoich celów, a jeśli masz wątpliwości — po prostu napisz. Pomogę Ci dobrać optymalne rozwiązanie.",
-    "services.introHint": "Proces współpracy",
+    "services.ctaPackages": "Przeglądaj pakiety",
+    "services.ctaProcess": "Proces współpracy",
+    "services.ctaProcessSub": "Jak wygląda praca ze mną",
+    "services.tagProcess": "Proces",
+    "services.tagPackages": "Pakiety",
+    "services.proc.kick": "Jak wygląda praca ze mną",
+    "services.proc.headLead": "proces",
+    "services.proc.headAccent": "współpracy",
     "services.step": "Krok",
     "services.st1.head": "Rozmowa i cele",
     "services.st1.para":
@@ -160,6 +167,14 @@ export const ui = {
     "services.extra.x3t": "Pomoc z tekstami",
     "services.extra.x3p":
       "redakcja treści, które brzmią profesjonalnie i zachęcają do kontaktu",
+    "processPage.title": "Proces współpracy — hadrianm.pl",
+    "processPage.description":
+      "Pięć kroków od pierwszej rozmowy do startu Twojej strony — zobacz, jak krok po kroku wygląda współpraca ze mną.",
+    "processPage.back": "Wróć",
+    "packagesPage.title": "Pakiety — hadrianm.pl",
+    "packagesPage.description":
+      "Trzy przejrzyste pakiety stron internetowych — od profesjonalnej wizytówki po rozwiązania z rezerwacjami i sprzedażą. Sprawdź zakres i ceny.",
+    "packagesPage.back": "Wróć",
     "about.ghost": "o mnie",
     "about.meta": "Mateusz Hadrian — Software Developer",
     "about.photoAlt": "Mateusz Hadrian — portret",
@@ -351,7 +366,14 @@ export const ui = {
     "services.lead2acc": "standard, not a paid extra.",
     "services.close":
       "Choose the package that matches your goals — and if you're not sure, just write to me. I'll help you pick the best solution.",
-    "services.introHint": "Collaboration process",
+    "services.ctaPackages": "Browse packages",
+    "services.ctaProcess": "Collaboration process",
+    "services.ctaProcessSub": "What working with me looks like",
+    "services.tagProcess": "Process",
+    "services.tagPackages": "Packages",
+    "services.proc.kick": "What working with me looks like",
+    "services.proc.headLead": "collaboration",
+    "services.proc.headAccent": "process",
     "services.step": "Step",
     "services.st1.head": "Conversation and goals",
     "services.st1.para":
@@ -423,6 +445,14 @@ export const ui = {
     "services.extra.x3t": "Help with copy",
     "services.extra.x3p":
       "copy editing that sounds professional and encourages contact",
+    "processPage.title": "Collaboration process — hadrianm.pl",
+    "processPage.description":
+      "Five steps from the first conversation to your website's launch — see, step by step, what working with me looks like.",
+    "processPage.back": "Back",
+    "packagesPage.title": "Packages — hadrianm.pl",
+    "packagesPage.description":
+      "Three clear website packages — from a professional business-card site to solutions with bookings and sales. Check the scope and prices.",
+    "packagesPage.back": "Back",
     "about.ghost": "about me",
     "about.meta": "Mateusz Hadrian — Software Developer",
     "about.photoAlt": "Mateusz Hadrian — portrait",

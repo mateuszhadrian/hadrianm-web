@@ -1,71 +1,77 @@
-// Sekcja „Oferta": kotwice CTA (#packages, #contact), fallback bez JS
-// (pełna treść widoczna — stany startowe animacji uzbraja dopiero klasa .js)
-// i wersja EN. Choreografię scrolla weryfikuje sweep tests/visual/services.spec.ts.
+// Sekcja „Oferta" na stronie głównej = zajawka (wariant teaser): intro
+// czytane scrollem + para CTA na podstrony /proces-wspolpracy/ i /pakiety/
+// (docs/analiza-podstrony-oferta.md). Pełne warianty (proces, pakiety)
+// testuje services-subpages.spec.ts; choreografię scrolla weryfikuje sweep
+// tests/visual/services.spec.ts.
 import { expect, test } from "@playwright/test";
 import { usePreviewGuard } from "../helpers/guards";
-import {
-  expectSectionAtTop,
-  gotoReady,
-  settle,
-  syncLenis,
-} from "../helpers/scroll";
+import { gotoReady } from "../helpers/scroll";
 
 usePreviewGuard();
 
-test("CTA procesu skacze do #packages (hash + pozycja)", async ({ page }) => {
-  await gotoReady(page);
-  const cta = page.locator("#services .of-cta");
-  await cta.scrollIntoViewIfNeeded();
-  // Reveal endcapu (klasa .on z progu ScrollTriggera) musi usiąść przed klikiem.
-  await settle(page, 800);
-  // Sync po natywnym scrollu — handler liczy cel z pozycji Lenisa.
-  await syncLenis(page);
-  await cta.click();
-  await settle(page);
-  await expect(page).toHaveURL(/#packages$/);
-  // Skok immediate — cel ma siąść na górze viewportu (retry: sporadyczny brak
-  // precyzji Lenisa pod obciążeniem N warstw tła).
-  await expectSectionAtTop(page, "packages");
-});
+for (const { home, processHref, packagesHref } of [
+  { home: "/", processHref: "/proces-wspolpracy/", packagesHref: "/pakiety/" },
+  { home: "/en/", processHref: "/en/process/", packagesHref: "/en/packages/" },
+]) {
+  test(`${home}: zajawka — samo intro, para CTA prowadzi na podstrony`, async ({
+    page,
+  }) => {
+    await gotoReady(page, home);
+    const section = page.locator("#services");
+    await expect(section).toHaveAttribute("data-variant", "teaser");
+    // Tylko intro: bez kroków procesu, pakietów i fixed progresu.
+    await expect(section.locator(".of-step")).toHaveCount(0);
+    await expect(section.locator(".pk-col")).toHaveCount(0);
+    await expect(section.locator(".of-progress")).toHaveCount(0);
+    // Para CTA: primary → pakiety, secondary (panel split) → proces.
+    await expect(section.locator(".pp-btn--solid")).toHaveAttribute(
+      "href",
+      packagesHref,
+    );
+    await expect(section.locator(".pp-btn--split")).toHaveAttribute(
+      "href",
+      processHref,
+    );
+  });
+}
 
-test("CTA pakietu prowadzi do #contact", async ({ page }) => {
+test("klik w primary CTA nawiguje na /pakiety/", async ({ page }) => {
   await gotoReady(page);
-  const cta = page.locator("#services .pk-col.mid .pk-cta");
-  await cta.scrollIntoViewIfNeeded();
-  await settle(page, 800);
-  await syncLenis(page);
-  await cta.click();
-  await settle(page);
-  await expect(page).toHaveURL(/#contact$/);
-  await expectSectionAtTop(page, "contact");
+  const btn = page.locator("#services .pp-btn--solid");
+  await btn.scrollIntoViewIfNeeded();
+  // Reveal pary CTA (klasa .on z progu ScrollTriggera) musi usiąść.
+  await page.waitForTimeout(300);
+  await btn.click();
+  await expect(page).toHaveURL(/\/pakiety\/?$/);
+  await expect(
+    page.locator('#services[data-variant="packages"]'),
+  ).toBeAttached();
 });
 
 test.describe("fallback bez JS", () => {
   test.use({ javaScriptEnabled: false });
 
-  test("pełna treść sekcji jest widoczna statycznie (SEO)", async ({
-    page,
-  }) => {
+  test("intro zajawki widoczne statycznie (SEO)", async ({ page }) => {
     await page.goto("/", { waitUntil: "networkidle" });
-    // Intro nieprzygaszone (split na spany robi dopiero JS) + proces + pakiety.
+    // Intro nieprzygaszone (split na spany robi dopiero JS) + para CTA.
     await expect(page.locator("#services .of-lead").first()).toContainText(
       "Każda firma jest na innym etapie",
     );
-    await expect(page.locator("#services .of-step")).toHaveCount(5);
-    await expect(
-      page.locator("#services .of-step article h3").last(),
-    ).toBeVisible();
-    await expect(page.locator("#services .pk-col")).toHaveCount(3);
-    await expect(page.locator("#services .of-cta")).toBeVisible();
+    await expect(page.locator("#services .of-close")).toBeVisible();
+    await expect(page.locator("#services .pp-btn--solid")).toBeVisible();
+    await expect(page.locator("#services .pp-btn--split")).toBeVisible();
   });
 });
 
-test("wersja EN ma przetłumaczoną sekcję services", async ({ page }) => {
+test("wersja EN ma przetłumaczoną zajawkę services", async ({ page }) => {
   await gotoReady(page, "/en/");
-  await expect(page.locator("#services .pk-head h2")).toContainText(
-    "choose your",
+  await expect(page.locator("#services .of-lead").first()).toContainText(
+    "Every company is at a different stage",
   );
-  await expect(
-    page.locator("#services .of-step article h3").first(),
-  ).toContainText("Conversation and goals");
+  await expect(page.locator("#services .pp-btn--solid")).toContainText(
+    "Browse packages",
+  );
+  await expect(page.locator("#services .pp-btn--split")).toContainText(
+    "Collaboration process",
+  );
 });

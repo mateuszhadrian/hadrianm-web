@@ -36,6 +36,10 @@ for (const path of [
   "/en/projects/",
   "/dla-kogo/",
   "/en/who-its-for/",
+  "/proces-wspolpracy/",
+  "/en/process/",
+  "/pakiety/",
+  "/en/packages/",
 ]) {
   test(`axe: brak naruszeń critical/serious na ${path}`, async ({
     page,

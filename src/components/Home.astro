@@ -56,7 +56,12 @@ const t = useTranslations(lang);
          (pełna animacja żyje na podstronie — docs/analiza-podstrona-dla-kogo.md). */
     }
     <Audience lang={lang} variant="teaser" />
-    <Services lang={lang} />
+    {
+      /* Zajawka: intro czytane scrollem + para CTA na /proces-wspolpracy/
+         i /pakiety/ (nić procesu i pakiety żyją na podstronach —
+         docs/analiza-podstrony-oferta.md). */
+    }
+    <Services lang={lang} variant="teaser" />
     <Work lang={lang} />
     <About lang={lang} />
     <Faq lang={lang} />
