@@ -1,6 +1,7 @@
 ---
 paths:
   - "src/content/**"
+  - "src/content.schema.ts"
   - "src/content.config.ts"
   - "public/admin/**"
   - "src/lib/img.ts"
@@ -18,7 +19,9 @@ paths:
 
 ## Schemat danych — zmiana w TRZECH miejscach naraz
 
-1. Zod: `src/content.config.ts` (waliduje w buildzie),
+1. Zod: `src/content.schema.ts` — źródło prawdy (czysty Zod, współdzielony
+   z testem kontraktu CMS); `src/content.config.ts` tylko go importuje
+   i podpina do kolekcji (walidacja w buildzie),
 2. panel: `public/admin/config.yml` (definicje pól, tłumaczenia PL/EN
    przez obiekty `{pl, en}`),
 3. konsumenci: `src/components/sections/work/*`.

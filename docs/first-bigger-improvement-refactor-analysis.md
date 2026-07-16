@@ -1,8 +1,11 @@
 # Analiza optymalizacyjna — pierwszy większy refactor porządkujący
 
 Data analizy: 2026-07-15. Gałąź robocza: `refactor/general-refactor`.
-Status: **AKTUALNY — plan do wdrożenia** (po wdrożeniu wszystkich etapów
-oznaczyć jako historyczny i zaktualizować `docs/README.md`).
+Status: **AKTUALNY — w trakcie wdrażania**: Etapy 1–5 wdrożone i zmergowane
+(PR-y `general-refactor-part1`–`part5`, do 2026-07-16), Etap 6 w PR
+`general-refactor-part6`; pozostał Etap 7 (kandydaci wymagający osobnej
+decyzji) i ręczne sprzątanie R2 (§6.6). Po zamknięciu całości oznaczyć
+jako historyczny i zaktualizować `docs/README.md`.
 
 Dokument jest **samowystarczalny**: zawiera pełny kontekst, ustalenia
 z Mateuszem, znaleziska z odwołaniami plik:linia i plan etapów, tak by

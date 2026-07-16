@@ -39,6 +39,9 @@ na main.
   `pnpm test:smoke:prod` (smoke przeciw produkcji)
 - `pnpm capture:devices` — regeneracja MP4 ekranów urządzeń (użyj skilla
   `/capture-devices`, ma pre-checki)
+- `pnpm capture:ambient-bg` — regeneracja statycznych tekstur tła ambient
+  dla mobile (`public/ambient-bg-mobile-{red,blue}.webp`) po każdej zmianie
+  wyglądu `AmbientBackground` / palety
 - CI (GitHub Actions) na push/PR — 3 joby (required checks na main):
   `quality` (format:check → lint → typecheck → test:unit → build),
   `e2e` (test:e2e + test:visual na artefakcie dist), `lighthouse`
@@ -57,8 +60,22 @@ na main.
   `android-mobile`. Przed edycją przeczytaj reguły, które się załadują.
   Zmiana NIE jest zweryfikowana bez `pnpm test:visual` (sweep w
   `tests/visual/hero.spec.ts`, pixel-diff vs baseline; skill `/verify-mobile`).
+- `src/components/sections/audience/` — sekcja „Dla kogo" (talia kart,
+  pinned+scrub+snap; ekrany-dowody LUMÉA = wypieczone WebP):
+  `docs/analiza-sekcja-dla-kogo.md` +
+  `docs/analiza-podmiana-ekranow-lumea-dla-kogo.md`.
+- `src/components/sections/services/` — sekcja „Oferta" (Nić A + Pakiety,
+  scrub bez pinu): `docs/analiza-sekcja-oferta.md`.
 - `src/components/sections/work/` — Realizacje: dane z Content Collections
-  (`src/content/realizacje/*.json`, schema Zod w `src/content.config.ts`).
+  (`src/content/realizacje/*.json`; schema Zod: `src/content.schema.ts` —
+  źródło prawdy, `content.config.ts` tylko ją importuje).
+- `src/components/sections/about/` — sekcja „O mnie" (pinned+scrub+snap,
+  design „Z mgły"): `docs/analiza-sekcja-o-mnie.md`.
+- `src/components/sections/faq/` — sekcja FAQ („Rejestr"; split
+  akordeon/wejścia, JSON-LD FAQPage): `docs/analiza-sekcja-faq.md`.
+- `src/components/sections/contact/` — formularz kontaktowy (Pages Function
+  `functions/api/kontakt.ts`, Resend + Turnstile):
+  `docs/contact-me-form-analysis-implementation.md`.
 - `src/scripts/smooth-scroll.ts` — Lenis; stałe desktop/touch są rozdzielone
   CELOWO (szczegóły w regułach).
 - `src/lib/img.ts` — `imgAt()`: JEDYNE miejsce wiedzy o rozmiarach obrazów
