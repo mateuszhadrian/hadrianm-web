@@ -1,8 +1,9 @@
 # Analiza: przeniesienie sekcji „Dla kogo" na podstronę `/dla-kogo`
 
-Data: 2026-07-16 · Status: **WDROŻONE (kod + testy)** — baseline'y wizualne
-czekają na akceptację diffów przez Mateusza (procedura §IV.4). Log
-wykonawczy: §VII.
+Data: 2026-07-16 · Status: **WDROŻONE NA PRODUKCJI** (PR #39 zmergowany
+2026-07-16; CI + prod-smoke zielone — smoke po rerunie, znany wyścig
+propagacji Cloudflare; wygląd na fizycznym telefonie potwierdzony przez
+Mateusza). Log wykonawczy: §VII.
 
 ## I. Cel
 
