@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { useTranslations, type Lang } from "@/i18n/utils";
+import { WORK_INDEX_PATH } from "@/lib/routes";
 import { localizeProject } from "./work-data";
 import WorkCard from "./WorkCard.astro";
 import WorkCarousel from "./WorkCarousel.astro";
@@ -16,16 +17,15 @@ const { lang } = Astro.props;
 const t = useTranslations(lang);
 
 const entries = await getCollection("realizacje");
-// Strona główna pokazuje TYLKO pierwsze 3 realizacje (wg `order`). Pełna lista
-// trafi na przyszłą podstronę /realizacje (przycisk „Więcej realizacji").
+// Strona główna pokazuje TYLKO pierwsze 3 realizacje (wg `order`). Pełna
+// lista żyje na podstronie /realizacje/ (przycisk „Więcej realizacji").
 const projects = entries
   .map((e) => e.data)
   .sort((a, b) => a.order - b.order)
   .map((p) => localizeProject(p, lang))
   .slice(0, 3);
 
-// „Więcej realizacji" na razie nigdzie nie prowadzi (placeholder pod podstronę).
-const moreHref = "#";
+const moreHref = WORK_INDEX_PATH[lang];
 ---
 
 <section id="work" class="work">

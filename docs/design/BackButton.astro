@@ -1,0 +1,98 @@
+---
+/**
+ * PowrotButton.astro
+ * Back-button „Ikona okrągła" — okrągły przycisk 46×46 z ikoną strzałki w lewo.
+ * Działa jak „wstecz" w przeglądarce: klik → history.back(). Gdy brak historii
+ * (wejście bezpośrednie / nowa karta), następuje przejście pod `href` (fallback).
+ *
+ * Wyeksportowane z prototypu jako referencja 1:1.
+ * Stack: Astro + Tailwind v4. Font/ikona neutralne (SVG inline, stroke=currentColor).
+ * Motyw „Czerwona Mgła" — kolory jako zmienne CSS (patrz <style>), do podmiany
+ * na globalne tokeny/`@theme` projektu.
+ *
+ * Dostępność: to nawigacja wsteczna, więc renderujemy <a href> (działa bez JS).
+ * Ikona nie ma tekstu — etykietę czyta czytnik ekranu z `aria-label`.
+ *
+ * Użycie:
+ *   ---
+ *   import PowrotButton from "@/components/PowrotButton.astro";
+ *   ---
+ *   <PowrotButton />                         // fallback → "/"
+ *   <PowrotButton href="/realizacje" label="Wróć do realizacji" />
+ */
+interface Props {
+  /** Adres fallback, gdy nie ma historii do cofnięcia. */
+  href?: string;
+  /** Etykieta dla czytników ekranu (przycisk jest tylko-ikonowy). */
+  label?: string;
+  /** Dodatkowe klasy — np. do pozycjonowania w layoutcie. */
+  class?: string;
+}
+
+const {
+  href = "/",
+  label = "Wróć",
+  class: className = "",
+} = Astro.props;
+---
+
+<a
+  href={href}
+  aria-label={label}
+  title={label}
+  data-powrot
+  class:list={[
+    "bb-powrot group grid h-[46px] w-[46px] place-items-center rounded-full border no-underline transition-[border-color,background] duration-300 motion-reduce:transition-none",
+    className,
+  ]}
+>
+  <svg
+    width="18"
+    height="18"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    stroke-width="2.3"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    aria-hidden="true"
+    class="block transition-transform duration-300 ease-[cubic-bezier(.2,.7,.2,1)] group-hover:-translate-x-[3px] motion-reduce:transition-none motion-reduce:group-hover:translate-x-0"
+  >
+    <path d="M19 12H6M11 18l-6-6 6-6"></path>
+  </svg>
+</a>
+
+<style>
+  .bb-powrot {
+    /* — Tokeny motywu (podmień na globalne zmienne projektu) — */
+    --rz-ink: #f5f0ec;
+    --rz-line: rgba(245, 240, 236, 0.14);
+    --rz-line-hover: rgba(245, 240, 236, 0.3);
+    --rz-panel: rgba(245, 240, 236, 0.04);
+    --rz-panel-hover: rgba(245, 240, 236, 0.06);
+    --rz-accent: #e3be7f;
+
+    color: var(--rz-ink);
+    border-color: var(--rz-line);
+    background: var(--rz-panel);
+  }
+
+  .bb-powrot:hover {
+    border-color: var(--rz-line-hover);
+    background: var(--rz-panel-hover);
+    color: var(--rz-accent); /* strzałka (currentColor) rozjaśnia się na akcent */
+  }
+</style>
+
+<script>
+  // Progressive enhancement: klik = cofnięcie w historii przeglądarki.
+  // Bez historii (np. wejście bezpośrednie) zostawiamy domyślne przejście pod href.
+  document.querySelectorAll<HTMLAnchorElement>("a[data-powrot]").forEach((el) => {
+    el.addEventListener("click", (e) => {
+      if (window.history.length > 1) {
+        e.preventDefault();
+        window.history.back();
+      }
+    });
+  });
+</script>

@@ -1,0 +1,144 @@
+---
+// Footer strony — wyodrębniony z finału sekcji Kontakt; współdzielony przez
+// stronę główną (wchłonięty w #contact) i podstrony (np. /realizacje/).
+// Komponent renderuje linię + wiersz (© / social media / polityka + „Do
+// góry"); marginesy i szerokość kontenera kontroluje rodzic. Kolory hoverów
+// i outline'y 1:1 z sekcją kontakt (tokeny projektu).
+import { useTranslations, type Lang } from "@/i18n/utils";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+const socials = [
+  { name: "GitHub", href: "https://github.com/mateuszhadrian" },
+  {
+    name: "LinkedIn",
+    href: "https://www.linkedin.com/in/mateusz-hadrian-554a1313a/",
+  },
+  { name: "Instagram", href: "https://www.instagram.com/hadrianm_" },
+];
+---
+
+<footer class="ft">
+  <div class="ft-line" aria-hidden="true"></div>
+  <div class="ft-row">
+    <div class="ft-c">© 2026 Mateusz Hadrian — hadrianm.pl</div>
+    <nav class="ft-soc" aria-label="Social media">
+      {
+        socials.map((s) => (
+          <a href={s.href} target="_blank" rel="noopener noreferrer">
+            {s.name}{" "}
+            <span class="ft-aw" aria-hidden="true">
+              ↗
+            </span>
+          </a>
+        ))
+      }
+    </nav>
+    <div class="ft-leg">
+      <a href={t("contact.policyHref")}>{t("contact.footPolicy")}</a>
+      <a class="ft-up" href="#top">{t("contact.footUp")}</a>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .ft {
+    position: relative;
+  }
+  .ft a {
+    text-decoration: none;
+  }
+  .ft a:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .ft-line {
+    height: 1px;
+    background: var(--line);
+  }
+  .ft-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 24px;
+    padding-top: 26px;
+    font-family: var(--font-mono), monospace;
+    font-size: 10px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+  }
+  .ft-c {
+    color: var(--faint);
+  }
+  .ft-soc {
+    display: flex;
+    gap: 36px;
+  }
+  .ft-soc a {
+    color: var(--muted);
+    display: inline-flex;
+    align-items: baseline;
+    gap: 7px;
+  }
+  .ft-aw {
+    color: var(--accent);
+  }
+  .ft-soc a:hover {
+    color: var(--ink);
+  }
+  .ft-leg {
+    display: flex;
+    gap: 36px;
+    align-items: center;
+  }
+  .ft-leg a {
+    color: var(--faint);
+  }
+  .ft-leg a:hover {
+    color: var(--ink);
+  }
+  .ft-leg .ft-up {
+    color: var(--muted);
+  }
+  .ft-leg .ft-up:hover {
+    color: var(--ink);
+  }
+
+  /* Mobile — ten sam próg co sekcja kontakt (CONTACT_DESKTOP_MIN_PX = 861,
+     wartość zaszyta też w @media Contact.astro — utrzymywana W PARZE). */
+  @media (max-width: 860.98px) {
+    .ft-row {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 18px;
+      padding-top: 22px;
+    }
+    .ft-soc {
+      flex-wrap: wrap;
+      gap: 16px 26px;
+    }
+    .ft-leg {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+</style>
+
+<script>
+  import { scrollToAnchor } from "@/scripts/anchors";
+
+  // „Do góry ↑" — wspólny skok (@/scripts/anchors): Lenis gdy jest (strona
+  // główna), inaczej natywnie (podstrony bez smooth-scrolla); URL zostaje
+  // bez hasha. Bez JS działa goła kotwica #top.
+  document.querySelectorAll<HTMLAnchorElement>(".ft-up").forEach((a) =>
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      scrollToAnchor(0);
+      history.replaceState(null, "", window.location.pathname);
+    }),
+  );
+</script>

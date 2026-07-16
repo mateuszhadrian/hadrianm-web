@@ -10,6 +10,7 @@
 // składa je z fragmentów po kliknięciu [ POKAŻ ] (antyscraping).
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
+import Footer from "@/components/Footer.astro";
 
 interface Props {
   lang: Lang;
@@ -24,15 +25,6 @@ const topics = [
   t("contact.topic2"),
   t("contact.topic3"),
   t("contact.topic4"),
-];
-
-const socials = [
-  { name: "GitHub", href: "https://github.com/mateuszhadrian" },
-  {
-    name: "LinkedIn",
-    href: "https://www.linkedin.com/in/mateusz-hadrian-554a1313a/",
-  },
-  { name: "Instagram", href: "https://www.instagram.com/hadrianm_" },
 ];
 ---
 
@@ -239,29 +231,8 @@ const socials = [
     </div>
   </div>
 
-  <!-- footer wchłonięty w sekcję (finał strony) -->
-  <footer class="kt-footer">
-    <div class="fline" aria-hidden="true"></div>
-    <div class="kt-frow">
-      <div class="c">© 2026 Mateusz Hadrian — hadrianm.pl</div>
-      <nav class="kt-soc" aria-label="Social media">
-        {
-          socials.map((s) => (
-            <a href={s.href} target="_blank" rel="noopener noreferrer">
-              {s.name}{" "}
-              <span class="aw" aria-hidden="true">
-                ↗
-              </span>
-            </a>
-          ))
-        }
-      </nav>
-      <div class="kt-fleg">
-        <a href={t("contact.policyHref")}>{t("contact.footPolicy")}</a>
-        <a class="up" href="#top">{t("contact.footUp")}</a>
-      </div>
-    </div>
-  </footer>
+  <!-- footer wchłonięty w sekcję (finał strony) — współdzielony komponent -->
+  <Footer lang={lang} />
 </section>
 
 <script>
@@ -983,59 +954,12 @@ const socials = [
     opacity: 1;
   }
 
-  /* ── footer (wchłonięty) ── */
-  .kt-footer {
-    position: relative;
+  /* ── footer (współdzielony komponent Footer.astro, wchłonięty w finał
+     sekcji) — tu tylko osadzenie w layoutcie; :global, bo elementy footera
+     renderuje komponent potomny (scoped atrybuty rodzica ich nie łapią) ── */
+  .kt :global(.ft) {
     z-index: 6;
     margin-top: 96px;
-  }
-  .kt-footer .fline {
-    height: 1px;
-    background: var(--line);
-  }
-  .kt-frow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
-    padding-top: 26px;
-    font-family: var(--font-mono), monospace;
-    font-size: 10px;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-  }
-  .kt-frow .c {
-    color: var(--faint);
-  }
-  .kt-soc {
-    display: flex;
-    gap: 36px;
-  }
-  .kt-soc a {
-    color: var(--muted);
-    display: inline-flex;
-    align-items: baseline;
-    gap: 7px;
-  }
-  .kt-soc a .aw {
-    color: var(--accent);
-  }
-  .kt-soc a:hover {
-    color: var(--ink);
-  }
-  .kt-fleg {
-    display: flex;
-    gap: 36px;
-    align-items: center;
-  }
-  .kt-fleg a {
-    color: var(--faint);
-  }
-  .kt-fleg a:hover {
-    color: var(--ink);
-  }
-  .kt-fleg .up {
-    color: var(--muted);
   }
 
   /* ═══ WEJŚCIA — stany początkowe tylko gdy: JS działa (klasa .js na
@@ -1116,14 +1040,14 @@ const socials = [
       --d: 0.28s;
     }
 
-    .kt.js .kt-footer {
+    .kt.js :global(.ft) {
       opacity: 0;
       transform: translateY(14px);
       transition:
         opacity 0.8s var(--kt-cz),
         transform 0.8s var(--kt-cz);
     }
-    .kt.js .kt-footer.on {
+    .kt.js :global(.ft.on) {
       opacity: 1;
       transform: none;
     }
@@ -1223,22 +1147,8 @@ const socials = [
       font-size: 16px;
     }
 
-    .kt-footer {
+    .kt :global(.ft) {
       margin-top: 72px;
-    }
-    .kt-frow {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 18px;
-      padding-top: 22px;
-    }
-    .kt-soc {
-      flex-wrap: wrap;
-      gap: 16px 26px;
-    }
-    .kt-fleg {
-      width: 100%;
-      justify-content: space-between;
     }
   }
 

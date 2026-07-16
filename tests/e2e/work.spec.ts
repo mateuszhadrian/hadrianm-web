@@ -10,7 +10,7 @@ const ENTRY_COUNT = readdirSync(
   fileURLToPath(new URL("../../src/content/realizacje", import.meta.url)),
 ).filter((f) => f.endsWith(".json")).length;
 
-// Strona główna kapuje listę do 3 (reszta → przyszła podstrona /realizacje).
+// Strona główna kapuje listę do 3 (pełna lista: /realizacje/, work-index.spec.ts).
 const HOME_COUNT = Math.min(3, ENTRY_COUNT);
 
 /** Dociera do kafla i uspokaja scroll (guard „strona w ruchu" blokuje otwarcie

@@ -29,7 +29,7 @@ function isKnown(ruleId: string, target: string): boolean {
   return (KNOWN_VIOLATIONS[ruleId] ?? []).some((re) => re.test(target));
 }
 
-for (const path of ["/", "/en/"]) {
+for (const path of ["/", "/en/", "/realizacje/", "/en/projects/"]) {
   test(`axe: brak naruszeń critical/serious na ${path}`, async ({
     page,
   }, testInfo) => {

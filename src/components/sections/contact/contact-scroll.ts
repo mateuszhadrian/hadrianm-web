@@ -35,7 +35,7 @@ export function initContactScroll(): void {
   const ghost = q(".kt-ghost");
   const side = q(".kt-side");
   const frame = q(".kt-frame");
-  const footer = q(".kt-footer");
+  const footer = q(".ft"); // współdzielony Footer.astro wchłonięty w sekcję
 
   /* ── wejścia: 4 × once → klasa .on (animuje CSS transition) ── */
   if (lead && ghost) revealOnce(lead, CONTACT_LEAD_START, [lead, ghost]);

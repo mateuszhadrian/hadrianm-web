@@ -89,7 +89,7 @@ test("linki polityki na stronie głównej celują w podstrony (PL i EN)", async 
     await gotoReady(page, path);
     const href = ui[lang]["contact.policyHref"];
     await expect(page.locator(`.kt-note a[href="${href}"]`)).toBeAttached();
-    await expect(page.locator(`.kt-fleg a[href="${href}"]`)).toBeAttached();
+    await expect(page.locator(`.ft-leg a[href="${href}"]`)).toBeAttached();
   }
 });
 
@@ -99,7 +99,7 @@ test("strzałka „wstecz” wraca na stronę główną w zapamiętane miejsce",
   await gotoReady(page, "/");
   // Playwright doscrolluje do linku natywnie przy kliknięciu — to zwykła
   // nawigacja stronicowa (bez kotwic), więc sync Lenisa nie jest potrzebny.
-  await page.locator('.kt-fleg a[href="/polityka-prywatnosci/"]').click();
+  await page.locator('.ft-leg a[href="/polityka-prywatnosci/"]').click();
   await expect(page).toHaveURL(/\/polityka-prywatnosci\/?$/);
   const saved = await page.evaluate(() => window.scrollY);
 

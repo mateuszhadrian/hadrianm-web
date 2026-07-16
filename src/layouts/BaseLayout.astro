@@ -22,9 +22,21 @@ import archivoWoff2 from "@fontsource-variable/archivo/files/archivo-latin-wght-
 interface Props {
   title?: string;
   lang?: string;
+  /** Opcjonalny meta description (podstrony; strona główna go nie ustawia). */
+  description?: string;
+  /** Pary hreflang → ścieżka (np. { pl: "/realizacje/", en: "/en/projects/" }). */
+  alternates?: Record<string, string>;
+  /** false = podstrona bez Lenisa (scroll natywny) — patrz
+   *  docs/analiza-podstrona-realizacje.md (D1). */
+  smoothScroll?: boolean;
 }
-const { title = "hadrianm.pl — pracownia stron i aplikacji", lang = "pl" } =
-  Astro.props;
+const {
+  title = "hadrianm.pl — pracownia stron i aplikacji",
+  lang = "pl",
+  description,
+  alternates,
+  smoothScroll = true,
+} = Astro.props;
 
 // Adresy absolutne dla podglądów linków (iMessage/Messenger/X wymagają pełnego URL).
 // W dev bazą jest bieżący host (np. adres w sieci lokalnej), by podgląd linka
@@ -55,6 +67,13 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
       crossorigin
     />
     <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {
+      alternates &&
+        Object.entries(alternates).map(([hl, path]) => (
+          <link rel="alternate" hreflang={hl} href={new URL(path, urlBase)} />
+        ))
+    }
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="hadrianm.pl" />
     <meta property="og:title" content={title} />
@@ -66,12 +85,18 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <meta name="twitter:card" content="summary" />
     <link rel="canonical" href={canonicalUrl} />
   </head>
-  <body>
+  <body data-smooth-scroll={smoothScroll ? "on" : "off"}>
     <slot />
     <Toast />
     <script>
       // Lenis ładowany dynamicznie przy dozwolonym ruchu (config dobiera sam).
-      if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+      // Podstrony bez animacji scrollowych rezygnują z niego w całości
+      // (smoothScroll=false → data-smooth-scroll="off", scroll natywny);
+      // bramka atrybutem, bo skrypt w wyrażeniu Astro traci bundling aliasów.
+      if (
+        document.body.dataset.smoothScroll !== "off" &&
+        matchMedia("(prefers-reduced-motion: no-preference)").matches
+      ) {
         import("@/scripts/smooth-scroll");
       }
     </script>
