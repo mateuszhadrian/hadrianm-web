@@ -27,8 +27,11 @@ interface Props {
   /** Pary hreflang → ścieżka (np. { pl: "/realizacje/", en: "/en/projects/" }). */
   alternates?: Record<string, string>;
   /** false = podstrona bez Lenisa (scroll natywny) — patrz
-   *  docs/analiza-podstrona-realizacje.md (D1). */
-  smoothScroll?: boolean;
+   *  docs/analiza-podstrona-realizacje.md (D1). "desktop" = Lenis tylko
+   *  na urządzeniach bez dotyku (podstrona /dla-kogo/: desktopowy
+   *  scrub+snap na Lenisie, mobile natywnie — same reveale once:true;
+   *  docs/analiza-podstrona-dla-kogo.md §VII). */
+  smoothScroll?: boolean | "desktop";
 }
 const {
   title = "hadrianm.pl — pracownia stron i aplikacji",
@@ -37,6 +40,9 @@ const {
   alternates,
   smoothScroll = true,
 } = Astro.props;
+
+const smoothScrollAttr =
+  smoothScroll === "desktop" ? "desktop" : smoothScroll ? "on" : "off";
 
 // Adresy absolutne dla podglądów linków (iMessage/Messenger/X wymagają pełnego URL).
 // W dev bazą jest bieżący host (np. adres w sieci lokalnej), by podgląd linka
@@ -85,16 +91,21 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <meta name="twitter:card" content="summary" />
     <link rel="canonical" href={canonicalUrl} />
   </head>
-  <body data-smooth-scroll={smoothScroll ? "on" : "off"}>
+  <body data-smooth-scroll={smoothScrollAttr}>
     <slot />
     <Toast />
     <script>
       // Lenis ładowany dynamicznie przy dozwolonym ruchu (config dobiera sam).
       // Podstrony bez animacji scrollowych rezygnują z niego w całości
       // (smoothScroll=false → data-smooth-scroll="off", scroll natywny);
-      // bramka atrybutem, bo skrypt w wyrażeniu Astro traci bundling aliasów.
+      // tryb "desktop" pomija Lenisa na urządzeniach dotykowych (detekcja
+      // maxTouchPoints — kontrakt z .claude/rules/scroll-lenis.md, NIE media
+      // queries hover/pointer). Bramka atrybutem, bo skrypt w wyrażeniu
+      // Astro traci bundling aliasów.
+      const mode = document.body.dataset.smoothScroll;
       if (
-        document.body.dataset.smoothScroll !== "off" &&
+        mode !== "off" &&
+        !(mode === "desktop" && navigator.maxTouchPoints > 0) &&
         matchMedia("(prefers-reduced-motion: no-preference)").matches
       ) {
         import("@/scripts/smooth-scroll");

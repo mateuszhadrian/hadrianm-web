@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MoreLink — podgląd (Solid)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;700;800&family=Instrument+Serif:ital@1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="more-link.css">
+<style>
+  :root{--bg:#070507;--ink:#f5f0ec;--muted:rgba(245,240,236,.6);--faint:rgba(245,240,236,.38);--coral:#ff5a47;--mono:ui-monospace,'SF Mono',Menlo,monospace}
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--bg);color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased}
+  .wrap{min-height:100vh;display:grid;place-items:center;padding:56px 24px;
+    background:radial-gradient(60% 50% at 22% 30%, rgba(40,60,150,.18) 0%, rgba(0,0,0,0) 70%),var(--bg)}
+  .card{width:min(760px,100%);border:1px solid rgba(245,240,236,.1);border-radius:20px;padding:56px 56px 44px;
+    background:rgba(255,255,255,.015)}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--coral);margin:0 0 18px}
+  h1{margin:0 0 8px;font-size:44px;font-weight:800;letter-spacing:-.035em;line-height:1.02}
+  h1 em{font-family:'Instrument Serif',Georgia,serif;font-style:italic;font-weight:400;color:#ffb3a6;letter-spacing:0}
+  .lede{margin:0 0 40px;max-width:52ch;font-size:15px;line-height:1.62;color:var(--muted)}
+  .stage{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+  .hint{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--faint);text-transform:uppercase}
+  .spec{margin-top:40px;padding-top:22px;border-top:1px solid rgba(245,240,236,.1);
+    display:flex;gap:26px;flex-wrap:wrap;font-family:var(--mono);font-size:12px;letter-spacing:.05em;color:var(--muted)}
+  .spec b{color:var(--coral);font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card">
+    <p class="eyebrow">00 · Współpraca</p>
+    <h1>dla kogo <em>tworzę?</em></h1>
+    <p class="lede">Podgląd komponentu <b>MoreLink</b> (wariant Solid) na tle marki. Najedź kursorem, aby zobaczyć hover. Desktop i mobile korzystają z tego samego stylu.</p>
+    <div class="stage">
+      <a class="more-link" href="#">
+        <span class="more-link__label">Zobacz więcej</span>
+        <span class="more-link__arrow" aria-hidden="true">→</span>
+      </a>
+      <span class="hint">← najedź, aby zobaczyć hover</span>
+    </div>
+    <div class="spec">
+      <span>akcent <b>#FF5A47</b></span>
+      <span>hover <b>#FF6E5D</b></span>
+      <span>tekst <b>#120A09</b></span>
+      <span>radius <b>8px</b></span>
+      <span>font <b>Archivo</b></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -51,7 +51,11 @@ const t = useTranslations(lang);
 
   <main class="page">
     <Hero lang={lang} />
-    <Audience lang={lang} />
+    {
+      /* Zajawka: statyczna pierwsza klatka sceny + przycisk na /dla-kogo/
+         (pełna animacja żyje na podstronie — docs/analiza-podstrona-dla-kogo.md). */
+    }
+    <Audience lang={lang} variant="teaser" />
     <Services lang={lang} />
     <Work lang={lang} />
     <About lang={lang} />
