@@ -11,7 +11,7 @@ import type { LocalizedProject } from "./work-data";
 interface Props {
   projects: LocalizedProject[];
   cta: string;
-  moreHref?: string;
+  moreHref: string;
   moreBig: string;
   moreSub: string;
   moreLabel: string;
@@ -22,7 +22,7 @@ interface Props {
 const {
   projects,
   cta,
-  moreHref = "#",
+  moreHref,
   moreBig,
   moreSub,
   moreLabel,

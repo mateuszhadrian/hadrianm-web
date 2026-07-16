@@ -17,12 +17,22 @@ test.describe("nawigacja desktop", () => {
     page,
   }) => {
     await gotoReady(page);
-    await page.locator('.nav-link[href="#work"]').click();
+    // #about, nie #work — link Realizacje prowadzi już na podstronę.
+    await page.locator('.nav-link[href="#about"]').click();
     await settle(page);
-    await expect(page).toHaveURL(/#work$/);
+    await expect(page).toHaveURL(/#about$/);
     // Skok immediate — sekcja ma siąść na górze viewportu (retry: sporadyczny
     // brak precyzji Lenisa pod obciążeniem N warstw tła).
-    await expectSectionAtTop(page, "work");
+    await expectSectionAtTop(page, "about");
+  });
+
+  test("link Realizacje nawiguje na podstronę /realizacje/", async ({
+    page,
+  }) => {
+    await gotoReady(page);
+    await page.locator('.nav-link[href="/realizacje/"]').click();
+    await expect(page).toHaveURL(/\/realizacje\/?$/);
+    await expect(page.locator(".wix-grid")).toBeVisible();
   });
 
   test("pasek chowa się przy scrollu w dół i wraca przy scrollu w górę", async ({
@@ -66,6 +76,16 @@ test.describe("nawigacja mobile", () => {
       "",
     );
     await expectSectionAtTop(page, "contact");
+  });
+
+  test("pozycja Realizacje w panelu nawiguje na podstronę", async ({
+    page,
+  }) => {
+    await gotoReady(page);
+    await page.locator("[data-burger]").click();
+    await page.locator('.m-link[href="/realizacje/"]').click();
+    await expect(page).toHaveURL(/\/realizacje\/?$/);
+    await expect(page.locator(".wix-grid")).toBeVisible();
   });
 });
 

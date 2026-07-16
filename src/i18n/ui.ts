@@ -39,6 +39,15 @@ export const ui = {
     "work.scope": "Zakres prac",
     "work.live": "Zobacz stronę na żywo",
     "work.close": "Zamknij",
+    "workPage.title": "Realizacje — hadrianm.pl",
+    "workPage.description":
+      "Galeria zrealizowanych stron i aplikacji — każda w wersji desktop i mobilnej, z opisem zakresu prac i wynikami.",
+    "workPage.headlineLead": "wybrane",
+    "workPage.headlineAccent": "realizacje",
+    "workPage.intro":
+      "Przeglądaj wybrane zrealizowane projekty. Każdy w wersji desktop i mobilnej — kliknij, by zobaczyć szczegóły.",
+    "workPage.ghost": "Kolejne realizacje wkrótce",
+    "workPage.back": "Wróć",
     "audience.ghost": "dla kogo",
     "audience.meta": "Strony, które pracują na zysk",
     "audience.ch0.tag": "00 · Współpraca",
@@ -288,6 +297,15 @@ export const ui = {
     "work.scope": "Scope of work",
     "work.live": "View live site",
     "work.close": "Close",
+    "workPage.title": "Projects — hadrianm.pl",
+    "workPage.description":
+      "A gallery of completed websites and apps — each in a desktop and mobile version, with the scope of work and results.",
+    "workPage.headlineLead": "selected",
+    "workPage.headlineAccent": "projects",
+    "workPage.intro":
+      "Browse selected completed projects. Each in a desktop and mobile version — click to see the details.",
+    "workPage.ghost": "More projects coming soon",
+    "workPage.back": "Back",
     "audience.ghost": "who it's for",
     "audience.meta": "Websites that work for profit",
     "audience.ch0.tag": "00 · Collaboration",

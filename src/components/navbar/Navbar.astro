@@ -1,14 +1,41 @@
 ---
 import { type Lang } from "@/i18n/utils";
 import { navItems, navLabel } from "@/i18n/nav";
+import { HOME_PATH, WORK_INDEX_PATH } from "@/lib/routes";
 
 interface Props {
   lang: Lang;
+  /** Adresy przełącznika języka — podstrony podają swoje odpowiedniki
+   *  (np. /realizacje/ ↔ /en/projects/); domyślnie strony główne. */
+  langHrefs?: Record<Lang, string>;
+  /** false = bez brandu „hadrianm" (podstrony stawiają w jego miejscu
+   *  własny, przyklejony BackButton — poza barem, żeby nie chował się
+   *  razem z nim przy scrollu). */
+  showBrand?: boolean;
 }
-const { lang } = Astro.props;
+const { lang, langHrefs = HOME_PATH, showBrand = true } = Astro.props;
 const isEn = lang === "en";
 
-const homeHref = isEn ? "/en/" : "/";
+const homeHref = HOME_PATH[lang];
+
+// Czy navbar renderuje się na stronie głównej? (normalizacja ukośnika —
+// w dev Astro.url.pathname bywa bez końcowego "/")
+const currentPath = Astro.url.pathname.endsWith("/")
+  ? Astro.url.pathname
+  : `${Astro.url.pathname}/`;
+const onHome = currentPath === homeHref;
+
+// Href pozycji menu: „Realizacje" prowadzi na podstronę (pierwszy krok
+// migracji linków na podstrony — reszta w osobnym etapie); pozostałe to
+// kotwice sekcji strony głównej — na podstronach z pełną ścieżką
+// (handleAnchorClick przechwytuje wyłącznie hrefy zaczynające się od "#",
+// więc pełne ścieżki nawigują natywnie).
+const itemHref = (id: string): string =>
+  id === "work"
+    ? WORK_INDEX_PATH[lang]
+    : onHome
+      ? `#${id}`
+      : `${homeHref}#${id}`;
 
 const t = {
   nav: isEn ? "Main navigation" : "Główna nawigacja",
@@ -23,7 +50,13 @@ const t = {
 
 <div class="nav-root" data-nav data-state="desktop">
   <nav class="nav-bar" aria-label={t.nav}>
-    <a class="brand" href={homeHref}>hadrian<span>m</span></a>
+    {
+      showBrand && (
+        <a class="brand" href={homeHref}>
+          hadrian<span>m</span>
+        </a>
+      )
+    }
 
     <ul class="nav-links">
       {
@@ -37,7 +70,10 @@ const t = {
             <li>
               <a
                 class="nav-link"
-                href={`#${item.id}`}
+                href={itemHref(item.id)}
+                aria-current={
+                  itemHref(item.id) === currentPath ? "page" : undefined
+                }
                 aria-label={navLabel(item, lang)}
               >
                 {[...navLabel(item, lang)].map((ch, ci) =>
@@ -59,14 +95,14 @@ const t = {
 
     <div class="lang" role="group" aria-label={t.langGroup}>
       <a
-        href="/"
+        href={langHrefs.pl}
         class:list={["lang-btn", { on: !isEn }]}
         aria-current={!isEn ? "true" : undefined}
         hreflang="pl">PL</a
       >
       <span class="lsep" aria-hidden="true">/</span>
       <a
-        href="/en/"
+        href={langHrefs.en}
         class:list={["lang-btn", { on: isEn }]}
         aria-current={isEn ? "true" : undefined}
         hreflang="en">EN</a
@@ -94,7 +130,14 @@ const t = {
         {
           navItems.map((item) => (
             <li>
-              <a class="m-link" href={`#${item.id}`} data-menu-link>
+              <a
+                class="m-link"
+                href={itemHref(item.id)}
+                aria-current={
+                  itemHref(item.id) === currentPath ? "page" : undefined
+                }
+                data-menu-link
+              >
                 {navLabel(item, lang)}
               </a>
             </li>
@@ -105,14 +148,14 @@ const t = {
     <div class="m-lang" role="group" aria-label={t.langGroup}>
       <span class="lab">{t.langLabel}</span>
       <a
-        href="/"
+        href={langHrefs.pl}
         class:list={["lang-btn", { on: !isEn }]}
         aria-current={!isEn ? "true" : undefined}
         hreflang="pl">PL</a
       >
       <span class="lsep" aria-hidden="true">/</span>
       <a
-        href="/en/"
+        href={langHrefs.en}
         class:list={["lang-btn", { on: isEn }]}
         aria-current={isEn ? "true" : undefined}
         hreflang="en">EN</a
@@ -507,7 +550,10 @@ const t = {
   const root = document.querySelector<HTMLElement>("[data-nav]");
   if (root) {
     const bar = root.querySelector<HTMLElement>(".nav-bar")!;
-    const brand = root.querySelector<HTMLElement>(".brand")!;
+    // Brand jest opcjonalny (showBrand=false na podstronach) — wtedy jego
+    // miejsce w pomiarach zajmuje rezerwa na przyklejony BackButton (46 px).
+    const brand = root.querySelector<HTMLElement>(".brand");
+    const BRAND_FALLBACK_W = 46;
     const links = root.querySelector<HTMLElement>(".nav-links")!;
     const lang = root.querySelector<HTMLElement>(".lang")!;
     const burger = root.querySelector<HTMLButtonElement>("[data-burger]")!;
@@ -548,7 +594,7 @@ const t = {
         gaps: links.children.length - 1,
         padX,
         langGap,
-        brandW: brand.offsetWidth,
+        brandW: brand?.offsetWidth ?? BRAND_FALLBACK_W,
         langW: lang.offsetWidth,
       };
 
@@ -719,17 +765,25 @@ const t = {
       }),
     );
 
-    // brand (logo): zawsze płynnie na samą górę bieżącej strony
-    brand.addEventListener("click", (e) => {
-      e.preventDefault();
-      closeMenu();
-      scrollToAnchor(0);
-      history.replaceState(
-        null,
-        "",
-        brand.getAttribute("href") || location.pathname,
-      );
-    });
+    // brand (logo): na stronie głównej płynnie na samą górę; na podstronach
+    // prowadzi na stronę główną — wtedy nie przechwytujemy (pełna nawigacja).
+    if (brand) {
+      brand.addEventListener("click", (e) => {
+        const target = new URL(
+          brand.getAttribute("href") ?? "/",
+          location.href,
+        );
+        if (target.pathname !== location.pathname) return;
+        e.preventDefault();
+        closeMenu();
+        scrollToAnchor(0);
+        history.replaceState(
+          null,
+          "",
+          brand.getAttribute("href") || location.pathname,
+        );
+      });
+    }
 
     // ── focus trap + Esc ──
     document.addEventListener("keydown", (e) => {

@@ -549,7 +549,7 @@ test.describe("fallback bez JS", () => {
     await expect(page.locator("#contact .kt-lead h2")).toBeVisible();
     await expect(page.locator("#contact .kt-form")).toBeVisible();
     await expect(page.locator("#contact .kt-send")).toBeVisible();
-    await expect(page.locator("#contact .kt-footer")).toBeVisible();
+    await expect(page.locator("#contact .ft")).toBeVisible();
     // Reveal wymaga JS — wartości zostają zamaskowane, bez pełnych ciągów.
     for (const kind of ["email", "phone"]) {
       await expect(

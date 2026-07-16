@@ -9,7 +9,6 @@
 // Teksty UI (etykiety [ KOPIUJ ] / „Wysyłam…") przychodzą przez
 // data-atrybuty z Contact.astro — moduł nie zna i18n.
 import { EMAIL_RE, MESSAGE_MIN, MIN_FILL_MS } from "@/lib/contact-form";
-import { scrollToAnchor } from "@/scripts/anchors";
 import { toast } from "@/components/ui/toast/toast";
 import {
   CONTACT_ENDPOINT,
@@ -62,7 +61,6 @@ function loadTurnstile(): Promise<void> {
 export function initContactUi(section: HTMLElement): void {
   initReveal(section);
   initForm(section);
-  initFooterTop(section);
 }
 
 /* ── 1. reveal danych: [ POKAŻ ] → wartość + link, potem [ KOPIUJ ] ── */
@@ -340,13 +338,4 @@ function initForm(section: HTMLElement): void {
     });
 }
 
-/* ── 3. „Do góry ↑" — wspólny skok (@/scripts/anchors), URL bez hasha ── */
-function initFooterTop(section: HTMLElement): void {
-  section
-    .querySelector<HTMLAnchorElement>(".kt-fleg .up")
-    ?.addEventListener("click", (e) => {
-      e.preventDefault();
-      scrollToAnchor(0);
-      history.replaceState(null, "", window.location.pathname);
-    });
-}
+/* „Do góry ↑" żyje teraz we współdzielonym Footer.astro (własny skrypt). */

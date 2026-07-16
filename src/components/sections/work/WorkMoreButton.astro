@@ -1,14 +1,12 @@
 ---
-// CTA „Więcej realizacji" — placeholder pod przyszłą podstronę z pełną listą
-// realizacji. Dwa warianty:
+// CTA „Więcej realizacji" — prowadzi na podstronę z pełną listą realizacji
+// (WORK_INDEX_PATH przekazywane przez Work.astro). Dwa warianty:
 //   • "tile"  — kafel pod galerią (desktop), wzorzec z
 //               docs/design/WiecejRealizacjiDesktopButton.astro,
 //   • "slide" — ostatni slajd karuzeli (mobile), wzorzec z .rzc-cta-card.
-// Na razie `href="#"`; klik jest neutralizowany (data-work-more → preventDefault),
-// żeby w przyszłości wystarczyło podmienić `href` na „/realizacje".
 interface Props {
   variant?: "tile" | "slide";
-  href?: string;
+  href: string;
   /** Etykieta wariantu „tile". */
   label?: string;
   /** Duży napis wariantu „slide". */
@@ -19,7 +17,7 @@ interface Props {
 }
 const {
   variant = "tile",
-  href = "#",
+  href,
   label = "",
   bigLabel = "",
   subLabel = "",
@@ -171,14 +169,3 @@ const {
     }
   }
 </style>
-
-<script>
-  // Placeholder: dopóki nie ma podstrony /realizacje, klik nie nawiguje.
-  // Delegacja na document — Astro dedupuje ten sam moduł mimo wielu instancji.
-  document.addEventListener("click", (e) => {
-    const more = (e.target as HTMLElement).closest<HTMLAnchorElement>(
-      "[data-work-more]",
-    );
-    if (more && more.getAttribute("href") === "#") e.preventDefault();
-  });
-</script>

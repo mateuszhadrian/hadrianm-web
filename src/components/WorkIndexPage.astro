@@ -1,0 +1,275 @@
+---
+// Podstrona z pełną galerią realizacji (PL: /realizacje/, EN: /en/projects/).
+// Port referencji docs/design/RealizacjeGaleria.astro na komponenty/tokeny
+// projektu; decyzje: docs/analiza-podstrona-realizacje.md. Kluczowe różnice
+// względem strony głównej: scroll NATYWNY (smoothScroll=false — brak animacji
+// scrollowych, Lenis zbędny), jedna statyczna warstwa ambientu (blue, bez
+// crossfade). Nakładki szczegółów (Modal/BottomSheet + WorkDetail) działają
+// identycznie jak w sekcji #work.
+import { getCollection } from "astro:content";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Navbar from "@/components/navbar/Navbar.astro";
+import AmbientBackground from "@/components/backgrounds/AmbientBackground.astro";
+import WorkIndexCard from "@/components/sections/work/WorkIndexCard.astro";
+import WorkDetail from "@/components/sections/work/WorkDetail.astro";
+import Modal from "@/components/ui/Modal.astro";
+import BottomSheet from "@/components/ui/BottomSheet.astro";
+import BackButton from "@/components/ui/BackButton.astro";
+import Footer from "@/components/Footer.astro";
+import { localizeProject } from "@/components/sections/work/work-data";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import { HOME_PATH, WORK_INDEX_PATH } from "@/lib/routes";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+
+// Pełna lista (strona główna kapuje do 3) — kolejność wg `order` z CMS.
+const entries = await getCollection("realizacje");
+const projects = entries
+  .map((e) => e.data)
+  .sort((a, b) => a.order - b.order)
+  .map((p) => localizeProject(p, lang));
+---
+
+<BaseLayout
+  title={t("workPage.title")}
+  lang={lang}
+  description={t("workPage.description")}
+  alternates={WORK_INDEX_PATH}
+  smoothScroll={false}
+>
+  <div class="wix-bg" aria-hidden="true">
+    <AmbientBackground variant="blue" />
+  </div>
+
+  <Navbar lang={lang} langHrefs={WORK_INDEX_PATH} showBrand={false} />
+
+  {
+    /* „Wstecz" w miejscu brandu — CELOWO poza barem navbara: fixed, więc nie
+       chowa się razem z nim przy scrollu; działa jak wstecz przeglądarki
+       (globalny mechanizm a[data-back], fallback → strona główna). Wrapper,
+       nie klasa na komponencie: scoped CSS (strategia atrybutowa) nie łapie
+       elementów renderowanych przez komponent potomny. */
+  }
+  <div class="wix-back">
+    <BackButton href={HOME_PATH[lang]} label={t("workPage.back")} />
+  </div>
+
+  <main class="wix">
+    <header class="wix-head">
+      <p class="wix-eyebrow">{t("work.eyebrow")}</p>
+      <h1 class="wix-title">
+        {t("workPage.headlineLead")}{" "}
+        <em class="wix-accent">{t("workPage.headlineAccent")}</em>
+      </h1>
+      <p class="wix-sub">{t("workPage.intro")}</p>
+    </header>
+
+    <div class="wix-grid">
+      {
+        projects.map((project) => (
+          <WorkIndexCard project={project} cta={t("work.cta")} />
+        ))
+      }
+      <div class="wix-ghost" aria-hidden="true">
+        <div class="wix-ghost__plus">+</div>
+        <div class="wix-ghost__label">{t("workPage.ghost")}</div>
+      </div>
+    </div>
+  </main>
+
+  {/* Współdzielony footer strony (ten sam co finał strony głównej). */}
+  <div class="wix-foot">
+    <Footer lang={lang} />
+  </div>
+
+  {/* Treść szczegółów per realizacja — klonowana do nakładki po kliknięciu. */}
+  {
+    projects.map((project) => (
+      <template data-work-detail={project.slug}>
+        <WorkDetail
+          project={project}
+          previewLabel={t("work.preview")}
+          resultsLabel={t("work.results")}
+          scopeLabel={t("work.scope")}
+          liveLabel={t("work.live")}
+        />
+      </template>
+    ))
+  }
+
+  <Modal id="work-modal" closeLabel={t("work.close")}>
+    <div data-work-host></div>
+  </Modal>
+  <BottomSheet id="work-sheet" closeLabel={t("work.close")}>
+    <div data-work-host></div>
+  </BottomSheet>
+</BaseLayout>
+
+<script>
+  // Klik w kartę siatki → Modal/BottomSheet z WorkDetail (współdzielony
+  // helper open-detail, ta sama mechanika co sekcja #work strony głównej).
+  import { openWorkDetail, sheetMQ } from "./sections/work/open-detail";
+
+  const grid = document.querySelector<HTMLElement>(".wix-grid");
+  grid?.addEventListener("click", (e) => {
+    const card = (e.target as HTMLElement).closest<HTMLElement>(
+      "[data-work-slug]",
+    );
+    if (!card) return;
+    const slug = card.dataset.workSlug;
+    if (!slug) return;
+    openWorkDetail(slug, card.dataset.workName ?? "");
+  });
+
+  // Zmiana progu (modal ↔ sheet) przy otwartej nakładce: zamknij, by nie
+  // zostawić niespójnego stanu między wariantami.
+  sheetMQ.addEventListener("change", () => {
+    if (!window.overlay?.isOpen()) return;
+    window.overlay.close("work-modal");
+    window.overlay.close("work-sheet");
+  });
+</script>
+
+<style>
+  :global(body) {
+    background: #000;
+  }
+
+  /* Jedna statyczna warstwa ambientu — bez crossfade'u strony głównej. */
+  .wix-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: #000;
+    pointer-events: none;
+  }
+
+  /* Pozycja = slot brandu w navbarze (te same clampy paddingu paska);
+     korekta -12px centruje 46-px kółko na linii treści paska. z-index nad
+     nav-root (50), bo przycisk ma być widoczny ZAWSZE — także gdy pasek
+     schowa się przy scrollu w dół. */
+  .wix-back {
+    position: fixed;
+    z-index: 60;
+    left: clamp(1.25rem, 4vw, 2.75rem);
+    top: calc(clamp(1.25rem, 3.2vh, 1.9rem) - 12px);
+  }
+
+  .wix {
+    position: relative;
+    z-index: 1;
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+    /* górny odstęp mieści fixed navbar + oddech nagłówka (referencja
+       zakładała sekcję bez navbara: clamp(28px, 5vw, 60px)) */
+    padding: clamp(96px, 14vh, 150px) 0 clamp(80px, 10vw, 120px);
+  }
+
+  /* ── Nagłówek (wzorzec sekcji: eyebrow mono / display + serif accent) ── */
+  .wix-head {
+    text-align: center;
+    padding: 0 5vw;
+  }
+  .wix-eyebrow {
+    margin: 0 0 22px;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.42em;
+    text-indent: 0.42em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .wix-title {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    font-size: clamp(44px, 8vw, 104px);
+    color: var(--ink);
+    text-wrap: balance;
+  }
+  .wix-accent {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .wix-sub {
+    max-width: 560px;
+    margin: 24px auto 0;
+    font-size: 17px;
+    line-height: 1.5;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /* ── Siatka: 1 kolumna → 2 (≥761 px) → 3 (≥1024 px) ── */
+  .wix-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 44px;
+    max-width: 1320px;
+    margin: 52px auto 0;
+    padding: 0 5vw;
+  }
+  @media (min-width: 761px) {
+    .wix-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 52px 28px;
+    }
+  }
+  @media (min-width: 1024px) {
+    .wix-grid {
+      grid-template-columns: 1fr 1fr 1fr;
+    }
+  }
+
+  /* ── Kafel „ghost" ── */
+  .wix-ghost {
+    border: 1.5px dashed rgba(245, 240, 236, 0.18);
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    color: var(--faint);
+    min-height: 150px;
+  }
+  @media (min-width: 761px) {
+    .wix-ghost {
+      min-height: 230px;
+    }
+  }
+  .wix-ghost__plus {
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1;
+  }
+  .wix-ghost__label {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+
+  /* ── Stopka: kontener współdzielonego Footer.astro (szerokość jak
+     siatka; sam footer jest bezmarginesowy — rodzic kontroluje layout) ── */
+  .wix-foot {
+    position: relative;
+    z-index: 1;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 5vw 42px;
+  }
+</style>

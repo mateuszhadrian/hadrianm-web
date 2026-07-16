@@ -1,0 +1,312 @@
+---
+/**
+ * RealizacjeGaleria.astro
+ * Sekcja „Wybrane realizacje" — galeria kart (duet laptop + telefon).
+ * Wyeksportowana z prototypu jako referencja 1:1 do podstrony /realizacje.
+ *
+ * Stack: Astro + Tailwind v4. Fonty: Archivo (@fontsource-variable/archivo)
+ *        + Instrument Serif (@fontsource/instrument-serif).
+ * Motyw „Czerwona Mgła" — kolory jako zmienne CSS (patrz <style>), żeby łatwo
+ *        podmienić na globalne tokeny/`@theme` projektu.
+ *
+ * Responsywność (viewport):
+ *   • < 768px  → wariant „Karty"  — 1 kolumna, każda realizacja w panelu z ramką
+ *   • ≥ 768px  → 2 kolumny (karty bez panelu, hover „Ramka" + delikatny zoom)
+ *   • ≥ 1024px → „Grid 3" — 3 kolumny
+ *
+ * Uwagi:
+ *   • BEZ TŁA — sekcja jest przezroczysta, dziedziczy tło strony (zakłada ciemne tło).
+ *   • BEZ modala/bottom-sheeta — karty to <a href="/realizacje/[slug]">. Żeby podpiąć
+ *     istniejący modal: zamień <a> na <button type="button"> i użyj `data-slug`
+ *     do otwarcia szczegółów (onClick po stronie wyspy React/JS).
+ *   • Obrazy z `public/realizacje/img/*.jpg` (placeholdery — podmień na własne).
+ *   • Dane trzymaj docelowo w `src/data/realizacje.ts` i podaj przez prop `items`.
+ *
+ * Użycie:
+ *   ---
+ *   import RealizacjeGaleria from "@/components/RealizacjeGaleria.astro";
+ *   ---
+ *   <RealizacjeGaleria />
+ */
+
+export interface Realizacja {
+  slug: string;
+  category: string;
+  year: string;
+  name: string;
+  blurb: string;
+  tags: string[];
+  /** Zrzut desktop (proporcje 1280×800). */
+  desktop: string;
+  /** Zrzut mobile (proporcje 390×800). */
+  mobile: string;
+}
+
+interface Props {
+  /** Lista realizacji. Domyślnie placeholdery — podmień na dane z projektu. */
+  items?: Realizacja[];
+  /** Bazowy adres podstrony szczegółów. */
+  hrefBase?: string;
+  /** Pokaż kafel „Kolejne realizacje wkrótce" na końcu siatki. */
+  showGhost?: boolean;
+  /** Dodatkowe klasy — np. do pozycjonowania w layoutcie. */
+  class?: string;
+}
+
+const DEFAULT_ITEMS: Realizacja[] = [
+  {
+    slug: "aura",
+    category: "Moda & Beauty",
+    year: "2025",
+    name: "Aura Aesthetics",
+    blurb: "Gabinet medycyny estetycznej — delikatna, elegancka odsłona marki premium.",
+    tags: ["Rezerwacja online", "Nowoczesny UI", "Wzrost zapytań"],
+    desktop: "/realizacje/img/aura-home-d.jpg",
+    mobile: "/realizacje/img/aura-home-m.jpg",
+  },
+  {
+    slug: "dab",
+    category: "Wnętrza & Meble",
+    year: "2025",
+    name: "Dąb & Forma",
+    blurb: "Manufaktura mebli z litego drewna — surowy, architektoniczny minimalizm.",
+    tags: ["Szybkość ładowania", "Katalog produktów", "Mocna typografia"],
+    desktop: "/realizacje/img/dab-home-d.jpg",
+    mobile: "/realizacje/img/dab-home-m.jpg",
+  },
+  {
+    slug: "sielski",
+    category: "Turystyka & Wypoczynek",
+    year: "2024",
+    name: "Sielski Zakątek",
+    blurb: "Agroturystyka w sercu gór — ciepły, rustykalny klimat i prosta rezerwacja.",
+    tags: ["Kalendarz rezerwacji", "Galeria zdjęć", "Zwiększona konwersja"],
+    desktop: "/realizacje/img/sielski-home-d.jpg",
+    mobile: "/realizacje/img/sielski-home-m.jpg",
+  },
+];
+
+const {
+  items = DEFAULT_ITEMS,
+  hrefBase = "/realizacje",
+  showGhost = true,
+  class: className = "",
+} = Astro.props;
+---
+
+<section class:list={["rz-realizacje", className]}>
+  <div class="rz-head">
+    <p class="rz-eyebrow">ZREALIZOWANE ZLECENIA</p>
+    <h2 class="rz-title">wybrane <em>realizacje</em></h2>
+    <p class="rz-sub">
+      Przeglądaj wybrane zrealizowane projekty. Każdy w wersji desktop i mobilnej —
+      kliknij, by zobaczyć szczegóły.
+    </p>
+  </div>
+
+  <div class="rz-grid">
+    {
+      items.map((r) => (
+        <a class="rz-card" href={`${hrefBase}/${r.slug}`} data-slug={r.slug}>
+          <div class="rz-media">
+            <div class="rz-media-inner">
+              <div class="rz-floor" aria-hidden="true" />
+              <div class="rz-laptop">
+                <div class="rz-laptop-lid">
+                  <div class="rz-screen">
+                    <img src={r.desktop} alt={`${r.name} — wersja desktop`} loading="lazy" draggable="false" />
+                    <div class="rz-reflect" />
+                  </div>
+                </div>
+                <div class="rz-laptop-base">
+                  <div class="rz-notch" />
+                </div>
+              </div>
+              <div class="rz-phone">
+                <div class="rz-phone-screen">
+                  <img src={r.mobile} alt={`${r.name} — wersja mobile`} loading="lazy" draggable="false" />
+                  <div class="rz-punch" />
+                  <div class="rz-reflect" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rz-meta">
+            <div class="rz-kicker">
+              <span class="rz-cat">{r.category}</span>
+              <span class="rz-dot" aria-hidden="true">·</span>
+              <span class="rz-year">{r.year}</span>
+            </div>
+            <div>
+              <h3 class="rz-name">{r.name}</h3>
+              <p class="rz-blurb">{r.blurb}</p>
+            </div>
+            <div class="rz-tags">
+              {r.tags.slice(0, 3).map((tag, i) => (
+                <Fragment>
+                  {i > 0 && <span class="rz-tag-sep" aria-hidden="true">·</span>}
+                  <span class="rz-tag">{tag}</span>
+                </Fragment>
+              ))}
+            </div>
+            <span class="rz-cta">
+              <span>Zobacz realizację</span>
+              <span class="rz-cta-arrow" aria-hidden="true">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M5 12h13M13 6l6 6-6 6" />
+                </svg>
+              </span>
+            </span>
+          </div>
+        </a>
+      ))
+    }
+
+    {
+      showGhost && (
+        <div class="rz-ghost" aria-hidden="true">
+          <div class="rz-ghost-plus">+</div>
+          <div class="rz-ghost-label">Kolejne realizacje wkrótce</div>
+        </div>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  /* ── Tokeny motywu (podmień na globalne zmienne / @theme projektu) ── */
+  .rz-realizacje {
+    --rz-ink: #f5f0ec;
+    --rz-muted: rgba(245, 240, 236, 0.58);
+    --rz-faint: rgba(245, 240, 236, 0.34);
+    --rz-line: rgba(245, 240, 236, 0.14);
+    --rz-accent: #e3be7f;
+    --rz-accent-rgb: 227, 190, 127;
+    --rz-ring: rgba(245, 240, 236, 0.2);
+    --rz-ring-bg: rgba(245, 240, 236, 0.025);
+    --rz-glow: rgba(227, 190, 127, 0.15);
+    --rz-display: "Archivo Variable", "Archivo", system-ui, sans-serif;
+    --rz-serif: "Instrument Serif", Georgia, serif;
+    --rz-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+    /* szerokość laptopa w duecie — sterowana breakpointami */
+    --lw: 250px;
+
+    position: relative;
+    color: var(--rz-ink);
+    font-family: var(--rz-display);
+    -webkit-font-smoothing: antialiased;
+    padding: clamp(28px, 5vw, 60px) 0 clamp(80px, 10vw, 120px);
+  }
+
+  /* domyślne linki (nie dotyczą kart) */
+  .rz-realizacje a:not(.rz-card) { color: var(--rz-accent); text-decoration: none; }
+  .rz-realizacje a:not(.rz-card):hover { color: #f0d3a3; }
+
+  /* ── Nagłówek ── */
+  .rz-head { text-align: center; padding: 0 5vw; }
+  .rz-eyebrow { font-family: var(--rz-mono); font-size: 12px; letter-spacing: 0.42em; color: var(--rz-faint); margin: 0 0 22px; }
+  .rz-title { margin: 0; font-weight: 800; letter-spacing: -0.035em; line-height: 1; font-size: clamp(44px, 8vw, 104px); }
+  .rz-title em {
+    font-family: var(--rz-serif); font-style: italic; font-weight: 400;
+    background: linear-gradient(105deg, #fff6f0 10%, #ffb3a6 90%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+  }
+  .rz-sub { max-width: 560px; margin: 24px auto 0; font-size: 17px; line-height: 1.5; color: var(--rz-muted); text-wrap: pretty; }
+
+  /* ── Siatka (Karty → 2 kol → Grid 3) ── */
+  .rz-grid { display: grid; grid-template-columns: 1fr; gap: 44px; max-width: 1320px; margin: 52px auto 0; padding: 0 5vw; }
+
+  /* ── Karta ── */
+  .rz-card {
+    position: relative; display: flex; flex-direction: column; gap: 20px;
+    text-decoration: none; color: var(--rz-ink); text-align: left;
+    background: rgba(245, 240, 236, 0.04); border: 1px solid var(--rz-line); border-radius: 4px; padding: 24px 18px 26px;
+  }
+  .rz-card::before {
+    content: ""; position: absolute; inset: -20px -24px; border-radius: 4px;
+    border: 1px solid transparent; background: transparent;
+    transition: border-color 0.35s cubic-bezier(0.2, 0.7, 0.2, 1), background 0.35s;
+    pointer-events: none; z-index: 0;
+  }
+  .rz-card > * { position: relative; z-index: 1; }
+
+  /* ── Media: duet laptop + telefon ── */
+  .rz-media { display: flex; justify-content: center; width: 100%; }
+  .rz-media-inner { position: relative; width: var(--lw); margin: 0 auto; transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1); }
+
+  .rz-floor {
+    position: absolute; left: 50%; bottom: calc(var(--lw) * -0.07); transform: translateX(-50%);
+    width: calc(var(--lw) * 1.28); height: calc(var(--lw) * 0.22); border-radius: 50%;
+    background: radial-gradient(ellipse at center, var(--rz-glow) 0%, rgba(0, 0, 0, 0) 65%);
+    filter: blur(10px); pointer-events: none;
+  }
+
+  .rz-laptop { width: var(--lw); position: relative; }
+  .rz-laptop-lid {
+    background: linear-gradient(180deg, hsl(240 5% 28.6%) 0%, hsl(240 5% 13.6%) 55%, hsl(240 5% 9.6%) 100%);
+    border-radius: 20px 20px 6px 6px; padding: 13px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08), 0 60px 130px -40px rgba(0, 0, 0, 0.8), 0 40px 120px -30px var(--rz-glow);
+  }
+  .rz-screen { border-radius: 8px; overflow: hidden; position: relative; background: #000; aspect-ratio: 1280 / 800; }
+  .rz-screen img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .rz-laptop-base {
+    position: relative; height: calc(var(--lw) * 0.0216); width: 114%; margin-left: -7%;
+    background: linear-gradient(180deg, hsl(240 5% 35.4%) 0%, hsl(240 5% 17.7%) 45%, hsl(240 5% 7%) 100%);
+    border-radius: 3px 3px 16px 16px; box-shadow: 0 26px 60px -16px rgba(0, 0, 0, 0.8);
+  }
+  .rz-notch { position: absolute; top: 0; left: 50%; transform: translateX(-50%); width: calc(var(--lw) * 0.16); height: 7px; background: rgba(0, 0, 0, 0.45); border-radius: 0 0 10px 10px; }
+
+  .rz-phone {
+    position: absolute; right: calc(var(--lw) * 0.255 * -0.34); bottom: calc(var(--lw) * 0.255 * -0.18);
+    width: calc(var(--lw) * 0.255); box-sizing: border-box;
+    background: linear-gradient(180deg, hsl(240 5% 30.4%) 0%, hsl(240 5% 15.4%) 60%, hsl(240 5% 11.4%) 100%);
+    border-radius: calc(var(--lw) * 0.255 * 0.165); padding: 6px;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.1), 0 40px 90px -30px rgba(0, 0, 0, 0.8), 0 30px 90px -20px var(--rz-glow);
+  }
+  .rz-phone-screen { position: relative; border-radius: calc(var(--lw) * 0.255 * 0.165 - 6px); overflow: hidden; background: #000; aspect-ratio: 390 / 800; }
+  .rz-phone-screen img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+  .rz-punch { position: absolute; top: 6px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 99px; background: #0a0a0a; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06); z-index: 2; }
+  .rz-reflect { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(112deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.035) 26%, rgba(255, 255, 255, 0) 45%); }
+
+  /* ── Metadane ── */
+  .rz-meta { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 14px; }
+  .rz-kicker { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .rz-cat { font-family: var(--rz-mono); font-size: 10.5px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--rz-accent); }
+  .rz-dot { font-family: var(--rz-mono); font-size: 10.5px; color: var(--rz-faint); }
+  .rz-year { font-family: var(--rz-mono); font-size: 10.5px; letter-spacing: 0.16em; color: var(--rz-faint); }
+  .rz-name { margin: 0; font-weight: 800; letter-spacing: -0.03em; line-height: 1.02; font-size: 26px; color: var(--rz-ink); }
+  .rz-blurb { margin: 8px 0 0; font-weight: 500; font-size: 14px; line-height: 1.45; color: var(--rz-muted); max-width: 440px; text-wrap: pretty; }
+  .rz-tags { display: flex; flex-wrap: wrap; align-items: center; gap: 9px; }
+  .rz-tag { font-weight: 500; font-size: 12.5px; letter-spacing: 0.01em; color: rgba(245, 240, 236, 0.6); }
+  .rz-tag-sep { font-family: var(--rz-mono); font-size: 11px; color: rgba(var(--rz-accent-rgb), 0.7); }
+  .rz-cta { margin-top: 4px; display: inline-flex; align-items: center; gap: 11px; font-weight: 600; font-size: 15px; letter-spacing: -0.01em; color: var(--rz-ink); border-bottom: 1px solid var(--rz-line); padding-bottom: 9px; transition: border-color 0.25s; }
+  .rz-cta-arrow { display: inline-flex; color: var(--rz-accent); transition: transform 0.3s cubic-bezier(0.2, 0.7, 0.2, 1); }
+  .rz-cta-arrow svg { display: block; }
+  .rz-card:hover .rz-cta { border-bottom-color: rgba(245, 240, 236, 0.34); }
+  .rz-card:hover .rz-cta-arrow { transform: translateX(6px); }
+
+  /* ── Kafel „ghost" ── */
+  .rz-ghost { border: 1.5px dashed rgba(245, 240, 236, 0.18); border-radius: 4px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; color: var(--rz-faint); min-height: 150px; }
+  .rz-ghost-plus { font-size: 30px; font-weight: 300; line-height: 1; }
+  .rz-ghost-label { font-family: var(--rz-mono); font-size: 11px; letter-spacing: 0.18em; text-transform: uppercase; }
+
+  /* ── Breakpointy ── */
+  @media (min-width: 768px) {
+    .rz-realizacje { --lw: 300px; }
+    .rz-grid { grid-template-columns: 1fr 1fr; gap: 52px 28px; }
+    .rz-card { gap: 26px; background: transparent; border: none; border-radius: 0; padding: 0; }
+    .rz-card:hover::before { border-color: var(--rz-ring); background: var(--rz-ring-bg); }
+    .rz-card:hover .rz-media-inner { transform: scale(1.035); }
+    .rz-ghost { min-height: 230px; }
+  }
+  @media (min-width: 1024px) {
+    .rz-realizacje { --lw: 334px; }
+    .rz-grid { grid-template-columns: 1fr 1fr 1fr; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rz-media-inner, .rz-cta, .rz-cta-arrow, .rz-card::before { transition: none; }
+  }
+</style>
