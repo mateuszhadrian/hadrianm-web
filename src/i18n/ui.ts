@@ -71,9 +71,14 @@ export const ui = {
     "audience.ch3.para":
       "Piękna strona to dopiero początek. W zależności od Twoich potrzeb rozbudowuję witrynę o zaawansowane funkcje, które ułatwiają życie Twoim klientom i automatyzują Twoją pracę. Wdrażam dedykowane systemy rezerwacji, interaktywne konfiguratory usług czy moduły sprzedażowe, dzięki którym Twoja strona staje się realnym narzędziem zarobkowym.",
     "audience.cta": "Poznaj ofertę",
+    "audience.more": "Zobacz więcej",
     "audience.cap1": "DOWÓD 01 / 03 — NA STOLE",
     "audience.cap2": "DOWÓD 02 / 03 — NA STOLE",
     "audience.cap3": "DOWÓD 03 / 03 — KOMPLET",
+    "audiencePage.title": "Dla kogo tworzę — hadrianm.pl",
+    "audiencePage.description":
+      "Dla kogo tworzę strony: wizytówki z efektem WOW, pełna niezależność dzięki panelowi CMS i narzędzia, które automatyzują pracę i realnie zarabiają.",
+    "audiencePage.back": "Wróć",
     "services.ghost": "oferta",
     "services.meta": "Rozwiązania dopasowane do Twojego biznesu",
     "services.lead1":
@@ -329,9 +334,14 @@ export const ui = {
     "audience.ch3.para":
       "A beautiful website is just the beginning. Depending on your needs, I extend it with advanced features that make life easier for your customers and automate your work. I implement dedicated booking systems, interactive service configurators and sales modules that turn your website into a real revenue tool.",
     "audience.cta": "Explore my services",
+    "audience.more": "See more",
     "audience.cap1": "PROOF 01 / 03 — ON THE TABLE",
     "audience.cap2": "PROOF 02 / 03 — ON THE TABLE",
     "audience.cap3": "PROOF 03 / 03 — COMPLETE",
+    "audiencePage.title": "Who I create for — hadrianm.pl",
+    "audiencePage.description":
+      "Who I build websites for: WOW-factor business sites, full independence with a CMS panel, and tools that automate your work and generate real profit.",
+    "audiencePage.back": "Back",
     "services.ghost": "services",
     "services.meta": "Solutions tailored to your business",
     "services.lead1":

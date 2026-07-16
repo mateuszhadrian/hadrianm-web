@@ -12,3 +12,8 @@ export const WORK_INDEX_PATH: Record<Lang, string> = {
   pl: "/realizacje/",
   en: "/en/projects/",
 };
+
+export const AUDIENCE_PATH: Record<Lang, string> = {
+  pl: "/dla-kogo/",
+  en: "/en/who-its-for/",
+};

@@ -6,11 +6,13 @@ import { usePreviewGuard } from "../helpers/guards";
 import { gotoReady, settle } from "../helpers/scroll";
 import { FREEZE } from "../helpers/visual";
 
-// Kolejność jak w Home.astro (hero, audience, services, about i faq mają
-// własne sweepy w hero.spec.ts, audience.spec.ts, services.spec.ts,
-// about.spec.ts i faq.spec.ts — sekcje animowane, element-screenshot nie
-// niesie informacji).
-const SECTIONS = ["work", "contact"];
+// Kolejność jak w Home.astro (hero, services, about i faq mają własne
+// sweepy w hero.spec.ts, services.spec.ts, about.spec.ts i faq.spec.ts —
+// sekcje animowane, element-screenshot nie niesie informacji). Audience na
+// stronie głównej to od migracji na podstronę STATYCZNA zajawka
+// (docs/analiza-podstrona-dla-kogo.md) — element-screenshot wystarcza;
+// pełną animację sweepuje audience.spec.ts na /dla-kogo/.
+const SECTIONS = ["audience", "work", "contact"];
 
 usePreviewGuard();
 

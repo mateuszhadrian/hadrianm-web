@@ -54,12 +54,15 @@ export async function snappedSectionSweep(
     snapPoints: readonly number[];
     /** Scrub + reveale sekcji muszą zdążyć usiąść przed zrzutem. */
     settleMs: number;
+    /** Strona z sekcją (default „/" — strona główna); audience sweepuje
+     *  podstronę /dla-kogo/. */
+    path?: string;
   },
 ): Promise<void> {
   // ?nosnap: snap wyłączony na czas testu — programowy dojazd do punktów osi
   // nie ściga się ze snapem na wolnych runnerach CI (kadry bez zmian: punkty
   // sweepa to i tak pozycje spoczynku snapa).
-  await prepareSweep(page, "/?nosnap");
+  await prepareSweep(page, `${opts.path ?? "/"}?nosnap`);
 
   const range = await page.evaluate(
     ({ sel, minPx }) => {

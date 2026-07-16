@@ -1,7 +1,7 @@
 ---
 import { type Lang } from "@/i18n/utils";
 import { navItems, navLabel } from "@/i18n/nav";
-import { HOME_PATH, WORK_INDEX_PATH } from "@/lib/routes";
+import { AUDIENCE_PATH, HOME_PATH, WORK_INDEX_PATH } from "@/lib/routes";
 
 interface Props {
   lang: Lang;
@@ -25,17 +25,17 @@ const currentPath = Astro.url.pathname.endsWith("/")
   : `${Astro.url.pathname}/`;
 const onHome = currentPath === homeHref;
 
-// Href pozycji menu: „Realizacje" prowadzi na podstronę (pierwszy krok
-// migracji linków na podstrony — reszta w osobnym etapie); pozostałe to
-// kotwice sekcji strony głównej — na podstronach z pełną ścieżką
-// (handleAnchorClick przechwytuje wyłącznie hrefy zaczynające się od "#",
-// więc pełne ścieżki nawigują natywnie).
+// Href pozycji menu: pozycje zmigrowane na podstrony (mapa niżej) prowadzą
+// wprost na nie; pozostałe to kotwice sekcji strony głównej — na podstronach
+// z pełną ścieżką (handleAnchorClick przechwytuje wyłącznie hrefy zaczynające
+// się od "#", więc pełne ścieżki nawigują natywnie). Docelowo prawie całe
+// menu przejdzie na podstrony (zajawki na głównej = zachęta do wejścia).
+const SUBPAGE_PATHS: Partial<Record<string, Record<Lang, string>>> = {
+  work: WORK_INDEX_PATH,
+  audience: AUDIENCE_PATH,
+};
 const itemHref = (id: string): string =>
-  id === "work"
-    ? WORK_INDEX_PATH[lang]
-    : onHome
-      ? `#${id}`
-      : `${homeHref}#${id}`;
+  SUBPAGE_PATHS[id]?.[lang] ?? (onHome ? `#${id}` : `${homeHref}#${id}`);
 
 const t = {
   nav: isEn ? "Main navigation" : "Główna nawigacja",

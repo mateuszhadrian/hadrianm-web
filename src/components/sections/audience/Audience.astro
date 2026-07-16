@@ -5,8 +5,15 @@
 // przy prefers-reduced-motion: no-preference). Bez JS / przy reduce sekcja
 // renderuje statyczny układ flow ze stanami docelowymi (okna ostre, mocki
 // desktopowe ukryte).
+//
+// Dwa warianty (docs/analiza-podstrona-dla-kogo.md): "full" = pełna
+// animowana sekcja (podstrona /dla-kogo/); "teaser" = statyczna pierwsza
+// klatka sceny na stronie głównej (rozdział 00 + wachlarz okien + przycisk
+// MoreLink na podstronę) — bez stosu, licznika, cyfr i modułu scrolla.
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
+import { AUDIENCE_PATH } from "@/lib/routes";
+import MoreLink from "@/components/ui/MoreLink.astro";
 import AudienceMockWindow from "./AudienceMockWindow.astro";
 import ekranHome from "@/assets/audience/ekran-home.webp";
 import ekranCms from "@/assets/audience/ekran-cms.webp";
@@ -14,8 +21,10 @@ import ekranReservation from "@/assets/audience/ekran-reservation.webp";
 
 interface Props {
   lang: Lang;
+  variant?: "teaser" | "full";
 }
-const { lang } = Astro.props;
+const { lang, variant = "full" } = Astro.props;
+const teaser = variant === "teaser";
 const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "audience");
 const label = item ? navLabel(item, lang) : "Dla kogo";
@@ -59,20 +68,39 @@ const screens = [
 const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
 ---
 
-<section id="audience" class="dk" aria-label={label}>
+<section
+  id="audience"
+  class:list={["dk", { "dk--teaser": teaser }]}
+  data-variant={variant}
+  aria-label={label}
+>
   <script is:inline>
-    // Bez JS sekcja zostaje w statycznym układzie flow (fallback);
-    // klasa .js włącza desktopową scenę przypiętą (patrz @media niżej).
-    document.currentScript?.closest("section")?.classList.add("js");
+    // Bez JS sekcja zostaje w statycznym układzie flow (fallback); klasa .js
+    // włącza desktopową scenę przypiętą (patrz @media niżej) — tylko
+    // w pełnym wariancie (zajawka jest statyczna z definicji).
+    {
+      const s = document.currentScript?.closest("section");
+      if (s?.dataset.variant === "full") s.classList.add("js");
+    }
   </script>
   <div class="dk-stage">
     <!-- widmowa typografia: napis intro + cyfry 1/2/3 (desktop) -->
     <div class="dk-ghostintro" aria-hidden="true">{t("audience.ghost")}</div>
-    <div class="dk-digitwrap" aria-hidden="true">
-      <div class="dk-digit" data-d="0">1</div>
-      <div class="dk-digit" data-d="1">2</div>
-      <div class="dk-digit" data-d="2">3</div>
-    </div>
+    {
+      !teaser && (
+        <div class="dk-digitwrap" aria-hidden="true">
+          <div class="dk-digit" data-d="0">
+            1
+          </div>
+          <div class="dk-digit" data-d="1">
+            2
+          </div>
+          <div class="dk-digit" data-d="2">
+            3
+          </div>
+        </div>
+      )
+    }
 
     <!-- podgląd intro (desktop): docelowy wachlarz trzech okien — tak jak
          prawa strona wygląda przy odczepieniu sekcji. Znika na starcie scrolla,
@@ -90,23 +118,26 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
 
     <!-- stos kart-dowodów (desktop); podpis DOWÓD x/03 podmienia onChange
          progresu w audience-scroll.ts -->
-    <div class="dk-stack" aria-hidden="true">
-      {
-        screens.map((s) => (
-          <div class="dk-card">
-            <AudienceMockWindow screen={s.src} url={s.url} />
+    {
+      !teaser && (
+        <div class="dk-stack" aria-hidden="true">
+          {screens.map((s) => (
+            <div class="dk-card">
+              <AudienceMockWindow screen={s.src} url={s.url} />
+            </div>
+          ))}
+          <div
+            class="dk-cap"
+            data-cap1={caps[0]}
+            data-cap2={caps[1]}
+            data-cap3={caps[2]}
+          >
+            <span class="capline" />
+            <span class="captext">{caps[0]}</span>
           </div>
-        ))
-      }
-      <div
-        class="dk-cap"
-        data-cap1={caps[0]}
-        data-cap2={caps[1]}
-        data-cap3={caps[2]}
-      >
-        <span class="capline"></span><span class="captext">{caps[0]}</span>
-      </div>
-    </div>
+        </div>
+      )
+    }
 
     <!-- chrome sekcji -->
     <div class="dk-tag">
@@ -116,10 +147,11 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
     <div class="dk-meta" aria-hidden="true">{t("audience.meta")}</div>
 
     <!-- rozdziały 00–03 (desktop: wymieniają się na przypiętej scenie;
-         mobile: flow, rozdziały 01–03 z oknem-obrazkiem) -->
+         mobile: flow, rozdziały 01–03 z oknem-obrazkiem); zajawka renderuje
+         WYŁĄCZNIE rozdział 00 + przycisk na podstronę -->
     <div class="dk-chapters">
       {
-        chapters.map((ch, i) => (
+        (teaser ? chapters.slice(0, 1) : chapters).map((ch, i) => (
           <article class="dk-ch" data-ch={i}>
             {i > 0 && (
               <>
@@ -145,8 +177,23 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
               </h3>
             )}
             <p class="ch-para">{ch.para}</p>
+            {teaser && i === 0 && (
+              <div class="dk-morewrap">
+                {/* wrapper, nie klasa na komponencie — scoped CSS nie łapie
+                    elementów renderowanych przez komponent potomny */}
+                <MoreLink
+                  href={AUDIENCE_PATH[lang]}
+                  label={t("audience.more")}
+                />
+              </div>
+            )}
             {i === 3 && (
-              <a class="dk-cta" href="#services">
+              // CTA-placeholder (decyzja D5 analizy): sekcja Oferta też
+              // będzie migrowana na podstronę — cel wskażemy wtedy; skrypt
+              // niżej blokuje natywny skok do góry (href="#"). Świadomy,
+              // TYMCZASOWY wyjątek a11y — element wróci do bycia linkiem.
+              // eslint-disable-next-line astro/jsx-a11y/anchor-is-valid
+              <a class="dk-cta" href="#">
                 {t("audience.cta")}
                 <span class="arr" aria-hidden="true">
                   →
@@ -159,29 +206,39 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
     </div>
 
     <!-- progres 01/04 (tylko desktop, czysto wizualny) -->
-    <div class="dk-progress" aria-hidden="true">
-      <div class="ticks"><i class="on"></i><i></i><i></i><i></i></div>
-      <span class="pcount">01 / 04</span>
-    </div>
+    {
+      !teaser && (
+        <div class="dk-progress" aria-hidden="true">
+          <div class="ticks">
+            <i class="on" />
+            <i />
+            <i />
+            <i />
+          </div>
+          <span class="pcount">01 / 04</span>
+        </div>
+      )
+    }
   </div>
 </section>
 
 <script>
-  import { handleAnchorClick } from "@/scripts/anchors";
+  const section = document.querySelector<HTMLElement>("#audience");
 
-  // Animacje tylko przy dozwolonym ruchu — ta sama bramka co Lenis
-  // w BaseLayout; przy reduce statyczny układ realizuje czysty CSS.
-  if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+  // Animacje tylko w pełnym wariancie (podstrona) i przy dozwolonym ruchu —
+  // ta sama bramka co Lenis w BaseLayout; przy reduce statyczny układ
+  // realizuje czysty CSS. Zajawka (teaser) nie pobiera chunka GSAP w ogóle.
+  if (
+    section?.dataset.variant === "full" &&
+    matchMedia("(prefers-reduced-motion: no-preference)").matches
+  ) {
     import("./audience-scroll").then((m) => m.initAudienceScroll());
   }
 
-  // CTA (#services): wspólny handler kotwic (@/scripts/anchors).
+  // CTA rozdziału 03 to placeholder (href="#") do czasu migracji sekcji
+  // Oferta na podstronę — blokujemy natywny skok do góry strony.
   const cta = document.querySelector<HTMLAnchorElement>("#audience .dk-cta");
-  if (cta) {
-    cta.addEventListener("click", (e) =>
-      handleAnchorClick(e, cta.getAttribute("href")),
-    );
-  }
+  cta?.addEventListener("click", (e) => e.preventDefault());
 </script>
 
 <style>
@@ -343,6 +400,38 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
   }
   .dk-cta:hover .arr {
     transform: translateX(6px);
+  }
+  /* przycisk zajawki (MoreLink) — wrapper w flow rozdziału 00 */
+  .dk-morewrap {
+    margin-top: 6px;
+  }
+
+  /* Zajawka mobile: cały blok podciągnięty do góry — bazowe wartości
+     (padding-top 84px, ghost 92px, margin rozdziału 118px) celowały w pełny
+     układ flow. Tag „01 / DLA KOGO" siedzi tuż przy górnej krawędzi sekcji,
+     więc pokazuje się od razu po odpięciu hero (sticky: sekcja wchodzi
+     w viewport dopiero po odpięciu — bez ryzyka prześwitu w trakcie hero);
+     relacja tag→ghost zachowana (delta -76px na obu). Dokładne dopełnienie
+     desktopowego progu (nie max-width — bez dziury na ułamkowych
+     szerokościach); 861px = AUDIENCE_DESKTOP_MIN_PX. */
+  @media not all and (min-width: 861px) {
+    .dk--teaser .dk-stage {
+      padding-top: 8px;
+      /* Zajawka wypełnia dokładnie viewport: „02 / OFERTA" zaczyna wjeżdżać
+         dopiero, gdy tag „01 / DLA KOGO" wyjeżdża górą. 100vh na mobile =
+         duży viewport (pasek URL schowany — naturalny stan przy scrollu
+         w dół); przy widocznym pasku sekcja jest o jego wysokość „za długa"
+         (Oferta wjedzie chwilę później — celowo ta strona kompromisu,
+         nigdy za wcześnie). Nadmiar wysokości zostaje pustką pod przyciskiem
+         (flex column, treść kotwiczona u góry — odstępy bez zmian). */
+      min-height: 100vh;
+    }
+    .dk--teaser .dk-ghostintro {
+      top: 16px;
+    }
+    .dk--teaser .dk-ch[data-ch="0"] {
+      margin-top: 52px;
+    }
   }
 
   /* ── karty desktop (rewersy + stos): niewidoczne poza sceną ── */
@@ -606,6 +695,65 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
     .dk.js .dk-ch:not([data-ch="0"]) {
       opacity: 0;
       visibility: hidden;
+    }
+  }
+
+  /* ═══ WARIANT ZAJAWKI (strona główna): statyczna pierwsza klatka sceny ═══
+     Desktop bez bramki motion i bez klasy .js — nic się nie animuje, więc
+     reduce dostaje ten sam kadr; mobile obsługuje bazowy układ flow (zajawka
+     renderuje tylko tag + ghost + rozdział 00 + przycisk). Pozycje 1:1
+     z pierwszą klatką gałęzi .dk.js; 861px = AUDIENCE_DESKTOP_MIN_PX. */
+  @media (min-width: 861px) {
+    .dk--teaser .dk-stage {
+      height: 100vh;
+      display: block;
+      padding: 0;
+    }
+    .dk--teaser .dk-ghostintro {
+      font-size: min(13vw, 250px);
+      left: 7.3vw;
+      top: auto;
+      bottom: 13vh;
+    }
+    .dk--teaser .dk-tag {
+      position: absolute;
+      top: 8.8vh;
+      left: 7.8vw;
+    }
+    .dk--teaser .dk-meta {
+      display: flex;
+      top: 8.8vh;
+      right: 7.8vw;
+    }
+    .dk--teaser .dk-chapters {
+      display: block;
+      position: absolute;
+      z-index: 7;
+      left: 7.8vw;
+      top: 50%;
+      width: min(35vw, 680px);
+    }
+    .dk--teaser .dk-ch {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      gap: 26px;
+      transform: translateY(-50%);
+    }
+    .dk--teaser .dk-ch .ch-head {
+      font-size: min(5vw, 96px);
+    }
+    .dk--teaser .dk-ch .ch-para {
+      font-size: clamp(15px, 0.94vw, 18px);
+      max-width: 620px;
+    }
+    .dk--teaser .dk-backs {
+      display: block;
+      position: absolute;
+      left: 58.5vw;
+      top: 27vh;
+      width: var(--dkcw);
+      z-index: 4;
     }
   }
 </style>
