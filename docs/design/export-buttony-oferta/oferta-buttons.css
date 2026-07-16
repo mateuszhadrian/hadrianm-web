@@ -1,0 +1,166 @@
+/* ══════════════════════════════════════════════════════════════════
+   oferta-buttons.css — para CTA sekcji „Oferta” (framework-agnostic)
+   „Przeglądaj pakiety” (primary · wypełniony) + „Proces współpracy” (secondary · panel split)
+   hadrianm.pl · motyw „Czerwona Mgła”
+
+   Identyczna stylistyka co scoped <style> w OfertaButtons.astro.
+   Fonty: Archivo Variable (@fontsource-variable/archivo) + Space Mono (@fontsource/space-mono).
+
+   Markup:
+     <div class="pp-cta-wrap">
+       <div class="pp-cta">
+         <a class="pp-btn pp-btn--solid" href="/pakiety">
+           <span class="pp-label">Przeglądaj pakiety</span>
+           <span class="pp-arrow" aria-hidden="true">→</span>
+         </a>
+         <a class="pp-btn pp-btn--split" href="/proces">
+           <span class="pp-txt">
+             <span class="pp-label">Proces współpracy</span>
+             <span class="pp-sub">Jak wygląda praca ze mną</span>
+           </span>
+           <span class="pp-arrowcell"><span class="pp-arrow" aria-hidden="true">→</span></span>
+         </a>
+       </div>
+     </div>
+   ══════════════════════════════════════════════════════════════════ */
+
+/* kontener reaguje na własną szerokość */
+.pp-cta-wrap {
+  container-type: inline-size;
+}
+
+.pp-cta {
+  /* — Tokeny motywu (podmień na globalne zmienne projektu) — */
+  --pp-ink: #f5f0ec;
+  --pp-faint: rgba(245, 240, 236, 0.38);
+  --pp-line: rgba(245, 240, 236, 0.14);
+  --pp-line-hover: rgba(245, 240, 236, 0.34);
+  --pp-panel-hover: rgba(245, 240, 236, 0.09);
+  --pp-accent: #ff5a47;
+  --pp-accent-glow: 255, 90, 71;
+  --pp-on-accent: #210a06;
+
+  display: flex;
+  align-items: stretch;
+  gap: 18px;
+  max-width: 760px;
+}
+.pp-cta > .pp-btn {
+  flex: 1;
+}
+
+/* ── bazowy button ── */
+.pp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  font-family: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--pp-ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s,
+    color 0.3s;
+}
+.pp-label {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.pp-arrow {
+  color: var(--pp-accent);
+  font-weight: 500;
+  transition: transform 0.25s;
+}
+.pp-btn:hover .pp-arrow {
+  transform: translateX(5px);
+}
+.pp-btn:focus-visible {
+  outline: 2px solid var(--pp-accent);
+  outline-offset: 3px;
+}
+
+/* ── PRIMARY — wypełniony (Przeglądaj pakiety) ── */
+.pp-btn--solid {
+  padding: 19px 34px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: var(--pp-accent);
+  color: var(--pp-on-accent);
+}
+.pp-btn--solid .pp-arrow {
+  color: var(--pp-on-accent);
+}
+.pp-btn--solid:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 44px -14px rgba(var(--pp-accent-glow), 0.75);
+}
+
+/* ── SECONDARY — panel split (Proces współpracy).
+   Świeci pole strzałki, tekst celowo NIE. ── */
+.pp-btn--split {
+  gap: 0;
+  padding: 0;
+  align-items: stretch;
+  border: 1px solid var(--pp-line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pp-txt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 15px 24px;
+}
+.pp-btn--split .pp-label {
+  font-size: 16px;
+}
+.pp-sub {
+  font-family: "Space Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--pp-faint);
+}
+.pp-arrowcell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border-left: 1px solid var(--pp-line);
+}
+.pp-btn--split:hover {
+  border-color: var(--pp-line-hover);
+}
+.pp-btn--split:hover .pp-arrowcell {
+  background: var(--pp-panel-hover);
+}
+
+/* ── MOBILE — słupek, pełna szerokość, primary na górze.
+   Próg = szerokość kontenera. Wolisz próg viewportu?
+   zamień `@container (max-width: 640px)` na `@media (max-width: 640px)`. ── */
+@container (max-width: 640px) {
+  .pp-cta {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pp-btn,
+  .pp-arrow {
+    transition: none;
+  }
+  .pp-btn--solid:hover {
+    transform: none;
+  }
+}

@@ -5,16 +5,39 @@
 // przy prefers-reduced-motion: no-preference). Bez JS / przy reduce sekcja
 // renderuje pełną, statyczną treść (stany startowe animacji siedzą w CSS pod
 // media no-preference i klasą .js sekcji).
+//
+// Trzy warianty (docs/analiza-podstrony-oferta.md): "teaser" = intro czytane
+// scrollem + para CTA na podstrony (strona główna); "process" = nić A z 5
+// krokami + fixed progres (/proces-wspolpracy/); "packages" = pakiety P4
+// (/pakiety/, bez modułu scrolla — tylko hover w CSS).
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
+import { SERVICES_PACKAGES_PATH, SERVICES_PROCESS_PATH } from "@/lib/routes";
+import OfertaButtons from "@/components/ui/OfertaButtons.astro";
 
 interface Props {
   lang: Lang;
+  variant: "teaser" | "process" | "packages";
 }
-const { lang } = Astro.props;
+const { lang, variant } = Astro.props;
 const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "services");
 const label = item ? navLabel(item, lang) : "Oferta";
+
+// Tag chrome'u: strona główna trzyma numerację sekcji (02 / Oferta);
+// podstrony — ścieżkę w obrębie oferty (Oferta / Proces|Pakiety), bo „02"
+// opisuje porządek sekcji na stronie głównej (D6 analizy).
+const tag =
+  variant === "teaser"
+    ? { num: "02", lbl: label }
+    : {
+        num: label,
+        lbl: t(
+          variant === "process"
+            ? "services.tagProcess"
+            : "services.tagPackages",
+        ),
+      };
 
 // Kickery „Krok 0X / 05" składane z i18n — treści kroków w ui.ts.
 const stepWord = t("services.step");
@@ -88,171 +111,232 @@ const extras = [
 ];
 ---
 
-<section id="services" class="of" aria-label={label}>
+<section
+  id="services"
+  class:list={["of", { "of--sub": variant !== "teaser" }]}
+  data-variant={variant}
+  aria-label={label}
+>
   <script is:inline>
     // Bez JS sekcja zostaje w pełni widoczna (fallback SEO); klasa .js
     // uzbraja stany startowe animacji (patrz media no-preference niżej).
+    // Bezwarunkowo — warunkowy <script is:inline> w wyrażeniu JSX wywala
+    // parser astro check (gotcha z analizy /dla-kogo §VII); w wariancie
+    // packages klasa jest neutralna (brak uzbrajanych selektorów).
     document.currentScript?.closest("section")?.classList.add("js");
   </script>
 
   <!-- chrome sekcji -->
   <div class="of-tag">
-    <span class="t-num">02</span><span class="t-sl" aria-hidden="true">/</span
-    ><span class="t-lbl">{label}</span>
+    <span class="t-num">{tag.num}</span><span class="t-sl" aria-hidden="true"
+      >/</span
+    ><span class="t-lbl">{tag.lbl}</span>
   </div>
   <div class="of-meta" aria-hidden="true">{t("services.meta")}</div>
 
-  <!-- ── INTRO: czytanie scrollem ── -->
-  <div class="of-intro">
-    <div class="of-ghost" aria-hidden="true">{t("services.ghost")}</div>
-    <p class="of-lead of-lit">{t("services.lead1")}</p>
-    <p class="of-lead of-lit">
-      {t("services.lead2")}
-      <span class="acc">{t("services.lead2acc")}</span>
-    </p>
-    <p class="of-close of-lit">{t("services.close")}</p>
-    <div class="of-introhint">
-      <div class="of-mono">{t("services.introHint")}</div>
-    </div>
-  </div>
-
-  <!-- ── PROCES: nić współpracy ── -->
-  <div class="of-proces">
-    <div class="of-thread" aria-hidden="true"><i class="of-fill"></i></div>
-
-    <ol class="of-steps">
-      {
-        steps.map((s) => (
-          <li class="of-step">
-            <span class="of-node" aria-hidden="true" />
-            <div class="of-ghostd" aria-hidden="true">
-              {s.digit}
-            </div>
-            <article>
-              <div class="st-kick">{s.kick}</div>
-              <h3>{s.head}</h3>
-              <p>{s.para}</p>
-            </article>
-          </li>
-        ))
-      }
-    </ol>
-
-    <div class="of-endcap">
-      <span class="of-dia" aria-hidden="true"></span>
-      <a class="of-cta" href="#packages"
-        >{t("services.cta")} <span class="arr" aria-hidden="true">↓</span></a
-      >
-    </div>
-  </div>
-
-  <!-- ── PAKIETY: P4 ghost-ceny (statyczne, tylko hover) ── -->
-  <div id="packages">
-    <div class="pk-head">
-      <div>
-        <div class="of-mono kick">{t("services.pk.kick")}</div>
-        <h2>
-          {t("services.pk.headLead")}
-          <span class="sf">{t("services.pk.headAccent")}</span>
-        </h2>
+  <!-- ── INTRO: czytanie scrollem + para CTA na podstrony (strona główna) ── -->
+  {
+    variant === "teaser" && (
+      <div class="of-intro">
+        <div class="of-ghost" aria-hidden="true">
+          {t("services.ghost")}
+        </div>
+        <p class="of-lead of-lit">{t("services.lead1")}</p>
+        <p class="of-lead of-lit">
+          {t("services.lead2")}
+          <span class="acc">{t("services.lead2acc")}</span>
+        </p>
+        <p class="of-close of-lit">{t("services.close")}</p>
+        <div class="of-ctas">
+          <OfertaButtons
+            packagesHref={SERVICES_PACKAGES_PATH[lang]}
+            packagesLabel={t("services.ctaPackages")}
+            processHref={SERVICES_PROCESS_PATH[lang]}
+            processLabel={t("services.ctaProcess")}
+            processSub={t("services.ctaProcessSub")}
+          />
+        </div>
       </div>
-    </div>
+    )
+  }
 
-    <div class="pk-grid">
-      {
-        packages.map((pk) => (
-          <div class:list={["pk-col", { mid: pk.mid }]}>
-            <div class="pk-ghost" aria-hidden="true">
-              {pk.ghost}
-            </div>
-            {pk.star && <span class="pk-star">{pk.star}</span>}
-            <div class="pk-no">{pk.no}</div>
-            <h3 class="pk-name">{pk.name}</h3>
-            <div class="pk-sub">{pk.sub}</div>
-            <div class="pk-price">
-              <span class="od">{t("services.pk.from")}</span>
-              <span class="val">{pk.price}</span>
-              <span class="net">{t("services.pk.net")}</span>
-            </div>
-            <span class="pk-range">{pk.range}</span>
-            <ul class="pk-feats">
-              {pk.feats.map((f) => (
-                <li>{f}</li>
-              ))}
-            </ul>
-            <a class="pk-cta" href="#contact">
-              <span class="lbl">{t("services.pk.cta")}</span>
+  <!-- ── PROCES: nagłówek podstrony + nić współpracy (/proces-wspolpracy/) ── -->
+  {
+    variant === "process" && (
+      <Fragment>
+        <div class="of-pghead">
+          <div class="of-mono kick">{t("services.proc.kick")}</div>
+          <h2>
+            {t("services.proc.headLead")}
+            <span class="sf">{t("services.proc.headAccent")}</span>
+          </h2>
+        </div>
+
+        <div class="of-proces">
+          <div class="of-thread" aria-hidden="true">
+            <i class="of-fill" />
+          </div>
+
+          <ol class="of-steps">
+            {steps.map((s) => (
+              <li class="of-step">
+                <span class="of-node" aria-hidden="true" />
+                <div class="of-ghostd" aria-hidden="true">
+                  {s.digit}
+                </div>
+                <article>
+                  <div class="st-kick">{s.kick}</div>
+                  <h3>{s.head}</h3>
+                  <p>{s.para}</p>
+                </article>
+              </li>
+            ))}
+          </ol>
+
+          <div class="of-endcap">
+            <span class="of-dia" aria-hidden="true" />
+            {/* Pełna nawigacja na /pakiety/ (D4) — nie kotwica. */}
+            <a class="of-cta" href={SERVICES_PACKAGES_PATH[lang]}>
+              {t("services.cta")}{" "}
               <span class="arr" aria-hidden="true">
                 →
               </span>
             </a>
           </div>
-        ))
-      }
-    </div>
+        </div>
+      </Fragment>
+    )
+  }
 
-    <div class="pk-dedy">
-      <div class="dcol">
-        <div class="of-mono">{t("services.dedy.kick")}</div>
-        <div class="dname">{t("services.dedy.name")}</div>
-        <div class="dsub">{t("services.dedy.sub")}</div>
-      </div>
-      <p class="ddesc">{t("services.dedy.desc")}</p>
-      <div class="dright">
-        <span class="dprice">{t("services.dedy.price")}</span>
-        <a class="dlink" href="#contact"
-          >{t("services.dedy.link")}
-          <span class="arr" aria-hidden="true">→</span></a
-        >
-      </div>
-    </div>
+  <!-- ── PAKIETY: P4 ghost-ceny (statyczne, tylko hover; /pakiety/) ── -->
+  {
+    variant === "packages" && (
+      <div id="packages">
+        <div class="pk-head">
+          <div>
+            <div class="of-mono kick">{t("services.pk.kick")}</div>
+            <h2>
+              {t("services.pk.headLead")}
+              <span class="sf">{t("services.pk.headAccent")}</span>
+            </h2>
+          </div>
+        </div>
 
-    <div class="pk-extra">
-      <div class="of-mono xkick">{t("services.extra.kick")}</div>
-      <div class="xgrid">
-        {
-          extras.map((x) => (
-            <div class="xitem">
-              <span class="plus" aria-hidden="true">
-                +
-              </span>
-              <div>
-                <div class="xt">{x.title}</div>
-                <div class="xp">{x.desc}</div>
+        <div class="pk-grid">
+          {packages.map((pk) => (
+            <div class:list={["pk-col", { mid: pk.mid }]}>
+              <div class="pk-ghost" aria-hidden="true">
+                {pk.ghost}
               </div>
+              {pk.star && <span class="pk-star">{pk.star}</span>}
+              <div class="pk-no">{pk.no}</div>
+              <h3 class="pk-name">{pk.name}</h3>
+              <div class="pk-sub">{pk.sub}</div>
+              <div class="pk-price">
+                <span class="od">{t("services.pk.from")}</span>
+                <span class="val">{pk.price}</span>
+                <span class="net">{t("services.pk.net")}</span>
+              </div>
+              <span class="pk-range">{pk.range}</span>
+              <ul class="pk-feats">
+                {pk.feats.map((f) => (
+                  <li>{f}</li>
+                ))}
+              </ul>
+              {/* CTA-placeholder (D3 analizy): sekcja kontakt też dostanie
+                  podstronę — cel wskażemy wtedy; skrypt niżej blokuje natywny
+                  skok do góry (href="#"). Świadomy, TYMCZASOWY wyjątek a11y. */}
+              {/* eslint-disable-next-line astro/jsx-a11y/anchor-is-valid */}
+              <a class="pk-cta" href="#">
+                <span class="lbl">{t("services.pk.cta")}</span>
+                <span class="arr" aria-hidden="true">
+                  →
+                </span>
+              </a>
             </div>
-          ))
-        }
+          ))}
+        </div>
+
+        <div class="pk-dedy">
+          <div class="dcol">
+            <div class="of-mono">{t("services.dedy.kick")}</div>
+            <div class="dname">{t("services.dedy.name")}</div>
+            <div class="dsub">{t("services.dedy.sub")}</div>
+          </div>
+          <p class="ddesc">{t("services.dedy.desc")}</p>
+          <div class="dright">
+            <span class="dprice">{t("services.dedy.price")}</span>
+            {/* CTA-placeholder (D3) — jak pk-cta wyżej. */}
+            {/* eslint-disable-next-line astro/jsx-a11y/anchor-is-valid */}
+            <a class="dlink" href="#">
+              {t("services.dedy.link")}{" "}
+              <span class="arr" aria-hidden="true">
+                →
+              </span>
+            </a>
+          </div>
+        </div>
+
+        <div class="pk-extra">
+          <div class="of-mono xkick">{t("services.extra.kick")}</div>
+          <div class="xgrid">
+            {extras.map((x) => (
+              <div class="xitem">
+                <span class="plus" aria-hidden="true">
+                  +
+                </span>
+                <div>
+                  <div class="xt">{x.title}</div>
+                  <div class="xp">{x.desc}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
+    )
+  }
 
   <!-- progres procesu (desktop; fixed do viewportu — czysto wizualny) -->
-  <div class="of-progress" aria-hidden="true">
-    <div class="ticks">
-      <i class="on"></i><i></i><i></i><i></i><i></i>
-    </div>
-    <span class="pcount">01 / 05</span>
-  </div>
+  {
+    variant === "process" && (
+      <div class="of-progress" aria-hidden="true">
+        <div class="ticks">
+          <i class="on" />
+          <i />
+          <i />
+          <i />
+          <i />
+        </div>
+        <span class="pcount">01 / 05</span>
+      </div>
+    )
+  }
 </section>
 
 <script>
-  import { handleAnchorClick } from "@/scripts/anchors";
+  const section = document.querySelector<HTMLElement>("#services");
+  const variant = section?.dataset.variant;
 
   // Animacje tylko przy dozwolonym ruchu — ta sama bramka co Lenis
   // w BaseLayout; przy reduce statyczny układ realizuje czysty CSS.
-  if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+  // Wariant packages jest statyczny (hover w CSS) i nie pobiera chunka
+  // GSAP w ogóle; moduł rozgałęzia się po data-variant.
+  if (
+    (variant === "teaser" || variant === "process") &&
+    matchMedia("(prefers-reduced-motion: no-preference)").matches
+  ) {
     import("./services-scroll").then((m) => m.initServicesScroll());
   }
 
-  // Kotwice CTA sekcji (#packages, #contact): wspólny handler kotwic
-  // (@/scripts/anchors).
-  for (const a of document.querySelectorAll<HTMLAnchorElement>(
-    '#services a[href^="#"]',
-  )) {
-    a.addEventListener("click", (e) =>
-      handleAnchorClick(e, a.getAttribute("href")),
-    );
+  // CTA pakietów to placeholdery (href="#") do czasu migracji sekcji
+  // kontakt na podstronę — blokujemy natywny skok do góry strony.
+  if (variant === "packages") {
+    for (const a of document.querySelectorAll<HTMLAnchorElement>(
+      '#services a[href="#"]',
+    )) {
+      a.addEventListener("click", (e) => e.preventDefault());
+    }
   }
 </script>
 
@@ -377,12 +461,18 @@ const extras = [
     line-height: 1.55;
     color: var(--ink);
   }
-  .of-introhint {
+  /* para CTA na podstrony — w linii z tekstem intro (komponent trzyma
+     max-width 760px i własną responsywność po szerokości kontenera) */
+  .of-ctas {
     margin-top: 96px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 26px;
+  }
+
+  /* ═══ NAGŁÓWEK PODSTRONY PROCESU — typografia współdzielona selektorami
+     z .pk-head (sekcja PAKIETY niżej); tu tylko layout bloku. ═══ */
+  .of-pghead {
+    position: relative;
+    z-index: 6;
+    padding: 235px 150px 30px;
   }
 
   /* ═══ PROCES — nić ═══ */
@@ -538,8 +628,9 @@ const extras = [
     color: var(--accent);
     transition: transform 0.25s;
   }
+  /* strzałka → (pełna nawigacja na /pakiety/, D4) — jedzie w prawo */
   .of-cta:hover .arr {
-    transform: translateY(4px);
+    transform: translateX(6px);
   }
 
   /* progres (desktop, fixed przy krawędzi; włącza klasa of-prog-on NA SEKCJI) */
@@ -589,17 +680,23 @@ const extras = [
     z-index: 6;
     padding: 170px 150px 160px;
   }
+  /* podstrona /pakiety/: blok otwiera stronę — oddech jak intro na głównej */
+  .of--sub #packages {
+    padding-top: 235px;
+  }
   .pk-head {
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
     margin-bottom: 130px;
   }
-  .pk-head .kick {
+  .pk-head .kick,
+  .of-pghead .kick {
     color: var(--accent);
     margin-bottom: 20px;
   }
-  .pk-head h2 {
+  .pk-head h2,
+  .of-pghead h2 {
     margin: 0;
     font-family: var(--font-display), sans-serif;
     font-weight: 800;
@@ -608,7 +705,8 @@ const extras = [
     letter-spacing: -0.035em;
     color: var(--ink);
   }
-  .pk-head h2 .sf {
+  .pk-head h2 .sf,
+  .of-pghead h2 .sf {
     font-family: var(--font-serif), serif;
     font-style: italic;
     font-weight: 400;
@@ -935,14 +1033,14 @@ const extras = [
       opacity: 1;
       transform: none;
     }
-    .of.js .of-introhint {
+    .of.js .of-ctas {
       opacity: 0;
       transform: translateY(18px);
       transition:
         opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
         transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
     }
-    .of.js .of-introhint.on {
+    .of.js .of-ctas.on {
       opacity: 1;
       transform: none;
     }
@@ -958,7 +1056,9 @@ const extras = [
       display: none;
     }
     .of-intro {
-      padding: 150px 26px 90px;
+      /* dół ciaśniej niż odstęp nad parą CTA (110px) — buttony siedzą
+         bliżej końca sekcji niż tekstu intro */
+      padding: 150px 26px 48px;
     }
     .of-ghost {
       left: 12px;
@@ -973,8 +1073,17 @@ const extras = [
     .of-close {
       font-size: 15.5px;
     }
-    .of-introhint {
-      margin-top: 64px;
+    .of-ctas {
+      margin-top: 110px;
+    }
+
+    /* podstrony: sekcja otwiera stronę — tag niżej, spod fixed BackButtona
+       w slocie brandu (na głównej nad tagiem jest poprzednia sekcja) */
+    .of--sub .of-tag {
+      top: 118px;
+    }
+    .of-pghead {
+      padding: 178px 26px 6px;
     }
 
     .of-proces {
@@ -1027,13 +1136,17 @@ const extras = [
     #packages {
       padding: 110px 26px 110px;
     }
+    .of--sub #packages {
+      padding-top: 190px;
+    }
     .pk-head {
       flex-direction: column;
       align-items: flex-start;
       gap: 22px;
       margin-bottom: 84px;
     }
-    .pk-head h2 {
+    .pk-head h2,
+    .of-pghead h2 {
       font-size: 44px;
     }
     .pk-grid {
@@ -1102,6 +1215,7 @@ const extras = [
   /* wąski desktop: mniejsze marginesy */
   @media (min-width: 861px) and (max-width: 1280px) {
     .of-intro,
+    .of-pghead,
     .of-proces,
     #packages {
       padding-left: 70px;

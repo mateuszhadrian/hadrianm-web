@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Buttony Oferta — Eksport (Przeglądaj pakiety + Proces współpracy)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- REALNY eksportowany CSS (źródło prawdy) -->
+<link rel="stylesheet" href="oferta-buttons.css">
+<style>
+  :root{--ink:#F5F0EC;--muted:rgba(245,240,236,0.62);--faint:rgba(245,240,236,0.38);--line:rgba(245,240,236,0.12);--accent:#FF5A47;--mono:'Space Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+  *{box-sizing:border-box}html,body{margin:0}
+  body{background:#100C0E;color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  .x-page{max-width:1120px;margin:0 auto;padding:48px clamp(20px,4vw,56px) 110px}
+  .x-head{display:flex;flex-direction:column;gap:9px;border-bottom:1px solid var(--line);padding-bottom:28px}
+  .x-kick{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent)}
+  .x-head h1{margin:0;font-weight:800;font-size:30px;letter-spacing:-.03em}
+  .x-head p{margin:0;max-width:720px;color:var(--muted);font-size:14px;line-height:1.6}
+  .x-head p b{color:var(--ink);font-weight:600}
+  .x-head code{font-family:var(--mono);font-size:12.5px;color:#E3BE7F}
+  .x-grp{margin-top:46px}
+  .x-grphdr{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .x-grphdr span{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+  .x-grphdr hr{flex:1;border:none;height:1px;background:linear-gradient(90deg,rgba(245,240,236,.16),transparent)}
+  .x-card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(0,0,0,.16)}
+  /* scena z delikatną „czerwoną mgłą” sekcji — do oceny kontrastu buttonów */
+  .x-stage{position:relative;background:#0b090b;padding:64px 56px;display:flex;justify-content:center;overflow:hidden}
+  .x-stage::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(60% 90% at 78% 24%,rgba(214,38,38,.22) 0%,rgba(0,0,0,0) 70%),radial-gradient(52% 82% at 16% 92%,rgba(130,20,32,.18) 0%,rgba(0,0,0,0) 72%)}
+  .x-stage::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;background-image:radial-gradient(circle at center,rgba(0,0,0,.96) 2.17px,rgba(0,0,0,0) 3.69px);background-size:10.41px 10.41px}
+  .x-stage>*{position:relative;z-index:2}
+  .x-stage.mob{padding:44px 40px}
+  .x-stage.mob .pp-cta-wrap{width:372px;max-width:100%}
+  .x-hint{padding:12px 18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:rgba(245,240,236,.44);border-top:1px solid var(--line);background:rgba(0,0,0,.22)}
+  .x-hint b{color:var(--muted);font-weight:400}
+  .x-codehdr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:rgba(0,0,0,.3);border-top:1px solid var(--line)}
+  .x-codehdr b{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);font-weight:400}
+  pre{margin:0;padding:18px 20px;background:#0B0809;border-top:1px solid var(--line);overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.65;color:#D8D2CC;tab-size:2}
+  pre .t{color:#FF9B8C}pre .a{color:#E3BE7F}pre .s{color:#9FE0B0}pre .c{color:rgba(245,240,236,.4)}pre .p{color:#C9A6FF}
+  .x-tok{display:flex;flex-wrap:wrap;gap:8px 22px;padding:14px 18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+  .x-tok b{color:var(--muted);font-weight:400}
+  .x-sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+</style>
+</head>
+<body>
+<div class="x-page">
+  <div class="x-head">
+    <span class="x-kick">hadrianm · sekcja Oferta · eksport referencyjny</span>
+    <h1>Przeglądaj pakiety + Proces współpracy</h1>
+    <p><b>Primary</b> = wypełniony (→ /pakiety) · <b>Secondary</b> = panel split (→ /proces). Jeden responsywny komponent: <b>obok siebie na desktop</b>, <b>w słupku na mobile</b> (primary na górze). Najedź, aby zobaczyć hover. Sam eksport to <code>OfertaButtons.astro</code> + <code>oferta-buttons.css</code>; klasy z prefiksem <code>.x-</code> to tylko oprawa tej strony.</p>
+  </div>
+
+  <!-- ════ DESKTOP ════ -->
+  <div class="x-grp">
+    <div class="x-grphdr"><span>Desktop · obok siebie</span><hr></div>
+    <div class="x-card">
+      <div class="x-stage">
+        <div class="pp-cta-wrap" style="width:100%;max-width:760px">
+          <div class="pp-cta">
+            <a class="pp-btn pp-btn--solid" href="#pakiety">
+              <span class="pp-label">Przeglądaj pakiety</span>
+              <span class="pp-arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="pp-btn pp-btn--split" href="#proces">
+              <span class="pp-txt">
+                <span class="pp-label">Proces współpracy</span>
+                <span class="pp-sub">Jak wygląda praca ze mną</span>
+              </span>
+              <span class="pp-arrowcell"><span class="pp-arrow" aria-hidden="true">→</span></span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="x-hint"><b>primary</b> lift + glow na hover · <b>secondary</b> podświetla pole strzałki (tekst celowo nie) · próg układu = szerokość kontenera</div>
+    </div>
+  </div>
+
+  <!-- ════ MOBILE ════ -->
+  <div class="x-grp">
+    <div class="x-grphdr"><span>Mobile · słupek (ten sam komponent, wąski kontener)</span><hr></div>
+    <div class="x-card">
+      <div class="x-stage mob">
+        <div class="pp-cta-wrap">
+          <div class="pp-cta">
+            <a class="pp-btn pp-btn--solid" href="#pakiety">
+              <span class="pp-label">Przeglądaj pakiety</span>
+              <span class="pp-arrow" aria-hidden="true">→</span>
+            </a>
+            <a class="pp-btn pp-btn--split" href="#proces">
+              <span class="pp-txt">
+                <span class="pp-label">Proces współpracy</span>
+                <span class="pp-sub">Jak wygląda praca ze mną</span>
+              </span>
+              <span class="pp-arrowcell"><span class="pp-arrow" aria-hidden="true">→</span></span>
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="x-hint">stos · pełna szerokość · primary na górze — wyzwolone przez <b>@container (max-width:640px)</b>, bez osobnego markupu</div>
+    </div>
+  </div>
+
+  <!-- ════ KOD ════ -->
+  <div class="x-grp">
+    <div class="x-grphdr"><span>Wklej u siebie</span><hr></div>
+    <div class="x-card">
+      <div class="x-codehdr"><b>Astro (zalecane)</b></div>
+<pre><span class="c">---</span>
+<span class="p">import</span> OfertaButtons <span class="p">from</span> <span class="s">"@/components/OfertaButtons.astro"</span>;
+<span class="c">---</span>
+
+<span class="t">&lt;OfertaButtons</span> <span class="a">packagesHref</span>=<span class="s">"/pakiety"</span> <span class="a">processHref</span>=<span class="s">"/proces"</span> <span class="t">/&gt;</span></pre>
+      <div class="x-codehdr"><b>HTML / czysty CSS</b> — dołącz <code style="font-family:var(--mono);color:#E3BE7F">oferta-buttons.css</code></div>
+<pre><span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"pp-cta-wrap"</span><span class="t">&gt;</span>
+  <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"pp-cta"</span><span class="t">&gt;</span>
+    <span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"pp-btn pp-btn--solid"</span> <span class="a">href</span>=<span class="s">"/pakiety"</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-label"</span><span class="t">&gt;</span>Przeglądaj pakiety<span class="t">&lt;/span&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-arrow"</span> <span class="a">aria-hidden</span>=<span class="s">"true"</span><span class="t">&gt;</span>→<span class="t">&lt;/span&gt;</span>
+    <span class="t">&lt;/a&gt;</span>
+    <span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"pp-btn pp-btn--split"</span> <span class="a">href</span>=<span class="s">"/proces"</span><span class="t">&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-txt"</span><span class="t">&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-label"</span><span class="t">&gt;</span>Proces współpracy<span class="t">&lt;/span&gt;</span>
+        <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-sub"</span><span class="t">&gt;</span>Jak wygląda praca ze mną<span class="t">&lt;/span&gt;</span>
+      <span class="t">&lt;/span&gt;</span>
+      <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-arrowcell"</span><span class="t">&gt;&lt;span</span> <span class="a">class</span>=<span class="s">"pp-arrow"</span> <span class="a">aria-hidden</span>=<span class="s">"true"</span><span class="t">&gt;</span>→<span class="t">&lt;/span&gt;&lt;/span&gt;</span>
+    <span class="t">&lt;/a&gt;</span>
+  <span class="t">&lt;/div&gt;</span>
+<span class="t">&lt;/div&gt;</span></pre>
+      <div class="x-tok">
+        <span><span class="x-sw" style="background:#FF5A47"></span><b>accent</b> #FF5A47</span>
+        <span><span class="x-sw" style="background:#210a06;outline:1px solid rgba(245,240,236,.2)"></span><b>on-accent</b> #210A06</span>
+        <span><span class="x-sw" style="background:#F5F0EC"></span><b>ink</b> #F5F0EC</span>
+        <span><b>font</b> Archivo Variable + Space Mono</span>
+        <span><b>radius</b> 3px</span>
+        <span><b>próg</b> @container 640px</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#100C0E"/><rect x="16" y="40" width="36" height="13" rx="2" fill="#FF5A47"/><rect x="56" y="40" width="28" height="13" rx="2" fill="none" stroke="#F5F0EC" stroke-opacity="0.55"/><line x1="75" y1="40" x2="75" y2="53" stroke="#F5F0EC" stroke-opacity="0.55"/></svg>
+</template>
+</body>
+</html>
