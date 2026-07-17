@@ -44,3 +44,8 @@ export const FAQ_PATH: Record<Lang, string> = {
   pl: "/faq/",
   en: "/en/faq/",
 };
+
+export const POLICY_PATH: Record<Lang, string> = {
+  pl: "/polityka-prywatnosci/",
+  en: "/en/privacy-policy/",
+};

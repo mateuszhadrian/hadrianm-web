@@ -3,10 +3,18 @@
 // Treść obu języków lokalnie w tym pliku (nie w i18n/ui.ts) — to dokument
 // prawny, nie tekst interfejsu; jeden plik = łatwy przegląd i wycofanie (D7).
 // Zakres merytoryczny: docs/contact-me-form-analysis-implementation.md §7.
+// Chrome strony wg wzorca podstron (ContactPage/FaqPage: Navbar bez brandu,
+// BackButton w miejscu brandu, współdzielony Footer), ale BEZ warstwy
+// AmbientBackground — tło zostaje płaskie (decyzja 2026-07-18,
+// docs/visual-corrections-part1.md §7).
 // E-mail administratora składany z fragmentów w JS (skrypt niżej) — pełny
 // adres nie może wystąpić w dist (kontrakt antyscrapingowy w
 // tests/e2e/contact.spec.ts); fallback bez JS wskazuje formularz kontaktowy.
 import BaseLayout from "@/layouts/BaseLayout.astro";
+import Navbar from "@/components/navbar/Navbar.astro";
+import BackButton from "@/components/ui/BackButton.astro";
+import Footer from "@/components/Footer.astro";
+import { HOME_PATH, POLICY_PATH } from "@/lib/routes";
 
 interface Props {
   lang: "pl" | "en";
@@ -23,18 +31,15 @@ type Section = {
 const content = {
   pl: {
     title: "Polityka prywatności — hadrianm.pl",
+    description:
+      "Zasady przetwarzania danych osobowych przekazanych przez formularz kontaktowy na hadrianm.pl — prostym językiem, zgodnie z RODO.",
     eyebrow: "OCHRONA DANYCH OSOBOWYCH",
     headLead: "Polityka",
     headAccent: "prywatności",
     effective: "Obowiązuje od 11 lipca 2026 r.",
     intro:
       "Ta polityka opisuje, jak przetwarzane są dane osobowe przekazane przez formularz kontaktowy na stronie hadrianm.pl. Piszę ją prostym językiem — bez prawniczego szumu, ale z kompletem informacji wymaganych przez RODO.",
-    back: "hadrianm.pl",
-    backHref: "/",
-    langLabel: "EN",
-    langHref: "/en/privacy-policy/",
-    contactCta: "Formularz kontaktowy →",
-    contactHref: "/kontakt/",
+    back: "Wróć",
     mailFallback: "adres e-mail na stronie kontaktu",
     sections: [
       {
@@ -116,18 +121,15 @@ const content = {
   },
   en: {
     title: "Privacy policy — hadrianm.pl",
+    description:
+      "How personal data submitted through the contact form on hadrianm.pl is processed — in plain language, in line with the GDPR.",
     eyebrow: "DATA PROTECTION",
     headLead: "Privacy",
     headAccent: "policy",
     effective: "Effective from 11 July 2026",
     intro:
       "This policy explains how personal data submitted through the contact form on hadrianm.pl is processed. It is written in plain language — no legal noise, yet with the full set of information required by the GDPR.",
-    back: "hadrianm.pl",
-    backHref: "/en/",
-    langLabel: "PL",
-    langHref: "/polityka-prywatnosci/",
-    contactCta: "Contact form →",
-    contactHref: "/en/contact/",
+    back: "Back",
     mailFallback: "the e-mail address on the contact page",
     sections: [
       {
@@ -214,17 +216,27 @@ const content = {
 const c = content[lang];
 ---
 
-<BaseLayout title={c.title} lang={lang}>
-  <div class="pp">
-    <header class="pp-top">
-      <a class="pp-back" href={c.backHref} data-back
-        ><span class="arr" aria-hidden="true">←</span> {c.back}</a
-      >
-      <a class="pp-lang" href={c.langHref} lang={lang === "pl" ? "en" : "pl"}
-        >{c.langLabel}</a
-      >
-    </header>
+<BaseLayout
+  title={c.title}
+  lang={lang}
+  description={c.description}
+  alternates={POLICY_PATH}
+  smoothScroll="desktop"
+>
+  <Navbar lang={lang} langHrefs={POLICY_PATH} showBrand={false} />
 
+  {
+    /* „Wstecz" w miejscu brandu — CELOWO poza barem navbara: fixed, więc nie
+       chowa się razem z nim przy scrollu; działa jak wstecz przeglądarki
+       (globalny mechanizm a[data-back], fallback → strona główna). Wrapper,
+       nie klasa na komponencie: scoped CSS (strategia atrybutowa) nie łapie
+       elementów renderowanych przez komponent potomny. */
+  }
+  <div class="pp-back">
+    <BackButton href={HOME_PATH[lang]} label={c.back} />
+  </div>
+
+  <div class="pp">
     <main class="pp-art">
       <div class="pp-mono">{c.eyebrow}</div>
       <h1>
@@ -261,13 +273,10 @@ const c = content[lang];
       }
     </main>
 
-    <footer class="pp-foot">
-      <div class="fline" aria-hidden="true"></div>
-      <div class="pp-frow">
-        <div class="c">© 2026 Mateusz Hadrian — hadrianm.pl</div>
-        <a href={c.contactHref}>{c.contactCta}</a>
-      </div>
-    </footer>
+    {/* Współdzielony footer strony (ten sam co finał strony głównej). */}
+    <div class="pp-foot">
+      <Footer lang={lang} />
+    </div>
   </div>
 </BaseLayout>
 
@@ -288,8 +297,12 @@ const c = content[lang];
 <style>
   /* Prosty layout dokumentu na tokenach projektu (global.css); typografia
      nagłówka = konwencja sekcji (display + serif italic accent, eyebrow mono).
-     Celowo bez animacji i bez navbara one-pagera — podstrona ma być lekka
-     i łatwa do redesignu (decyzja D7). */
+     Celowo bez animacji — podstrona ma być lekka i łatwa do redesignu (D7);
+     chrome (navbar + footer) wspólny z pozostałymi podstronami, bez ambientu. */
+  :global(body) {
+    background: #070507;
+  }
+
   .pp {
     min-height: 100svh;
     background: #070507;
@@ -297,39 +310,22 @@ const c = content[lang];
     font-family: var(--font-body), sans-serif;
   }
 
-  .pp-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 760px;
-    margin: 0 auto;
-    padding: 28px 24px 0;
-  }
-  .pp-top a {
-    font-family: var(--font-mono), monospace;
-    font-size: 12px;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--muted);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .pp-top a:hover,
-  .pp-top a:focus-visible {
-    color: var(--ink);
-  }
-  .pp-back .arr {
-    color: var(--accent);
-  }
-  .pp-lang {
-    border: 1px solid var(--line);
-    padding: 6px 12px;
+  /* Pozycja = slot brandu w navbarze (te same clampy paddingu paska);
+     korekta -12px centruje 46-px kółko na linii treści paska. z-index nad
+     nav-root (50), bo przycisk ma być widoczny ZAWSZE — także gdy pasek
+     schowa się przy scrollu w dół. */
+  .pp-back {
+    position: fixed;
+    z-index: 60;
+    left: clamp(1.25rem, 4vw, 2.75rem);
+    top: calc(clamp(1.25rem, 3.2vh, 1.9rem) - 12px);
   }
 
   .pp-art {
     max-width: 760px;
     margin: 0 auto;
-    padding: 72px 24px 90px;
+    /* góra: prześwit pod fixed navbar (pasek ~60–80px zależnie od clampów) */
+    padding: 120px 24px 90px;
   }
   .pp-mono {
     font-family: var(--font-mono), monospace;
@@ -431,40 +427,18 @@ const c = content[lang];
     text-decoration-color: var(--accent);
   }
 
+  /* ── Stopka: kontener współdzielonego Footer.astro (szerokość jak na
+     pozostałych podstronach; sam footer jest bezmarginesowy — rodzic
+     kontroluje layout) ── */
   .pp-foot {
-    max-width: 760px;
+    max-width: 1320px;
     margin: 0 auto;
-    padding: 0 24px 40px;
-  }
-  .fline {
-    height: 1px;
-    background: var(--line);
-  }
-  .pp-frow {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-    padding-top: 20px;
-    font-family: var(--font-mono), monospace;
-    font-size: 12px;
-    letter-spacing: 0.06em;
-    color: var(--faint);
-  }
-  .pp-frow a {
-    color: var(--muted);
-    text-decoration: none;
-    transition: color 0.2s;
-  }
-  .pp-frow a:hover,
-  .pp-frow a:focus-visible {
-    color: var(--ink);
+    padding: 0 5vw 42px;
   }
 
   @media (max-width: 640px) {
     .pp-art {
-      padding-top: 54px;
+      padding-top: 104px;
     }
     .pp-sec {
       margin-top: 44px;
