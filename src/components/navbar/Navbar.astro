@@ -1,7 +1,12 @@
 ---
 import { type Lang } from "@/i18n/utils";
 import { navItems, navLabel } from "@/i18n/nav";
-import { AUDIENCE_PATH, HOME_PATH, WORK_INDEX_PATH } from "@/lib/routes";
+import {
+  ABOUT_PATH,
+  AUDIENCE_PATH,
+  HOME_PATH,
+  WORK_INDEX_PATH,
+} from "@/lib/routes";
 
 interface Props {
   lang: Lang;
@@ -33,6 +38,7 @@ const onHome = currentPath === homeHref;
 const SUBPAGE_PATHS: Partial<Record<string, Record<Lang, string>>> = {
   work: WORK_INDEX_PATH,
   audience: AUDIENCE_PATH,
+  about: ABOUT_PATH,
 };
 const itemHref = (id: string): string =>
   SUBPAGE_PATHS[id]?.[lang] ?? (onHome ? `#${id}` : `${homeHref}#${id}`);

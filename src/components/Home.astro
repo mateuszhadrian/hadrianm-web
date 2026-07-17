@@ -63,7 +63,12 @@ const t = useTranslations(lang);
     }
     <Services lang={lang} variant="teaser" />
     <Work lang={lang} />
-    <About lang={lang} />
+    {
+      /* Zajawka: tag + ghost + rozdział 01 + ostry portret + button na
+         /o-mnie/ (pełna animacja żyje na podstronie —
+         docs/analiza-podstrona-o-mnie.md). */
+    }
+    <About lang={lang} variant="teaser" />
     <Faq lang={lang} />
     <Contact lang={lang} />
   </main>

@@ -1,7 +1,8 @@
 # Analiza: podział sekcji „Oferta" na podstrony `/proces-wspolpracy` i `/pakiety`
 
-Data: 2026-07-16 · Status: **W REALIZACJI** (branch
-`feat/oferta-section-subpage-init`). Log wykonawczy: §VII.
+Data: 2026-07-16 · Status: **WDROŻONE NA PRODUKCJI** (PR #41 zmergowany
+2026-07-16; CI + prod smoke zielone za pierwszym podejściem; strony
+odpowiadają 200 z poprawnymi wariantami). Log wykonawczy: §VII.
 
 ## I. Cel
 
