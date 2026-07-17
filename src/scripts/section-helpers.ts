@@ -62,11 +62,15 @@ export function motionMedia(
 }
 
 /** Leniwy parallax ghost-typografii: sam transform (y od→do) pod scrubem
- *  przez cały przelot triggera przez viewport. */
+ *  do wyjazdu triggera górą. Start domyślnie od wjazdu triggera dołem
+ *  ("top bottom" — sekcje w głębi strony); trigger zaczynający u szczytu
+ *  strony (hero podstrony /faq/) podaje "top top", inaczej jazda ruszałaby
+ *  od połowy. */
 export function ghostParallax(
   ghost: HTMLElement,
   trigger: HTMLElement,
   [from, to]: readonly [number, number],
+  start = "top bottom",
 ): void {
   gsap.fromTo(
     ghost,
@@ -76,7 +80,7 @@ export function ghostParallax(
       ease: "none",
       scrollTrigger: {
         trigger,
-        start: "top bottom",
+        start,
         end: "bottom top",
         scrub: true,
       },

@@ -5,6 +5,7 @@ import {
   ABOUT_PATH,
   AUDIENCE_PATH,
   CONTACT_PATH,
+  FAQ_PATH,
   HOME_PATH,
   WORK_INDEX_PATH,
 } from "@/lib/routes";
@@ -40,6 +41,7 @@ const SUBPAGE_PATHS: Partial<Record<string, Record<Lang, string>>> = {
   work: WORK_INDEX_PATH,
   audience: AUDIENCE_PATH,
   about: ABOUT_PATH,
+  faq: FAQ_PATH,
   contact: CONTACT_PATH,
 };
 const itemHref = (id: string): string =>

@@ -211,28 +211,28 @@ export const ui = {
     "faq.headLead": "pytania i",
     "faq.headAccent": "odpowiedzi",
     "faq.ghost": "FAQ",
-    "faq.q1": "Ile czasu zajmuje stworzenie strony internetowej?",
-    "faq.a1":
-      "Czas realizacji zależy od wybranego pakietu. Najprostsze strony z pakietu Start są zazwyczaj gotowe w 1 do 2 tygodni. Projekty z pakietu Wizerunek i wyższych, które wymagają przygotowania indywidualnych makiet i zaprogramowania płynnych animacji, zajmują najczęściej od 3 do 6 tygodni. Dokładny harmonogram zawsze ustalamy przed rozpoczęciem prac.",
-    "faq.q2":
-      "Czy będę mógł/mogła samodzielnie edytować stronę po jej oddaniu?",
-    "faq.a2":
-      "Tak. W pakietach od Wizerunku wzwyż standardowo wdrażam intuicyjny panel zarządzania (CMS). Po zakończeniu prac pokazuję, jak w prosty sposób – przypominający obsługę mediów społecznościowych – samodzielnie zmieniać teksty, dodawać zdjęcia czy aktualizować ofertę. Dla pakietu Start panel CMS jest dostępny jako opcja dodatkowa.",
-    "faq.q3": "Czy po zrobieniu strony muszę płacić jakiś abonament?",
-    "faq.a3":
-      "Samo stworzenie strony to opłata jednorazowa – nie pobieram od Ciebie żadnego comiesięcznego abonamentu. Musisz jednak pamiętać o standardowych, niezależnych ode mnie kosztach utrzymania strony w internecie: opłacie za serwer (hosting) oraz domenę (Twój adres, np. twojafirma.pl). Są to opłaty uiszczane zwykle raz do roku. Pomagam dobrać szybki i opłacalny serwer, żeby te koszty były jak najniższe.",
-    "faq.q4":
-      "Nie mam zdjęć ani tekstów do swojej nowej strony. Czy to problem?",
-    "faq.a4":
-      "Zupełnie nie. Jeśli masz własne materiały – świetnie, wykorzystamy je. Jeśli nie, mogę pomóc. Jako twórca zajmujący się również realizacją wideo i produkcją dźwięku, mogę zająć się stworzeniem dla Ciebie profesjonalnych zdjęć, nagraniem wideo w tle strony czy nawet skomponowaniem autorskiej oprawy dźwiękowej. Pomagam również w redagowaniu tekstów, tak aby przyciągały uwagę Twoich klientów.",
-    "faq.q5": "Czy moja strona będzie dobrze działać na smartfonach?",
-    "faq.a5":
-      "Tak, to absolutny priorytet i standard w każdym moim pakiecie. Strony projektuję w podejściu Mobile First, co oznacza, że będą wyglądać i działać perfekcyjnie na każdym ekranie – od najmniejszego telefonu po duże monitory.",
-    "faq.q6": "Co w sytuacji, gdy po publikacji strony coś przestanie działać?",
-    "faq.a6":
-      "Po oddaniu gotowej strony i podpięciu Twojej domeny otrzymujesz ode mnie miesiąc darmowego wsparcia technicznego. Jeśli w tym czasie pojawią się jakieś problemy techniczne, rozwiązuję je w ramach umowy. Po upływie tego czasu możesz zawsze się do mnie odezwać – ewentualne poprawki lub rozbudowę strony wyceniam wtedy na bieżąco.",
     "faq.ctaMono": "Nie znajdujesz odpowiedzi?",
     "faq.ctaLink": "Napisz do mnie",
+    "faq.moreLead": "Pokazano {shown} z {total} pytań",
+    "faq.moreLabel": "Zobacz wszystkie pytania",
+    "faqPage.title": "FAQ — hadrianm.pl",
+    "faqPage.description":
+      "Pytania i odpowiedzi o współpracę: proces, technologie, koszty, marketing i utrzymanie strony. Przeszukaj bazę 30 najczęstszych pytań, a jeśli nie znajdziesz odpowiedzi — napisz do mnie.",
+    "faqPage.back": "Wróć",
+    "faqPage.meta": "Baza wiedzy — {total} pytań",
+    "faqPage.kick": "Wszystko, o co pytają klienci",
+    "faqPage.lead":
+      "Od pierwszego kontaktu i procesu współpracy, przez technologie i wygląd, po koszty, marketing oraz utrzymanie.",
+    "faqPage.leadQ": "Nie znalazłeś swojego pytania?",
+    "faqPage.searchPh": "Szukaj w pytaniach i odpowiedziach…",
+    "faqPage.searchClear": "Wyczyść wyszukiwanie",
+    "faqPage.searchRegion": "Wyszukiwarka pytań",
+    "faqPage.countAll": "{total} pytań",
+    "faqPage.countFiltered": "{n} z {total} pytań",
+    "faqPage.noresPre": "Brak pytań pasujących do „",
+    "faqPage.noresMid": "”. Spróbuj innego hasła lub ",
+    "faqPage.noresLink": "napisz do mnie",
+    "faqPage.noresPost": ".",
     "contact.meta": "Formularz · e-mail · telefon",
     "contact.ghost": "KONTAKT",
     "contact.kick": "Kontakt",
@@ -501,27 +501,28 @@ export const ui = {
     "faq.headLead": "questions &",
     "faq.headAccent": "answers",
     "faq.ghost": "FAQ",
-    "faq.q1": "How long does it take to build a website?",
-    "faq.a1":
-      "The timeline depends on the package you choose. The simplest websites from the Start package are usually ready in 1 to 2 weeks. Projects from the Image package and above — which involve a custom mockup and carefully programmed, smooth animations — most often take 3 to 6 weeks. We always agree on the exact schedule before the work begins.",
-    "faq.q2": "Will I be able to edit the website myself after handover?",
-    "faq.a2":
-      "Yes. From the Image package upwards I include an intuitive management panel (CMS) as standard. Once the work is done, I show you how to change texts, add photos or update your offer yourself — in a way that feels much like using social media. For the Start package, the CMS panel is available as an add-on.",
-    "faq.q3": "Do I have to pay a subscription after the website is built?",
-    "faq.a3":
-      "Building the website is a one-off payment — I don't charge any monthly subscription. Keep in mind, however, the standard running costs that are independent of me: hosting and your domain (your address, e.g. yourcompany.com). These are usually paid once a year. I help you pick fast, cost-effective hosting so those costs stay as low as possible.",
-    "faq.q4":
-      "I don't have photos or copy for my new website. Is that a problem?",
-    "faq.a4":
-      "Not at all. If you have your own materials — great, we'll use them. If not, I can help. As a creator who also works in video and sound production, I can take care of professional photos for you, record a background video for your site, or even compose a custom soundtrack. I also help with editing your copy so it captures your customers' attention.",
-    "faq.q5": "Will my website work well on smartphones?",
-    "faq.a5":
-      "Yes — it's an absolute priority and a standard in every package. I design websites Mobile First, which means they will look and work perfectly on every screen — from the smallest phone to large monitors.",
-    "faq.q6": "What if something stops working after the website goes live?",
-    "faq.a6":
-      "Once the finished website is handed over and your domain is connected, you get a month of free technical support from me. If any technical issues come up during that time, I resolve them as part of our agreement. After that, you can always reach out — I quote any fixes or further development on an ongoing basis.",
     "faq.ctaMono": "Didn't find your answer?",
     "faq.ctaLink": "Write to me",
+    "faq.moreLead": "Showing {shown} of {total} questions",
+    "faq.moreLabel": "See all questions",
+    "faqPage.title": "FAQ — hadrianm.pl",
+    "faqPage.description":
+      "Questions and answers about working with me: process, technology, costs, marketing and website maintenance. Search 30 common questions — and if you can't find your answer, get in touch.",
+    "faqPage.back": "Back",
+    "faqPage.meta": "Knowledge base — {total} questions",
+    "faqPage.kick": "Everything clients ask about",
+    "faqPage.lead":
+      "From the first contact and the collaboration process, through technology and design, to costs, marketing and maintenance.",
+    "faqPage.leadQ": "Can't find your question?",
+    "faqPage.searchPh": "Search questions and answers…",
+    "faqPage.searchClear": "Clear search",
+    "faqPage.searchRegion": "Question search",
+    "faqPage.countAll": "{total} questions",
+    "faqPage.countFiltered": "{n} of {total} questions",
+    "faqPage.noresPre": "No questions match “",
+    "faqPage.noresMid": "”. Try a different phrase or ",
+    "faqPage.noresLink": "write to me",
+    "faqPage.noresPost": ".",
     "contact.meta": "Form · e-mail · phone",
     "contact.ghost": "CONTACT",
     "contact.kick": "Contact",

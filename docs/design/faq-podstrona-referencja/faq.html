@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FAQ — podstrona z wyszukiwarką (referencja)</title>
+
+<!-- PODGLĄD: Google Fonts CDN. W Astro → fontsource (patrz README pkt 3). -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=Instrument+Serif:ital@0;1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="faq.css">
+</head>
+<body>
+<!-- Marker "JS działa" — w Astro masz to już globalnie w layoutcie. -->
+<script>document.body.classList.add('js');</script>
+
+<!-- ═══════════════════ SEKCJA: FAQ (podstrona) ═══════════════════
+     Od chrome "05 / FAQ" po CTA "Napisz do mnie". Bez topbara/nawigacji
+     — ten fragment osadzasz na gotowej podstronie /faq. -->
+<header class="fq-hero">
+  <div class="fq-ghost" aria-hidden="true">FAQ</div>
+  <div class="fq-chrome">
+    <div class="fq-tag" aria-hidden="true"><span class="t-num">05</span><span class="t-sl">/</span><span class="t-lbl">FAQ</span></div>
+    <div class="fq-meta">Baza wiedzy — 30 pytań</div>
+  </div>
+  <div class="fq-head fq-rev">
+    <div class="fq-mono kick">Wszystko, o co pytają klienci</div>
+    <h1>pytania i <span class="sf">odpowiedzi</span></h1>
+  </div>
+  <p class="fq-lead fq-rev">Od pierwszego kontaktu i procesu współpracy, przez technologie i wygląd, po koszty, marketing oraz utrzymanie. Nie znalazłeś swojego pytania? <a href="#kontakt">Napisz do mnie</a>.</p>
+</header>
+
+<section id="faq" class="fq-panel" aria-label="FAQ — wszystkie pytania i odpowiedzi">
+  <div class="fq-atmo" aria-hidden="true"><span class="fq-bl b1"></span><span class="fq-bl b2"></span></div>
+  <div class="fq-mesh" aria-hidden="true"></div>
+
+  <!-- wyszukiwarka (100% frontend) -->
+  <div class="fq-search-wrap" role="search">
+    <div class="fq-search">
+      <svg class="ic" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" aria-hidden="true"><circle cx="10.5" cy="10.5" r="7"></circle><line x1="21" y1="21" x2="16" y2="16"></line></svg>
+      <input id="fq-search-input" class="fq-input" type="search" autocomplete="off" spellcheck="false" placeholder="Szukaj w pytaniach i odpowiedziach…" aria-label="Szukaj w pytaniach i odpowiedziach">
+      <button class="fq-clear" type="button" aria-label="Wyczyść wyszukiwanie" hidden>×</button>
+    </div>
+    <div class="fq-search-meta" role="status" aria-live="polite"><span class="d" aria-hidden="true"></span><span class="fq-mono" id="fq-search-count">30 pytań</span></div>
+  </div>
+
+  <!-- rejestr: aria-expanded="true" w markupie = stan bez JS (rozwinięte);
+       faq.js przy inicie zamyka i ustawia "false". -->
+  <ol class="fq-list">
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a1"><span class="no">01</span><span class="qt">Ile czasu zajmuje stworzenie strony internetowej?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a1"><div><p>Czas realizacji zależy od wybranego pakietu. Najprostsze strony z pakietu "Start" są zazwyczaj gotowe w 1 do 2 tygodni. Projekty z pakietu "Wizerunek" i wyższych, które wymagają przygotowania indywidualnych makiet i zaprogramowania płynnych animacji, zajmują najczęściej od 3 do 6 tygodni. Dokładny harmonogram zawsze ustalamy przed rozpoczęciem prac.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a2"><span class="no">02</span><span class="qt">Czy będę mógł/mogła samodzielnie edytować stronę po jej oddaniu?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a2"><div><p>Tak. W pakietach od "Wizerunku" wzwyż standardowo wdrażam intuicyjny panel zarządzania (CMS). Po zakończeniu prac pokazuję, jak w prosty sposób – przypominający obsługę mediów społecznościowych – samodzielnie zmieniać teksty, dodawać zdjęcia czy aktualizować ofertę. Dla pakietu "Start" panel CMS jest dostępny jako opcja dodatkowa.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a3"><span class="no">03</span><span class="qt">Czy po zrobieniu strony muszę płacić jakiś abonament?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a3"><div><p>Samo stworzenie strony to opłata jednorazowa – nie pobieram od Ciebie żadnego comiesięcznego abonamentu. Musisz jednak pamiętać o standardowych, niezależnych ode mnie kosztach utrzymania strony w internecie: opłacie za serwer (hosting) oraz domenę (Twój adres np. twojafirma.pl). Są to opłaty uiszczane zwykle raz do roku. Pomagam dobrać szybki i opłacalny serwer, żeby te koszty były jak najniższe.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a4"><span class="no">04</span><span class="qt">Nie mam zdjęć ani tekstów do swojej nowej strony. Czy to problem?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a4"><div><p>Zupełnie nie. Jeśli masz własne materiały – świetnie, wykorzystamy je. Jeśli nie, mogę pomóc. Jako twórca zajmujący się również realizacją wideo i produkcją dźwięku, mogę zająć się stworzeniem dla Ciebie profesjonalnych zdjęć, nagraniem wideo w tle strony czy nawet skomponowaniem autorskiej oprawy dźwiękowej. Pomagam również w redagowaniu tekstów, tak aby przyciągały uwagę Twoich klientów.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a5"><span class="no">05</span><span class="qt">Czy moja strona będzie dobrze działać na smartfonach?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a5"><div><p>Tak, to absolutny priorytet i standard w każdym moim pakiecie. Strony projektuję w podejściu "Mobile First", co oznacza, że będą wyglądać i działać perfekcyjnie na każdym ekranie – od najmniejszego telefonu po duże monitory.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a6"><span class="no">06</span><span class="qt">Co w sytuacji, gdy po publikacji strony coś przestanie działać?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a6"><div><p>Po oddaniu gotowej strony i podpięciu Twojej domeny otrzymujesz ode mnie miesiąc darmowego wsparcia technicznego. Jeśli w tym czasie pojawią się jakieś problemy techniczne, rozwiązuję je w ramach umowy. Po upływie tego czasu możesz zawsze się do mnie odezwać – ewentualne poprawki lub rozbudowę strony wyceniam wtedy na bieżąco.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a7"><span class="no">07</span><span class="qt">Jak wygląda komunikacja w trakcie tworzenia strony?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a7"><div><p>Stawiam na transparentność. Kontaktujemy się w sposób dla Ciebie najwygodniejszy – może to być e-mail, komunikator lub cykliczne spotkania wideo. Na bieżąco informuję Cię o tym, na jakim jesteśmy etapie i co dokładnie aktualnie realizuję.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a8"><span class="no">08</span><span class="qt">Co muszę przygotować, zanim zaczniemy pracę?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a8"><div><p>Przede wszystkim potrzebuję informacji o Twoim biznesie: kim są Twoi klienci, jakie są cele strony oraz z jakich funkcjonalności chcesz korzystać. Na start poproszę Cię o wypełnienie krótkiego briefu. Jeśli masz już logo, zdjęcia i teksty – świetnie. Jeśli nie, pomogę Ci je zorganizować.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a9"><span class="no">09</span><span class="qt">Czy podpisujemy umowę na wykonanie strony?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a9"><div><p>Tak, zawsze podpisujemy umowę, która jasno określa zakres prac, termin realizacji, koszty oraz przeniesienie praw autorskich do stworzonego kodu i designu na Twoją firmę.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a10"><span class="no">10</span><span class="qt">Czy będę widzieć stronę przed jej ostatecznym uruchomieniem?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a10"><div><p>Oczywiście. Po etapie projektowania graficznego (makiety) otrzymujesz specjalny link do testowego serwera roboczego. Zobaczysz tam działającą stronę z zakodowanymi interakcjami. Dopiero po Twojej pełnej akceptacji przenosimy projekt na właściwą domenę.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a11"><span class="no">11</span><span class="qt">Ile poprawek mogę zgłosić do projektu graficznego?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a11"><div><p>Zależy mi na Twojej pełnej satysfakcji. W pakietach od "Wizerunku" wzwyż, zanim przejdę do programowania, ustalamy wygląd strony na makietach. Zazwyczaj pracujemy w oparciu o 2-3 tury darmowych poprawek, aby dopracować detale wizualne.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a12"><span class="no">12</span><span class="qt">Czy realizujesz projekty również dla klientów z zagranicy?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a12"><div><p>Tak, pracuję zdalnie i tworzę projekty zarówno dla firm w Polsce, jak i na rynkach zagranicznych. Sam interfejs mojej strony jest dowodem na to, że płynnie wdrażam wielojęzyczne aplikacje.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a13"><span class="no">13</span><span class="qt">W jakich technologiach powstają Twoje strony?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a13"><div><p>Nie ograniczam się do gotowych, ciężkich szablonów. Opieram się na moim wieloletnim doświadczeniu programistycznym w tworzeniu skalowalnych aplikacji webowych (wykorzystując m.in. ekosystem Angular lub React). Mój proces jest wysoce zoptymalizowany – korzystam z nowoczesnych środowisk developerskich wspieranych przez sztuczną inteligencję, co pozwala mi dostarczać bardzo wydajny, czysty i bezpieczny kod.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a14"><span class="no">14</span><span class="qt">Czym różni się Twoja strona kodowana od zera od gotowego szablonu z WordPressa?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a14"><div><p>Gotowe szablony często ładują tysiące linijek niepotrzebnego kodu, co spowalnia stronę i naraża ją na ataki. Rozwiązania, które dostarczam, zawierają tylko ten kod, który jest faktycznie potrzebny. Dzięki temu strony są błyskawiczne, bezpieczne, zyskują wyższe pozycje w wyszukiwarkach i pozwalają na wdrożenie unikalnych animacji.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a15"><span class="no">15</span><span class="qt">Czy strona będzie bezpieczna (będzie miała "kłódkę")?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a15"><div><p>Tak, instalacja i pełna konfiguracja darmowego certyfikatu SSL, który szyfruje dane użytkowników (zielona kłódka przy adresie WWW), to u mnie absolutny standard przy każdym wdrożeniu.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a16"><span class="no">16</span><span class="qt">Czy pomagasz z wyborem i podpięciem serwera oraz domeny?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a16"><div><p>Tak, nie musisz się znać na strefach DNS czy bazach danych. W ramach każdego pakietu pomagam w wyborze najkorzystniejszego rejestratora domeny oraz konfiguruję darmowy lub komercyjny hosting, optymalny dla specyfiki Twojego projektu.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a17"><span class="no">17</span><span class="qt">O co chodzi z "nieszablonowymi animacjami" w wyższych pakietach?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a17"><div><p>Zamiast standardowej, nieruchomej wizytówki, tworzę interaktywne doświadczenia. Elementy strony płynnie reagują na to, jak użytkownik przesuwa kółkiem myszy (scrolluje) i gdzie najeżdża kursorem. Zwiększa to zaangażowanie i nadaje stronie bardzo nowoczesny, "filmowy" charakter.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a18"><span class="no">18</span><span class="qt">Nie mam logo ani identyfikacji wizualnej. Pomożesz?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a18"><div><p>Specjalizuję się w tworzeniu interfejsów, animacji oraz kodowaniu. Jeśli nie masz logo, mogę zastosować prostą, estetyczną formę typograficzną lub skontaktować Cię z zaufanym grafikiem, który zaprojektuje dla Ciebie pełną księgę znaku.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a19"><span class="no">19</span><span class="qt">Co z materiałami wideo i audio? Skąd je wziąć?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a19"><div><p>Jako twórca kreatywny dysponuję własnym, profesjonalnie przygotowanym studiem. Mogę zaoferować nie tylko montaż, ale również produkcję wysokiej jakości wizerunkowego materiału wideo na stronę, a także stworzyć dedykowaną, autorską oprawę dźwiękową, która wyróżni Twoją markę.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a20"><span class="no">20</span><span class="qt">Czy na stronie będzie możliwość zmiany języka (np. na angielski)?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a20"><div><p>Tak, jeśli tylko zgłosisz taką potrzebę przed rozpoczęciem prac graficznych, zaprojektuję architekturę umożliwiającą łatwe przełączanie wersji językowych (podobnie jak na moim własnym portfolio).</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a21"><span class="no">21</span><span class="qt">Skąd bierzemy zdjęcia, jeśli nie mam własnych?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a21"><div><p>Mamy kilka opcji. Mogę zająć się sesją zdjęciową Twoich produktów/usług, możemy wykorzystać starannie wyselekcjonowane i w 100% legalne banki zdjęć (stocki) premium, lub wygenerować unikalne ilustracje przy pomocy zaawansowanych narzędzi AI.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a22"><span class="no">22</span><span class="qt">Czy po oddaniu strony będzie ona widoczna w Google?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a22"><div><p>Tak, każda witryna wychodząca spod moich rąk jest w pełni zoptymalizowana pod kątem tzw. technicznego SEO. Oznacza to odpowiednią semantykę kodu, bezbłędne tagi i ultraszybki czas ładowania. To doskonała baza, aby Twoja strona od pierwszego dnia punktowała wysoko w wyszukiwarkach.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a23"><span class="no">23</span><span class="qt">Czy zajmujesz się również pozycjonowaniem i płatnymi reklamami?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a23"><div><p>Moim zadaniem jest stworzyć perfekcyjne technologicznie narzędzie biznesowe, gotowe do działań marketingowych. Samo długofalowe pozycjonowanie na konkretne słowa kluczowe (tworzenie linków, artykułów sponsorowanych) polecam powierzyć wyspecjalizowanej agencji SEO.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a24"><span class="no">24</span><span class="qt">Chcę uruchomić sprzedaż internetową, ale nie od razu. Czy stronę da się rozbudować?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a24"><div><p>Architekturę tworzonych przeze mnie witryn buduję zawsze z myślą o przyszłości. Jeśli wystartujemy z pakietu wizerunkowego, nic nie stoi na przeszkodzie, aby za kilka miesięcy dobudować do niej w pełni funkcjonalny moduł e-commerce, system płatności czy autorski konfigurator.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a25"><span class="no">25</span><span class="qt">Czy podepniesz pod stronę narzędzia analityczne?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a25"><div><p>Tak, na Twoje życzenie zintegruję stronę z narzędziami takimi jak Google Analytics, Google Search Console czy Meta Pixel, abyś miał pełen wgląd w to, kto odwiedza Twoją witrynę i co na niej robi.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a26"><span class="no">26</span><span class="qt">Jak wyglądają płatności za projekt?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a26"><div><p>Ze względu na zaangażowanie czasowe, rozliczenie zazwyczaj dzielę na dwie części: zadatek (np. 30-40%) płatny przed rozpoczęciem prac oraz pozostała kwota regulowana dopiero po Twojej akceptacji i opublikowaniu gotowej strony pod adresem docelowym.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a27"><span class="no">27</span><span class="qt">Czy wystawiasz faktury?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a27"><div><p>Oczywiście. Na każdą wykonaną usługę i wszystkie etapy prac wystawiam fakturę. Podane w ofercie pakiety to ceny netto.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a28"><span class="no">28</span><span class="qt">Co się stanie, jeśli po upływie miesiąca darmowego wsparcia coś przestanie działać?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a28"><div><p>Technologie webowe się rozwijają, a standardy ulegają zmianom. Nawet jeśli minie darmowy miesiąc opieki, nie zostawiam Cię na lodzie. Zawsze możesz zgłosić się z problemem – ewentualne interwencje lub aktualizacje systemów zewnętrznych wyceniam wtedy na podstawie przejrzystej stawki godzinowej.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a29"><span class="no">29</span><span class="qt">Czy mogę zlecić Ci stałą opiekę nad stroną?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a29"><div><p>Tak, to bardzo popularny model współpracy. Oferuję długoterminowe pakiety utrzymaniowe (maintenance), w ramach których regularnie monitoruję wydajność, aktualizuję technologie, wykonuję kopie zapasowe i priorytetowo wprowadzam przesłane przez Ciebie mniejsze zmiany w treściach.</p></div></div></li>
+    <li class="fq-item"><div class="fq-line" aria-hidden="true"></div>
+      <h3><button class="fq-q" type="button" aria-expanded="true" aria-controls="a30"><span class="no">30</span><span class="qt">Czy strona będzie zgodna z przepisami prawa i RODO?</span><span class="fq-plus" aria-hidden="true"></span></button></h3>
+      <div class="fq-a" id="a30"><div><p>Na etapie projektowym uwzględniam wszystkie aspekty zgodności z prawem (tzw. privacy by design). Wdrażam system zarządzania ciasteczkami (cookies), który blokuje kody śledzące do momentu wyrażenia zgody przez użytkownika, oraz umieszczam udostępnioną przez Ciebie Politykę Prywatności i Regulaminy.</p></div></div></li>
+  </ol>
+  <div class="fq-line" id="fq-endline" aria-hidden="true"></div>
+  <p class="fq-noresults" id="fq-noresults" hidden>Brak pytań pasujących do <span class="q"></span>. Spróbuj innego hasła lub <a href="#kontakt">napisz do mnie</a>.</p>
+
+  <div class="fq-cta">
+    <span class="fq-dia" aria-hidden="true"></span>
+    <div class="fq-mono">Nie znalazłeś odpowiedzi?</div>
+    <a class="fq-link" href="#kontakt">Napisz do mnie <span class="arr" aria-hidden="true">→</span></a>
+  </div>
+</section>
+
+<!-- PODGLĄD: CDN. W Astro → import gsap z node_modules (README pkt 2). -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="faq.js"></script>
+</body>
+</html>

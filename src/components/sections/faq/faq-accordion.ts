@@ -17,9 +17,18 @@ export interface FaqHeightAnimator {
   afterToggle(answer: HTMLElement, open: boolean): void;
 }
 
+export interface FaqAccordionOptions {
+  /** true (default, strona główna): jedno pytanie otwarte naraz — otwarcie
+   *  nowego domyka poprzednie. false (podstrona /faq/): toggle NIEZALEŻNE —
+   *  na długim rejestrze zamknięcie pytania nad viewportem nie szarpie
+   *  scrollem (wprost z referencji faq-podstrona-referencja). */
+  exclusive?: boolean;
+}
+
 export function initFaqAccordion(
   section: HTMLElement,
   animator?: FaqHeightAnimator,
+  { exclusive = true }: FaqAccordionOptions = {},
 ): void {
   const items = Array.from(
     section.querySelectorAll<HTMLElement>(".fq-item"),
@@ -40,10 +49,12 @@ export function initFaqAccordion(
     entry.button.setAttribute("aria-expanded", "false");
     entry.button.addEventListener("click", () => {
       const wasOpen = entry.item.classList.contains("open");
-      // Jedno pytanie otwarte naraz — otwarcie nowego domyka poprzednie.
-      for (const other of items) {
-        if (other !== entry && other.item.classList.contains("open")) {
-          setOpen(other, false);
+      // Tryb exclusive: otwarcie nowego pytania domyka poprzednie.
+      if (exclusive) {
+        for (const other of items) {
+          if (other !== entry && other.item.classList.contains("open")) {
+            setOpen(other, false);
+          }
         }
       }
       setOpen(entry, !wasOpen);

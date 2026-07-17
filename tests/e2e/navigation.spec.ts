@@ -70,15 +70,23 @@ test.describe("nawigacja mobile", () => {
   test("link w panelu zamyka menu i przewija do sekcji", async ({ page }) => {
     await gotoReady(page);
     await page.locator("[data-burger]").click();
-    // #faq — od migracji kontaktu (docs/analiza-podstrona-kontakt.md)
-    // ostatnia pozycja-kotwica menu obok #services.
-    await page.locator('.m-link[href="#faq"]').click();
+    // #services — od migracji FAQ (docs/analiza-podstrona-faq.md)
+    // OSTATNIA pozycja-kotwica menu (reszta prowadzi na podstrony).
+    await page.locator('.m-link[href="#services"]').click();
     await settle(page);
     await expect(page.locator("[data-nav]")).not.toHaveAttribute(
       "data-open",
       "",
     );
-    await expectSectionAtTop(page, "faq");
+    await expectSectionAtTop(page, "services");
+  });
+
+  test("pozycja FAQ w panelu nawiguje na podstronę", async ({ page }) => {
+    await gotoReady(page);
+    await page.locator("[data-burger]").click();
+    await page.locator('.m-link[href="/faq/"]').click();
+    await expect(page).toHaveURL(/\/faq\/?$/);
+    await expect(page.locator(".fqf .fq-list")).toBeVisible();
   });
 
   test("pozycja Realizacje w panelu nawiguje na podstronę", async ({

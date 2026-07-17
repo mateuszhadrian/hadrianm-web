@@ -1,0 +1,50 @@
+/* ════════════════════════════════════════════════════════════════
+   BLOK „WIĘCEJ" — button „Zobacz wszystkie pytania" · style
+   Domknięcie teasera FAQ (strona główna) → link do podstrony /faq.
+   Klasy fq-* — brak kolizji z Tailwindem.
+   ════════════════════════════════════════════════════════════════ */
+:root {
+  --panel: #100B0D;         /* tło sekcji, na której osadzasz blok */
+  --ink: #F5F0EC;
+  --faint: rgba(245,240,236,0.38);
+  --line: rgba(245,240,236,0.15);
+  --accent: #FF5A47;
+  --glow: 255,90,71;
+  --mono: 'Space Mono', ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --cz: cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { box-sizing: border-box; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: #FFB3A6; }
+a:focus-visible { outline: 1px solid var(--accent); outline-offset: 4px; }
+
+/* ── PODGLĄD: scena tylko do prezentacji bloku; NIE kopiuj do repo ── */
+.fq-demo-stage { min-height: 100vh; margin: 0; display: grid; place-items: center; padding: 80px 24px;
+  background: var(--panel); font-family: 'Archivo', sans-serif; color: var(--ink); }
+
+/* ── BLOK (to kopiujesz) ── */
+.fq-more { position: relative; z-index: 6; display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.fq-more .lead { font-family: var(--mono); font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; color: var(--faint); }
+.fq-all { display: inline-flex; align-items: center; gap: 22px; padding: 20px 32px 20px 28px;
+  border: 1px solid var(--line); color: var(--ink); transition: border-color 0.3s, background 0.3s, transform 0.3s var(--cz); }
+.fq-all .count { font-family: var(--mono); font-size: 11px; letter-spacing: 0.22em; color: var(--accent);
+  padding-right: 22px; border-right: 1px solid var(--line); }
+.fq-all .label { font-weight: 600; font-size: 19px; letter-spacing: -0.01em; }
+.fq-all .arr { color: var(--accent); font-size: 20px; transition: transform 0.25s; }
+.fq-all:hover { color: var(--ink); border-color: rgba(255,90,71,0.6); background: rgba(255,90,71,0.05); }
+.fq-all:hover .arr { transform: translateX(6px); }
+
+/* ── wejście (tylko .js + motion OK + brak fq-static); toggleClass .on w JS ── */
+@media (prefers-reduced-motion: no-preference) {
+  body.js:not(.fq-static) .fq-more { opacity: 0; transform: translateY(18px);
+    transition: opacity 0.8s var(--cz), transform 0.8s var(--cz); }
+  body.js:not(.fq-static) .fq-more.on { opacity: 1; transform: none; }
+}
+
+/* ── mobile ── */
+@media (max-width: 860.98px) {
+  .fq-more { gap: 14px; }
+  .fq-all { gap: 16px; padding: 17px 22px; }
+  .fq-all .count { padding-right: 16px; }
+  .fq-all .label { font-size: 16px; }
+}
