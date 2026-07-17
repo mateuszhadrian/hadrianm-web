@@ -61,13 +61,25 @@ reguła `cms-realizacje.md`).
 
 ## FAQ (`fq`)
 
-- Split dwóch modułów: `faq-accordion.ts` (logika akordeonu) ładowany
-  ZAWSZE — akordeon musi działać także przy reduce; `faq-scroll.ts`
-  (wejścia + tween akordeonu) tylko przy no-preference. NIE scalaj.
-- Klasa `.js` na sekcji (inline script) uzbraja stany startowe animacji
-  i zamknięte odpowiedzi — bez JS strona pokazuje pełną treść.
-- JSON-LD FAQPage generowany z tych samych danych i18n co markup —
-  nie duplikuj treści pytań/odpowiedzi.
+- Dwie powierzchnie z JEDNEGO źródła pytań `src/i18n/faq.ts` (tablica
+  `{pl,en}`, 30 pozycji): teaser na głównej (`Faq.astro`,
+  `slice(0, FAQ_TEASER_COUNT)`) i podstrona `/faq/` (`FaqFull.astro`,
+  całość + wyszukiwarka) — decyzje: `docs/analiza-podstrona-faq.md`.
+- Split modułów: ładowane ZAWSZE (działają też przy reduce, ZERO gsap
+  w ich grafie importów!) — `faq-accordion.ts` (opcja `exclusive`:
+  główna `true`, podstrona `false` — niezależne toggle) oraz
+  `faq-search.ts` (filtr live, diakrytyki, podświetlanie); tylko przy
+  no-preference — `faq-scroll.ts` (teaser), `faq-page-scroll.ts`
+  (podstrona) i współdzielony `faq-animator.ts` (tween wysokości).
+  NIE scalaj, nie importuj animatora z modułów „zawsze".
+- Klasa `.js` na rootcie (inline script) uzbraja stany startowe animacji
+  i zamknięte odpowiedzi — bez JS obie strony pokazują pełną treść
+  (wyszukiwarka nieaktywna — progresywne wzbogacanie).
+- JSON-LD FAQPage emituje WYŁĄCZNIE podstrona (komplet 30 z tego samego
+  źródła co markup) — nie przywracaj go na stronę główną i nie duplikuj
+  treści pytań/odpowiedzi poza `src/i18n/faq.ts`.
+- Frazy testowe wyszukiwarki muszą być unikalne PO normalizacji
+  diakrytyków (np. „rodo" łapie też „środowisk" → „srodowisk").
 
 ## Contact (`kt`)
 

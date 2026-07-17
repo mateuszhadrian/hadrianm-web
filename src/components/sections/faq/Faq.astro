@@ -8,9 +8,11 @@
 // logika akordeonu w faq-accordion.ts (ładowana ZAWSZE — przy reduce
 // przełącza natychmiast). Bez JS sekcja renderuje pełną, rozwiniętą
 // treść (markup startuje z aria-expanded="true"; init zamyka).
+import { faqItems } from "@/i18n/faq";
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
-import { CONTACT_PATH } from "@/lib/routes";
+import { CONTACT_PATH, FAQ_PATH } from "@/lib/routes";
+import { FAQ_TEASER_COUNT } from "./faq-config";
 
 interface Props {
   lang: Lang;
@@ -20,28 +22,24 @@ const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "faq");
 const label = item ? navLabel(item, lang) : "FAQ";
 
-// Kontrakt liczby pytań z FAQ_ITEM_COUNT pilnuje tests/unit/faq-config.test.ts
-// (stagger --d w CSS niżej ma dokładnie tyle pozycji nth-child).
-const faqs = [
-  { q: t("faq.q1"), a: t("faq.a1") },
-  { q: t("faq.q2"), a: t("faq.a2") },
-  { q: t("faq.q3"), a: t("faq.a3") },
-  { q: t("faq.q4"), a: t("faq.a4") },
-  { q: t("faq.q5"), a: t("faq.a5") },
-  { q: t("faq.q6"), a: t("faq.a6") },
-].map((f, i) => ({ ...f, no: `0${i + 1}`, id: `fq-a-${i + 1}` }));
+// Teaser: pierwsze FAQ_TEASER_COUNT pytań z jedynego źródła (src/i18n/faq.ts);
+// pełny rejestr + JSON-LD FAQPage żyją na podstronie /faq/ (FaqFull.astro —
+// docs/analiza-podstrona-faq.md D2/D3). Kontrakt liczby pilnuje
+// tests/unit/faq-config.test.ts (stagger --d w CSS niżej = nth-child 1..6).
+const pad = (n: number) => String(n).padStart(2, "0");
+const faqs = faqItems.slice(0, FAQ_TEASER_COUNT).map((f, i) => ({
+  q: f.q[lang],
+  a: f.a[lang],
+  no: pad(i + 1),
+  id: `fq-a-${i + 1}`,
+}));
 
-// Dane strukturalne FAQPage (schema.org) z tych samych danych i18n co
-// markup — Google potrafi z nich budować rozwijane pytania w wynikach.
-const faqSchema = JSON.stringify({
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  mainEntity: faqs.map((f) => ({
-    "@type": "Question",
-    name: f.q,
-    acceptedAnswer: { "@type": "Answer", text: f.a },
-  })),
-});
+// Licznik bloku „więcej" liczony z danych w Astro (bez JS — referencja
+// docs/design/faq-button-referencja/ używa data-* tylko w podglądzie).
+const moreCount = `${pad(FAQ_TEASER_COUNT)} / ${pad(faqItems.length)}`;
+const moreLead = t("faq.moreLead")
+  .replace("{shown}", String(FAQ_TEASER_COUNT))
+  .replace("{total}", String(faqItems.length));
 ---
 
 <section id="faq" class="fq" aria-label={label}>
@@ -50,8 +48,6 @@ const faqSchema = JSON.stringify({
     // klasa .js uzbraja stany startowe animacji i zamknięte odpowiedzi.
     document.currentScript?.closest("section")?.classList.add("js");
   </script>
-
-  <script type="application/ld+json" set:html={faqSchema} is:inline />
 
   <!-- chrome sekcji -->
   <div class="fq-tag">
@@ -96,6 +92,17 @@ const faqSchema = JSON.stringify({
     }
   </ol>
   <div class="fq-line fq-endline" aria-hidden="true"></div>
+
+  <!-- blok „więcej" → podstrona /faq/ (port docs/design/faq-button-referencja/;
+       licznik i nadpis policzone w Astro z faqItems — bez JS) -->
+  <div class="fq-more">
+    <span class="lead">{moreLead}</span>
+    <a class="fq-all" href={FAQ_PATH[lang]}>
+      <span class="count">{moreCount}</span>
+      <span class="label">{t("faq.moreLabel")}</span>
+      <span class="arr" aria-hidden="true">→</span>
+    </a>
+  </div>
 
   <!-- domknięcie → podstrona kontaktu (nawigacja natywnym linkiem) -->
   <div class="fq-cta">
@@ -373,6 +380,66 @@ const faqSchema = JSON.stringify({
     height: auto;
   }
 
+  /* ── blok „więcej" → /faq/ (port faq-button-referencja; tokeny projektu,
+     paleta referencji zgodna z globalną: ink/faint/line/accent) ── */
+  .fq-more {
+    position: relative;
+    z-index: 6;
+    margin-top: 64px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+  }
+  .fq-more .lead {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .fq-all {
+    display: inline-flex;
+    align-items: center;
+    gap: 22px;
+    padding: 20px 32px 20px 28px;
+    border: 1px solid var(--line);
+    color: var(--ink);
+    transition:
+      border-color 0.3s,
+      background 0.3s,
+      transform 0.3s var(--fq-cz);
+  }
+  .fq-all:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .fq-all .count {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    color: var(--accent);
+    padding-right: 22px;
+    border-right: 1px solid var(--line);
+  }
+  .fq-all .label {
+    font-weight: 600;
+    font-size: 19px;
+    letter-spacing: -0.01em;
+  }
+  .fq-all .arr {
+    color: var(--accent);
+    font-size: 20px;
+    transition: transform 0.25s;
+  }
+  .fq-all:hover {
+    border-color: rgba(255, 90, 71, 0.6);
+    background: rgba(255, 90, 71, 0.05);
+  }
+  .fq-all:hover .arr {
+    transform: translateX(6px);
+  }
+
   /* ── domknięcie → kontakt ── */
   .fq-cta {
     position: relative;
@@ -499,7 +566,9 @@ const faqSchema = JSON.stringify({
       transform: scaleX(1);
     }
 
-    /* CTA */
+    /* blok „więcej" + CTA — wspólny fade-up 18px (ten sam próg wejścia
+       FAQ_CTA_START w faq-scroll.ts; jedna definicja = brak dryfu) */
+    .fq.js .fq-more,
     .fq.js .fq-cta {
       opacity: 0;
       transform: translateY(18px);
@@ -507,6 +576,7 @@ const faqSchema = JSON.stringify({
         opacity 0.8s var(--fq-cz),
         transform 0.8s var(--fq-cz);
     }
+    .fq.js .fq-more.on,
     .fq.js .fq-cta.on {
       opacity: 1;
       transform: none;
@@ -566,6 +636,20 @@ const faqSchema = JSON.stringify({
       margin: 0 0 26px 44px;
       font-size: 14.5px;
       line-height: 1.62;
+    }
+    .fq-more {
+      margin-top: 48px;
+      gap: 14px;
+    }
+    .fq-all {
+      gap: 16px;
+      padding: 17px 22px;
+    }
+    .fq-all .count {
+      padding-right: 16px;
+    }
+    .fq-all .label {
+      font-size: 16px;
     }
     .fq-cta {
       margin-top: 60px;

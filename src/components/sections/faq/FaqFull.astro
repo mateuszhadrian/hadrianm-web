@@ -1,0 +1,835 @@
+---
+// Treść podstrony /faq/ — pełny rejestr 30 pytań + wyszukiwarka 100%
+// frontend (port referencji docs/design/faq-podstrona-referencja/;
+// decyzje: docs/analiza-podstrona-faq.md). Tło = globalny ambient strony
+// (wariant blue w FaqPage.astro) — panel #100B0D, szew, atmo i mesh
+// z referencji NIE przenoszą się (ta sama decyzja co przy porcie sekcji
+// na stronę główną, D8). Split modułów jak w sekcji: faq-accordion.ts +
+// faq-search.ts ładowane ZAWSZE (interakcje działają też przy reduce),
+// faq-page-scroll.ts (wejścia batch + tween akordeonu + parallax ghosta)
+// tylko przy prefers-reduced-motion: no-preference. Bez JS strona renderuje
+// pełną, rozwiniętą treść (markup startuje z aria-expanded="true"; init
+// zamyka), wyszukiwarka jest nieaktywna (progresywne wzbogacanie).
+import { faqItems } from "@/i18n/faq";
+import { navItems, navLabel } from "@/i18n/nav";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import { CONTACT_PATH } from "@/lib/routes";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const item = navItems.find((n) => n.id === "faq");
+const label = item ? navLabel(item, lang) : "FAQ";
+
+const faqs = faqItems.map((f, i) => ({
+  q: f.q[lang],
+  a: f.a[lang],
+  no: String(i + 1).padStart(2, "0"),
+  id: `fq-a-${i + 1}`,
+}));
+
+const total = String(faqItems.length);
+const metaText = t("faqPage.meta").replace("{total}", total);
+const countAll = t("faqPage.countAll").replace("{total}", total);
+
+// Dane strukturalne FAQPage (schema.org) z tego samego źródła co markup —
+// pełny komplet pytań żyje WYŁĄCZNIE tutaj (strona główna nie emituje
+// JSON-LD od migracji na podstronę — D3).
+const faqSchema = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faqs.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+});
+---
+
+<div class="fqf">
+  <script is:inline>
+    // Bez JS strona zostaje w pełni widoczna i rozwinięta (fallback SEO);
+    // klasa .js uzbraja stany startowe animacji i zamknięte odpowiedzi.
+    document.currentScript?.closest(".fqf")?.classList.add("js");
+  </script>
+
+  <script type="application/ld+json" set:html={faqSchema} is:inline />
+
+  <!-- hero: chrome „05 / FAQ" + H1 podstrony + lead -->
+  <header class="fq-hero">
+    <div class="fq-ghost" aria-hidden="true">{t("faq.ghost")}</div>
+    <div class="fq-chrome">
+      <div class="fq-tag" aria-hidden="true">
+        <span class="t-num">05</span><span class="t-sl">/</span><span
+          class="t-lbl">{label}</span
+        >
+      </div>
+      <div class="fq-meta" aria-hidden="true">{metaText}</div>
+    </div>
+    <div class="fq-head fq-rev">
+      <div class="fq-mono kick">{t("faqPage.kick")}</div>
+      <h1>{t("faq.headLead")} <span class="sf">{t("faq.headAccent")}</span></h1>
+    </div>
+    <p class="fq-lead fq-rev">
+      {t("faqPage.lead")}
+      {t("faqPage.leadQ")}
+      <a href={CONTACT_PATH[lang]}>{t("faq.ctaLink")}</a>.
+    </p>
+  </header>
+
+  <section id="faq" class="fq-panel" aria-label={label}>
+    <!-- sonda sticky: gdy wyjedzie nad viewport, wrap niżej dostaje
+         .is-stuck (mobile odsuwa pole spod fixed BackButtona) -->
+    <div class="fq-sticky-probe" aria-hidden="true"></div>
+    <!-- wyszukiwarka (100% frontend, sticky; bez JS nieaktywna) -->
+    <div
+      class="fq-search-wrap"
+      role="search"
+      aria-label={t("faqPage.searchRegion")}
+    >
+      <div class="fq-search">
+        <svg
+          class="ic"
+          width="19"
+          height="19"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.7"
+          stroke-linecap="round"
+          aria-hidden="true"
+          ><circle cx="10.5" cy="10.5" r="7"></circle><line
+            x1="21"
+            y1="21"
+            x2="16"
+            y2="16"></line></svg
+        >
+        <input
+          id="fq-search-input"
+          class="fq-input"
+          type="search"
+          autocomplete="off"
+          spellcheck="false"
+          placeholder={t("faqPage.searchPh")}
+          aria-label={t("faqPage.searchPh")}
+        />
+        <button
+          class="fq-clear"
+          type="button"
+          aria-label={t("faqPage.searchClear")}
+          hidden>×</button
+        >
+      </div>
+      <div class="fq-search-meta" role="status" aria-live="polite">
+        <span class="d" aria-hidden="true"></span>
+        <span
+          class="fq-mono"
+          id="fq-search-count"
+          data-tpl-all={t("faqPage.countAll")}
+          data-tpl-filtered={t("faqPage.countFiltered")}>{countAll}</span
+        >
+      </div>
+    </div>
+
+    <!-- rejestr: aria-expanded="true" w markupie = stan bez JS (wszystko
+         rozwinięte); faq-accordion.ts przy inicie zamyka i ustawia "false". -->
+    <ol class="fq-list">
+      {
+        faqs.map((f) => (
+          <li class="fq-item">
+            <div class="fq-line" aria-hidden="true" />
+            <h3>
+              <button
+                class="fq-q"
+                type="button"
+                aria-expanded="true"
+                aria-controls={f.id}
+              >
+                <span class="no">{f.no}</span>
+                <span class="qt">{f.q}</span>
+                <span class="fq-plus" aria-hidden="true" />
+              </button>
+            </h3>
+            <div class="fq-a" id={f.id}>
+              <div>
+                <p>{f.a}</p>
+              </div>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+    <div class="fq-line" id="fq-endline" aria-hidden="true"></div>
+    <p class="fq-noresults" id="fq-noresults" hidden>
+      {t("faqPage.noresPre")}<span class="q"></span>{t("faqPage.noresMid")}<a
+        href={CONTACT_PATH[lang]}>{t("faqPage.noresLink")}</a
+      >{t("faqPage.noresPost")}
+    </p>
+
+    <!-- domknięcie → podstrona kontaktu -->
+    <div class="fq-cta">
+      <span class="fq-dia" aria-hidden="true"></span>
+      <div class="fq-mono">{t("faq.ctaMono")}</div>
+      <a class="fq-link" href={CONTACT_PATH[lang]}
+        >{t("faq.ctaLink")} <span class="arr" aria-hidden="true">→</span></a
+      >
+    </div>
+  </section>
+</div>
+
+<script>
+  import { initFaqAccordion } from "./faq-accordion";
+  import { initFaqSearch } from "./faq-search";
+
+  // Animacje (wejścia batch + tween akordeonu + parallax) tylko przy
+  // dozwolonym ruchu — ta sama bramka co Lenis w BaseLayout. Przy reduce
+  // akordeon i wyszukiwarka dalej DZIAŁAJĄ — przełączają natychmiast
+  // (klasy + CSS), bez GSAP w bundle'u.
+  const faqRoot = document.querySelector<HTMLElement>(".fqf");
+  if (faqRoot) {
+    // Stan „przyklejona" wyszukiwarki (sonda nad wrapem wyjeżdża nad
+    // viewport): mobile odsuwa pole spod fixed BackButtona (kółko 46px
+    // w slocie brandu nachodziłoby na ikonę lupy — kolizja tylko przy
+    // top: 0). Niezależne od motion — czysta korekta layoutu.
+    const probe = faqRoot.querySelector<HTMLElement>(".fq-sticky-probe");
+    const wrap = faqRoot.querySelector<HTMLElement>(".fq-search-wrap");
+    if (probe && wrap) {
+      new IntersectionObserver(([entry]) => {
+        wrap.classList.toggle(
+          "is-stuck",
+          !entry.isIntersecting && entry.boundingClientRect.top < 0,
+        );
+      }).observe(probe);
+    }
+
+    if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+      import("./faq-page-scroll").then((m) => m.initFaqPageScroll());
+    } else {
+      initFaqAccordion(faqRoot, undefined, { exclusive: false });
+      initFaqSearch(faqRoot);
+    }
+  }
+</script>
+
+<style>
+  /* ═══ Podstrona FAQ — wartości „zamrożone" z referencji: breakpoint
+     861px · akordeon 0.55/0.45s · batch top 94% + stagger 0.05s ·
+     parallax ghosta −30→+46px. Paleta/fonty z tokenów projektu
+     (global.css); tło = globalny ambient (bez panelu/szwu/mgły — D8).
+     UWAGA: breakpointy @media (861px) MUSZĄ być równe FAQ_DESKTOP_MIN_PX
+     (faq-config.ts) — @media nie umie czytać var(), stąd literały.
+     Padding-top hero powiększony względem referencji (fixed navbar). ═══ */
+  .fqf {
+    --fq-cz: cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+  }
+  .fqf a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+  .fqf a:hover {
+    color: #ffb3a6;
+  }
+  .fqf button {
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .fq-q:focus-visible,
+  .fq-link:focus-visible,
+  .fq-clear:focus-visible,
+  .fq-input:focus-visible,
+  .fq-lead a:focus-visible,
+  .fq-noresults a:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+  }
+  .fq-mono {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  /* ── hero ── */
+  .fq-hero {
+    position: relative;
+    padding: 130px 150px 128px;
+    overflow: hidden;
+  }
+  .fq-hero .fq-ghost {
+    position: absolute;
+    right: 110px;
+    top: 100px;
+    z-index: 1;
+    pointer-events: none;
+    user-select: none;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(220px, 20vw, 380px);
+    line-height: 0.82;
+    letter-spacing: -0.05em;
+    color: transparent;
+    -webkit-text-stroke: 1.5px rgba(245, 240, 236, 0.08);
+  }
+  .fq-chrome {
+    position: relative;
+    z-index: 6;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+  }
+  .fq-tag {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+    font-family: var(--font-mono), monospace;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+  }
+  .fq-tag .t-num {
+    color: var(--accent);
+  }
+  .fq-tag .t-sl {
+    color: var(--faint);
+  }
+  .fq-tag .t-lbl {
+    color: var(--muted);
+  }
+  .fq-meta {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    color: var(--faint);
+    text-transform: uppercase;
+  }
+  .fq-head {
+    position: relative;
+    z-index: 6;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 90px;
+  }
+  .fq-head .kick {
+    color: var(--accent);
+  }
+  .fq-head h1 {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(58px, 6vw, 104px);
+    line-height: 0.98;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .fq-head h1 .sf {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.05em;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .fq-lead {
+    position: relative;
+    z-index: 6;
+    margin: 34px 0 0;
+    max-width: 760px;
+    font-size: 19px;
+    line-height: 1.6;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+
+  /* ── panel (przezroczysty nad ambientem — D8) ── */
+  .fq-panel {
+    position: relative;
+    padding: 40px 150px 130px;
+  }
+
+  /* ── wyszukiwarka (frontend, sticky) ── */
+  /* Sonda stanu sticky: 1px wysokości (zero-wymiarowe cele bywają pomijane
+     przez IntersectionObserver), ujemny margines zeruje wpływ na layout. */
+  .fq-sticky-probe {
+    height: 1px;
+    margin-bottom: -1px;
+  }
+  .fq-search-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 8;
+    margin: 4px -150px 10px;
+    padding: 22px 150px 18px;
+    background: rgba(16, 11, 13, 0.86);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .fq-search {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    max-width: 920px;
+    border: 1px solid var(--line);
+    padding: 15px 18px;
+    background: rgba(245, 240, 236, 0.015);
+    transition:
+      border-color 0.25s,
+      background 0.25s;
+  }
+  .fq-search:focus-within {
+    border-color: rgba(255, 90, 71, 0.55);
+    background: rgba(255, 90, 71, 0.03);
+  }
+  .fq-search .ic {
+    color: var(--faint);
+    flex-shrink: 0;
+    transition: color 0.25s;
+  }
+  .fq-search:focus-within .ic {
+    color: var(--accent);
+  }
+  .fq-input {
+    flex: 1;
+    min-width: 0;
+    background: none;
+    border: 0;
+    outline: 0;
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+    font-size: 18px;
+    letter-spacing: -0.01em;
+  }
+  .fq-input::placeholder {
+    color: var(--faint);
+  }
+  .fq-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  .fq-clear {
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    color: var(--faint);
+    font-size: 21px;
+    line-height: 1;
+    border-radius: 50%;
+    transition:
+      color 0.2s,
+      background 0.2s;
+  }
+  .fq-clear:hover {
+    color: var(--ink);
+    background: rgba(245, 240, 236, 0.06);
+  }
+  .fq-search-meta {
+    margin-top: 13px;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+  }
+  .fq-search-meta .d {
+    width: 7px;
+    height: 7px;
+    background: var(--accent);
+    transform: rotate(45deg);
+    flex-shrink: 0;
+  }
+  .fq-search-meta .fq-mono {
+    color: var(--faint);
+    transition: color 0.25s;
+  }
+  .fq-search-meta .fq-mono.is-filtered {
+    color: var(--accent);
+  }
+  .fqf :global(mark.fq-hl) {
+    background: rgba(255, 90, 71, 0.14);
+    color: var(--accent);
+    border-radius: 2px;
+    padding: 0 1px;
+  }
+  .fq-item.fq-hidden {
+    display: none;
+  }
+  .fq-noresults {
+    position: relative;
+    z-index: 6;
+    margin: 8px 0 0;
+    padding: 54px 0;
+    text-align: center;
+    font-size: 18px;
+    line-height: 1.6;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .fq-noresults .q {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ── rejestr ── */
+  .fq-list {
+    position: relative;
+    z-index: 6;
+    margin: 26px 0 0;
+    list-style: none;
+    padding: 0;
+  }
+  .fq-line {
+    height: 1px;
+    background: var(--line);
+    position: relative;
+    z-index: 6;
+  }
+  .fq-item {
+    position: relative;
+  }
+  .fq-item h3 {
+    margin: 0;
+  }
+  .fq-q {
+    display: grid;
+    grid-template-columns: 110px 1fr 40px;
+    align-items: center;
+    text-align: left;
+    width: calc(100% + 40px);
+    margin: 0 -20px;
+    padding: 26px 20px;
+  }
+  .fq-q .no {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    color: var(--faint);
+    transition: color 0.35s;
+  }
+  .fq-q .qt {
+    margin: 0;
+    font-weight: 700;
+    font-size: 25px;
+    line-height: 1.26;
+    letter-spacing: -0.02em;
+    color: rgba(245, 240, 236, 0.86);
+    transition:
+      color 0.3s,
+      transform 0.35s var(--fq-cz);
+  }
+  .fq-item.open .fq-q .no {
+    color: var(--accent);
+  }
+  .fq-item.open .fq-q .qt {
+    color: var(--ink);
+  }
+
+  /* plus → × */
+  .fq-plus {
+    position: relative;
+    justify-self: end;
+    width: 18px;
+    height: 18px;
+    transition: transform 0.4s var(--fq-cz);
+  }
+  .fq-plus::before,
+  .fq-plus::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 18px;
+    height: 1.6px;
+    background: var(--faint);
+    transition: background 0.3s;
+    transform: translate(-50%, -50%);
+  }
+  .fq-plus::after {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+  .fq-item.open .fq-plus {
+    transform: rotate(45deg);
+  }
+  .fq-item.open .fq-plus::before,
+  .fq-item.open .fq-plus::after {
+    background: var(--accent);
+  }
+
+  @media (hover: hover) {
+    .fq-q:hover {
+      background: rgba(245, 240, 236, 0.022);
+    }
+    .fq-q:hover .qt {
+      color: var(--ink);
+      transform: translateX(8px);
+    }
+    .fq-q:hover .fq-plus::before,
+    .fq-q:hover .fq-plus::after {
+      background: var(--ink);
+    }
+    .fq-item.open .fq-q:hover .fq-plus::before,
+    .fq-item.open .fq-q:hover .fq-plus::after {
+      background: var(--accent);
+    }
+  }
+
+  /* odpowiedź: domyślnie (bez JS) rozwinięta; z JS wysokość 0 ↔ auto —
+     przy motion rozwija tween GSAP (faq-page-scroll.ts), przy reduce
+     przełącza sam CSS (natychmiast). Podświetlenia wstrzykuje faq-search
+     w runtime — stąd :global na .qt w regułach wyżej nie jest potrzebny
+     (mark dostaje własną regułę :global). */
+  .fq-a {
+    overflow: hidden;
+  }
+  .fq-a p {
+    margin: 2px 0 36px 110px;
+    max-width: 900px;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .fqf.js .fq-a {
+    height: 0;
+  }
+  .fqf.js .fq-item.open .fq-a {
+    height: auto;
+  }
+
+  /* ── domknięcie → kontakt ── */
+  .fq-cta {
+    position: relative;
+    z-index: 6;
+    margin-top: 92px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    text-align: center;
+  }
+  .fq-dia {
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(var(--glow), 0.7);
+    transform: rotate(45deg);
+  }
+  .fq-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 10px;
+    font-weight: 600;
+    font-size: 21px;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+  }
+  .fq-link:hover {
+    color: var(--ink);
+  }
+  .fq-link .arr {
+    color: var(--accent);
+    transition: transform 0.25s;
+  }
+  .fq-link:hover .arr {
+    transform: translateX(6px);
+  }
+
+  /* ═══ WEJŚCIA — stany początkowe tylko gdy: JS działa (klasa .js na
+     rootcie) + motion dozwolony. Animuje CSS transition; ScrollTrigger
+     w faq-page-scroll.ts jedynie dodaje klasy .on (hero od razu, rejestr
+     batchem — stagger to transition-delay --d ustawiane w JS).
+     no-JS i prefers-reduced-motion renderują pełną, statyczną treść. ═══ */
+  @media (prefers-reduced-motion: no-preference) {
+    .fqf.js .fq-a p {
+      opacity: 0;
+      transform: translateY(6px);
+      transition:
+        opacity 0.4s ease,
+        transform 0.4s var(--fq-cz);
+    }
+    .fqf.js .fq-item.open .fq-a p {
+      opacity: 1;
+      transform: none;
+      transition-delay: 0.08s;
+    }
+    .fqf.js .fq-rev {
+      opacity: 0;
+      transform: translateY(22px);
+      transition:
+        opacity 0.8s var(--fq-cz),
+        transform 0.8s var(--fq-cz);
+    }
+    .fqf.js .fq-rev.on {
+      opacity: 1;
+      transform: none;
+    }
+    .fqf.js .fq-ghost {
+      opacity: 0;
+      transition: opacity 1.4s ease 0.15s;
+    }
+    .fqf.js .fq-ghost.on {
+      opacity: 1;
+    }
+    .fqf.js .fq-item {
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        opacity 0.7s var(--fq-cz) var(--d, 0s),
+        transform 0.7s var(--fq-cz) var(--d, 0s);
+    }
+    .fqf.js .fq-item .fq-line {
+      transform: scaleX(0);
+      transform-origin: 0 50%;
+      transition: transform 0.85s var(--fq-cz) var(--d, 0s);
+    }
+    .fqf.js .fq-item.on {
+      opacity: 1;
+      transform: none;
+    }
+    .fqf.js .fq-item.on .fq-line {
+      transform: scaleX(1);
+    }
+    .fqf.js .fq-cta {
+      opacity: 0;
+      transform: translateY(18px);
+      transition:
+        opacity 0.8s var(--fq-cz),
+        transform 0.8s var(--fq-cz);
+    }
+    .fqf.js .fq-cta.on {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  /* ═══ MOBILE (<861px) — wersja lekka: te same klasy, mniejsze
+     przesunięcia, search bez backdrop-blur, input 16px (brak zoomu iOS). ═══ */
+  @media (max-width: 860.98px) {
+    .fq-hero {
+      padding: 110px 26px 96px;
+    }
+    .fq-hero .fq-ghost {
+      right: 8px;
+      top: 120px;
+      font-size: 118px;
+      -webkit-text-stroke-width: 1.2px;
+    }
+    .fq-meta {
+      display: none;
+    }
+    .fq-head {
+      margin-top: 64px;
+    }
+    .fq-head h1 {
+      font-size: 46px;
+    }
+    .fq-lead {
+      font-size: 16px;
+      margin-top: 26px;
+    }
+    .fq-panel {
+      padding: 30px 26px 92px;
+    }
+    .fq-search-wrap {
+      margin: 2px -26px 8px;
+      padding: 14px 26px 12px;
+      background: #100b0d;
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+      transition: padding-left 0.3s var(--fq-cz);
+    }
+    /* Przyklejona u góry (klasa z sondy .fq-sticky-probe): pole odsuwa
+       się spod fixed BackButtona (kółko 46px, prawa krawędź ~66px). */
+    .fq-search-wrap.is-stuck {
+      padding-left: 84px;
+    }
+    .fq-search {
+      padding: 12px 14px;
+      gap: 11px;
+    }
+    .fq-input {
+      font-size: 16px;
+    }
+    .fq-noresults {
+      font-size: 15px;
+      padding: 40px 0;
+    }
+    .fq-list {
+      margin-top: 18px;
+    }
+    .fq-q {
+      grid-template-columns: 44px 1fr 30px;
+      width: 100%;
+      margin: 0;
+      padding: 18px 0;
+    }
+    .fq-q .no {
+      font-size: 10px;
+      letter-spacing: 0.24em;
+    }
+    .fq-q .qt {
+      font-size: 16px;
+      line-height: 1.4;
+    }
+    .fq-plus {
+      width: 14px;
+      height: 14px;
+    }
+    .fq-plus::before,
+    .fq-plus::after {
+      width: 14px;
+      height: 1.5px;
+    }
+    .fq-a p {
+      margin: 0 0 24px 44px;
+      font-size: 14.5px;
+      line-height: 1.62;
+    }
+    .fq-cta {
+      margin-top: 68px;
+    }
+    .fq-link {
+      font-size: 17px;
+    }
+  }
+
+  /* mobile: płytszy reveal wierszy — TYLKO przy dozwolonym ruchu. */
+  @media (max-width: 860.98px) and (prefers-reduced-motion: no-preference) {
+    .fqf.js .fq-item {
+      transform: translateY(16px);
+    }
+  }
+
+  /* wąski desktop: mniejsze marginesy */
+  @media (min-width: 861px) and (max-width: 1280px) {
+    .fq-hero {
+      padding-left: 70px;
+      padding-right: 70px;
+    }
+    .fq-panel {
+      padding-left: 70px;
+      padding-right: 70px;
+    }
+    .fq-search-wrap {
+      margin-left: -70px;
+      margin-right: -70px;
+      padding-left: 70px;
+      padding-right: 70px;
+    }
+  }
+</style>

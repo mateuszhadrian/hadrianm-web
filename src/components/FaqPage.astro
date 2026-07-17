@@ -1,0 +1,101 @@
+---
+// Podstrona „FAQ" (PL: /faq/, EN: /en/faq/) — pełny rejestr 30 pytań
+// z wyszukiwarką (FaqFull.astro); na stronie głównej został teaser
+// (6 pytań + blok „Zobacz wszystkie pytania"); plan:
+// docs/analiza-podstrona-faq.md. Wzorzec chrome'u strony =
+// ContactPage.astro (BackButton w miejscu brandu, współdzielony Footer,
+// jedna statyczna warstwa ambientu — tu BLUE, jak tło sekcji FAQ na
+// głównej), scroll w trybie "desktop": Lenis na desktopie, mobile
+// natywnie (strona z revealami i sticky wyszukiwarką, bez pinów).
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Navbar from "@/components/navbar/Navbar.astro";
+import AmbientBackground from "@/components/backgrounds/AmbientBackground.astro";
+import FaqFull from "@/components/sections/faq/FaqFull.astro";
+import BackButton from "@/components/ui/BackButton.astro";
+import Footer from "@/components/Footer.astro";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import { FAQ_PATH, HOME_PATH } from "@/lib/routes";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+  title={t("faqPage.title")}
+  lang={lang}
+  description={t("faqPage.description")}
+  alternates={FAQ_PATH}
+  smoothScroll="desktop"
+>
+  <div class="fqp-bg" aria-hidden="true">
+    <AmbientBackground variant="blue" />
+  </div>
+
+  <Navbar lang={lang} langHrefs={FAQ_PATH} showBrand={false} />
+
+  {
+    /* „Wstecz" w miejscu brandu — CELOWO poza barem navbara: fixed, więc nie
+       chowa się razem z nim przy scrollu; działa jak wstecz przeglądarki
+       (globalny mechanizm a[data-back], fallback → strona główna). Wrapper,
+       nie klasa na komponencie: scoped CSS (strategia atrybutowa) nie łapie
+       elementów renderowanych przez komponent potomny. */
+  }
+  <div class="fqp-back">
+    <BackButton href={HOME_PATH[lang]} label={t("faqPage.back")} />
+  </div>
+
+  <main class="fqp">
+    <FaqFull lang={lang} />
+  </main>
+
+  {/* Współdzielony footer strony (ten sam co finał strony głównej). */}
+  <div class="fqp-foot">
+    <Footer lang={lang} />
+  </div>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    background: #000;
+  }
+
+  /* Jedna statyczna warstwa ambientu — bez crossfade'u strony głównej
+     (podczas jazdy przez sekcję na głównej tłem był wariant blue). */
+  .fqp-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: #000;
+    pointer-events: none;
+  }
+
+  /* Pozycja = slot brandu w navbarze (te same clampy paddingu paska);
+     korekta -12px centruje 46-px kółko na linii treści paska. z-index nad
+     nav-root (50), bo przycisk ma być widoczny ZAWSZE — także gdy pasek
+     schowa się przy scrollu w dół. */
+  .fqp-back {
+    position: fixed;
+    z-index: 60;
+    left: clamp(1.25rem, 4vw, 2.75rem);
+    top: calc(clamp(1.25rem, 3.2vh, 1.9rem) - 12px);
+  }
+
+  .fqp {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Stopka: kontener współdzielonego Footer.astro (szerokość jak na
+     pozostałych podstronach; sam footer jest bezmarginesowy — rodzic
+     kontroluje layout) ── */
+  .fqp-foot {
+    position: relative;
+    z-index: 1;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 5vw 42px;
+  }
+</style>

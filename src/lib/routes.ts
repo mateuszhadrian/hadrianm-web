@@ -37,3 +37,10 @@ export const CONTACT_PATH: Record<Lang, string> = {
   pl: "/kontakt/",
   en: "/en/contact/",
 };
+
+// Slug wspólny dla obu języków — „FAQ" jest międzynarodowe (świadomy
+// wyjątek od konwencji tłumaczonych slugów; docs/analiza-podstrona-faq.md D1).
+export const FAQ_PATH: Record<Lang, string> = {
+  pl: "/faq/",
+  en: "/en/faq/",
+};
