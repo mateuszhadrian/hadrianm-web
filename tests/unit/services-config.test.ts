@@ -40,6 +40,20 @@ describe("services-config: oś sekcji Oferta", () => {
     expect(SERVICES_READ_MOBILE.span).toBeLessThan(SERVICES_READ.span);
   });
 
+  it("intro: starty per akapit (kontrakt z 3× .of-lit) i sensowna oś tempa", () => {
+    for (const cfg of [SERVICES_READ, SERVICES_READ_MOBILE]) {
+      // 3 starty = 3 akapity .of-lit w markupie teasera (Services.astro).
+      expect(cfg.paraStarts).toHaveLength(3);
+      for (const start of cfg.paraStarts) {
+        expect(start).toMatch(/^top \d+%$/);
+      }
+      // Oś referencyjna tempa (dawny wspólny trigger) musi mieć dodatni
+      // dystans: start powyżej endu w ułamkach vh.
+      expect(cfg.refStartVh).toBeGreaterThan(cfg.refEndVh);
+      expect(cfg.refEndVh).toBeGreaterThan(0);
+    }
+  });
+
   it("proces ma 5 kroków (kontrakt markup ↔ moduł ↔ progres 01–05)", () => {
     expect(SERVICES_STEP_COUNT).toBe(5);
   });
