@@ -40,7 +40,6 @@ const moreHref = WORK_INDEX_PATH[lang];
       {t("work.headlineLead")}{" "}
       <span class="work__accent">{t("work.headlineAccent")}</span>
     </h2>
-    <p class="work__intro">{t("work.intro")}</p>
   </header>
 
   {
@@ -170,16 +169,6 @@ const moreHref = WORK_INDEX_PATH[lang];
     -webkit-text-fill-color: transparent;
     color: transparent;
   }
-  .work__intro {
-    max-width: 560px;
-    margin: 24px auto 0;
-    font-family: var(--font-body), sans-serif;
-    font-size: 17px;
-    line-height: 1.5;
-    color: var(--muted);
-    text-wrap: pretty;
-  }
-
   .work__gallery {
     display: flex;
     flex-direction: column;
@@ -236,11 +225,6 @@ const moreHref = WORK_INDEX_PATH[lang];
     }
     .work__accent {
       display: inline;
-    }
-    .work__intro {
-      max-width: 340px;
-      margin-top: 18px;
-      font-size: 15px;
     }
   }
 </style>

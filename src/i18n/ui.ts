@@ -23,10 +23,8 @@ export const ui = {
     "hero.s6": "Mocne pierwsze wrażenie",
     "hero.s7": "Strona jako\ntwój najlepszy\n*!przedstawiciel*",
     "work.eyebrow": "ZREALIZOWANE ZLECENIA",
-    "work.headlineLead": "zobacz przykładowe",
+    "work.headlineLead": "zobacz moje",
     "work.headlineAccent": "realizacje",
-    "work.intro":
-      "Wybrane projekty z ostatnich miesięcy. Każdy w wersji desktop i mobilnej — kliknij, by zobaczyć szczegóły.",
     "work.cta": "Zobacz realizację",
     "work.more": "Więcej realizacji",
     "work.moreBig": "Więcej",
@@ -313,10 +311,8 @@ export const ui = {
     "hero.s6": "A strong\n*first* impression",
     "hero.s7": "Your site,\nyour best\n*!representative*",
     "work.eyebrow": "COMPLETED PROJECTS",
-    "work.headlineLead": "see sample",
+    "work.headlineLead": "explore my",
     "work.headlineAccent": "work",
-    "work.intro":
-      "Selected projects from recent months. Each in a desktop and mobile version — click to see the details.",
     "work.cta": "View project",
     "work.more": "More projects",
     "work.moreBig": "More",
