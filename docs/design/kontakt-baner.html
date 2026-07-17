@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kontakt — baner (blok CTA) · referencja</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════════════════════════════════
+   REFERENCJA — blok CTA banera „Kontakt" (od statusu do buttona).
+   Zakres 1:1 z komponentem KontaktBaner.astro. Poza `.preview-stage`
+   (rusztowanie podglądu — tło/atmosfera masz już w aplikacji) reszta
+   to gotowy kod do przeniesienia.
+   Animacje CSS-only, tylko desktop (≥861px) + prefers-reduced-motion.
+   ════════════════════════════════════════════════════════════════ */
+:root{
+  --kt-ink:#F5F0EC;--kt-muted:rgba(245,240,236,0.62);--kt-accent:#FF5A47;--kt-glow:255,90,71;
+  --kt-mono:'Space Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;--kt-cz:cubic-bezier(.22,1,.36,1);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+
+/* ─── rusztowanie podglądu (NIE część eksportu — masz to w aplikacji) ─── */
+.preview-stage{min-height:100%;display:grid;place-items:center;padding:64px 28px;position:relative;overflow:hidden;
+  background:var(--kt-ink);background:#070507;font-family:'Archivo',sans-serif}
+.preview-stage::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(60% 50% at 50% 118%,rgba(214,38,38,0.17) 0%,rgba(0,0,0,0) 72%),radial-gradient(30% 30% at 92% -10%,rgba(130,20,32,0.15) 0%,rgba(0,0,0,0) 72%)}
+.preview-stage::after{content:'';position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.45;
+  background-image:radial-gradient(circle at center,rgba(0,0,0,0.96) 2.17px,rgba(0,0,0,0) 3.69px);background-size:10.41px 10.41px}
+
+/* ═════════════════ ↓↓↓ EKSPORT — kopiuj od tąd ↓↓↓ ═════════════════ */
+.kt-cta{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:22px;max-width:640px;margin-inline:auto;
+  font-family:'Archivo Variable','Archivo',system-ui,sans-serif;color:var(--kt-ink)}
+.kt-cta__status{display:flex;align-items:center;gap:13px;margin:0;font-family:var(--kt-mono);font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--kt-muted)}
+.kt-cta__dot{position:relative;display:inline-grid;place-items:center;width:9px;height:9px;flex-shrink:0}
+.kt-cta__dia{width:9px;height:9px;transform:rotate(45deg);background:var(--kt-accent);box-shadow:0 0 18px rgba(var(--kt-glow),.7)}
+.kt-cta__ring{display:none;position:absolute;width:9px;height:9px;transform:rotate(45deg) scale(1);border:1.5px solid var(--kt-accent);opacity:0;pointer-events:none}
+.kt-cta__head{margin:0;font-weight:800;font-size:58px;line-height:1;letter-spacing:-.04em;color:var(--kt-ink)}
+.kt-cta__intro{margin:0;font-size:15.5px;line-height:1.6;color:var(--kt-muted);text-wrap:pretty}
+.kt-cta__btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:12px;width:100%;font:inherit;font-weight:700;font-size:16px;color:#180A08;background:#F5F0EC;border-radius:10px;padding:18px 20px;text-decoration:none;box-shadow:0 16px 40px -22px rgba(0,0,0,.8);cursor:pointer;transition:transform .25s,box-shadow .25s,background .25s}
+.kt-cta__label{position:relative;z-index:2}
+.kt-cta__arrow{position:relative;z-index:2;color:var(--kt-accent);transition:transform .3s var(--kt-cz)}
+.kt-cta__clip{display:none}
+.kt-cta__btn::after{content:'';position:absolute;inset:-3px;border-radius:13px;border:1.5px solid var(--kt-accent);opacity:0;pointer-events:none}
+.kt-cta__btn:active{transform:translateY(1px)}
+
+/* DESKTOP (≥861px) */
+@media (min-width:861px){
+  .kt-cta{gap:30px;max-width:660px}
+  .kt-cta__head{font-size:112px}
+  .kt-cta__intro{font-size:18.5px;max-width:640px}
+  .kt-cta__btn{width:auto;font-size:17px;border-radius:6px;padding:19px 30px;box-shadow:0 18px 46px -20px rgba(0,0,0,.75)}
+  .kt-cta__btn::after{border-radius:9px}
+  .kt-cta__btn:hover{background:#fff;transform:translateY(-1px);box-shadow:0 24px 56px -22px rgba(0,0,0,.85)}
+  .kt-cta__btn:hover .kt-cta__arrow{transform:translateX(4px)}
+  .kt-cta__ring{display:block}
+  .kt-cta__clip{display:block;position:absolute;inset:0;z-index:1;border-radius:inherit;overflow:hidden;pointer-events:none}
+  .kt-cta__sheen{position:absolute;inset:0;background:linear-gradient(100deg,transparent 34%,rgba(var(--kt-glow),.32) 50%,transparent 66%);transform:translateX(-130%)}
+}
+/* ANIMACJE — tylko desktop + brak redukcji ruchu */
+@media (min-width:861px) and (prefers-reduced-motion:no-preference){
+  .kt-cta__ring--1{animation:kt-ringOut 3.6s ease-out infinite}
+  .kt-cta__ring--2{animation:kt-ringOut 3.6s ease-out infinite 1.8s}
+  .kt-cta__sheen{animation:kt-sweep 3.6s ease-in-out infinite}
+  .kt-cta__btn{animation:kt-btnPulse 3.6s ease-in-out infinite}
+  .kt-cta__btn::after{animation:kt-ctaRing 3.6s ease-out infinite}
+}
+@keyframes kt-ringOut{0%{transform:rotate(45deg) scale(1);opacity:.6}80%{opacity:0}100%{transform:rotate(45deg) scale(3.4);opacity:0}}
+@keyframes kt-sweep{0%{transform:translateX(-130%)}26%{transform:translateX(130%)}100%{transform:translateX(130%)}}
+@keyframes kt-btnPulse{0%{transform:scale(1)}12%{transform:scale(1.028)}28%{transform:scale(1)}100%{transform:scale(1)}}
+@keyframes kt-ctaRing{0%{transform:scale(1);opacity:0}5%{opacity:.5}28%{transform:scale(1.15);opacity:0}100%{transform:scale(1.15);opacity:0}}
+/* ═════════════════ ↑↑↑ EKSPORT — kopiuj do tąd ↑↑↑ ═════════════════ */
+
+a{color:var(--kt-accent)}a:hover{color:#FFB3A6}
+</style>
+</head>
+<body>
+<div class="preview-stage">
+  <!-- ↓ dokładny zakres eksportu ↓ -->
+  <div class="kt-cta">
+    <p class="kt-cta__status">
+      <span class="kt-cta__dot" aria-hidden="true">
+        <span class="kt-cta__ring kt-cta__ring--1"></span>
+        <span class="kt-cta__ring kt-cta__ring--2"></span>
+        <span class="kt-cta__dia"></span>
+      </span>
+      Przyjmuję nowe zlecenia
+    </p>
+    <h2 class="kt-cta__head">Kontakt</h2>
+    <p class="kt-cta__intro">Chcesz zlecić stworzenie nowej strony, potrzebujesz wsparcia przy aplikacji lub po prostu masz pytania dotyczące procesu współpracy? Przejdź do sekcji kontaktowej — napisz wiadomość lub zadzwoń, i opowiedz, czego dokładnie potrzebujesz.</p>
+    <a class="kt-cta__btn" href="/kontakt">
+      <span class="kt-cta__clip" aria-hidden="true"><span class="kt-cta__sheen"></span></span>
+      <span class="kt-cta__label">Skontaktuj się ze mną</span>
+      <span class="kt-cta__arrow" aria-hidden="true">→</span>
+    </a>
+  </div>
+  <!-- ↑ dokładny zakres eksportu ↑ -->
+</div>
+</body>
+</html>

@@ -21,6 +21,7 @@ const PAGES = [
     lang: "pl",
     title: "Polityka prywatności — hadrianm.pl",
     backHref: "/",
+    contactHref: "/kontakt/",
     altHref: "/en/privacy-policy/",
     nip: "NIP: 8322016376",
   },
@@ -29,6 +30,7 @@ const PAGES = [
     lang: "en",
     title: "Privacy policy — hadrianm.pl",
     backHref: "/en/",
+    contactHref: "/en/contact/",
     altHref: "/polityka-prywatnosci/",
     nip: "NIP): 8322016376",
   },
@@ -61,9 +63,11 @@ for (const p of PAGES) {
       p.backHref,
     );
     await expect(page.locator(".pp-lang")).toHaveAttribute("href", p.altHref);
+    // CTA formularza prowadzi na podstronę kontaktu (migracja:
+    // docs/analiza-podstrona-kontakt.md).
     await expect(page.locator(".pp-foot a")).toHaveAttribute(
       "href",
-      `${p.backHref}#contact`,
+      p.contactHref,
     );
   });
 
@@ -79,15 +83,19 @@ for (const p of PAGES) {
   });
 }
 
-test("linki polityki na stronie głównej celują w podstrony (PL i EN)", async ({
+test("linki polityki celują w podstrony: stopka głównej + nota na /kontakt/ (PL i EN)", async ({
   page,
 }) => {
-  for (const [path, lang] of [
-    ["/", "pl"],
-    ["/en/", "en"],
+  // Nota RODO (.kt-note) żyje od migracji przy formularzu na /kontakt/
+  // (docs/analiza-podstrona-kontakt.md); na głównej został footer.
+  for (const [home, contactPath, lang] of [
+    ["/", "/kontakt/", "pl"],
+    ["/en/", "/en/contact/", "en"],
   ] as const) {
-    await gotoReady(page, path);
     const href = ui[lang]["contact.policyHref"];
+    await gotoReady(page, home);
+    await expect(page.locator(`.ft-leg a[href="${href}"]`)).toBeAttached();
+    await gotoReady(page, contactPath);
     await expect(page.locator(`.kt-note a[href="${href}"]`)).toBeAttached();
     await expect(page.locator(`.ft-leg a[href="${href}"]`)).toBeAttached();
   }

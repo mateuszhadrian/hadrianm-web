@@ -1,5 +1,5 @@
 // Sekcja „Kontakt" — choreografia wejść (port kontakt.js z referencji;
-// wzorzec FAQ/Oferta: zero pinów, zero scrubu na treści). Cztery
+// wzorzec FAQ/Oferta: zero pinów, zero scrubu na treści). Trzy
 // ScrollTriggery `once: true` dodają klasy `.on` (toggleClass), całą
 // animację robi CSS transition — stagger pól to transition-delay z --d.
 // Desktop dodatkowo: leniwy parallax ghosta „KONTAKT" (sam transform).
@@ -17,7 +17,6 @@ import {
 } from "@/scripts/section-helpers";
 import {
   CONTACT_DESKTOP_MIN_PX,
-  CONTACT_FOOTER_START,
   CONTACT_FRAME_START,
   CONTACT_GHOST_PARALLAX,
   CONTACT_LEAD_START,
@@ -35,13 +34,11 @@ export function initContactScroll(): void {
   const ghost = q(".kt-ghost");
   const side = q(".kt-side");
   const frame = q(".kt-frame");
-  const footer = q(".ft"); // współdzielony Footer.astro wchłonięty w sekcję
 
-  /* ── wejścia: 4 × once → klasa .on (animuje CSS transition) ── */
+  /* ── wejścia: 3 × once → klasa .on (animuje CSS transition) ── */
   if (lead && ghost) revealOnce(lead, CONTACT_LEAD_START, [lead, ghost]);
   if (side) revealOnce(side, CONTACT_SIDE_START);
   if (frame) revealOnce(frame, CONTACT_FRAME_START);
-  if (footer) revealOnce(footer, CONTACT_FOOTER_START);
 
   /* ── desktop: leniwy parallax ghosta (sam transform, scrub) ── */
   motionMedia(CONTACT_DESKTOP_MIN_PX, (isDesktop) => {

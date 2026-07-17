@@ -1,0 +1,429 @@
+---
+// Banner CTA „Kontakt" na stronie głównej — zajawka sekcji przeniesionej
+// na podstronę /kontakt/ (plan: docs/analiza-podstrona-kontakt.md).
+// Port 1:1 zakresu eksportu referencji docs/design/kontakt-baner.html
+// (klasy kt-cta__* bez zmian); id="contact" ZOSTAJE — stare linki
+// /#contact lądują na bannerze, a warstwa crossfade [data-bg="contact"]
+// w Home.astro dalej ma swój cel. Finał strony głównej: sekcja 100vh
+// z CTA na środku i WSPÓŁDZIELONYM footerem dociśniętym do dołu (dno
+// strony = banner wycentrowany + stopka na dole viewportu).
+// Animacje ringów/sheen/pulsu CSS-only, tylko desktop ≥861px i tylko
+// przy prefers-reduced-motion: no-preference (bramka jak w referencji).
+// Desktop dodatkowo: „odzoomowanie" CTA scrubem przy wjeździe w sekcję
+// (kontakt-baner-scroll.ts, ładowany dynamicznie z bramki motion; stan
+// startowy scale uzbraja klasa .js — bez JS i przy reduce banner stoi
+// statycznie w skali 1).
+import { navItems, navLabel } from "@/i18n/nav";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import Footer from "@/components/Footer.astro";
+import { CONTACT_PATH } from "@/lib/routes";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const item = navItems.find((n) => n.id === "contact");
+const label = item ? navLabel(item, lang) : "Kontakt";
+---
+
+<section id="contact" class="ktb" aria-label={label}>
+  <script is:inline>
+    // Bez JS banner zostaje statyczny w skali 1 (fallback); klasa .js
+    // uzbraja desktopowy stan startowy zooma (wzorzec sekcji).
+    document.currentScript?.closest("section")?.classList.add("js");
+  </script>
+
+  <div class="ktb-stage">
+    <div class="kt-cta">
+      <p class="kt-cta__status">
+        <span class="kt-cta__dot" aria-hidden="true">
+          <span class="kt-cta__ring kt-cta__ring--1"></span>
+          <span class="kt-cta__ring kt-cta__ring--2"></span>
+          <span class="kt-cta__dia"></span>
+        </span>
+        {t("contact.stOn")}
+      </p>
+      <h2 class="kt-cta__head">{t("contact.kick")}</h2>
+      <p class="kt-cta__intro">{t("contact.bannerIntro")}</p>
+      <a class="kt-cta__btn" href={CONTACT_PATH[lang]}>
+        <span class="kt-cta__clip" aria-hidden="true"
+          ><span class="kt-cta__sheen"></span></span
+        >
+        <span class="kt-cta__label">{t("contact.bannerCta")}</span>
+        <span class="kt-cta__arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </div>
+
+  {
+    /* Współdzielony footer osadzony w sekcji (finał strony: na dnie scrolla
+       CTA stoi na środku viewportu, stopka na jego dole); wymiary kontenera
+       jak .abp-foot na podstronach. */
+  }
+  <div class="ktb-foot">
+    <Footer lang={lang} />
+  </div>
+</section>
+
+<script>
+  // Desktopowe „odzoomowanie" CTA tylko przy dozwolonym ruchu — ta sama
+  // bramka co Lenis w BaseLayout; gałąź desktop/mobile rozstrzyga
+  // motionMedia w module (mobile bez zooma).
+  if (
+    document.querySelector("#contact.ktb") &&
+    matchMedia("(prefers-reduced-motion: no-preference)").matches
+  ) {
+    import("./kontakt-baner-scroll").then((m) => m.initKontaktBaner());
+  }
+</script>
+
+<style>
+  /* ═══ Banner „Kontakt" — wartości „zamrożone" z referencji
+     docs/design/kontakt-baner.html (zakres eksportu): gap 22/30px ·
+     head 58/112px · rytm animacji 3.6s. Tokeny globalne tam, gdzie
+     wartości zgodne (--kt-ink → --ink, --kt-accent → --accent,
+     --kt-glow → --glow); muted referencji (0.62) ≠ globalne --muted
+     (0.58) → wartość lokalna; #180A08 (tekst na jasnym buttonie) bez
+     odpowiednika globalnego → lokalnie (wzorzec SolidButton).
+     UWAGA: @media (861px) MUSI być równe CONTACT_DESKTOP_MIN_PX
+     (contact-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
+  .ktb {
+    --ktb-muted: rgba(245, 240, 236, 0.62);
+    --kt-cz: cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    /* Rama = AKTUALNIE widoczna wysokość viewportu (dvh), nie „duży"
+       viewport (vh): iOS Safari przy dnie scrolla trzyma zminimalizowany
+       dolny pasek, więc rama 100vh była wyższa niż to, co widać, i CTA
+       wypadało powyżej środka ekranu (iPhone 12 mini / SE — korekta
+       Mateusza). Z dvh odstęp góra viewportu ↔ status jest co do piksela
+       równy odstępowi button ↔ dół viewportu na każdym urządzeniu;
+       koszt: wysokość ostatniej sekcji żyje ze stanem paska URL
+       (zaakceptowana rodzina „skoku paska"). 100vh = fallback iOS <15.4. */
+    min-height: 100vh;
+    min-height: 100dvh;
+    /* Grid-stack: scena i stopka w TEJ SAMEJ komórce — CTA centruje się
+       względem pełnej ramy, stopka nakłada się na jej dole. Budżet
+       pionowy licz od WIDOCZNEJ wysokości viewportu (SE 2020 z paskami
+       Safari ≈ 548px, NIE 667 z ekranu). Niskie telefony domyka wariant
+       KOMPAKT, skrajne przypadki flow-fallback (media queries niżej). */
+    display: grid;
+    /* zzoomowane CTA (scale > 1) nie może rozpychać strony w trakcie wjazdu */
+    overflow: hidden;
+  }
+
+  /* Scena CTA: pełna rama sekcji, treść na jej środku. */
+  .ktb-stage {
+    grid-area: 1 / 1;
+    display: grid;
+    place-items: center;
+    padding: 96px 28px;
+  }
+
+  /* Kontener współdzielonego Footer.astro — nałożony na dole ramy;
+     wymiary jak .abp-foot na podstronach (sam footer jest bezmarginesowy,
+     rodzic kontroluje layout). */
+  .ktb-foot {
+    grid-area: 1 / 1;
+    align-self: end;
+    justify-self: center;
+    z-index: 1;
+    width: 100%;
+    max-width: 1320px;
+    padding: 0 5vw 42px;
+  }
+
+  /* Flow-fallback (stopka pod sceną, CTA na środku reszty) tam, gdzie
+     geometria nie domyka nawet kompaktu: szerokość <360px (SE 1 gen
+     320×568 — CTA ~381 + stopka ~150; to także projekt e2e
+     webkit-iphone-se), landscape <540px wysokości, niskie okna desktop
+     <640px (desktopowe CTA + stopka kolidują ~<626px). Portret SE 2020
+     celowo NIE wpada tutaj — obsługuje go KOMPAKT. */
+  @media (max-width: 359.98px),
+    (max-width: 860.98px) and (max-height: 540px),
+    (min-width: 861px) and (max-height: 640px) {
+    .ktb {
+      display: flex;
+      flex-direction: column;
+    }
+    .ktb-stage {
+      flex: 1;
+    }
+    .ktb-foot {
+      margin-inline: auto;
+    }
+  }
+
+  .kt-cta {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 22px;
+    max-width: 640px;
+    margin-inline: auto;
+    font-family: var(--font-body), sans-serif;
+    color: var(--ink);
+  }
+  .kt-cta__status {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    margin: 0;
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--ktb-muted);
+  }
+  .kt-cta__dot {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    width: 9px;
+    height: 9px;
+    flex-shrink: 0;
+  }
+  .kt-cta__dia {
+    width: 9px;
+    height: 9px;
+    transform: rotate(45deg);
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(var(--glow), 0.7);
+  }
+  .kt-cta__ring {
+    display: none;
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    transform: rotate(45deg) scale(1);
+    border: 1.5px solid var(--accent);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .kt-cta__head {
+    margin: 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: 58px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+  }
+  .kt-cta__intro {
+    margin: 0;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ktb-muted);
+    text-wrap: pretty;
+  }
+  .kt-cta__btn {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    font: inherit;
+    font-weight: 700;
+    font-size: 16px;
+    color: #180a08;
+    background: #f5f0ec;
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-decoration: none;
+    box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.8);
+    cursor: pointer;
+    transition:
+      transform 0.25s,
+      box-shadow 0.25s,
+      background 0.25s;
+  }
+  .kt-cta__label {
+    position: relative;
+    z-index: 2;
+  }
+  .kt-cta__arrow {
+    position: relative;
+    z-index: 2;
+    color: var(--accent);
+    transition: transform 0.3s var(--kt-cz);
+  }
+  .kt-cta__clip {
+    display: none;
+  }
+  .kt-cta__btn::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 13px;
+    border: 1.5px solid var(--accent);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .kt-cta__btn:active {
+    transform: translateY(1px);
+  }
+  .kt-cta__btn:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  /* KOMPAKT niskich telefonów (portret SE 2020: widoczne ~548px; Lenis
+     scrolluje programowo, więc pasek Safari się nie zwija): ciaśniejsze
+     gapy CTA i stopki zbijają budżet z 349+2×146=641 do ~331+2×~104=539
+     ≤ 548 — grid-stack zostaje. 12 mini (~712px) nie łapie progu 700.
+     Blok MUSI stać PO bazowych regułach .kt-cta/.ktb-foot (ta sama
+     specyficzność — wygrywa kolejność). */
+  @media (max-width: 860.98px) and (max-height: 700px) {
+    .kt-cta {
+      gap: 16px;
+    }
+    .ktb-foot {
+      padding-bottom: 20px;
+    }
+    .ktb-foot :global(.ft-row) {
+      padding-top: 14px;
+      gap: 12px;
+    }
+  }
+
+  /* DESKTOP (≥861px) */
+  @media (min-width: 861px) {
+    .kt-cta {
+      gap: 30px;
+      max-width: 660px;
+    }
+    .kt-cta__head {
+      font-size: 112px;
+    }
+    .kt-cta__intro {
+      font-size: 18.5px;
+      max-width: 640px;
+    }
+    .kt-cta__btn {
+      width: auto;
+      font-size: 17px;
+      border-radius: 6px;
+      padding: 19px 30px;
+      box-shadow: 0 18px 46px -20px rgba(0, 0, 0, 0.75);
+    }
+    .kt-cta__btn::after {
+      border-radius: 9px;
+    }
+    .kt-cta__btn:hover {
+      background: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 24px 56px -22px rgba(0, 0, 0, 0.85);
+    }
+    .kt-cta__btn:hover .kt-cta__arrow {
+      transform: translateX(4px);
+    }
+    .kt-cta__ring {
+      display: block;
+    }
+    .kt-cta__clip {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .kt-cta__sheen {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        100deg,
+        transparent 34%,
+        rgba(var(--glow), 0.32) 50%,
+        transparent 66%
+      );
+      transform: translateX(-130%);
+    }
+  }
+
+  /* ANIMACJE — tylko desktop + brak redukcji ruchu */
+  @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
+    /* Stan startowy „odzoomowania" (uzbrajany klasą .js — bez JS banner
+       stoi w skali 1): scrub w kontakt-baner-scroll.ts prowadzi scale → 1
+       przy wjeździe sekcji. Literał MUSI być równy KTB_ZOOM_FROM
+       (contact-config.ts). */
+    .ktb.js .kt-cta {
+      transform: scale(1.4);
+    }
+    .kt-cta__ring--1 {
+      animation: kt-ringOut 3.6s ease-out infinite;
+    }
+    .kt-cta__ring--2 {
+      animation: kt-ringOut 3.6s ease-out infinite 1.8s;
+    }
+    .kt-cta__sheen {
+      animation: kt-sweep 3.6s ease-in-out infinite;
+    }
+    .kt-cta__btn {
+      animation: kt-btnPulse 3.6s ease-in-out infinite;
+    }
+    .kt-cta__btn::after {
+      animation: kt-ctaRing 3.6s ease-out infinite;
+    }
+  }
+  @keyframes kt-ringOut {
+    0% {
+      transform: rotate(45deg) scale(1);
+      opacity: 0.6;
+    }
+    80% {
+      opacity: 0;
+    }
+    100% {
+      transform: rotate(45deg) scale(3.4);
+      opacity: 0;
+    }
+  }
+  @keyframes kt-sweep {
+    0% {
+      transform: translateX(-130%);
+    }
+    26% {
+      transform: translateX(130%);
+    }
+    100% {
+      transform: translateX(130%);
+    }
+  }
+  @keyframes kt-btnPulse {
+    0% {
+      transform: scale(1);
+    }
+    12% {
+      transform: scale(1.028);
+    }
+    28% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes kt-ctaRing {
+    0% {
+      transform: scale(1);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.5;
+    }
+    28% {
+      transform: scale(1.15);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.15);
+      opacity: 0;
+    }
+  }
+</style>

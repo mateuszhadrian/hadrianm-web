@@ -10,6 +10,7 @@
 // treść (markup startuje z aria-expanded="true"; init zamyka).
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
+import { CONTACT_PATH } from "@/lib/routes";
 
 interface Props {
   lang: Lang;
@@ -96,18 +97,17 @@ const faqSchema = JSON.stringify({
   </ol>
   <div class="fq-line fq-endline" aria-hidden="true"></div>
 
-  <!-- domknięcie → kontakt -->
+  <!-- domknięcie → podstrona kontaktu (nawigacja natywnym linkiem) -->
   <div class="fq-cta">
     <span class="fq-dia" aria-hidden="true"></span>
     <div class="fq-mono">{t("faq.ctaMono")}</div>
-    <a class="fq-link" href="#contact"
+    <a class="fq-link" href={CONTACT_PATH[lang]}
       >{t("faq.ctaLink")} <span class="arr" aria-hidden="true">→</span></a
     >
   </div>
 </section>
 
 <script>
-  import { handleAnchorClick } from "@/scripts/anchors";
   import { initFaqAccordion } from "./faq-accordion";
 
   // Animacje (wejścia + tween akordeonu) tylko przy dozwolonym ruchu —
@@ -120,15 +120,6 @@ const faqSchema = JSON.stringify({
     } else {
       initFaqAccordion(faqSection);
     }
-  }
-
-  // Kotwica CTA (#contact): wspólny handler kotwic (@/scripts/anchors).
-  for (const a of document.querySelectorAll<HTMLAnchorElement>(
-    '#faq a[href^="#"]',
-  )) {
-    a.addEventListener("click", (e) =>
-      handleAnchorClick(e, a.getAttribute("href")),
-    );
   }
 </script>
 

@@ -1,16 +1,11 @@
-// Sekcja „FAQ": akordeon (jedno otwarte naraz, aria-expanded), CTA → #contact,
-// fallback bez JS (wszystko rozwinięte — SEO), JSON-LD FAQPage, wersja EN
-// i zachowanie przy prefers-reduced-motion: reduce (patrz komentarz niżej).
+// Sekcja „FAQ": akordeon (jedno otwarte naraz, aria-expanded), CTA →
+// podstrona /kontakt/, fallback bez JS (wszystko rozwinięte — SEO), JSON-LD
+// FAQPage, wersja EN i prefers-reduced-motion: reduce (komentarz niżej).
 // Choreografię wejść weryfikuje sweep tests/visual/faq.spec.ts.
 // Decyzje: docs/analiza-sekcja-faq.md.
 import { expect, test, type Page } from "@playwright/test";
 import { usePreviewGuard } from "../helpers/guards";
-import {
-  expectSectionAtTop,
-  gotoReady,
-  settle,
-  syncLenis,
-} from "../helpers/scroll";
+import { gotoReady, settle } from "../helpers/scroll";
 
 usePreviewGuard();
 
@@ -54,22 +49,18 @@ test("akordeon: otwiera, domyka poprzednie, zamyka (jedno otwarte naraz)", async
   expect(await answerHeight(page, 2)).toBe(0);
 });
 
-test("CTA (Napisz do mnie) skacze do #contact (hash + pozycja)", async ({
+test("CTA (Napisz do mnie) nawiguje na podstronę /kontakt/", async ({
   page,
 }) => {
   await gotoReady(page);
   const cta = page.locator("#faq .fq-link");
   await cta.scrollIntoViewIfNeeded();
   await settle(page, 800);
-  // Handler CTA liczy cel z wewnętrznej pozycji Lenisa — po natywnym
-  // scrollu Playwrighta trzeba ją zsynchronizować (patrz syncLenis).
-  await syncLenis(page);
+  // Od migracji kontaktu (docs/analiza-podstrona-kontakt.md) CTA to zwykły
+  // link na podstronę — pełna nawigacja zamiast skoku kotwicznego.
   await cta.click();
-  await settle(page);
-  await expect(page).toHaveURL(/#contact$/);
-  // Skok immediate — cel ma siąść na górze viewportu (retry: sporadyczny brak
-  // precyzji Lenisa pod obciążeniem N warstw tła).
-  await expectSectionAtTop(page, "contact");
+  await expect(page).toHaveURL(/\/kontakt\/?$/);
+  await expect(page.locator("#contact .kt-form")).toBeVisible();
 });
 
 test.describe("fallback bez JS", () => {

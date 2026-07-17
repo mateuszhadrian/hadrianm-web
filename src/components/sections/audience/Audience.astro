@@ -12,7 +12,7 @@
 // MoreLink na podstronę) — bez stosu, licznika, cyfr i modułu scrolla.
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
-import { AUDIENCE_PATH } from "@/lib/routes";
+import { AUDIENCE_PATH, CONTACT_PATH } from "@/lib/routes";
 import MoreLink from "@/components/ui/MoreLink.astro";
 import AudienceMockWindow from "./AudienceMockWindow.astro";
 import ekranHome from "@/assets/audience/ekran-home.webp";
@@ -188,12 +188,9 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
               </div>
             )}
             {i === 3 && (
-              // CTA-placeholder (decyzja D5 analizy): sekcja Oferta też
-              // będzie migrowana na podstronę — cel wskażemy wtedy; skrypt
-              // niżej blokuje natywny skok do góry (href="#"). Świadomy,
-              // TYMCZASOWY wyjątek a11y — element wróci do bycia linkiem.
-              // eslint-disable-next-line astro/jsx-a11y/anchor-is-valid
-              <a class="dk-cta" href="#">
+              // CTA rozdziału 03 → podstrona kontaktu (migracja sekcji
+              // kontakt: docs/analiza-podstrona-kontakt.md).
+              <a class="dk-cta" href={CONTACT_PATH[lang]}>
                 {t("audience.cta")}
                 <span class="arr" aria-hidden="true">
                   →
@@ -234,11 +231,6 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
   ) {
     import("./audience-scroll").then((m) => m.initAudienceScroll());
   }
-
-  // CTA rozdziału 03 to placeholder (href="#") do czasu migracji sekcji
-  // Oferta na podstronę — blokujemy natywny skok do góry strony.
-  const cta = document.querySelector<HTMLAnchorElement>("#audience .dk-cta");
-  cta?.addEventListener("click", (e) => e.preventDefault());
 </script>
 
 <style>

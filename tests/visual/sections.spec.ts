@@ -12,7 +12,10 @@ import { FREEZE } from "../helpers/visual";
 // głównej to od migracji na podstrony STATYCZNE zajawki
 // (docs/analiza-podstrona-dla-kogo.md, docs/analiza-podstrona-o-mnie.md) —
 // element-screenshot wystarcza; pełne animacje sweepują audience.spec.ts
-// na /dla-kogo/ i about.spec.ts na /o-mnie/.
+// na /dla-kogo/ i about.spec.ts na /o-mnie/. Contact to od migracji
+// (docs/analiza-podstrona-kontakt.md) statyczny banner CTA (animacje
+// ringów/sheen zatrzymuje freeze.css); formularz zrzuca
+// contact-index.spec.ts na /kontakt/.
 const SECTIONS = ["audience", "work", "about", "contact"];
 
 usePreviewGuard();
@@ -30,12 +33,13 @@ for (const id of SECTIONS) {
     const section = page.locator(`#${id}`);
     await section.scrollIntoViewIfNeeded();
     await settle(page);
-    // #contact na chromium-pixel-5 (DPR 2.75) to wysoka sekcja PRZEZROCZYSTA
-    // nad globalnym ambientem — element-screenshot bywa niestabilny między
-    // dwoma kolejnymi próbami (subpikselowy jitter stitchowania, ~1% pikseli;
-    // ta sama rodzina co flaky klatki pixel-5 w hero.spec.ts). Podniesiony
-    // próg pochłania jitter zarówno w kontroli stabilności, jak i w
-    // porównaniu z baseline'em; realną regresję (>2% pikseli) i tak złapie.
+    // #contact (dziś ~jednoekranowy banner) na chromium-pixel-5 (DPR 2.75)
+    // to sekcja PRZEZROCZYSTA nad globalnym ambientem — element-screenshot
+    // bywa niestabilny między dwoma kolejnymi próbami (subpikselowy jitter
+    // stitchowania; ta sama rodzina co flaky klatki pixel-5 w hero.spec.ts).
+    // Podniesiony próg pochłania jitter zarówno w kontroli stabilności, jak
+    // i w porównaniu z baseline'em; realną regresję (>2% pikseli) i tak
+    // złapie.
     const ratio =
       id === "contact" && testInfo.project.name === "chromium-pixel-5"
         ? 0.02

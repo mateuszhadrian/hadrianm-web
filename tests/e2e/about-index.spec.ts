@@ -6,8 +6,9 @@
 // Plan: docs/analiza-podstrona-o-mnie.md.
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
+import { CONTACT_PATH } from "../../src/lib/routes";
 import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
-import { gotoReady, scrollPageTo, settle } from "../helpers/scroll";
+import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
 
@@ -64,8 +65,11 @@ for (const p of PAGES) {
         "loading",
         "eager",
       );
-      // CTA finału = placeholder do czasu migracji sekcji kontaktu.
-      await expect(section.locator(".om-cta")).toHaveAttribute("href", "#");
+      // CTA finału prowadzi na podstronę kontaktu.
+      await expect(section.locator(".om-cta")).toHaveAttribute(
+        "href",
+        CONTACT_PATH[p.lang],
+      );
       // Zajawkowy button SolidButton żyje tylko na stronie głównej.
       await expect(section.locator(".om-morewrap")).toHaveCount(0);
     });
@@ -179,22 +183,17 @@ test.describe("scroll mobile: natywny (tryb smoothScroll='desktop')", () => {
   });
 });
 
-test.describe("CTA-placeholder finału nie nawiguje", () => {
+test.describe("CTA finału nawiguje na podstronę kontaktu", () => {
   test.skip(({ isMobile }) => !isMobile, "we flow mobile CTA jest widoczne");
 
-  test("tap w CTA nie zmienia URL ani nie skacze na górę", async ({ page }) => {
+  test("tap w CTA przechodzi na /kontakt/", async ({ page }) => {
     await gotoReady(page, "/o-mnie/");
     const cta = page.locator("#about .om-cta");
     await cta.scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
-    const yBefore = await page.evaluate(() => window.scrollY);
     await cta.click();
-    await settle(page);
-    // preventDefault: bez natywnego skoku do góry i bez „#" w adresie.
-    expect(new URL(page.url()).hash).toBe("");
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(
-      yBefore - 50,
-    );
+    await expect(page).toHaveURL(/\/kontakt\/?$/);
+    await expect(page.locator("#contact .kt-form")).toBeAttached();
   });
 });
 
