@@ -4,6 +4,7 @@ import { navItems, navLabel } from "@/i18n/nav";
 import {
   ABOUT_PATH,
   AUDIENCE_PATH,
+  CONTACT_PATH,
   HOME_PATH,
   WORK_INDEX_PATH,
 } from "@/lib/routes";
@@ -39,6 +40,7 @@ const SUBPAGE_PATHS: Partial<Record<string, Record<Lang, string>>> = {
   work: WORK_INDEX_PATH,
   audience: AUDIENCE_PATH,
   about: ABOUT_PATH,
+  contact: CONTACT_PATH,
 };
 const itemHref = (id: string): string =>
   SUBPAGE_PATHS[id]?.[lang] ?? (onHome ? `#${id}` : `${homeHref}#${id}`);

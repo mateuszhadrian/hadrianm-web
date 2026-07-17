@@ -7,8 +7,9 @@
 // mobile natywnie). Lustro audience-index.spec.ts.
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
+import { CONTACT_PATH } from "../../src/lib/routes";
 import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
-import { gotoReady, scrollPageTo, settle } from "../helpers/scroll";
+import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
 
@@ -108,7 +109,7 @@ for (const p of PAGES) {
         await expect(section.locator(".of-lead")).toHaveCount(0);
       });
     } else {
-      test(`wariant packages: grid P4, dedykowane, opcje, CTA-placeholdery`, async ({
+      test(`wariant packages: grid P4, dedykowane, opcje, CTA → kontakt`, async ({
         page,
       }) => {
         await gotoReady(page, p.path);
@@ -117,11 +118,14 @@ for (const p of PAGES) {
         await expect(section.locator(".pk-col")).toHaveCount(3);
         await expect(section.locator(".pk-dedy")).toBeAttached();
         await expect(section.locator(".pk-extra .xitem")).toHaveCount(3);
-        // CTA = placeholdery do czasu migracji sekcji kontakt (D3 analizy).
+        // CTA pakietów i wyceny dedykowanej prowadzą na podstronę kontaktu.
         for (const cta of await section.locator(".pk-cta").all()) {
-          await expect(cta).toHaveAttribute("href", "#");
+          await expect(cta).toHaveAttribute("href", CONTACT_PATH[p.lang]);
         }
-        await expect(section.locator(".dlink")).toHaveAttribute("href", "#");
+        await expect(section.locator(".dlink")).toHaveAttribute(
+          "href",
+          CONTACT_PATH[p.lang],
+        );
         // Procesu i intro tu nie ma.
         await expect(section.locator(".of-step")).toHaveCount(0);
         await expect(section.locator(".of-lead")).toHaveCount(0);
@@ -255,22 +259,15 @@ test.describe("scroll mobile: natywny (tryb smoothScroll='desktop')", () => {
   }
 });
 
-test.describe("CTA-placeholdery pakietów nie nawigują", () => {
-  test("klik w CTA pakietu nie zmienia URL ani nie skacze na górę", async ({
-    page,
-  }) => {
+test.describe("CTA pakietów nawigują na podstronę kontaktu", () => {
+  test("klik w CTA pakietu przechodzi na /kontakt/", async ({ page }) => {
     await gotoReady(page, "/pakiety/");
     const cta = page.locator("#services .pk-col.mid .pk-cta");
     await cta.scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
-    const yBefore = await page.evaluate(() => window.scrollY);
     await cta.click();
-    await settle(page);
-    // preventDefault: bez natywnego skoku do góry i bez „#" w adresie.
-    expect(new URL(page.url()).hash).toBe("");
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(
-      yBefore - 50,
-    );
+    await expect(page).toHaveURL(/\/kontakt\/?$/);
+    await expect(page.locator("#contact .kt-form")).toBeAttached();
   });
 });
 

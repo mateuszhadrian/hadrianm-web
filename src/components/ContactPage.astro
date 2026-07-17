@@ -1,0 +1,101 @@
+---
+// Podstrona „Kontakt" (PL: /kontakt/, EN: /en/contact/) — sekcja Contact
+// z formularzem przeniesiona W CAŁOŚCI ze strony głównej (tam został banner
+// KontaktBaner.astro); plan: docs/analiza-podstrona-kontakt.md. Wzorzec
+// chrome'u strony = AboutPage.astro (BackButton w miejscu brandu,
+// współdzielony Footer, jedna statyczna warstwa ambientu — RED, jak tło
+// sekcji na głównej), scroll NATYWNY (smoothScroll={false}, jak
+// /realizacje/) — sekcja nie ma pinowanych scen, a formularz najlepiej
+// czuje się bez pośrednika (fokus pól, autoscroll do błędów walidacji).
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Navbar from "@/components/navbar/Navbar.astro";
+import AmbientBackground from "@/components/backgrounds/AmbientBackground.astro";
+import Contact from "@/components/sections/contact/Contact.astro";
+import BackButton from "@/components/ui/BackButton.astro";
+import Footer from "@/components/Footer.astro";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import { CONTACT_PATH, HOME_PATH } from "@/lib/routes";
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+---
+
+<BaseLayout
+  title={t("contactPage.title")}
+  lang={lang}
+  description={t("contactPage.description")}
+  alternates={CONTACT_PATH}
+  smoothScroll={false}
+>
+  <div class="ktp-bg" aria-hidden="true">
+    <AmbientBackground variant="red" />
+  </div>
+
+  <Navbar lang={lang} langHrefs={CONTACT_PATH} showBrand={false} />
+
+  {
+    /* „Wstecz" w miejscu brandu — CELOWO poza barem navbara: fixed, więc nie
+       chowa się razem z nim przy scrollu; działa jak wstecz przeglądarki
+       (globalny mechanizm a[data-back], fallback → strona główna). Wrapper,
+       nie klasa na komponencie: scoped CSS (strategia atrybutowa) nie łapie
+       elementów renderowanych przez komponent potomny. */
+  }
+  <div class="ktp-back">
+    <BackButton href={HOME_PATH[lang]} label={t("contactPage.back")} />
+  </div>
+
+  <main class="ktp">
+    <Contact lang={lang} />
+  </main>
+
+  {/* Współdzielony footer strony (ten sam co finał strony głównej). */}
+  <div class="ktp-foot">
+    <Footer lang={lang} />
+  </div>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    background: #000;
+  }
+
+  /* Jedna statyczna warstwa ambientu — bez crossfade'u strony głównej
+     (podczas jazdy przez sekcję na głównej tłem był wariant red). */
+  .ktp-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: #000;
+    pointer-events: none;
+  }
+
+  /* Pozycja = slot brandu w navbarze (te same clampy paddingu paska);
+     korekta -12px centruje 46-px kółko na linii treści paska. z-index nad
+     nav-root (50), bo przycisk ma być widoczny ZAWSZE — także gdy pasek
+     schowa się przy scrollu w dół. */
+  .ktp-back {
+    position: fixed;
+    z-index: 60;
+    left: clamp(1.25rem, 4vw, 2.75rem);
+    top: calc(clamp(1.25rem, 3.2vh, 1.9rem) - 12px);
+  }
+
+  .ktp {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ── Stopka: kontener współdzielonego Footer.astro (szerokość jak na
+     pozostałych podstronach; sam footer jest bezmarginesowy — rodzic
+     kontroluje layout) ── */
+  .ktp-foot {
+    position: relative;
+    z-index: 1;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 5vw 42px;
+  }
+</style>

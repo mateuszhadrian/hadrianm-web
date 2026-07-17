@@ -25,6 +25,16 @@ test.describe("smoke", { tag: "@prod-smoke" }, () => {
     expect(issues()).toEqual([]);
   });
 
+  test("/kontakt/ wstaje: 200, formularz w DOM (PL + EN)", async ({ page }) => {
+    // Podstrona z formularzem (docs/analiza-podstrona-kontakt.md) — deploy
+    // musi ją serwować; sam endpoint sonduje osobny test niżej.
+    for (const path of ["/kontakt/", "/en/contact/"]) {
+      const res = await page.goto(path, { waitUntil: "networkidle" });
+      expect(res?.status(), path).toBe(200);
+      await expect(page.locator("#contact .kt-form")).toBeAttached();
+    }
+  });
+
   test("kluczowe zasoby odpowiadają", async ({ request }) => {
     for (const path of ["/favicon.svg", "/site.webmanifest", "/og-image.png"]) {
       const res = await request.get(path);

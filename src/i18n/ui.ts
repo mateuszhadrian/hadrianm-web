@@ -288,6 +288,13 @@ export const ui = {
     "contact.policyHref": "/polityka-prywatnosci/",
     "contact.footPolicy": "Polityka prywatności",
     "contact.footUp": "Do góry ↑",
+    "contact.bannerIntro":
+      "Chcesz zlecić stworzenie nowej strony, potrzebujesz wsparcia przy aplikacji lub po prostu masz pytania dotyczące procesu współpracy? Przejdź do sekcji kontaktowej — napisz wiadomość lub zadzwoń, i opowiedz, czego dokładnie potrzebujesz.",
+    "contact.bannerCta": "Skontaktuj się ze mną",
+    "contactPage.title": "Kontakt — hadrianm.pl",
+    "contactPage.description":
+      "Skontaktuj się ze mną — formularz kontaktowy, e-mail i telefon. Napisz, czego potrzebujesz: nowa strona, wsparcie aplikacji czy pytania o proces współpracy. Odpowiadam do 24 h w dni robocze.",
+    "contactPage.back": "Wróć",
   },
   en: {
     "meta.title": "hadrianm.pl — web & app studio",
@@ -569,5 +576,12 @@ export const ui = {
     "contact.policyHref": "/en/privacy-policy/",
     "contact.footPolicy": "Privacy policy",
     "contact.footUp": "Back to top ↑",
+    "contact.bannerIntro":
+      "Want to commission a new website, need support with your app, or simply have questions about the collaboration process? Head over to the contact page — send a message or give me a call, and tell me exactly what you need.",
+    "contact.bannerCta": "Get in touch with me",
+    "contactPage.title": "Contact — hadrianm.pl",
+    "contactPage.description":
+      "Get in touch — contact form, e-mail and phone. Tell me what you need: a new website, app support or questions about the process. I reply within 24 h on business days.",
+    "contactPage.back": "Back",
   },
 } as const;

@@ -12,7 +12,7 @@ import { Image } from "astro:assets";
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
 import SolidButton from "@/components/ui/SolidButton.astro";
-import { ABOUT_PATH } from "@/lib/routes";
+import { ABOUT_PATH, CONTACT_PATH } from "@/lib/routes";
 import { ABOUT_DESKTOP_MIN_PX } from "./about-config";
 import portrait from "@/assets/about/portrait.webp";
 import portraitBlur from "@/assets/about/portrait-blur.webp";
@@ -207,12 +207,9 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
               />
             </div>
             <p class="ch-para">{t("about.final.para")}</p>
-            {/* CTA-placeholder (D5 analizy podstrony): sekcja kontaktu też
-                będzie migrowana — cel wskażemy wtedy; skrypt niżej blokuje
-                natywny skok do góry (href="#"). Świadomy, TYMCZASOWY wyjątek
-                a11y — element wróci do bycia linkiem. */}
-            {/* eslint-disable-next-line astro/jsx-a11y/anchor-is-valid */}
-            <a class="om-cta" href="#">
+            {/* CTA finału → podstrona kontaktu (migracja sekcji kontakt:
+                docs/analiza-podstrona-kontakt.md). */}
+            <a class="om-cta" href={CONTACT_PATH[lang]}>
               {t("about.final.cta")}
               <span class="arr" aria-hidden="true">
                 →
@@ -253,11 +250,6 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
   ) {
     import("./about-scroll").then((m) => m.initAboutScroll());
   }
-
-  // CTA finału to placeholder (href="#") do czasu migracji sekcji kontaktu
-  // na podstronę — blokujemy natywny skok do góry strony.
-  const cta = document.querySelector<HTMLAnchorElement>("#about .om-cta");
-  cta?.addEventListener("click", (e) => e.preventDefault());
 </script>
 
 <style>

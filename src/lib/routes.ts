@@ -32,3 +32,8 @@ export const ABOUT_PATH: Record<Lang, string> = {
   pl: "/o-mnie/",
   en: "/en/about/",
 };
+
+export const CONTACT_PATH: Record<Lang, string> = {
+  pl: "/kontakt/",
+  en: "/en/contact/",
+};

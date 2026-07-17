@@ -12,7 +12,11 @@
 // (/pakiety/, bez modułu scrolla — tylko hover w CSS).
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
-import { SERVICES_PACKAGES_PATH, SERVICES_PROCESS_PATH } from "@/lib/routes";
+import {
+  CONTACT_PATH,
+  SERVICES_PACKAGES_PATH,
+  SERVICES_PROCESS_PATH,
+} from "@/lib/routes";
 import OfertaButtons from "@/components/ui/OfertaButtons.astro";
 
 interface Props {
@@ -243,11 +247,9 @@ const extras = [
                   <li>{f}</li>
                 ))}
               </ul>
-              {/* CTA-placeholder (D3 analizy): sekcja kontakt też dostanie
-                  podstronę — cel wskażemy wtedy; skrypt niżej blokuje natywny
-                  skok do góry (href="#"). Świadomy, TYMCZASOWY wyjątek a11y. */}
-              {/* eslint-disable-next-line astro/jsx-a11y/anchor-is-valid */}
-              <a class="pk-cta" href="#">
+              {/* CTA pakietu → podstrona kontaktu (migracja sekcji kontakt:
+                  docs/analiza-podstrona-kontakt.md). */}
+              <a class="pk-cta" href={CONTACT_PATH[lang]}>
                 <span class="lbl">{t("services.pk.cta")}</span>
                 <span class="arr" aria-hidden="true">
                   →
@@ -266,9 +268,8 @@ const extras = [
           <p class="ddesc">{t("services.dedy.desc")}</p>
           <div class="dright">
             <span class="dprice">{t("services.dedy.price")}</span>
-            {/* CTA-placeholder (D3) — jak pk-cta wyżej. */}
-            {/* eslint-disable-next-line astro/jsx-a11y/anchor-is-valid */}
-            <a class="dlink" href="#">
+            {/* CTA wyceny dedykowanej → podstrona kontaktu (jak pk-cta wyżej). */}
+            <a class="dlink" href={CONTACT_PATH[lang]}>
               {t("services.dedy.link")}{" "}
               <span class="arr" aria-hidden="true">
                 →
@@ -327,16 +328,6 @@ const extras = [
     matchMedia("(prefers-reduced-motion: no-preference)").matches
   ) {
     import("./services-scroll").then((m) => m.initServicesScroll());
-  }
-
-  // CTA pakietów to placeholdery (href="#") do czasu migracji sekcji
-  // kontakt na podstronę — blokujemy natywny skok do góry strony.
-  if (variant === "packages") {
-    for (const a of document.querySelectorAll<HTMLAnchorElement>(
-      '#services a[href="#"]',
-    )) {
-      a.addEventListener("click", (e) => e.preventDefault());
-    }
   }
 </script>
 

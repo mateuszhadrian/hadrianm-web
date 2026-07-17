@@ -42,6 +42,8 @@ for (const path of [
   "/en/packages/",
   "/o-mnie/",
   "/en/about/",
+  "/kontakt/",
+  "/en/contact/",
 ]) {
   test(`axe: brak naruszeń critical/serious na ${path}`, async ({
     page,

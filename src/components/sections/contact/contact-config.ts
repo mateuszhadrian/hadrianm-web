@@ -22,7 +22,12 @@ export const TURNSTILE_TIMEOUT_MS = 90_000;
 export const CONTACT_LEAD_START = "top 84%";
 export const CONTACT_SIDE_START = "top 88%";
 export const CONTACT_FRAME_START = "top 82%";
-export const CONTACT_FOOTER_START = "top 97%";
 
 /** Parallax ghosta „KONTAKT": −30 → +40 px scrub (tylko desktop). */
 export const CONTACT_GHOST_PARALLAX = [-30, 40] as const;
+
+/** Banner na stronie głównej (KontaktBaner.astro): skala startowa
+ *  „odzoomowania" CTA — scrub prowadzi ją do 1 podczas wjazdu sekcji
+ *  (tylko desktop + no-preference). UWAGA: literał scale(1.4) w stanie
+ *  startowym CSS KontaktBaner.astro MUSI być równy tej stałej. */
+export const KTB_ZOOM_FROM = 1.4;

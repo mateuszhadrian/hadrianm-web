@@ -23,5 +23,12 @@ paths:
   NIE zastępować `lenis.stop()` — w stanie stopped Lenis nadal robi
   `preventDefault` i zablokowałby natywne panowanie po zoomie; `prevent`
   ignoruje zdarzenie bez `preventDefault`.
+- Handler `pageshow` z `e.persisted` (`lenis.resize()` +
+  `ScrollTrigger.refresh()`) to NAPRAWIONY BUG powrotów przez bfcache
+  (`history.back()` z podstron, wzorzec `a[data-back]`): stronę
+  przywróconą z zamrożenia omijają resize'y, a pasek Safari zmienia
+  w międzyczasie wysokość viewportu — bez przeliczenia dno strony/stopka
+  są „przesunięte o pasek" na iOS. NIE usuwać; weryfikacja tylko na
+  fizycznym iPhonie (emulacja nie odtwarza bfcache ani paska).
 - Każda zmiana stałych = test na fizycznym macOS (gładkie kółko), myszy
   z zapadkami i telefonie (wybieg po machnięciu).

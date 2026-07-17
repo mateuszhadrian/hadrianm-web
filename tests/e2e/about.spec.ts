@@ -1,9 +1,10 @@
 // Sekcja „O mnie" — od migracji na podstronę (docs/analiza-podstrona-o-mnie.md)
 // pełny wariant żyje na /o-mnie/ (EN: /en/about/) i tam testujemy mechanikę:
 // treść PL/EN w DOM, oś desktopowa (progres 01→04, finał odblokowuje CTA),
-// reveale mobile. CTA finału to placeholder „#" do czasu migracji sekcji
-// kontaktu (nawigację-nie-nawigację weryfikuje about-index.spec.ts; tam też
-// meta/navbar/BackButton podstrony i zajawka na stronie głównej).
+// reveale mobile. CTA finału prowadzi na podstronę /kontakt/
+// (docs/analiza-podstrona-kontakt.md; nawigację weryfikuje
+// about-index.spec.ts — tam też meta/navbar/BackButton podstrony i zajawka
+// na stronie głównej).
 import { expect, test } from "@playwright/test";
 import { ABOUT_SNAP_POINTS } from "../../src/components/sections/about/about-config";
 import { usePreviewGuard } from "../helpers/guards";
@@ -27,19 +28,21 @@ async function aboutScrollAt(
   }, frac);
 }
 
-for (const { path, chapterHead, cta } of [
+for (const { path, chapterHead, cta, contactHref } of [
   {
     path: "/o-mnie/",
     chapterHead: "solidna technologia",
     cta: "Zapraszam do kontaktu",
+    contactHref: "/kontakt/",
   },
   {
     path: "/en/about/",
     chapterHead: "solid technology",
     cta: "Get in touch",
+    contactHref: "/en/contact/",
   },
 ]) {
-  test(`treść sekcji na ${path}: rozdziały, portret, CTA-placeholder`, async ({
+  test(`treść sekcji na ${path}: rozdziały, portret, CTA → kontakt`, async ({
     page,
   }) => {
     await gotoReady(page, path);
@@ -48,7 +51,7 @@ for (const { path, chapterHead, cta } of [
     await expect(about.locator(".om-ch").first()).toContainText(chapterHead);
     await expect(about.locator(".om-photo")).toHaveCount(1);
     const link = about.locator(".om-cta");
-    await expect(link).toHaveAttribute("href", "#");
+    await expect(link).toHaveAttribute("href", contactHref);
     await expect(link).toContainText(cta);
   });
 }
@@ -69,7 +72,7 @@ test.describe("desktop: przypięta scena", () => {
     await expect(about.locator(".om-progress .pcount")).toHaveText("04 / 04");
     await expect(about.locator(".om-final")).toHaveClass(/on/);
     // Finał w stanie .on oddaje pointer-events — CTA ma być klikalne
-    // (samą nawigację-placeholder weryfikuje about-index.spec.ts).
+    // (samą nawigację na /kontakt/ weryfikuje about-index.spec.ts).
     await expect(about.locator(".om-cta")).toBeVisible();
   });
 });

@@ -1,7 +1,10 @@
-// Sekcja „Kontakt": reveal danych (antyscraping), walidacja, chipsy,
-// pułapki antyspamowe (honeypot / submit < 4 s = udawany sukces BEZ
-// requestu), wysyłka z mockiem endpointu (200 → .sent, 500 → .kt-srv),
-// fallbacki reduce/no-JS. Checklista: docs/design/kontakt-referencja/
+// Sekcja „Kontakt" — od migracji (docs/analiza-podstrona-kontakt.md) żyje
+// na podstronie /kontakt/ (EN: /en/contact/) i tam biega cała suita:
+// reveal danych (antyscraping), walidacja, chipsy, pułapki antyspamowe
+// (honeypot / submit < 4 s = udawany sukces BEZ requestu), wysyłka
+// z mockiem endpointu (200 → .sent, 500 → .kt-srv), fallbacki reduce/no-JS.
+// Chrome podstrony (meta, navbar, BackButton, banner na głównej) testuje
+// contact-index.spec.ts. Checklista: docs/design/kontakt-referencja/
 // README.md; kontrakt endpointu: docs/contact-me-form-analysis-implementation.md §4.
 //
 // Turnstile jest STUBOWANY (route na challenges.cloudflare.com → atrapa
@@ -13,6 +16,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 import { CONTACT_DESKTOP_MIN_PX } from "../../src/components/sections/contact/contact-config";
+import { CONTACT_PATH } from "../../src/lib/routes";
 import { usePreviewGuard } from "../helpers/guards";
 import { gotoReady, settle } from "../helpers/scroll";
 
@@ -79,7 +83,7 @@ async function mockEndpoint(
   return { count: () => n, bodies };
 }
 
-async function gotoContact(page: Page, path = "/"): Promise<void> {
+async function gotoContact(page: Page, path = CONTACT_PATH.pl): Promise<void> {
   await gotoReady(page, path);
   await page.locator("#contact .kt-frame").scrollIntoViewIfNeeded();
   // Wejścia (klasy .on z progów ScrollTriggera) muszą usiąść przed interakcją.
@@ -422,7 +426,7 @@ test("antyscraping: pełny e-mail i telefon nie występują w źródle ani bundl
   const FORBIDDEN = ["info@hadrianm.pl", "783983600", "783 983 600"];
 
   // HTML serwowany do przeglądarki (przed jakimkolwiek revealem).
-  await gotoReady(page);
+  await gotoReady(page, CONTACT_PATH.pl);
   const html = await page.content();
   for (const s of FORBIDDEN) expect(html).not.toContain(s);
 
@@ -451,7 +455,7 @@ test("wersja EN: teksty sekcji + payload z lang=en", async ({ page }) => {
   await installClockSkew(page);
   await stubTurnstile(page);
   const mock = await mockEndpoint(page, () => ({ status: 200 }));
-  await gotoContact(page, "/en/");
+  await gotoContact(page, CONTACT_PATH.en);
 
   await expect(page.locator("#contact .kt-lead h2")).toContainText("in touch");
   await expect(submitBtn(page)).toContainText("Send message");
@@ -495,7 +499,7 @@ test.describe("prefers-reduced-motion: reduce — treść widoczna, funkcje dzia
     await installClockSkew(page);
     await stubTurnstile(page);
     const mock = await mockEndpoint(page, () => ({ status: 200 }));
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto(CONTACT_PATH.pl, { waitUntil: "networkidle" });
 
     // Stany startowe wejść bramkuje media query — przy reduce nic nie jest
     // schowane (opacity 1 bez czekania na ScrollTrigger).
@@ -519,7 +523,7 @@ test.describe("prefers-reduced-motion: reduce — treść widoczna, funkcje dzia
   test("toast przy reduce: pojawia się i SAM znika (timer JS, nie animationend)", async ({
     page,
   }) => {
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto(CONTACT_PATH.pl, { waitUntil: "networkidle" });
 
     // Przy reduce pasek postępu ma animation:none — auto-znikaniem steruje
     // timer JS (referencja tu nie znikała wcale; świadoma naprawa).
@@ -544,12 +548,13 @@ test.describe("fallback bez JS", () => {
   test("pełna treść widoczna, dane zamaskowane (świadomy trade-off)", async ({
     page,
   }) => {
-    await page.goto("/", { waitUntil: "networkidle" });
+    await page.goto(CONTACT_PATH.pl, { waitUntil: "networkidle" });
     // Bez klasy .js na sekcji stany startowe wejść nie są uzbrojone.
     await expect(page.locator("#contact .kt-lead h2")).toBeVisible();
     await expect(page.locator("#contact .kt-form")).toBeVisible();
     await expect(page.locator("#contact .kt-send")).toBeVisible();
-    await expect(page.locator("#contact .ft")).toBeVisible();
+    // Footer żyje w chrome strony (.ktp-foot), nie w sekcji.
+    await expect(page.locator(".ktp-foot .ft")).toBeVisible();
     // Reveal wymaga JS — wartości zostają zamaskowane, bez pełnych ciągów.
     for (const kind of ["email", "phone"]) {
       await expect(

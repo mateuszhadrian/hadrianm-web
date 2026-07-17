@@ -98,3 +98,13 @@ function stop() {
 
 if (!reduceMQ.matches) start();
 reduceMQ.addEventListener("change", (e) => (e.matches ? stop() : start()));
+
+// Powrót przez bfcache (history.back z podstron): resize'y omijają
+// zamrożoną stronę, a pasek Safari zmienia w międzyczasie wysokość
+// viewportu — bez przeliczenia limit Lenisa i pozycje ScrollTriggerów
+// zostają w STAREJ geometrii (iOS: dno strony „przesunięte o pasek").
+window.addEventListener("pageshow", (e) => {
+  if (!e.persisted) return;
+  lenis?.resize();
+  ScrollTrigger.refresh();
+});

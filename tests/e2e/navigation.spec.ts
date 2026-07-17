@@ -70,13 +70,15 @@ test.describe("nawigacja mobile", () => {
   test("link w panelu zamyka menu i przewija do sekcji", async ({ page }) => {
     await gotoReady(page);
     await page.locator("[data-burger]").click();
-    await page.locator('.m-link[href="#contact"]').click();
+    // #faq — od migracji kontaktu (docs/analiza-podstrona-kontakt.md)
+    // ostatnia pozycja-kotwica menu obok #services.
+    await page.locator('.m-link[href="#faq"]').click();
     await settle(page);
     await expect(page.locator("[data-nav]")).not.toHaveAttribute(
       "data-open",
       "",
     );
-    await expectSectionAtTop(page, "contact");
+    await expectSectionAtTop(page, "faq");
   });
 
   test("pozycja Realizacje w panelu nawiguje na podstronę", async ({
@@ -87,6 +89,14 @@ test.describe("nawigacja mobile", () => {
     await page.locator('.m-link[href="/realizacje/"]').click();
     await expect(page).toHaveURL(/\/realizacje\/?$/);
     await expect(page.locator(".wix-grid")).toBeVisible();
+  });
+
+  test("pozycja Kontakt w panelu nawiguje na podstronę", async ({ page }) => {
+    await gotoReady(page);
+    await page.locator("[data-burger]").click();
+    await page.locator('.m-link[href="/kontakt/"]').click();
+    await expect(page).toHaveURL(/\/kontakt\/?$/);
+    await expect(page.locator("#contact .kt-form")).toBeVisible();
   });
 });
 
