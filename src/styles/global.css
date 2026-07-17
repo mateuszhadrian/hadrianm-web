@@ -44,4 +44,10 @@ html {
 
   --accent-gold: #e3be7f;
   --accent-gold-rgb: 227, 190, 127;
+
+  /* Docelowa SUMA odstępu wizualnego na granicy dwóch sekcji strony głównej
+     (padding-bottom sekcji górnej + padding-top sekcji dolnej). Ramki 100vh
+     (teaser Dla kogo / O mnie, baner Kontakt) dokładają 0. Konsumenci:
+     Services (.of-intro), Work (.work, .work__head), Faq (.fq). */
+  --section-gap: clamp(56px, 7vw, 96px);
 }

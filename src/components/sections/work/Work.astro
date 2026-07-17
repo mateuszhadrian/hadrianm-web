@@ -124,13 +124,15 @@ const moreHref = WORK_INDEX_PATH[lang];
 <style>
   .work {
     position: relative;
-    padding-bottom: clamp(72px, 9vw, 120px);
+    /* granica z ramką About (ramka dokłada 0) */
+    padding-bottom: var(--section-gap);
     color: var(--ink);
   }
 
   .work__head {
     text-align: center;
-    padding: clamp(48px, 7vw, 90px) 5vw 8px;
+    /* góra = połowa tokenu (druga połowa siedzi w .of-intro sekcji Oferta) */
+    padding: calc(var(--section-gap) / 2) 5vw 8px;
   }
   .work__eyebrow {
     margin: 0 0 22px;
@@ -195,7 +197,7 @@ const moreHref = WORK_INDEX_PATH[lang];
 
   @media (max-width: 760px) {
     .work__head {
-      padding: 48px 24px 6px;
+      padding: calc(var(--section-gap) / 2) 24px 6px;
     }
     .work__eyebrow {
       display: flex;

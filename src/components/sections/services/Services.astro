@@ -389,6 +389,16 @@ const extras = [
     color: var(--faint);
     text-transform: uppercase;
   }
+  /* Teaser (strona główna): intro startuje na --section-gap od granicy
+     sekcji, więc chrome jedzie w górę razem z treścią (tag nad ghostem,
+     ghost wystaje nad tekst). Podstrony (.of--sub) otwierają stronę
+     i trzymają bazowe 95/97px. */
+  .of:not(.of--sub) .of-tag {
+    top: 36px;
+  }
+  .of:not(.of--sub) .of-meta {
+    top: 38px;
+  }
 
   /* mono etykieta + diament */
   .of-mono {
@@ -407,16 +417,18 @@ const extras = [
     transform: rotate(45deg);
   }
 
-  /* ═══ INTRO — czytanie scrollem ═══ */
+  /* ═══ INTRO — czytanie scrollem ═══
+     Pion: góra = --section-gap (granica z ramką Audience, ramka dokłada 0);
+     dół = połowa tokenu (druga połowa siedzi w .work__head sekcji Realizacje). */
   .of-intro {
     position: relative;
     z-index: 6;
-    padding: 235px 150px 170px;
+    padding: var(--section-gap) 150px calc(var(--section-gap) / 2);
   }
   .of-ghost {
     position: absolute;
     left: 118px;
-    top: 128px;
+    top: 56px; /* za zbitym padding-top intro (--section-gap): czubek nad tekstem */
     z-index: -1;
     pointer-events: none;
     user-select: none;
@@ -1043,17 +1055,21 @@ const extras = [
       left: 26px;
       top: 56px;
     }
+    /* teaser: chrome podąża za zbitym padding-top intro (jak na desktopie) */
+    .of:not(.of--sub) .of-tag {
+      top: 16px;
+    }
     .of-meta {
       display: none;
     }
     .of-intro {
       /* dół ciaśniej niż odstęp nad parą CTA (110px) — buttony siedzą
          bliżej końca sekcji niż tekstu intro */
-      padding: 150px 26px 48px;
+      padding: var(--section-gap) 26px calc(var(--section-gap) / 2);
     }
     .of-ghost {
       left: 12px;
-      top: 96px;
+      top: 36px;
       font-size: 118px;
       -webkit-text-stroke-width: 1.2px;
     }
