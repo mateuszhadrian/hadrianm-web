@@ -201,6 +201,11 @@ export const ui = {
       "Jeśli planujesz realizację nowego projektu biznesowego lub szukasz wsparcia programistycznego do swojego zespołu – zapraszam do kontaktu.",
     "about.final.cta": "Zapraszam do kontaktu",
     "about.final.sign": "Mateusz Hadrian",
+    "about.more": "Więcej o mnie",
+    "aboutPage.title": "O mnie — hadrianm.pl",
+    "aboutPage.description":
+      "Mateusz Hadrian — inżynier oprogramowania i twórca stron. Solidna technologia i dopracowana estetyka: zobacz, kim jestem i jak pracuję nad stronami, które zarabiają.",
+    "aboutPage.back": "Wróć",
     "faq.meta": "Najczęstsze pytania — zanim napiszesz",
     "faq.kick": "FAQ — 06 pytań",
     "faq.headLead": "pytania i",
@@ -479,6 +484,11 @@ export const ui = {
       "If you are planning a new business project or looking for development support for your team — I would love to hear from you.",
     "about.final.cta": "Get in touch",
     "about.final.sign": "Mateusz Hadrian",
+    "about.more": "More about me",
+    "aboutPage.title": "About me — hadrianm.pl",
+    "aboutPage.description":
+      "Mateusz Hadrian — software engineer and web creator. Solid technology, refined aesthetics: see who I am and how I build websites that work for your business.",
+    "aboutPage.back": "Back",
     "faq.meta": "Common questions — before you reach out",
     "faq.kick": "FAQ — 06 questions",
     "faq.headLead": "questions &",

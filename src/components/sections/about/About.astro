@@ -1,20 +1,28 @@
 ---
 // Sekcja „O mnie" — design „Z mgły" (port referencji
 // docs/design/o mnie/o-mnie-referencja/; decyzje: docs/analiza-sekcja-o-mnie.md).
+// Dwa warianty (plan: docs/analiza-podstrona-o-mnie.md): "full" = pełna
+// animowana sekcja (podstrona /o-mnie/); "teaser" = statyczna zajawka na
+// stronie głównej (tag + ghost + rozdział 01 + ostry portret + SolidButton
+// na podstronę) — bez finału, meta, progresu i modułu scrolla.
 // Markup + style tutaj; animacje scrolla w about-scroll.ts (ładowane tylko
-// przy prefers-reduced-motion: no-preference). Bez JS / przy reduce sekcja
-// renderuje statyczny układ flow ze stanami docelowymi.
+// w wariancie full przy prefers-reduced-motion: no-preference). Bez JS /
+// przy reduce sekcja renderuje statyczny układ flow ze stanami docelowymi.
 import { Image } from "astro:assets";
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
+import SolidButton from "@/components/ui/SolidButton.astro";
+import { ABOUT_PATH } from "@/lib/routes";
 import { ABOUT_DESKTOP_MIN_PX } from "./about-config";
 import portrait from "@/assets/about/portrait.webp";
 import portraitBlur from "@/assets/about/portrait-blur.webp";
 
 interface Props {
   lang: Lang;
+  variant?: "teaser" | "full";
 }
-const { lang } = Astro.props;
+const { lang, variant = "full" } = Astro.props;
+const teaser = variant === "teaser";
 const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "about");
 const label = item ? navLabel(item, lang) : "O mnie";
@@ -44,11 +52,22 @@ const chapters = [
 const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min(92vw, 420px)`;
 ---
 
-<section id="about" class="om" aria-label={label}>
+<section
+  id="about"
+  class:list={["om", { "om--teaser": teaser }]}
+  data-variant={variant}
+  aria-label={label}
+>
   <script is:inline>
-    // Bez JS sekcja zostaje w statycznym układzie flow (fallback);
-    // klasa .js włącza desktopową scenę przypiętą (patrz @media niżej).
-    document.currentScript?.closest("section")?.classList.add("js");
+    // Bez JS sekcja zostaje w statycznym układzie flow (fallback); klasa .js
+    // włącza desktopową scenę przypiętą (patrz @media niżej) — tylko
+    // w pełnym wariancie (zajawka jest statyczna z definicji). Skrypt
+    // bezwarunkowy z bramką runtime: warunkowy <script is:inline> w JSX
+    // wywala parser astro check (gotcha §VII analizy dla-kogo).
+    {
+      const s = document.currentScript?.closest("section");
+      if (s?.dataset.variant === "full") s.classList.add("js");
+    }
   </script>
   <div class="om-stage">
     <!-- widmowa typografia w tle -->
@@ -60,19 +79,30 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
          animowany filter: blur zacinał syncTouch na starszych telefonach) -->
     <div class="om-photo-wrap">
       <div class="om-photo-frame">
+        {
+          /* Podstrona: portret w pierwszym viewporcie (kandydat LCP) → eager;
+             zajawka na głównej jest nisko → lazy jak dotąd. */
+        }
         <Image
           class="om-photo"
           src={portrait}
           alt={t("about.photoAlt")}
           widths={[420, 640, 840, 1200, 1510]}
           sizes={photoSizes}
-          loading="lazy"
+          loading={teaser ? "lazy" : "eager"}
           decoding="async"
         />
-        <span
-          class="om-photo-veil"
-          aria-hidden="true"
-          style={`background-image: url(${portraitBlur.src})`}></span>
+        {
+          /* Wypieczona mgła (crossfade emerge na mobile) tylko w full —
+             zajawka pokazuje ostry portret bez nakładki. */
+          !teaser && (
+            <span
+              class="om-photo-veil"
+              aria-hidden="true"
+              style={`background-image: url(${portraitBlur.src})`}
+            />
+          )
+        }
       </div>
       {
         /* Dekoracyjny podpis — treść niesie alt portretu (a11y: poza drzewem). */
@@ -104,18 +134,54 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
       <span class="t-num">04</span><span class="t-sl" aria-hidden="true">/</span
       ><span class="t-lbl">{label}</span>
     </div>
-    <div class="om-meta" aria-hidden="true">{t("about.meta")}</div>
+    {
+      !teaser && (
+        <div class="om-meta" aria-hidden="true">
+          {t("about.meta")}
+        </div>
+      )
+    }
 
-    <!-- rozdziały 01–03 (desktop: wymieniają się na przypiętej scenie) -->
+    <!-- rozdziały 01–03 (desktop: wymieniają się na przypiętej scenie);
+         zajawka renderuje WYŁĄCZNIE rozdział 01 (h2) + button na podstronę -->
     <div class="om-chapters">
       {
-        chapters.map((ch, i) => (
+        (teaser ? chapters.slice(0, 1) : chapters).map((ch, i) => (
           <article class="om-ch" data-ch={i}>
             <div class="ch-tag">{ch.tag}</div>
-            <h3 class="ch-head">
-              {ch.lead} <em class="sf">{ch.accent}</em>
-            </h3>
-            <p class="ch-para">{ch.para}</p>
+            {teaser ? (
+              <h2 class="ch-head">
+                {ch.lead} <em class="sf">{ch.accent}</em>
+              </h2>
+            ) : (
+              <h3 class="ch-head">
+                {ch.lead} <em class="sf">{ch.accent}</em>
+              </h3>
+            )}
+            {teaser ? (
+              <div class="om-teaser-body">
+                {/* Mobile: zblurowany portret ZA tekstem — lustro
+                    om-final-bg/-ph z finału sekcji (desktop chowa: tam stan
+                    finału gra prawdziwy portret .om-photo). */}
+                <div class="om-teaser-bg" aria-hidden="true">
+                  <span
+                    class="om-final-ph"
+                    style={`background-image: url(${portraitBlur.src})`}
+                  />
+                </div>
+                <p class="ch-para">{ch.para}</p>
+                <div class="om-morewrap">
+                  {/* wrapper, nie klasa na komponencie — scoped CSS nie łapie
+                      elementów renderowanych przez komponent potomny */}
+                  <SolidButton
+                    href={ABOUT_PATH[lang]}
+                    label={t("about.more")}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p class="ch-para">{ch.para}</p>
+            )}
           </article>
         ))
       }
@@ -123,55 +189,75 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
 
     <!-- finał 04 · Kontakt (desktop: overlay na środku sceny;
          mobile: blok w flow z zblurowanym portretem za treścią) -->
-    <div class="om-final">
-      <div class="ch-tag">{t("about.final.tag")}</div>
-      <h3 class="ch-head">
-        {t("about.final.headLead")}
-        <em class="sf">{t("about.final.headAccent")}</em>
-      </h3>
-      <div class="om-final-body">
-        <div class="om-final-bg" aria-hidden="true">
-          {
-            /* Rozmycie wypieczone w pliku (portrait-blur.webp) — zero
-              filter: blur() w runtime; desktop nie pobiera (background). */
-          }
-          <span
-            class="om-final-ph"
-            style={`background-image: url(${portraitBlur.src})`}></span>
+    {
+      !teaser && (
+        <div class="om-final">
+          <div class="ch-tag">{t("about.final.tag")}</div>
+          <h3 class="ch-head">
+            {t("about.final.headLead")}
+            <em class="sf">{t("about.final.headAccent")}</em>
+          </h3>
+          <div class="om-final-body">
+            <div class="om-final-bg" aria-hidden="true">
+              {/* Rozmycie wypieczone w pliku (portrait-blur.webp) — zero
+                  filter: blur() w runtime; desktop nie pobiera (background). */}
+              <span
+                class="om-final-ph"
+                style={`background-image: url(${portraitBlur.src})`}
+              />
+            </div>
+            <p class="ch-para">{t("about.final.para")}</p>
+            {/* CTA-placeholder (D5 analizy podstrony): sekcja kontaktu też
+                będzie migrowana — cel wskażemy wtedy; skrypt niżej blokuje
+                natywny skok do góry (href="#"). Świadomy, TYMCZASOWY wyjątek
+                a11y — element wróci do bycia linkiem. */}
+            {/* eslint-disable-next-line astro/jsx-a11y/anchor-is-valid */}
+            <a class="om-cta" href="#">
+              {t("about.final.cta")}
+              <span class="arr" aria-hidden="true">
+                →
+              </span>
+            </a>
+            <div class="om-sign">{t("about.final.sign")}</div>
+          </div>
         </div>
-        <p class="ch-para">{t("about.final.para")}</p>
-        <a class="om-cta" href="#contact"
-          >{t("about.final.cta")}
-          <span class="arr" aria-hidden="true">→</span></a
-        >
-        <div class="om-sign">{t("about.final.sign")}</div>
-      </div>
-    </div>
+      )
+    }
 
     <!-- progres 01/04 (tylko desktop, czysto wizualny) -->
-    <div class="om-progress" aria-hidden="true">
-      <div class="ticks"><i class="on"></i><i></i><i></i><i></i></div>
-      <span class="pcount">01 / 04</span>
-    </div>
+    {
+      !teaser && (
+        <div class="om-progress" aria-hidden="true">
+          <div class="ticks">
+            <i class="on" />
+            <i />
+            <i />
+            <i />
+          </div>
+          <span class="pcount">01 / 04</span>
+        </div>
+      )
+    }
   </div>
 </section>
 
 <script>
-  import { handleAnchorClick } from "@/scripts/anchors";
+  const section = document.querySelector<HTMLElement>("#about");
 
-  // Animacje tylko przy dozwolonym ruchu — ta sama bramka co Lenis
-  // w BaseLayout; przy reduce statyczny układ realizuje czysty CSS.
-  if (matchMedia("(prefers-reduced-motion: no-preference)").matches) {
+  // Animacje tylko w pełnym wariancie (podstrona) i przy dozwolonym ruchu —
+  // ta sama bramka co Lenis w BaseLayout; przy reduce statyczny układ
+  // realizuje czysty CSS. Zajawka (teaser) nie pobiera chunka GSAP w ogóle.
+  if (
+    section?.dataset.variant === "full" &&
+    matchMedia("(prefers-reduced-motion: no-preference)").matches
+  ) {
     import("./about-scroll").then((m) => m.initAboutScroll());
   }
 
-  // CTA finału (#contact): wspólny handler kotwic (@/scripts/anchors).
+  // CTA finału to placeholder (href="#") do czasu migracji sekcji kontaktu
+  // na podstronę — blokujemy natywny skok do góry strony.
   const cta = document.querySelector<HTMLAnchorElement>("#about .om-cta");
-  if (cta) {
-    cta.addEventListener("click", (e) =>
-      handleAnchorClick(e, cta.getAttribute("href")),
-    );
-  }
+  cta?.addEventListener("click", (e) => e.preventDefault());
 </script>
 
 <style>
@@ -183,6 +269,13 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
   .om {
     --om-final-op: 0.59; /* widoczność zblurowanego portretu w finale (mobile) */
     --omlen: 440vh; /* długość scrolla sekcji na desktopie */
+    /* ── PARAMETRY STROJENIA portretu w tle zajawki (mobile) — do ustawiania
+       ręcznie i sprawdzania na różnych smartfonach ──
+       -h: wysokość portretu (svh = % małego viewportu; można podać też px),
+       -lift: o ile dolna krawędź portretu siedzi NAD dołem bloku treści
+       (button ma ~52px + 16px odstępu → wartości >68px unoszą go nad button). */
+    --om-teaser-photo-h: 53svh;
+    --om-teaser-photo-lift: 60px;
     position: relative;
     color: var(--ink);
     font-family: var(--font-body), sans-serif;
@@ -634,6 +727,138 @@ const photoSizes = `(min-width: ${ABOUT_DESKTOP_MIN_PX}px) min(48vw, 930px), min
     }
     .om.js .om-final-body {
       display: contents;
+    }
+  }
+
+  /* ═══ ZAJAWKA (om--teaser) — statyczna, BEZ bramki motion (scena się nie
+     rusza, więc reduce dostaje to samo). Portret w STANIE FINAŁU sekcji
+     (decyzja Mateusza 2026-07-17): mobile = zblurowany portret za tekstem
+     (lustro om-final-bg), desktop = prawdziwy portret zblurowany/
+     przybliżony/przezroczysty jak pod „porozmawiajmy o Twoim projekcie".
+     Mobile: rozdział 01 rozciąga się na pełny ekran (D12), button
+     dociśnięty do dołu sekcji (margin-top: auto). Desktop: scena 100vh
+     z pozycjami 1:1 z gałęzi .om.js — rozdział wyśrodkowany jako CAŁY blok
+     (translateY(-50%): blok urósł o button, środek został — gotcha zajawki
+     dla-kogo). ═══ */
+  .om--teaser .om-stage {
+    min-height: 100vh;
+  }
+  /* Obraz portretu tylko na desktopie zajawki — pod display: none Image
+     z loading=lazy nie jest pobierany na mobile. */
+  .om--teaser .om-photo-wrap {
+    display: none;
+  }
+  /* Rozdział 01 wypełnia ekran; body (bg + akapit + button) rośnie razem
+     z nim i spycha button na dół sekcji. */
+  .om--teaser .om-ch[data-ch="0"] {
+    flex: 1 0 auto;
+  }
+  .om-teaser-body {
+    position: relative;
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  /* Lustro .om-final-bg z finału (sam obraz to współdzielony .om-final-ph).
+     Pudełko kotwiczone DOŁEM (--om-teaser-photo-lift nad dołem treści,
+     czyli nad buttonem) i o wysokości RÓWNEJ portretowi
+     (--om-teaser-photo-h) — rośnie w górę razem z powiększanym portretem,
+     więc góra zdjęcia nigdy się nie obcina. Obcięcie może zajść tylko
+     z lewej (right-anchor przy wąskim ekranie = naturalny bleed). */
+  .om-teaser-bg {
+    position: absolute;
+    z-index: -1;
+    right: 0;
+    bottom: var(--om-teaser-photo-lift);
+    left: 0;
+    height: var(--om-teaser-photo-h);
+    pointer-events: none;
+  }
+  /* Portret wypełnia pudełko wysokością (rozmiar steruje pudełkiem wyżej);
+     szerokość auto trzyma proporcje pliku. */
+  .om-teaser-bg .om-final-ph {
+    background-size: auto 100%;
+  }
+  .om-morewrap {
+    margin-top: auto;
+  }
+
+  /* 861px = ABOUT_DESKTOP_MIN_PX (kontrakt z about-config.ts). */
+  @media (min-width: 861px) {
+    .om--teaser .om-stage {
+      height: 100vh;
+      display: block;
+      padding: 0;
+    }
+    .om--teaser .om-ghost {
+      font-size: min(28.5vw, 548px);
+      left: 6.5vw;
+      top: 27vh;
+    }
+    .om--teaser .om-tag {
+      position: absolute;
+      top: 8.8vh;
+      left: 7.8vw;
+    }
+    .om--teaser .om-chapters {
+      display: block;
+      position: absolute;
+      z-index: 7;
+      left: 7.8vw;
+      top: 48%;
+      transform: translateY(-50%);
+      width: min(46vw, 900px);
+    }
+    .om--teaser .om-ch {
+      margin: 0;
+      padding: 0;
+      border: 0;
+      gap: 30px;
+    }
+    .om--teaser .om-ch .ch-head {
+      font-size: min(4.8vw, 92px);
+    }
+    .om--teaser .om-ch .ch-para {
+      font-size: clamp(15px, 0.94vw, 18px);
+      max-width: 620px;
+    }
+    .om--teaser .om-photo-wrap {
+      display: block;
+      position: absolute;
+      z-index: 5;
+      margin: 0;
+      right: 2.6vw;
+      bottom: -10px;
+      width: min(48vw, 930px);
+    }
+    .om--teaser .om-photo-frame {
+      width: 100%;
+      margin: 0;
+    }
+    /* Stan finału sceny — wartości z tweenu 0.82 w about-scroll.ts
+       (utrzymuj W PARZE): portret wycofany pod treść. Filter statyczny
+       (rasteryzacja jednorazowa) — zakaz ANIMOWANIA blura nie dotyczy. */
+    .om--teaser .om-photo {
+      opacity: 0.22;
+      transform: scale(1.16);
+      filter: blur(5px);
+    }
+    /* Jak na scenie desktopowej (decyzja 2026-07-09): podpis portretu
+       tylko na mobile. */
+    .om--teaser .om-photo-meta {
+      display: none;
+    }
+    /* Desktop gra prawdziwym portretem — mobilne tło za tekstem znika,
+       body wraca do layoutu artykułu (lustro .om.js .om-final-body). */
+    .om--teaser .om-teaser-bg {
+      display: none;
+    }
+    .om--teaser .om-teaser-body {
+      display: contents;
+    }
+    .om--teaser .om-morewrap {
+      margin-top: 4px;
     }
   }
 </style>

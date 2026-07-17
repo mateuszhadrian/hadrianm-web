@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Button „Więcej o mnie" — referencja (D5 solid + MB full)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  /* ═══════════ TOKENY (z sekcji O mnie) ═══════════ */
+  :root{
+    --bg:#070507;--ink:#F5F0EC;--muted:rgba(245,240,236,0.62);--faint:rgba(245,240,236,0.38);
+    --accent:#FF5A47;--accent-rgb:255,90,71;
+    --btn-fg:#180A08;--btn-bg:#F5F0EC;
+    --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:#100C0E;color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}a:hover{color:#FFB3A6}
+
+  /* ─────────── RESET WSPÓLNY BUTTONA ─────────── */
+  .btn{appearance:none;-webkit-appearance:none;font:inherit;color:inherit;text-decoration:none;border:none;background:none;
+    padding:0;margin:0;display:inline-flex;align-items:center;line-height:1;cursor:pointer}
+  .btn .arw{color:var(--accent);transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+
+  /* ─────────── DESKTOP · D5 — Solid jasny ─────────── */
+  .b-solid{gap:12px;font-weight:700;font-size:16px;letter-spacing:.005em;color:var(--btn-fg);background:var(--btn-bg);border-radius:6px;
+    padding:16px 26px;box-shadow:0 16px 44px -20px rgba(0,0,0,.75);transition:transform .25s,box-shadow .25s,background .25s}
+  .b-solid:hover{background:#fff;transform:translateY(-1px);box-shadow:0 22px 54px -22px rgba(0,0,0,.85)}
+  .b-solid:hover .arw{transform:translateX(4px)}
+  .b-solid:active{transform:translateY(0)}
+  .b-solid:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  /* ─────────── MOBILE · MB — Pełna szerokość (solid) ─────────── */
+  .b-mfull{width:100%;justify-content:center;gap:12px;font-weight:700;font-size:16px;color:var(--btn-fg);background:var(--btn-bg);
+    border-radius:10px;padding:17px 20px;box-shadow:0 16px 40px -22px rgba(0,0,0,.8);transition:transform .18s,box-shadow .25s,background .25s}
+  .b-mfull:hover{background:#fff}
+  .b-mfull:hover .arw{transform:translateX(4px)}
+  .b-mfull:active{transform:translateY(1px)}
+  .b-mfull:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+
+  @media (prefers-reduced-motion:reduce){.btn,.btn .arw{transition:none}}
+
+  /* ═══════════ RUSZTOWANIE PODGLĄDU (nie kopiować do produkcji) ═══════════ */
+  .page{max-width:1080px;margin:0 auto;padding:44px clamp(20px,4vw,56px) 100px}
+  .head{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+  .head .kick{font-family:var(--mono);font-size:11px;letter-spacing:.26em;text-transform:uppercase;color:var(--faint)}
+  .head h1{margin:0;font-weight:800;font-size:26px;letter-spacing:-.02em}
+  .head p{margin:0;max-width:640px;color:var(--muted);font-size:14px;line-height:1.55}
+  .grp{margin-top:44px}
+  .grphdr{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+  .grphdr span{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+  .grphdr hr{flex:1;border:none;height:1px;background:linear-gradient(90deg,rgba(245,240,236,0.16),transparent)}
+  .card{border:1px solid rgba(245,240,236,0.12);border-radius:12px;overflow:hidden;background:rgba(0,0,0,0.16)}
+  .stage{position:relative;background:var(--bg);padding:56px 40px;display:flex;align-items:center;justify-content:center;min-height:190px;overflow:hidden}
+  /* delikatna mgła sekcji, żeby ocenić kontrast przycisku na tle */
+  .stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+    background:radial-gradient(60% 90% at 78% 30%,rgba(214,38,38,0.24) 0%,rgba(0,0,0,0) 70%),radial-gradient(50% 80% at 20% 90%,rgba(130,20,32,0.20) 0%,rgba(0,0,0,0) 72%)}
+  .stage::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:multiply;opacity:.5;
+    background-image:radial-gradient(circle at center,rgba(0,0,0,0.96) 2.17px,rgba(0,0,0,0) 3.69px);background-size:10.41px 10.41px}
+  .stage.mob{padding:40px}
+  .stage.mob .frame{position:relative;z-index:2;width:326px;max-width:100%}
+  .hint{padding:12px 16px;font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:rgba(245,240,236,0.42);
+    border-top:1px solid rgba(245,240,236,0.10);background:rgba(0,0,0,0.22)}
+  .btn{position:relative;z-index:2}
+  pre{margin:0;padding:18px 20px;background:#0B0809;border-top:1px solid rgba(245,240,236,0.10);overflow-x:auto;
+    font-family:var(--mono);font-size:12px;line-height:1.6;color:#D8D2CC;tab-size:2}
+  pre .t{color:#FF9B8C}pre .a{color:#E3BE7F}pre .s{color:#9FE0B0}pre .c{color:rgba(245,240,236,0.4)}pre .p{color:#C9A6FF}
+  .codehdr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:rgba(0,0,0,0.3);border-top:1px solid rgba(245,240,236,0.10)}
+  .codehdr b{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);font-weight:400}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="head">
+    <span class="kick">hadrianm · sekcja O mnie · CTA → /o-mnie</span>
+    <h1>Button „Więcej o mnie" — referencja</h1>
+    <p>Dwa wybrane warianty w wersji produkcyjnej: desktop <b>D5 · Solid jasny</b> oraz mobile <b>MB · Pełna szerokość</b>. Najedź / kliknij, by zobaczyć stany hover / active / focus. Sam przycisk to element <code style="color:#E3BE7F">&lt;a class="btn …"&gt;</code>; resztą (rusztowanie podglądu, klasy z prefiksem <code style="color:#E3BE7F">.stage/.card/.page</code>) się nie przejmuj.</p>
+  </div>
+
+  <!-- ════ DESKTOP ════ -->
+  <div class="grp">
+    <div class="grphdr"><span>Desktop · D5 — Solid jasny</span><hr></div>
+    <div class="card">
+      <div class="stage">
+        <a class="btn b-solid" href="/o-mnie"><span>Więcej o mnie</span><span class="arw">→</span></a>
+      </div>
+      <div class="hint">Auto-szerokość (dopasowana do treści) · pod akapitem, wyrównany do lewej · hover: unosi się o 1px + strzałka w prawo</div>
+      <div class="codehdr"><b>HTML</b></div>
+<pre><span class="c">&lt;!-- pod akapitem w sekcji O mnie --&gt;</span>
+<span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"btn b-solid"</span> <span class="a">href</span>=<span class="s">"/o-mnie"</span><span class="t">&gt;</span>
+  <span class="t">&lt;span&gt;</span>Więcej o mnie<span class="t">&lt;/span&gt;</span>
+  <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"arw"</span><span class="t">&gt;</span>→<span class="t">&lt;/span&gt;</span>
+<span class="t">&lt;/a&gt;</span></pre>
+      <div class="codehdr"><b>CSS</b></div>
+<pre><span class="c">/* reset wspólny */</span>
+<span class="p">.btn</span>{appearance:none;-webkit-appearance:none;font:inherit;color:inherit;
+  text-decoration:none;border:none;background:none;padding:0;margin:0;
+  display:inline-flex;align-items:center;line-height:1;cursor:pointer}
+<span class="p">.btn .arw</span>{color:<span class="s">#FF5A47</span>;transition:transform .3s cubic-bezier(.2,.7,.2,1)}
+
+<span class="c">/* D5 — Solid jasny */</span>
+<span class="p">.b-solid</span>{gap:12px;font-weight:700;font-size:16px;letter-spacing:.005em;
+  color:<span class="s">#180A08</span>;background:<span class="s">#F5F0EC</span>;border-radius:6px;padding:16px 26px;
+  box-shadow:0 16px 44px -20px rgba(0,0,0,.75);
+  transition:transform .25s,box-shadow .25s,background .25s}
+<span class="p">.b-solid:hover</span>{background:<span class="s">#fff</span>;transform:translateY(-1px);
+  box-shadow:0 22px 54px -22px rgba(0,0,0,.85)}
+<span class="p">.b-solid:hover .arw</span>{transform:translateX(4px)}
+<span class="p">.b-solid:active</span>{transform:translateY(0)}
+<span class="p">.b-solid:focus-visible</span>{outline:2px solid <span class="s">#FF5A47</span>;outline-offset:3px}</pre>
+    </div>
+  </div>
+
+  <!-- ════ MOBILE ════ -->
+  <div class="grp">
+    <div class="grphdr"><span>Mobile · MB — Pełna szerokość (solid)</span><hr></div>
+    <div class="card">
+      <div class="stage mob">
+        <div class="frame">
+          <a class="btn b-mfull" href="/o-mnie"><span>Więcej o mnie</span><span class="arw">→</span></a>
+        </div>
+      </div>
+      <div class="hint">Pełna szerokość kolumny (width:100%) · wyśrodkowana treść · pod akapitem · active: dociśnięcie o 1px</div>
+      <div class="codehdr"><b>HTML</b></div>
+<pre><span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"btn b-mfull"</span> <span class="a">href</span>=<span class="s">"/o-mnie"</span><span class="t">&gt;</span>
+  <span class="t">&lt;span&gt;</span>Więcej o mnie<span class="t">&lt;/span&gt;</span>
+  <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"arw"</span><span class="t">&gt;</span>→<span class="t">&lt;/span&gt;</span>
+<span class="t">&lt;/a&gt;</span></pre>
+      <div class="codehdr"><b>CSS</b></div>
+<pre><span class="c">/* wymaga tego samego resetu .btn oraz .btn .arw co wyżej */</span>
+
+<span class="c">/* MB — Pełna szerokość (solid) */</span>
+<span class="p">.b-mfull</span>{width:100%;justify-content:center;gap:12px;font-weight:700;font-size:16px;
+  color:<span class="s">#180A08</span>;background:<span class="s">#F5F0EC</span>;border-radius:10px;padding:17px 20px;
+  box-shadow:0 16px 40px -22px rgba(0,0,0,.8);
+  transition:transform .18s,box-shadow .25s,background .25s}
+<span class="p">.b-mfull:hover</span>{background:<span class="s">#fff</span>}
+<span class="p">.b-mfull:hover .arw</span>{transform:translateX(4px)}
+<span class="p">.b-mfull:active</span>{transform:translateY(1px)}
+<span class="p">.b-mfull:focus-visible</span>{outline:2px solid <span class="s">#FF5A47</span>;outline-offset:3px}</pre>
+    </div>
+  </div>
+</div>
+</body>
+</html>

@@ -27,3 +27,8 @@ export const SERVICES_PACKAGES_PATH: Record<Lang, string> = {
   pl: "/pakiety/",
   en: "/en/packages/",
 };
+
+export const ABOUT_PATH: Record<Lang, string> = {
+  pl: "/o-mnie/",
+  en: "/en/about/",
+};

@@ -17,13 +17,14 @@ test.describe("nawigacja desktop", () => {
     page,
   }) => {
     await gotoReady(page);
-    // #about, nie #work — link Realizacje prowadzi już na podstronę.
-    await page.locator('.nav-link[href="#about"]').click();
+    // #services, nie #work/#audience/#about — te pozycje prowadzą już na
+    // podstrony; Oferta zostaje kotwicą strony głównej.
+    await page.locator('.nav-link[href="#services"]').click();
     await settle(page);
-    await expect(page).toHaveURL(/#about$/);
+    await expect(page).toHaveURL(/#services$/);
     // Skok immediate — sekcja ma siąść na górze viewportu (retry: sporadyczny
     // brak precyzji Lenisa pod obciążeniem N warstw tła).
-    await expectSectionAtTop(page, "about");
+    await expectSectionAtTop(page, "services");
   });
 
   test("link Realizacje nawiguje na podstronę /realizacje/", async ({
