@@ -22,7 +22,6 @@ const PAGES = [
     title: "Polityka prywatności — hadrianm.pl",
     backHref: "/",
     contactHref: "/kontakt/",
-    altHref: "/en/privacy-policy/",
     nip: "NIP: 8322016376",
   },
   {
@@ -31,7 +30,6 @@ const PAGES = [
     title: "Privacy policy — hadrianm.pl",
     backHref: "/en/",
     contactHref: "/en/contact/",
-    altHref: "/polityka-prywatnosci/",
     nip: "NIP): 8322016376",
   },
 ] as const;
@@ -58,17 +56,28 @@ for (const p of PAGES) {
     page,
   }) => {
     await gotoReady(page, p.path);
+    // BackButton wzorca podstron: fallback na stronę główną, mechanizm
+    // data-back → history.back() (globalny initBackLinks w BaseLayout).
     await expect(page.locator("a[data-back]")).toHaveAttribute(
       "href",
       p.backHref,
     );
-    await expect(page.locator(".pp-lang")).toHaveAttribute("href", p.altHref);
-    // CTA formularza prowadzi na podstronę kontaktu (migracja:
-    // docs/analiza-podstrona-kontakt.md).
-    await expect(page.locator(".pp-foot a")).toHaveAttribute(
-      "href",
-      p.contactHref,
-    );
+    // Przełącznik języka przejął Navbar (chrome podstron) — oba przyciski
+    // celują w odpowiedniki polityki, nie w stronę główną.
+    await expect(
+      page.locator('a.lang-btn[hreflang="pl"]').first(),
+    ).toHaveAttribute("href", "/polityka-prywatnosci/");
+    await expect(
+      page.locator('a.lang-btn[hreflang="en"]').first(),
+    ).toHaveAttribute("href", "/en/privacy-policy/");
+    // Link do formularza kontaktowego w treści (§01) prowadzi na podstronę
+    // kontaktu (migracja: docs/analiza-podstrona-kontakt.md).
+    await expect(
+      page.locator(`.pp-sec a[href="${p.contactHref}"]`).first(),
+    ).toBeAttached();
+    // Stopka: współdzielony Footer w kontenerze .pp-foot (ten sam co na
+    // pozostałych podstronach).
+    await expect(page.locator(".pp-foot .ft-soc a").first()).toBeAttached();
   });
 
   test(`${p.path}: e-mail administratora złożony w JS (mailto)`, async ({

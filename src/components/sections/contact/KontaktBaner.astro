@@ -8,13 +8,15 @@
 // z CTA na środku i WSPÓŁDZIELONYM footerem dociśniętym do dołu (dno
 // strony = banner wycentrowany + stopka na dole viewportu).
 // Animacje ringów/sheen/pulsu CSS-only, tylko desktop ≥861px i tylko
-// przy prefers-reduced-motion: no-preference (bramka jak w referencji).
+// przy prefers-reduced-motion: no-preference (bramka jak w referencji);
+// button CTA (skórka + sheen/puls/ring) to wspólny AnimatedCta.astro.
 // Desktop dodatkowo: „odzoomowanie" CTA scrubem przy wjeździe w sekcję
 // (kontakt-baner-scroll.ts, ładowany dynamicznie z bramki motion; stan
 // startowy scale uzbraja klasa .js — bez JS i przy reduce banner stoi
 // statycznie w skali 1).
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
+import AnimatedCta from "@/components/ui/AnimatedCta.astro";
 import Footer from "@/components/Footer.astro";
 import { CONTACT_PATH } from "@/lib/routes";
 
@@ -46,13 +48,16 @@ const label = item ? navLabel(item, lang) : "Kontakt";
       </p>
       <h2 class="kt-cta__head">{t("contact.kick")}</h2>
       <p class="kt-cta__intro">{t("contact.bannerIntro")}</p>
-      <a class="kt-cta__btn" href={CONTACT_PATH[lang]}>
-        <span class="kt-cta__clip" aria-hidden="true"
-          ><span class="kt-cta__sheen"></span></span
-        >
-        <span class="kt-cta__label">{t("contact.bannerCta")}</span>
-        <span class="kt-cta__arrow" aria-hidden="true">→</span>
-      </a>
+      {
+        /* Skórka + pakiet animacji buttona żyją we wspólnym AnimatedCta
+           (jedno źródło prawdy z primary CTA Oferty); klasa kt-cta__btn
+           zostaje jako czysty hook DOM (e2e contact-index.spec) — bez CSS. */
+      }
+      <AnimatedCta
+        class="kt-cta__btn"
+        href={CONTACT_PATH[lang]}
+        label={t("contact.bannerCta")}
+      />
     </div>
   </div>
 
@@ -84,13 +89,12 @@ const label = item ? navLabel(item, lang) : "Kontakt";
      head 58/112px · rytm animacji 3.6s. Tokeny globalne tam, gdzie
      wartości zgodne (--kt-ink → --ink, --kt-accent → --accent,
      --kt-glow → --glow); muted referencji (0.62) ≠ globalne --muted
-     (0.58) → wartość lokalna; #180A08 (tekst na jasnym buttonie) bez
-     odpowiednika globalnego → lokalnie (wzorzec SolidButton).
+     (0.58) → wartość lokalna. Button CTA (skórka + sheen/puls/ring) żyje
+     we wspólnym AnimatedCta.astro.
      UWAGA: @media (861px) MUSI być równe CONTACT_DESKTOP_MIN_PX
      (contact-config.ts) — @media nie umie czytać var(), stąd literały. ═══ */
   .ktb {
     --ktb-muted: rgba(245, 240, 236, 0.62);
-    --kt-cz: cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     /* Rama = AKTUALNIE widoczna wysokość viewportu (dvh), nie „duży"
        viewport (vh): iOS Safari przy dnie scrolla trzyma zminimalizowany
@@ -219,57 +223,8 @@ const label = item ? navLabel(item, lang) : "Kontakt";
     color: var(--ktb-muted);
     text-wrap: pretty;
   }
-  .kt-cta__btn {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    width: 100%;
-    font: inherit;
-    font-weight: 700;
-    font-size: 16px;
-    color: #180a08;
-    background: #f5f0ec;
-    border-radius: 10px;
-    padding: 18px 20px;
-    text-decoration: none;
-    box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.8);
-    cursor: pointer;
-    transition:
-      transform 0.25s,
-      box-shadow 0.25s,
-      background 0.25s;
-  }
-  .kt-cta__label {
-    position: relative;
-    z-index: 2;
-  }
-  .kt-cta__arrow {
-    position: relative;
-    z-index: 2;
-    color: var(--accent);
-    transition: transform 0.3s var(--kt-cz);
-  }
-  .kt-cta__clip {
-    display: none;
-  }
-  .kt-cta__btn::after {
-    content: "";
-    position: absolute;
-    inset: -3px;
-    border-radius: 13px;
-    border: 1.5px solid var(--accent);
-    opacity: 0;
-    pointer-events: none;
-  }
-  .kt-cta__btn:active {
-    transform: translateY(1px);
-  }
-  .kt-cta__btn:focus-visible {
-    outline: 1px solid var(--accent);
-    outline-offset: 4px;
-  }
+  /* Button CTA (kremowy + sheen/puls/ring): wspólny AnimatedCta.astro —
+     tam żyje cała skórka i pakiet animacji (rytm 3.6s). */
 
   /* KOMPAKT niskich telefonów (portret SE 2020: widoczne ~548px; Lenis
      scrolluje programowo, więc pasek Safari się nie zwija): ciaśniejsze
@@ -303,46 +258,8 @@ const label = item ? navLabel(item, lang) : "Kontakt";
       font-size: 18.5px;
       max-width: 640px;
     }
-    .kt-cta__btn {
-      width: auto;
-      font-size: 17px;
-      border-radius: 6px;
-      padding: 19px 30px;
-      box-shadow: 0 18px 46px -20px rgba(0, 0, 0, 0.75);
-    }
-    .kt-cta__btn::after {
-      border-radius: 9px;
-    }
-    .kt-cta__btn:hover {
-      background: #fff;
-      transform: translateY(-1px);
-      box-shadow: 0 24px 56px -22px rgba(0, 0, 0, 0.85);
-    }
-    .kt-cta__btn:hover .kt-cta__arrow {
-      transform: translateX(4px);
-    }
     .kt-cta__ring {
       display: block;
-    }
-    .kt-cta__clip {
-      display: block;
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-      border-radius: inherit;
-      overflow: hidden;
-      pointer-events: none;
-    }
-    .kt-cta__sheen {
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(
-        100deg,
-        transparent 34%,
-        rgba(var(--glow), 0.32) 50%,
-        transparent 66%
-      );
-      transform: translateX(-130%);
     }
   }
 
@@ -361,15 +278,6 @@ const label = item ? navLabel(item, lang) : "Kontakt";
     .kt-cta__ring--2 {
       animation: kt-ringOut 3.6s ease-out infinite 1.8s;
     }
-    .kt-cta__sheen {
-      animation: kt-sweep 3.6s ease-in-out infinite;
-    }
-    .kt-cta__btn {
-      animation: kt-btnPulse 3.6s ease-in-out infinite;
-    }
-    .kt-cta__btn::after {
-      animation: kt-ctaRing 3.6s ease-out infinite;
-    }
   }
   @keyframes kt-ringOut {
     0% {
@@ -381,48 +289,6 @@ const label = item ? navLabel(item, lang) : "Kontakt";
     }
     100% {
       transform: rotate(45deg) scale(3.4);
-      opacity: 0;
-    }
-  }
-  @keyframes kt-sweep {
-    0% {
-      transform: translateX(-130%);
-    }
-    26% {
-      transform: translateX(130%);
-    }
-    100% {
-      transform: translateX(130%);
-    }
-  }
-  @keyframes kt-btnPulse {
-    0% {
-      transform: scale(1);
-    }
-    12% {
-      transform: scale(1.028);
-    }
-    28% {
-      transform: scale(1);
-    }
-    100% {
-      transform: scale(1);
-    }
-  }
-  @keyframes kt-ctaRing {
-    0% {
-      transform: scale(1);
-      opacity: 0;
-    }
-    5% {
-      opacity: 0.5;
-    }
-    28% {
-      transform: scale(1.15);
-      opacity: 0;
-    }
-    100% {
-      transform: scale(1.15);
       opacity: 0;
     }
   }

@@ -9,11 +9,11 @@
 // Dwa warianty (docs/analiza-podstrona-dla-kogo.md): "full" = pełna
 // animowana sekcja (podstrona /dla-kogo/); "teaser" = statyczna pierwsza
 // klatka sceny na stronie głównej (rozdział 00 + wachlarz okien + przycisk
-// MoreLink na podstronę) — bez stosu, licznika, cyfr i modułu scrolla.
+// SolidButton na podstronę) — bez stosu, licznika, cyfr i modułu scrolla.
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
 import { AUDIENCE_PATH, CONTACT_PATH } from "@/lib/routes";
-import MoreLink from "@/components/ui/MoreLink.astro";
+import SolidButton from "@/components/ui/SolidButton.astro";
 import AudienceMockWindow from "./AudienceMockWindow.astro";
 import ekranHome from "@/assets/audience/ekran-home.webp";
 import ekranCms from "@/assets/audience/ekran-cms.webp";
@@ -181,7 +181,7 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
               <div class="dk-morewrap">
                 {/* wrapper, nie klasa na komponencie — scoped CSS nie łapie
                     elementów renderowanych przez komponent potomny */}
-                <MoreLink
+                <SolidButton
                   href={AUDIENCE_PATH[lang]}
                   label={t("audience.more")}
                 />
@@ -393,7 +393,7 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
   .dk-cta:hover .arr {
     transform: translateX(6px);
   }
-  /* przycisk zajawki (MoreLink) — wrapper w flow rozdziału 00 */
+  /* przycisk zajawki (SolidButton) — wrapper w flow rozdziału 00 */
   .dk-morewrap {
     margin-top: 6px;
   }

@@ -1,0 +1,184 @@
+---
+// Wspólny wzorzec „animowanego CTA" — kremowy button (rodzina SolidButton)
+// z zapętlonym pakietem animacji na desktopie: przesuwający się błysk
+// (sheen), delikatny puls skali i rozchodzący się pomarańczowy ring
+// (::after); rytm 3.6s. Na mobile button statyczny, pełnej szerokości.
+// Style przeniesione 1:1 z banera Kontakt (KontaktBaner.astro, eksport
+// referencji docs/design/kontakt-baner.html) — JEDNO źródło prawdy dla
+// banera i primary CTA Oferty (OfertaButtons.astro); nie duplikuj skórki.
+// UWAGA: próg 861px = CONTACT_DESKTOP_MIN_PX (contact-config.ts) — @media
+// nie umie czytać var(), utrzymywać W PARZE (wzorzec sekcji).
+interface Props {
+  href: string;
+  label: string;
+  /** Dodatkowe klasy na rootcie — hooki layoutu/testów rodzica. */
+  class?: string;
+}
+const { href, label, class: className } = Astro.props;
+---
+
+<a class:list={["animated-cta", className]} href={href}>
+  <span class="animated-cta__clip" aria-hidden="true"
+    ><span class="animated-cta__sheen"></span></span
+  >
+  <span class="animated-cta__label">{label}</span>
+  <span class="animated-cta__arrow" aria-hidden="true">→</span>
+</a>
+
+<style>
+  .animated-cta {
+    /* atrament na jasnym wypełnieniu bez odpowiednika globalnego — lokalnie
+       (wzorzec SolidButton); easing pakietu animacji z referencji banera. */
+    --acta-ink: #180a08;
+    --acta-cz: cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    font-family: var(--font-body), sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    /* baner dziedziczył 1.5 (preflight) przez font:inherit — tu jawnie,
+       żeby wartość nie zależała od kontekstu osadzenia */
+    line-height: 1.5;
+    color: var(--acta-ink);
+    background: #f5f0ec;
+    border-radius: 10px;
+    padding: 18px 20px;
+    text-decoration: none;
+    box-shadow: 0 16px 40px -22px rgba(0, 0, 0, 0.8);
+    cursor: pointer;
+    transition:
+      transform 0.25s,
+      box-shadow 0.25s,
+      background 0.25s;
+  }
+  .animated-cta__label {
+    position: relative;
+    z-index: 2;
+  }
+  .animated-cta__arrow {
+    position: relative;
+    z-index: 2;
+    color: var(--accent);
+    transition: transform 0.3s var(--acta-cz);
+  }
+  .animated-cta__clip {
+    display: none;
+  }
+  .animated-cta::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 13px;
+    border: 1.5px solid var(--accent);
+    opacity: 0;
+    pointer-events: none;
+  }
+  .animated-cta:active {
+    transform: translateY(1px);
+  }
+  .animated-cta:focus-visible {
+    outline: 1px solid var(--accent);
+    outline-offset: 4px;
+  }
+
+  /* DESKTOP (≥861px) */
+  @media (min-width: 861px) {
+    .animated-cta {
+      width: auto;
+      font-size: 17px;
+      border-radius: 6px;
+      padding: 19px 30px;
+      box-shadow: 0 18px 46px -20px rgba(0, 0, 0, 0.75);
+    }
+    .animated-cta::after {
+      border-radius: 9px;
+    }
+    .animated-cta:hover {
+      background: #fff;
+      transform: translateY(-1px);
+      box-shadow: 0 24px 56px -22px rgba(0, 0, 0, 0.85);
+    }
+    .animated-cta:hover .animated-cta__arrow {
+      transform: translateX(4px);
+    }
+    .animated-cta__clip {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .animated-cta__sheen {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(
+        100deg,
+        transparent 34%,
+        rgba(var(--glow), 0.32) 50%,
+        transparent 66%
+      );
+      transform: translateX(-130%);
+    }
+  }
+
+  /* ANIMACJE — tylko desktop + brak redukcji ruchu (bramka jak w banerze) */
+  @media (min-width: 861px) and (prefers-reduced-motion: no-preference) {
+    .animated-cta__sheen {
+      animation: acta-sweep 3.6s ease-in-out infinite;
+    }
+    .animated-cta {
+      animation: acta-btnPulse 3.6s ease-in-out infinite;
+    }
+    .animated-cta::after {
+      animation: acta-ring 3.6s ease-out infinite;
+    }
+  }
+  @keyframes acta-sweep {
+    0% {
+      transform: translateX(-130%);
+    }
+    26% {
+      transform: translateX(130%);
+    }
+    100% {
+      transform: translateX(130%);
+    }
+  }
+  @keyframes acta-btnPulse {
+    0% {
+      transform: scale(1);
+    }
+    12% {
+      transform: scale(1.028);
+    }
+    28% {
+      transform: scale(1);
+    }
+    100% {
+      transform: scale(1);
+    }
+  }
+  @keyframes acta-ring {
+    0% {
+      transform: scale(1);
+      opacity: 0;
+    }
+    5% {
+      opacity: 0.5;
+    }
+    28% {
+      transform: scale(1.15);
+      opacity: 0;
+    }
+    100% {
+      transform: scale(1.15);
+      opacity: 0;
+    }
+  }
+</style>

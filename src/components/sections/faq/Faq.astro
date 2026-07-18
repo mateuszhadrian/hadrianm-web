@@ -141,7 +141,9 @@ const moreLead = t("faq.moreLead")
     --fq-cz: cubic-bezier(0.22, 1, 0.36, 1);
     position: relative;
     overflow: hidden; /* ghost-typografia nie może rozpychać strony */
-    padding: 216px 150px 130px;
+    /* pion: granice z ramkami About (góra) i banerem Kontakt (dół) —
+       ramki dokładają 0, więc pełny token po obu stronach */
+    padding: var(--section-gap) 150px var(--section-gap);
     color: var(--ink);
     font-family: var(--font-body), sans-serif;
   }
@@ -164,10 +166,12 @@ const moreLead = t("faq.moreLead")
   }
 
   /* ── chrome sekcji ── */
+  /* chrome jedzie w górę razem ze zbitym padding-top sekcji (--section-gap):
+     tag/meta nad ghostem, ghost wystaje nad nagłówek */
   .fq-tag {
     position: absolute;
     left: 150px;
-    top: 95px;
+    top: 36px;
     z-index: 9;
     display: flex;
     align-items: baseline;
@@ -189,7 +193,7 @@ const moreLead = t("faq.moreLead")
   .fq-meta {
     position: absolute;
     right: 150px;
-    top: 97px;
+    top: 38px;
     z-index: 9;
     font-family: var(--font-mono), monospace;
     font-size: 11px;
@@ -200,7 +204,7 @@ const moreLead = t("faq.moreLead")
   .fq-ghost {
     position: absolute;
     right: 130px;
-    top: 104px;
+    top: 56px;
     z-index: 4;
     pointer-events: none;
     user-select: none;
@@ -588,18 +592,18 @@ const moreLead = t("faq.moreLead")
      faq-scroll.ts (matchMedia). Zero filtrów, zero mierzenia w rAF. ═══ */
   @media (max-width: 860.98px) {
     .fq {
-      padding: 140px 26px 90px;
+      padding: var(--section-gap) 26px var(--section-gap);
     }
     .fq-tag {
       left: 26px;
-      top: 56px;
+      top: 16px;
     }
     .fq-meta {
       display: none;
     }
     .fq-ghost {
       right: 14px;
-      top: 66px;
+      top: 30px;
       font-size: 108px;
       -webkit-text-stroke-width: 1.2px;
     }

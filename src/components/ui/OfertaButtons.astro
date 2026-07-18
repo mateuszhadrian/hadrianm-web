@@ -1,10 +1,14 @@
 ---
 // Para CTA sekcji „Oferta" — port referencji docs/design/export-buttony-oferta/
 // na tokeny projektu (docs/analiza-podstrony-oferta.md, D8). Primary
-// „Przeglądaj pakiety" (wypełniony akcentem) + secondary „Proces współpracy"
+// „Przeglądaj pakiety" = wspólny AnimatedCta (skórka banera Kontakt:
+// kremowy fill + sheen/puls/ring na desktopie — poprawka 2
+// docs/visual-corrections-part1.md) + secondary „Proces współpracy"
 // (panel split z podpisem mono). Obok siebie na desktop → słupek na mobile;
 // próg = szerokość KONTENERA (container query), więc układa się poprawnie
 // w dowolnej sekcji. Etykiety podaje strona (i18n), strzałki są dekoracją.
+import AnimatedCta from "@/components/ui/AnimatedCta.astro";
+
 interface Props {
   /** Adres CTA primary (Przeglądaj pakiety). */
   packagesHref: string;
@@ -32,10 +36,15 @@ const {
 
 <div class:list={["pp-cta-wrap", className]}>
   <div class="pp-cta">
-    <a class="pp-btn pp-btn--solid" href={packagesHref}>
-      <span class="pp-label">{packagesLabel}</span>
-      <span class="pp-arrow" aria-hidden="true">→</span>
-    </a>
+    {
+      /* Klasa pp-btn--solid zostaje jako czysty hook DOM (e2e services.spec,
+         services-subpages.spec) — skórka i animacje żyją w AnimatedCta. */
+    }
+    <AnimatedCta
+      class="pp-btn--solid"
+      href={packagesHref}
+      label={packagesLabel}
+    />
 
     <a class="pp-btn pp-btn--split" href={processHref}>
       <span class="pp-txt">
@@ -57,19 +66,20 @@ const {
 
   .pp-cta {
     /* Wartości bez odpowiednika w tokenach globalnych (referencja: faint .38
-       vs token .5, poświata, atrament na wypełnieniu) — lokalnie. */
+       vs token .5) — lokalnie. */
     --pp-faint: rgba(245, 240, 236, 0.38);
     --pp-line-hover: rgba(245, 240, 236, 0.34);
     --pp-panel-hover: rgba(245, 240, 236, 0.09);
-    --pp-accent-glow: 255, 90, 71;
-    --pp-on-accent: #210a06;
 
     display: flex;
     align-items: stretch;
     gap: 18px;
     max-width: 760px;
   }
-  .pp-cta > .pp-btn {
+  /* :global — root komponentu AnimatedCta nie dostaje atrybutu scopingu
+     Astro; para dzieli szerokość po równo jak dotąd. */
+  .pp-cta > .pp-btn,
+  .pp-cta > :global(.animated-cta) {
     flex: 1;
   }
 
@@ -107,22 +117,6 @@ const {
   .pp-btn:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
-  }
-
-  /* ── PRIMARY — wypełniony (Przeglądaj pakiety) ── */
-  .pp-btn--solid {
-    padding: 19px 34px;
-    border: 1px solid transparent;
-    border-radius: 3px;
-    background: var(--accent);
-    color: var(--pp-on-accent);
-  }
-  .pp-btn--solid .pp-arrow {
-    color: var(--pp-on-accent);
-  }
-  .pp-btn--solid:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 16px 44px -14px rgba(var(--pp-accent-glow), 0.75);
   }
 
   /* ── SECONDARY — panel split (Proces współpracy).
@@ -182,9 +176,6 @@ const {
     .pp-btn,
     .pp-arrow {
       transition: none;
-    }
-    .pp-btn--solid:hover {
-      transform: none;
     }
   }
 </style>

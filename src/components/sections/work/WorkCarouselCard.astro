@@ -89,7 +89,12 @@ const cover =
   }
   /* Skalowanie urządzeń pod wąską kartę karuzeli (czysty CSS, bez JS). */
   .wk-car-card__media :global(.wd) {
-    --lap-w: clamp(180px, 62vw, 246px);
+    /* --wk-scale dziedziczy z .wk-car (WorkCarousel) — parametr strojenia. */
+    --lap-w: clamp(
+      calc(180px * var(--wk-scale, 1)),
+      calc(62vw * var(--wk-scale, 1)),
+      calc(246px * var(--wk-scale, 1))
+    );
     transition: transform 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
     will-change: transform;
   }

@@ -1,6 +1,6 @@
 // Podstrona „Dla kogo" (PL: /dla-kogo/, EN: /en/who-its-for/): pełna
 // animowana sekcja Audience przeniesiona ze strony głównej (tam statyczna
-// zajawka z przyciskiem MoreLink), scroll na LENISIE (inaczej niż
+// zajawka z buttonem SolidButton), scroll na LENISIE (inaczej niż
 // /realizacje/ — scena pinned+scrub+snap wymaga tej samej mechaniki co
 // wcześniej na głównej), BackButton + Footer wg wzorca /realizacje/.
 // Plan: docs/analiza-podstrona-dla-kogo.md.
@@ -65,7 +65,7 @@ for (const p of PAGES) {
         "href",
         CONTACT_PATH[p.lang],
       );
-      // Zajawkowy przycisk MoreLink żyje tylko na stronie głównej.
+      // Zajawkowy button SolidButton żyje tylko na stronie głównej.
       await expect(section.locator(".dk-morewrap")).toHaveCount(0);
     });
 

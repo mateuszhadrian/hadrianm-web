@@ -56,7 +56,8 @@ test("sweep zajawki oferty (strona główna) vs baseline", async ({
   await shoot(
     page,
     [
-      // Intro w połowie zakresu czytania (start top 58% → end bottom 44%).
+      // Intro w połowie zakresu czytania (osobne triggery per akapit .of-lit;
+      // starty w SERVICES_READ.paraStarts, end liczony z osi tempa).
       { name: "services-home-01-intro-mid", y: anchors.intro - vh * 0.1 },
       // Para CTA po revealu (próg top 92%).
       { name: "services-home-02-ctas", y: anchors.ctas - vh * 0.7 },

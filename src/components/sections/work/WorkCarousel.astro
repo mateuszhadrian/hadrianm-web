@@ -113,7 +113,11 @@ const dotsCount = projects.length + 1;
     --wk-peek: 50px;
     --wk-gap: 16px;
     --wk-pad: 22px;
-    max-width: 460px;
+    /* PARAMETR STROJENIA: skala kafelków karuzeli mobile; 1 = obecny wygląd,
+       1.15 = +15% itd. Konsumenci: flex-basis kafelka, max-width kontenera
+       (tu) oraz --lap-w mockupu (WorkCarouselCard). */
+    --wk-scale: 1.2;
+    max-width: calc(460px * var(--wk-scale));
     margin: 0 auto;
   }
   /* Karuzela = tylko mobile; na desktop widoczna jest galeria + kafel. */
@@ -146,7 +150,11 @@ const dotsCount = projects.length + 1;
     display: none;
   }
   .wk-car__track > * {
-    flex: 0 0 calc(100% - var(--wk-pad) - var(--wk-gap) - var(--wk-peek));
+    flex: 0 0
+      calc(
+        (100% - var(--wk-pad) - var(--wk-gap) - var(--wk-peek)) *
+          var(--wk-scale)
+      );
     scroll-snap-align: start;
     /* Każde machnięcie zatrzymuje się na krawędzi karty (jak tap w strzałkę),
        bez przeskakiwania kilku kart naraz. */

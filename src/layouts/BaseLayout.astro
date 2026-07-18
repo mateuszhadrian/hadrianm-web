@@ -14,10 +14,17 @@ import "@/styles/global.css";
 
 import Toast from "@/components/ui/toast/Toast.astro";
 
-// Preload głównego kroju above-the-fold (Archivo latin) — skraca okno
-// font-display:swap (mniejszy „przeskok" z fontu systemowego). Import ?url
-// zamiast hardkodu: hash pliku woff2 zmienia się co build.
+// Preload krojów above-the-fold — skraca okno font-display:swap (mniejszy
+// „przeskok" z fontu systemowego przy nawigacji). Import ?url zamiast
+// hardkodu: hash pliku woff2 zmienia się co build. Zestaw z audytu
+// (docs/visual-corrections-part1.md pkt 8): Archivo latin wszędzie;
+// Instrument Serif TYLKO italic (repo nie używa odmiany prostej — wszystkie
+// akcenty .sf/em mają font-style: italic); subsety latin-ext tylko na PL
+// (polskie diakrytyki w tekście i akcentach; EN jest czystym latin).
 import archivoWoff2 from "@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2?url";
+import archivoExtWoff2 from "@fontsource-variable/archivo/files/archivo-latin-ext-wght-normal.woff2?url";
+import serifItalicWoff2 from "@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url";
+import serifItalicExtWoff2 from "@fontsource/instrument-serif/files/instrument-serif-latin-ext-400-italic.woff2?url";
 
 interface Props {
   title?: string;
@@ -72,6 +79,74 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
       href={archivoWoff2}
       crossorigin
     />
+    <link
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href={serifItalicWoff2}
+      crossorigin
+    />
+    {
+      lang === "pl" && (
+        <>
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href={archivoExtWoff2}
+            crossorigin
+          />
+          <link
+            rel="preload"
+            as="font"
+            type="font/woff2"
+            href={serifItalicExtWoff2}
+            crossorigin
+          />
+        </>
+      )
+    }
+    <script is:inline>
+      // Mikro-fade przy nawigacji WEWNĘTRZNEJ (docs/visual-corrections-part1.md
+      // pkt 8): pierwsza wizyta w karcie (brak flagi sessionStorage) renderuje
+      // się bez żadnej bramki — zero wpływu na LCP (LHCI i Playwright wchodzą
+      // na zimno). Przy kolejnych nawigacjach treść wjeżdża krótkim fade'em
+      // zdejmowanym przez document.fonts.ready LUB twardy timeout 300 ms —
+      // strona nigdy nie zostaje ukryta (błąd JS/brak JS = brak klasy
+      // nav-fade, czyli domyślnie widoczna).
+      (() => {
+        try {
+          const KEY = "hm:visited";
+          const revisit = sessionStorage.getItem(KEY) === "1";
+          sessionStorage.setItem(KEY, "1");
+          if (!revisit) return;
+          const root = document.documentElement;
+          root.classList.add("nav-fade");
+          const reveal = () => root.classList.add("fonts-in");
+          setTimeout(reveal, 300);
+          if (document.fonts && document.fonts.ready)
+            document.fonts.ready.then(reveal, reveal);
+        } catch {
+          /* sessionStorage niedostępny (tryb prywatny) — bez fade */
+        }
+      })();
+    </script>
+    <style is:global>
+      /* Bramka mikro-fade — patrz inline skrypt wyżej. Stan bazowy (bez
+         .nav-fade) jest w pełni widoczny. */
+      html.nav-fade body {
+        opacity: 0;
+      }
+      html.nav-fade.fonts-in body {
+        opacity: 1;
+        transition: opacity 0.18s ease;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        html.nav-fade.fonts-in body {
+          transition: none;
+        }
+      }
+    </style>
     <title>{title}</title>
     {description && <meta name="description" content={description} />}
     {

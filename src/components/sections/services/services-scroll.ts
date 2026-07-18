@@ -4,8 +4,9 @@
 //
 // Dwa animowane warianty (bramka data-variant w Services.astro; wariant
 // packages jest statyczny i tego modułu nie ładuje):
-// - teaser (strona główna): słowa intro (spany .of-w) zapala jeden tween ze
-//   staggerem pod scrubem (mobile: zdaniami — kilka spanów zamiast ~80),
+// - teaser (strona główna): słowa intro (spany .of-w) zapala tween ze
+//   staggerem pod scrubem, osobny per akapit .of-lit (mobile: zdaniami —
+//   kilka spanów zamiast ~80),
 //   ghost „oferta" ma leniwy parallax (desktop), para CTA dostaje reveal
 //   klasą on (animuje CSS transition);
 // - process (/proces-wspolpracy/): nić = scaleY na .of-fill (czysty
@@ -91,20 +92,38 @@ function initTeaser(section: HTMLElement): void {
     .matches;
   splitLit(section, isMobileNow ? "sentences" : "words");
 
-  /* Zapalanie intro pod scrubem — wspólny kształt tweena desktop/mobile. */
+  /* Zapalanie intro pod scrubem — osobny tween + trigger PER AKAPIT .of-lit
+     (poprawka 5: docs/visual-corrections-part1.md). Start akapitu bierze
+     cfg.paraStarts[i]; end liczy kod tak, by TEMPO (sekundy osi tweenu na
+     px scrolla) było równe dawnej wspólnej osi na całym .of-intro
+     (refStartVh/refEndVh): gęstość staggera liczona od WSZYSTKICH spanów,
+     a dystans scrolla proporcjonalny do długości tweenu akapitu. */
   function readTween(cfg: typeof SERVICES_READ): void {
-    const spans = qa(".of-lit .of-w");
-    gsap.to(spans, {
-      opacity: 1,
-      ease: "none",
-      duration: cfg.duration,
-      stagger: { each: cfg.span / Math.max(spans.length, 1) },
-      scrollTrigger: {
-        trigger: intro,
-        start: cfg.start,
-        end: cfg.end,
-        scrub: cfg.scrub,
-      },
+    const total = qa(".of-lit .of-w").length;
+    const each = cfg.span / Math.max(total, 1);
+    const tweenLen = (n: number) => each * Math.max(n - 1, 0) + cfg.duration;
+    /* px scrolla na sekundę osi tweenu — dystans dawnego triggera
+       (introHeight + (refStart − refEnd)·vh) rozłożony na pełną oś.
+       Funkcja, nie stała: end jest funkcyjny, refresh mierzy na świeżo. */
+    const pxPerSec = () =>
+      (intro.offsetHeight +
+        (cfg.refStartVh - cfg.refEndVh) * window.innerHeight) /
+      tweenLen(total);
+    qa(".of-lit").forEach((para, i) => {
+      const spans = Array.from(para.querySelectorAll<HTMLElement>(".of-w"));
+      if (!spans.length) return;
+      gsap.to(spans, {
+        opacity: 1,
+        ease: "none",
+        duration: cfg.duration,
+        stagger: { each },
+        scrollTrigger: {
+          trigger: para,
+          start: cfg.paraStarts[i] ?? cfg.paraStarts[2],
+          end: () => `+=${pxPerSec() * tweenLen(spans.length)}`,
+          scrub: cfg.scrub,
+        },
+      });
     });
   }
 
