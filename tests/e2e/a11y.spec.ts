@@ -36,6 +36,8 @@ for (const path of [
   "/en/projects/",
   "/dla-kogo/",
   "/en/who-its-for/",
+  "/oferta/",
+  "/en/services/",
   "/proces-wspolpracy/",
   "/en/process/",
   "/pakiety/",

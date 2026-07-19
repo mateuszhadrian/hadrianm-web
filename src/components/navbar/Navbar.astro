@@ -7,6 +7,7 @@ import {
   CONTACT_PATH,
   FAQ_PATH,
   HOME_PATH,
+  SERVICES_PATH,
   WORK_INDEX_PATH,
 } from "@/lib/routes";
 
@@ -33,13 +34,16 @@ const currentPath = Astro.url.pathname.endsWith("/")
 const onHome = currentPath === homeHref;
 
 // Href pozycji menu: pozycje zmigrowane na podstrony (mapa niżej) prowadzą
-// wprost na nie; pozostałe to kotwice sekcji strony głównej — na podstronach
-// z pełną ścieżką (handleAnchorClick przechwytuje wyłącznie hrefy zaczynające
-// się od "#", więc pełne ścieżki nawigują natywnie). Docelowo prawie całe
-// menu przejdzie na podstrony (zajawki na głównej = zachęta do wejścia).
+// wprost na nie; ewentualne pozycje-kotwice sekcji strony głównej — na
+// podstronach z pełną ścieżką (handleAnchorClick przechwytuje wyłącznie
+// hrefy zaczynające się od "#", więc pełne ścieżki nawigują natywnie).
+// Od migracji Oferty (docs/analiza-podstrona-oferta-hub.md) WSZYSTKIE
+// pozycje prowadzą na podstrony (zajawki na głównej = zachęta do wejścia);
+// fallback kotwicowy zostaje dla ewentualnych przyszłych pozycji.
 const SUBPAGE_PATHS: Partial<Record<string, Record<Lang, string>>> = {
   work: WORK_INDEX_PATH,
   audience: AUDIENCE_PATH,
+  services: SERVICES_PATH,
   about: ABOUT_PATH,
   faq: FAQ_PATH,
   contact: CONTACT_PATH,

@@ -18,6 +18,14 @@ export const AUDIENCE_PATH: Record<Lang, string> = {
   en: "/en/who-its-for/",
 };
 
+// Hub oferty — rozgałęźnik na /pakiety/ i /proces-wspolpracy/ (podstrona
+// docelowa pozycji „Oferta" w navbarze; sekcja na stronie głównej zostaje
+// zajawką dostępną scrollem).
+export const SERVICES_PATH: Record<Lang, string> = {
+  pl: "/oferta/",
+  en: "/en/services/",
+};
+
 export const SERVICES_PROCESS_PATH: Record<Lang, string> = {
   pl: "/proces-wspolpracy/",
   en: "/en/process/",

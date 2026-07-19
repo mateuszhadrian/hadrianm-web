@@ -1,0 +1,109 @@
+---
+// Secondary CTA „panel split" (etykieta + podpis mono | pole strzałki) —
+// skórka wydzielona z OfertaButtons.astro (port referencji
+// docs/design/export-buttony-oferta/), by parę CTA sekcji Oferta i karty
+// huba /oferta/ zasilało JEDNO źródło stylów (analogia: AnimatedCta dla
+// primary). Klasy pp-* zostają jako kontrakt DOM testów e2e
+// (services.spec, services-subpages.spec). Hover świeci pole strzałki,
+// tekst celowo NIE.
+interface Props {
+  href: string;
+  label: string;
+  /** Podpis mono pod etykietą (pusty = ukryty). */
+  sub?: string;
+  /** Dodatkowe klasy na rootcie — hooki layoutu/testów rodzica. */
+  class?: string;
+}
+const { href, label, sub, class: className } = Astro.props;
+---
+
+<a class:list={["pp-btn", "pp-btn--split", className]} href={href}>
+  <span class="pp-txt">
+    <span class="pp-label">{label}</span>
+    {sub && <span class="pp-sub">{sub}</span>}
+  </span>
+  <span class="pp-arrowcell">
+    <span class="pp-arrow" aria-hidden="true">→</span>
+  </span>
+</a>
+
+<style>
+  .pp-btn {
+    /* Wartości hoveru bez odpowiednika w tokenach globalnych — lokalnie.
+       Podpis mono używa globalnego --faint (0.5): referencyjne .38 nie
+       spełnia AA (ratchet axe z 2026-07-13 — jak cały drobny druk). */
+    --pp-line-hover: rgba(245, 240, 236, 0.34);
+    --pp-panel-hover: rgba(245, 240, 236, 0.09);
+
+    display: inline-flex;
+    align-items: stretch;
+    justify-content: center;
+    font-family: var(--font-body), sans-serif;
+    font-size: 17px;
+    line-height: 1;
+    color: var(--ink);
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    overflow: hidden;
+    transition:
+      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+      background 0.3s,
+      border-color 0.3s,
+      box-shadow 0.3s,
+      color 0.3s;
+  }
+  .pp-txt {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    padding: 15px 24px;
+  }
+  .pp-label {
+    font-weight: 600;
+    font-size: 16px;
+    letter-spacing: -0.01em;
+  }
+  .pp-sub {
+    font-family: var(--font-mono), monospace;
+    font-size: 9.5px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .pp-arrowcell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 22px;
+    border-left: 1px solid var(--line);
+  }
+  .pp-arrow {
+    color: var(--accent);
+    font-weight: 500;
+    transition: transform 0.25s;
+  }
+  .pp-btn:hover {
+    border-color: var(--pp-line-hover);
+  }
+  .pp-btn:hover .pp-arrowcell {
+    background: var(--pp-panel-hover);
+  }
+  .pp-btn:hover .pp-arrow {
+    transform: translateX(5px);
+  }
+  .pp-btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pp-btn,
+    .pp-arrow {
+      transition: none;
+    }
+  }
+</style>

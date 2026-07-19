@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oferta — sedno (Wstęp + karty Pakiety / Proces)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<!-- Podgląd: Google Fonts. W Astro → fontsource (rodzina 'Archivo Variable'). -->
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=Instrument+Serif:ital@1&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- ŹRÓDŁO PRAWDY: -->
+<link rel="stylesheet" href="oferta-hub.css">
+<style>
+/* ── tylko oprawa podglądu standalone: tło sekcji „Czerwona Mgła”.
+   W realnym kodzie dostarcza je sekcja #oferta (of-atmo / of-mesh) — NIE kopiuj. ── */
+:root{--bg:#070507}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{text-decoration:none}
+.sec{position:relative;overflow:hidden;min-height:100vh;padding:clamp(56px,6vw,104px) 0;display:flex;align-items:center}
+.sec-atmo{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.sec-bl{position:absolute;border-radius:50%;filter:blur(48px)}
+.sec-bl.b1{right:-12vw;top:-6vw;width:52vw;height:52vw;background:radial-gradient(closest-side,rgba(214,38,38,.32),transparent 72%)}
+.sec-bl.b2{left:-16vw;top:34%;width:42vw;height:42vw;background:radial-gradient(closest-side,rgba(130,20,32,.28),transparent 72%)}
+.sec-bl.b3{right:-10vw;bottom:-16vw;width:40vw;height:40vw;background:radial-gradient(closest-side,rgba(255,90,71,.13),transparent 72%)}
+.sec-mesh{position:absolute;inset:0;pointer-events:none;z-index:1;mix-blend-mode:multiply;opacity:.45;background-image:radial-gradient(circle at center,rgba(0,0,0,.96) 2.17px,transparent 3.69px);background-size:10.41px 10.41px}
+/* marginesy treści jak w sekcji Oferta (150 / 70 / 26) */
+.sec-inner{position:relative;z-index:2;width:100%;padding:0 150px}
+@media (max-width:1280px){.sec-inner{padding:0 70px}}
+@media (max-width:860.98px){.sec-inner{padding:0 26px}}
+</style>
+</head>
+<body>
+<section class="sec" aria-label="Oferta — sedno">
+  <div class="sec-atmo" aria-hidden="true"><span class="sec-bl b1"></span><span class="sec-bl b2"></span><span class="sec-bl b3"></span></div>
+  <div class="sec-mesh" aria-hidden="true"></div>
+  <div class="sec-inner">
+
+    <!-- ══════════════ SEDNO — skopiuj ten blok (.ofh) ══════════════ -->
+    <div class="ofh js">
+      <div class="ofh-intro">
+        <p class="ofh-lead">Stawiam na konkrety i <span class="ofh-serif">pełną przejrzystość</span>.</p>
+        <p class="ofh-sub">Sprawdź, z jakich rozwiązań możesz skorzystać i jak krok po kroku poprowadzę Cię przez cały proces wdrożenia.</p>
+      </div>
+
+      <div class="ofh-cards">
+        <article class="ofh-card ofh-card--feat">
+          <div class="ofh-kick">01 / Pakiety</div>
+          <h3 class="ofh-name">Pakiety</h3>
+          <p class="ofh-desc">Przejrzyste warianty i zakres usług.</p>
+          <div class="ofh-foot">
+            <a class="pp-btn pp-btn--solid" href="/pakiety">
+              <span class="pp-label">Przeglądaj pakiety</span>
+              <span class="pp-arrow" aria-hidden="true">→</span>
+            </a>
+          </div>
+        </article>
+
+        <article class="ofh-card">
+          <div class="ofh-kick">02 / Proces</div>
+          <h3 class="ofh-name">Proces</h3>
+          <p class="ofh-desc">Od pierwszej rozmowy do publikacji w sieci.</p>
+          <div class="ofh-foot">
+            <a class="pp-btn pp-btn--split" href="/proces">
+              <span class="pp-txt">
+                <span class="pp-label">Proces współpracy</span>
+                <span class="pp-sub">Jak wygląda praca ze mną</span>
+              </span>
+              <span class="pp-arrowcell"><span class="pp-arrow" aria-hidden="true">→</span></span>
+            </a>
+          </div>
+        </article>
+      </div>
+    </div>
+    <!-- ══════════════ /SEDNO ══════════════ -->
+
+  </div>
+</section>
+
+<script>
+/* Opcjonalny reveal na wejściu — bezpieczny fallback bez JS.
+   Blok startuje z klasą „js”; obserwator dodaje „is-inview”.
+   W realnym kodzie: dodaj „is-inview” swoim istniejącym obserwatorem/GSAP,
+   albo od razu (bez animacji), albo usuń klasę „js” dla trybu w pełni statycznego. */
+(function () {
+  var nodes = document.querySelectorAll(".ofh.js");
+  if (!("IntersectionObserver" in window)) {
+    nodes.forEach(function (n) { n.classList.add("is-inview"); });
+    return;
+  }
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (e) {
+      if (e.isIntersecting) { e.target.classList.add("is-inview"); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.2 });
+  nodes.forEach(function (n) { obs.observe(n); });
+})();
+</script>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#070507"/><rect x="12" y="30" width="34" height="40" rx="3" fill="none" stroke="#FF5A47" stroke-width="2"/><rect x="54" y="30" width="34" height="40" rx="3" fill="none" stroke="#F5F0EC" stroke-opacity="0.35" stroke-width="1.5"/><rect x="17" y="58" width="24" height="7" rx="1.5" fill="#F5F0EC"/><rect x="59" y="58" width="24" height="7" rx="1.5" fill="none" stroke="#F5F0EC" stroke-opacity="0.4"/></svg>
+</template>
+</body>
+</html>

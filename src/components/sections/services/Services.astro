@@ -6,10 +6,13 @@
 // renderuje pełną, statyczną treść (stany startowe animacji siedzą w CSS pod
 // media no-preference i klasą .js sekcji).
 //
-// Trzy warianty (docs/analiza-podstrony-oferta.md): "teaser" = intro czytane
-// scrollem + para CTA na podstrony (strona główna); "process" = nić A z 5
-// krokami + fixed progres (/proces-wspolpracy/); "packages" = pakiety P4
-// (/pakiety/, bez modułu scrolla — tylko hover w CSS).
+// Cztery warianty (docs/analiza-podstrony-oferta.md +
+// docs/analiza-podstrona-oferta-hub.md): "teaser" = intro czytane
+// scrollem + para CTA na podstrony (strona główna); "hub" = rozgałęźnik
+// /oferta/ (wstęp + karty Pakiety/Proces, port referencji
+// docs/design/export-oferta-hub/); "process" = nić A z 5 krokami + fixed
+// progres (/proces-wspolpracy/); "packages" = pakiety P4 (/pakiety/,
+// bez modułu scrolla — tylko hover w CSS).
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
 import {
@@ -17,22 +20,25 @@ import {
   SERVICES_PACKAGES_PATH,
   SERVICES_PROCESS_PATH,
 } from "@/lib/routes";
+import AnimatedCta from "@/components/ui/AnimatedCta.astro";
 import OfertaButtons from "@/components/ui/OfertaButtons.astro";
+import SplitCta from "@/components/ui/SplitCta.astro";
 
 interface Props {
   lang: Lang;
-  variant: "teaser" | "process" | "packages";
+  variant: "teaser" | "hub" | "process" | "packages";
 }
 const { lang, variant } = Astro.props;
 const t = useTranslations(lang);
 const item = navItems.find((n) => n.id === "services");
 const label = item ? navLabel(item, lang) : "Oferta";
 
-// Tag chrome'u: strona główna trzyma numerację sekcji (02 / Oferta);
-// podstrony — ścieżkę w obrębie oferty (Oferta / Proces|Pakiety), bo „02"
+// Tag chrome'u: strona główna i hub trzymają numerację sekcji (02 / Oferta
+// — hub to pełnoprawna „Oferta", jak 05 / FAQ na /faq/); podstrony process/
+// packages — ścieżkę w obrębie oferty (Oferta / Proces|Pakiety), bo „02"
 // opisuje porządek sekcji na stronie głównej (D6 analizy).
 const tag =
-  variant === "teaser"
+  variant === "teaser" || variant === "hub"
     ? { num: "02", lbl: label }
     : {
         num: label,
@@ -159,6 +165,55 @@ const extras = [
             processLabel={t("services.ctaProcess")}
             processSub={t("services.ctaProcessSub")}
           />
+        </div>
+      </div>
+    )
+  }
+
+  <!-- ── HUB: wstęp + karty-ścieżki Pakiety / Proces (/oferta/) ── -->
+  {
+    variant === "hub" && (
+      <div class="ofh">
+        {/* Nagłówek mobile (na desktopie ukryty — rolę meta pełni .of-meta
+            w prawym górnym rogu z pełnym tekstem services.meta): ghost
+            „oferta" jak na stronie głównej + czerwony mono-kicker w wersji
+            skróconej (osobny klucz — decyzja Mateusza 2026-07-19). */}
+        <div class="ofh-ghost" aria-hidden="true">
+          {t("services.ghost")}
+        </div>
+        <div class="ofh-kicker">{t("services.hub.kicker")}</div>
+        <div class="ofh-intro">
+          <p class="ofh-lead">
+            {t("services.hub.leadPre")}{" "}
+            <span class="ofh-serif">{t("services.hub.leadAccent")}</span>
+          </p>
+          <p class="ofh-sub">{t("services.hub.sub")}</p>
+        </div>
+        <div class="ofh-cards">
+          <article class="ofh-card ofh-card--feat">
+            <div class="ofh-kick">01 / {t("services.tagPackages")}</div>
+            <h2 class="ofh-name">{t("services.tagPackages")}</h2>
+            <p class="ofh-desc">{t("services.hub.pkDesc")}</p>
+            <div class="ofh-foot">
+              <AnimatedCta
+                class="pp-btn--solid"
+                href={SERVICES_PACKAGES_PATH[lang]}
+                label={t("services.ctaPackages")}
+              />
+            </div>
+          </article>
+          <article class="ofh-card">
+            <div class="ofh-kick">02 / {t("services.tagProcess")}</div>
+            <h2 class="ofh-name">{t("services.tagProcess")}</h2>
+            <p class="ofh-desc">{t("services.hub.procDesc")}</p>
+            <div class="ofh-foot">
+              <SplitCta
+                href={SERVICES_PROCESS_PATH[lang]}
+                label={t("services.ctaProcess")}
+                sub={t("services.ctaProcessSub")}
+              />
+            </div>
+          </article>
         </div>
       </div>
     )
@@ -324,7 +379,7 @@ const extras = [
   // Wariant packages jest statyczny (hover w CSS) i nie pobiera chunka
   // GSAP w ogóle; moduł rozgałęzia się po data-variant.
   if (
-    (variant === "teaser" || variant === "process") &&
+    (variant === "teaser" || variant === "hub" || variant === "process") &&
     matchMedia("(prefers-reduced-motion: no-preference)").matches
   ) {
     import("./services-scroll").then((m) => m.initServicesScroll());
@@ -468,6 +523,123 @@ const extras = [
      max-width 760px i własną responsywność po szerokości kontenera) */
   .of-ctas {
     margin-top: 96px;
+  }
+
+  /* ═══ HUB (/oferta/) — wstęp + karty-ścieżki (port export-oferta-hub) ═══
+     Jeden ekran: blok wycentrowany w pionie na min-height 100svh; górny
+     padding mija fixed chrome strony (BackButton + tag). Buttony w stopkach
+     kart = współdzielone AnimatedCta / SplitCta na pełną szerokość. */
+  .ofh {
+    position: relative;
+    z-index: 6;
+    box-sizing: border-box;
+    min-height: 100vh;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 190px 150px 80px;
+  }
+  /* nagłówek mobile (ghost + kicker) — na desktopie ukryty, rolę meta
+     pełni .of-meta w prawym górnym rogu */
+  .ofh-ghost,
+  .ofh-kicker {
+    display: none;
+  }
+  .ofh-lead {
+    margin: 0;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    font-size: clamp(28px, 2.2vw, 41px);
+    line-height: 1.22;
+    color: var(--ink);
+    text-wrap: pretty;
+  }
+  .ofh-serif {
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .ofh-sub {
+    margin: 22px 0 0;
+    max-width: 770px;
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--muted);
+    text-wrap: pretty;
+  }
+  .ofh-cards {
+    margin-top: 54px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .ofh-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 344px;
+    padding: 36px 38px 34px;
+    border: 1px solid var(--line);
+    border-top: 2px solid rgba(245, 240, 236, 0.3);
+    border-radius: 4px;
+    background: rgba(245, 240, 236, 0.014);
+    transition:
+      transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+      border-color 0.35s,
+      background 0.35s;
+  }
+  .ofh-card:hover {
+    transform: translateY(-5px);
+    background: rgba(245, 240, 236, 0.03);
+    border-color: rgba(245, 240, 236, 0.22);
+  }
+  .ofh-card--feat {
+    border-top-color: var(--accent);
+  }
+  .ofh-kick {
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.26em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .ofh-card--feat .ofh-kick {
+    color: var(--accent);
+  }
+  .ofh-name {
+    margin: 18px 0 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: 42px;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .ofh-desc {
+    margin: 15px 0 0;
+    max-width: 360px;
+    font-size: 18px;
+    line-height: 1.5;
+    color: var(--muted);
+  }
+  .ofh-foot {
+    margin-top: auto;
+    padding-top: 36px;
+  }
+  /* :global — rooty komponentów CTA nie dostają atrybutu scopingu Astro;
+     w stopce karty button wypełnia całą szerokość (desktopowy AnimatedCta
+     ma bazowo width:auto). */
+  .ofh-foot :global(.pp-btn),
+  .ofh-foot :global(.animated-cta) {
+    width: 100%;
   }
 
   /* ═══ NAGŁÓWEK PODSTRONY PROCESU — typografia współdzielona selektorami
@@ -1047,6 +1219,29 @@ const extras = [
       opacity: 1;
       transform: none;
     }
+    /* hub: reveal wstęp → karta 1 → karta 2 (stagger przez transition-delay;
+       klasę on nadaje revealOnce z services-scroll). Jak w referencji —
+       po wejściu transition karty zostaje 0.8s (hover lift płynie wolniej;
+       świadomy trade-off za brak dodatkowego wrappera). */
+    .of.js .ofh-intro,
+    .of.js .ofh-card {
+      opacity: 0;
+      transform: translateY(26px);
+      transition:
+        opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .of.js .ofh-intro.on,
+    .of.js .ofh-card.on {
+      opacity: 1;
+      transform: none;
+    }
+    .of.js .ofh-card.on {
+      transition-delay: 0.08s;
+    }
+    .of.js .ofh-card.on:nth-of-type(2) {
+      transition-delay: 0.16s;
+    }
   }
 
   /* ═══ MOBILE (<861px) — wersja lekka ═══ */
@@ -1084,10 +1279,83 @@ const extras = [
       margin-top: 110px;
     }
 
+    /* hub: nagłówek podstrony jak na siostrzanych podstronach (ghost
+       „oferta" + czerwony kicker nad treścią, start od góry zamiast
+       centrowania) + słupek kart pełnej szerokości, Pakiety na górze
+       (kolejność DOM) */
+    .ofh {
+      justify-content: flex-start;
+      padding: 170px 26px 64px;
+    }
+    /* ghost W CAŁOŚCI między tagiem a kickerem (wzorzec kt-ghost na
+       /kontakt/: od prawej, zaraz pod tagiem) — kicker zaczyna się
+       dopiero pod nim (padding-top .ofh) */
+    .ofh-ghost {
+      display: block;
+      position: absolute;
+      right: 14px;
+      top: 66px;
+      z-index: -1;
+      pointer-events: none;
+      user-select: none;
+      font-family: var(--font-display), sans-serif;
+      font-weight: 800;
+      font-size: 118px;
+      line-height: 0.82;
+      letter-spacing: -0.045em;
+      white-space: nowrap;
+      color: transparent;
+      -webkit-text-stroke: 1.2px rgba(245, 240, 236, 0.09);
+    }
+    .ofh-kicker {
+      display: block;
+      margin: 0 0 18px;
+      font-family: var(--font-mono), monospace;
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+    .ofh-lead {
+      font-size: 25px;
+    }
+    .ofh-sub {
+      margin-top: 16px;
+      font-size: 15.5px;
+    }
+    .ofh-cards {
+      margin-top: 34px;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .ofh-card {
+      min-height: 0;
+      padding: 26px 24px 24px;
+    }
+    .ofh-card:hover {
+      transform: none;
+    }
+    .ofh-name {
+      margin-top: 12px;
+      font-size: 30px;
+    }
+    .ofh-desc {
+      margin-top: 10px;
+      font-size: 15px;
+    }
+    .ofh-foot {
+      padding-top: 22px;
+    }
+
     /* podstrony: sekcja otwiera stronę — tag niżej, spod fixed BackButtona
        w slocie brandu (na głównej nad tagiem jest poprzednia sekcja) */
     .of--sub .of-tag {
       top: 118px;
+    }
+    /* hub: tag wysoko jak na /kontakt/ (kt-tag 56px) — pod nim siedzi
+       ghost, więc nie koliduje z treścią */
+    .of[data-variant="hub"] .of-tag {
+      top: 56px;
     }
     .of-pghead {
       padding: 178px 26px 6px;
@@ -1222,6 +1490,7 @@ const extras = [
   /* wąski desktop: mniejsze marginesy */
   @media (min-width: 861px) and (max-width: 1280px) {
     .of-intro,
+    .ofh,
     .of-pghead,
     .of-proces,
     #packages {

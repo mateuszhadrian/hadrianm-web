@@ -2,13 +2,16 @@
 // docs/design/oferta-referencja/; decyzje: docs/analiza-sekcja-oferta.md,
 // podział na warianty: docs/analiza-podstrony-oferta.md).
 //
-// Dwa animowane warianty (bramka data-variant w Services.astro; wariant
+// Trzy animowane warianty (bramka data-variant w Services.astro; wariant
 // packages jest statyczny i tego modułu nie ładuje):
 // - teaser (strona główna): słowa intro (spany .of-w) zapala tween ze
 //   staggerem pod scrubem, osobny per akapit .of-lit (mobile: zdaniami —
 //   kilka spanów zamiast ~80),
 //   ghost „oferta" ma leniwy parallax (desktop), para CTA dostaje reveal
 //   klasą on (animuje CSS transition);
+// - hub (/oferta/): jednorazowy reveal wstępu i kart klasą on (stagger
+//   robi CSS transition-delay) — blok siedzi u szczytu strony, więc trigger
+//   odpala zwykle od razu po init;
 // - process (/proces-wspolpracy/): nić = scaleY na .of-fill (czysty
 //   transform); kroki/węzły dostają klasy on/lit z progów ScrollTriggera;
 //   cyfry-ghost mają leniwy parallax (desktop); fixed progres 01–05 włącza
@@ -23,6 +26,7 @@ import {
   ghostParallax,
   makeProgress,
   motionMedia,
+  revealOnce,
   scopedQueries,
 } from "@/scripts/section-helpers";
 import {
@@ -150,6 +154,31 @@ function initTeaser(section: HTMLElement): void {
   ScrollTrigger.refresh();
 }
 
+/* ═══ HUB (/oferta/): jednorazowy reveal wstępu i kart ═══ */
+function initHub(section: HTMLElement): void {
+  const { q, qa } = scopedQueries(section);
+  const hub = q(".ofh");
+  if (!hub) return;
+  const intro = q(".ofh-intro");
+  const targets = [intro, ...qa(".ofh-card")].filter(
+    (el): el is HTMLElement => el !== null,
+  );
+  if (!targets.length) return;
+
+  // motionMedia tylko jako pas bezpieczeństwa motionOK (układ hub jest
+  // wspólny desktop/mobile); stagger kart robi CSS transition-delay.
+  motionMedia(SERVICES_DESKTOP_MIN_PX, () => {
+    revealOnce(hub, "top 85%", targets);
+    return () => {
+      // Stan poza kontrolą gsap (klasa on) — sprzątamy sami.
+      for (const el of targets) el.classList.remove("on");
+    };
+  });
+
+  // Pozycje triggerów po zbudowaniu sekcji (wzorzec About/Audience).
+  ScrollTrigger.refresh();
+}
+
 /* ═══ PROCESS (/proces-wspolpracy/): nić + kroki + progres ═══ */
 function initProcess(section: HTMLElement): void {
   const { q, qa } = scopedQueries(section);
@@ -269,5 +298,6 @@ export function initServicesScroll(): void {
   const section = document.querySelector<HTMLElement>("#services");
   if (!section) return;
   if (section.dataset.variant === "teaser") initTeaser(section);
+  else if (section.dataset.variant === "hub") initHub(section);
   else if (section.dataset.variant === "process") initProcess(section);
 }

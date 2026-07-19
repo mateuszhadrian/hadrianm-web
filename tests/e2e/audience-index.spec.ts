@@ -6,7 +6,7 @@
 // Plan: docs/analiza-podstrona-dla-kogo.md.
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
-import { CONTACT_PATH } from "../../src/lib/routes";
+import { SERVICES_PATH } from "../../src/lib/routes";
 import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
 import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
@@ -60,10 +60,10 @@ for (const p of PAGES) {
       await expect(section.locator(".dk-ch")).toHaveCount(4);
       await expect(section.locator(".dk-card")).toHaveCount(3);
       await expect(section.locator(".dk-progress")).toBeAttached();
-      // CTA rozdziału 03 prowadzi na podstronę kontaktu.
+      // CTA rozdziału 03 „Poznaj ofertę" prowadzi na hub /oferta/.
       await expect(section.locator(".dk-cta")).toHaveAttribute(
         "href",
-        CONTACT_PATH[p.lang],
+        SERVICES_PATH[p.lang],
       );
       // Zajawkowy button SolidButton żyje tylko na stronie głównej.
       await expect(section.locator(".dk-morewrap")).toHaveCount(0);
@@ -84,13 +84,13 @@ for (const p of PAGES) {
         .toBe(true);
     });
 
-    test(`navbar podstrony: kotwice → strona główna, Dla kogo = bieżąca, język → odpowiednik`, async ({
+    test(`navbar podstrony: Oferta → hub, Dla kogo = bieżąca, język → odpowiednik`, async ({
       page,
     }) => {
       await gotoReady(page, p.path);
-      // Kotwice sekcji prowadzą na stronę główną (pełna nawigacja).
+      // Pozycja „Oferta" prowadzi na hub /oferta/ (migracja: analiza huba).
       await expect(
-        page.locator(`.nav-link[href="${p.homePath}#services"]`),
+        page.locator(`.nav-link[href="${SERVICES_PATH[p.lang]}"]`),
       ).toBeAttached();
       // Link Dla kogo wskazuje bieżącą podstronę (aria-current).
       const self = page.locator(`.nav-link[href="${p.path}"]`);
@@ -178,17 +178,17 @@ test.describe("scroll mobile: natywny (tryb smoothScroll='desktop')", () => {
   });
 });
 
-test.describe("CTA rozdziału 03 nawiguje na podstronę kontaktu", () => {
+test.describe("CTA rozdziału 03 nawiguje na hub oferty", () => {
   test.skip(({ isMobile }) => !isMobile, "we flow mobile CTA jest widoczne");
 
-  test("tap w CTA przechodzi na /kontakt/", async ({ page }) => {
+  test("tap w CTA przechodzi na /oferta/", async ({ page }) => {
     await gotoReady(page, "/dla-kogo/");
     const cta = page.locator("#audience .dk-cta");
     await cta.scrollIntoViewIfNeeded();
     await page.waitForTimeout(300);
     await cta.click();
-    await expect(page).toHaveURL(/\/kontakt\/?$/);
-    await expect(page.locator("#contact .kt-form")).toBeAttached();
+    await expect(page).toHaveURL(/\/oferta\/?$/);
+    await expect(page.locator("#services .ofh-card")).toHaveCount(2);
   });
 });
 

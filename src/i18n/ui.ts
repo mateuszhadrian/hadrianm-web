@@ -91,6 +91,13 @@ export const ui = {
     "services.ctaProcessSub": "Jak wygląda praca ze mną",
     "services.tagProcess": "Proces",
     "services.tagPackages": "Pakiety",
+    "services.hub.kicker": "Dopasowane rozwiązania",
+    "services.hub.leadPre": "Stawiam na konkrety i",
+    "services.hub.leadAccent": "pełną przejrzystość.",
+    "services.hub.sub":
+      "Sprawdź, z jakich rozwiązań możesz skorzystać i jak krok po kroku poprowadzę Cię przez cały proces wdrożenia.",
+    "services.hub.pkDesc": "Przejrzyste warianty i zakres usług.",
+    "services.hub.procDesc": "Od pierwszej rozmowy do publikacji w sieci.",
     "services.proc.kick": "Jak wygląda praca ze mną",
     "services.proc.headLead": "proces",
     "services.proc.headAccent": "współpracy",
@@ -165,6 +172,10 @@ export const ui = {
     "services.extra.x3t": "Pomoc z tekstami",
     "services.extra.x3p":
       "redakcja treści, które brzmią profesjonalnie i zachęcają do kontaktu",
+    "servicesPage.title": "Oferta — hadrianm.pl",
+    "servicesPage.description":
+      "Oferta stron internetowych: przejrzyste pakiety i proces współpracy krok po kroku. Wybierz ścieżkę — przeglądaj pakiety albo zobacz, jak wygląda praca ze mną.",
+    "servicesPage.back": "Wróć",
     "processPage.title": "Proces współpracy — hadrianm.pl",
     "processPage.description":
       "Pięć kroków od pierwszej rozmowy do startu Twojej strony — zobacz, jak krok po kroku wygląda współpraca ze mną.",
@@ -379,6 +390,13 @@ export const ui = {
     "services.ctaProcessSub": "What working with me looks like",
     "services.tagProcess": "Process",
     "services.tagPackages": "Packages",
+    "services.hub.kicker": "Tailored solutions",
+    "services.hub.leadPre": "I focus on specifics and",
+    "services.hub.leadAccent": "full transparency.",
+    "services.hub.sub":
+      "See which solutions you can choose from and how, step by step, I will guide you through the whole process.",
+    "services.hub.pkDesc": "Clear variants and the scope of services.",
+    "services.hub.procDesc": "From the first conversation to going live.",
     "services.proc.kick": "What working with me looks like",
     "services.proc.headLead": "collaboration",
     "services.proc.headAccent": "process",
@@ -453,6 +471,10 @@ export const ui = {
     "services.extra.x3t": "Help with copy",
     "services.extra.x3p":
       "copy editing that sounds professional and encourages contact",
+    "servicesPage.title": "Services — hadrianm.pl",
+    "servicesPage.description":
+      "Website services: clear packages and a step-by-step collaboration process. Choose your path — browse the packages or see what working with me looks like.",
+    "servicesPage.back": "Back",
     "processPage.title": "Collaboration process — hadrianm.pl",
     "processPage.description":
       "Five steps from the first conversation to your website's launch — see, step by step, what working with me looks like.",
