@@ -1,12 +1,16 @@
 ---
-// Podstrony sekcji „Oferta" (plan: docs/analiza-podstrony-oferta.md):
+// Podstrony sekcji „Oferta" (plany: docs/analiza-podstrony-oferta.md +
+// docs/analiza-podstrona-oferta-hub.md): /oferta/ (EN /en/services/) =
+// wariant "hub" (rozgałęźnik: wstęp + karty Pakiety/Proces),
 // /proces-wspolpracy/ (EN /en/process/) = wariant "process" i /pakiety/
 // (EN /en/packages/) = wariant "packages" — sekcja przeniesiona ze strony
 // głównej (tam zostało intro-zajawka z parą CTA). Wzorzec chrome'u strony
 // = AudiencePage.astro (BackButton w miejscu brandu, współdzielony Footer,
 // jedna statyczna warstwa ambientu — tu RED, jak tło sekcji na głównej),
 // scroll w trybie "desktop": Lenis na desktopie (scrub nici/intro czuje się
-// jak na głównej), mobile NATYWNIE (flow + toggleClass, Lenis nic nie wnosi).
+// jak na głównej), mobile NATYWNIE (flow + toggleClass, Lenis nic nie
+// wnosi). Wyjątek hub: strona 1-ekranowa bez scen scrubowanych — scroll
+// w pełni NATYWNY (smoothScroll=false, wzorzec /realizacje/).
 import BaseLayout from "@/layouts/BaseLayout.astro";
 import Navbar from "@/components/navbar/Navbar.astro";
 import AmbientBackground from "@/components/backgrounds/AmbientBackground.astro";
@@ -17,32 +21,43 @@ import { useTranslations, type Lang } from "@/i18n/utils";
 import {
   HOME_PATH,
   SERVICES_PACKAGES_PATH,
+  SERVICES_PATH,
   SERVICES_PROCESS_PATH,
 } from "@/lib/routes";
 
 interface Props {
   lang: Lang;
-  kind: "process" | "packages";
+  kind: "hub" | "process" | "packages";
 }
 const { lang, kind } = Astro.props;
 const t = useTranslations(lang);
 
 const paths =
-  kind === "process" ? SERVICES_PROCESS_PATH : SERVICES_PACKAGES_PATH;
+  kind === "hub"
+    ? SERVICES_PATH
+    : kind === "process"
+      ? SERVICES_PROCESS_PATH
+      : SERVICES_PACKAGES_PATH;
 // t() wymaga literałów kluczy (typ UiKey) — dobór per wariant zamiast
 // składania stringów.
 const copy =
-  kind === "process"
+  kind === "hub"
     ? {
-        title: t("processPage.title"),
-        description: t("processPage.description"),
-        back: t("processPage.back"),
+        title: t("servicesPage.title"),
+        description: t("servicesPage.description"),
+        back: t("servicesPage.back"),
       }
-    : {
-        title: t("packagesPage.title"),
-        description: t("packagesPage.description"),
-        back: t("packagesPage.back"),
-      };
+    : kind === "process"
+      ? {
+          title: t("processPage.title"),
+          description: t("processPage.description"),
+          back: t("processPage.back"),
+        }
+      : {
+          title: t("packagesPage.title"),
+          description: t("packagesPage.description"),
+          back: t("packagesPage.back"),
+        };
 ---
 
 <BaseLayout
@@ -50,7 +65,7 @@ const copy =
   lang={lang}
   description={copy.description}
   alternates={paths}
-  smoothScroll="desktop"
+  smoothScroll={kind === "hub" ? false : "desktop"}
 >
   <div class="osp-bg" aria-hidden="true">
     <AmbientBackground variant="red" />

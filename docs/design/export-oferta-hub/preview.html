@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Oferta — sedno · eksport (Wariant B)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#F5F0EC;--muted:rgba(245,240,236,0.62);--faint:rgba(245,240,236,0.38);--line:rgba(245,240,236,0.12);--accent:#FF5A47;--mono:'Space Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:#100C0E;color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased}
+a{color:var(--accent);text-decoration:none}
+.x-page{max-width:1240px;margin:0 auto;padding:48px clamp(20px,4vw,56px) 120px}
+.x-head{display:flex;flex-direction:column;gap:10px;border-bottom:1px solid var(--line);padding-bottom:28px}
+.x-kick{font-family:var(--mono);font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:var(--accent)}
+.x-head h1{margin:0;font-weight:800;font-size:31px;letter-spacing:-.03em}
+.x-head p{margin:0;max-width:760px;color:var(--muted);font-size:14.5px;line-height:1.65}
+.x-head p b{color:var(--ink);font-weight:600}
+.x-head code{font-family:var(--mono);font-size:12.5px;color:#E3BE7F}
+.x-grp{margin-top:46px}
+.x-grphdr{display:flex;align-items:center;gap:16px;margin-bottom:18px}
+.x-grphdr span{font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.x-grphdr hr{flex:1;border:none;height:1px;background:linear-gradient(90deg,rgba(245,240,236,.16),transparent)}
+.x-card{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:rgba(0,0,0,.16)}
+.x-frame{display:block;width:100%;border:0;background:#070507}
+/* desktop: renderuj iframe w prawdziwej szerokości 1440 i przeskaluj do kolumny */
+.x-scaler{position:relative;overflow:hidden;background:#070507}
+.x-desk{width:1440px;height:820px;transform-origin:top left;border:0;background:#070507}
+.x-hint{padding:12px 18px;font-family:var(--mono);font-size:10.5px;letter-spacing:.05em;color:rgba(245,240,236,.44);border-top:1px solid var(--line);background:rgba(0,0,0,.22)}
+.x-hint b{color:var(--muted);font-weight:400}
+/* dwie kolumny podglądu: desktop szeroki + mobile wąski, obok siebie */
+.x-duo{display:grid;grid-template-columns:1fr 392px;gap:20px;align-items:start}
+@media (max-width:960px){.x-duo{grid-template-columns:1fr}}
+.x-mobcard{justify-self:start;width:392px;max-width:100%}
+.x-codehdr{display:flex;align-items:center;justify-content:space-between;padding:11px 16px;background:rgba(0,0,0,.3);border-top:1px solid var(--line)}
+.x-codehdr b{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);font-weight:400}
+pre{margin:0;padding:18px 20px;background:#0B0809;border-top:1px solid var(--line);overflow-x:auto;font-family:var(--mono);font-size:12px;line-height:1.65;color:#D8D2CC;tab-size:2}
+pre .t{color:#FF9B8C}pre .a{color:#E3BE7F}pre .s{color:#9FE0B0}pre .c{color:rgba(245,240,236,.4)}
+.x-tok{display:flex;flex-wrap:wrap;gap:8px 22px;padding:14px 18px;border-top:1px solid var(--line);font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.x-tok b{color:var(--muted);font-weight:400}
+.x-sw{display:inline-block;width:10px;height:10px;border-radius:2px;vertical-align:-1px;margin-right:6px}
+</style>
+</head>
+<body>
+<div class="x-page">
+  <div class="x-head">
+    <span class="x-kick">hadrianm · podstrona Oferta · eksport referencyjny (Wariant B)</span>
+    <h1>Wstęp + karty „Pakiety” i „Proces”</h1>
+    <p>„Sedno” podstrony Oferta: <b>od</b> „Stawiam na konkrety i pełną przejrzystość” <b>do dolnych krawędzi kart</b>. Desktop = dwie karty obok siebie; mobile = słupek (Pakiety na górze). Karta <b>Pakiety</b> jest wyróżniona (akcentowa górna krawędź) i wiedzie do primary CTA (<code>/pakiety</code>); <b>Proces</b> → panel split (<code>/proces</code>). Podglądy poniżej to realny plik <code>oferta-hub.html</code> w <code>&lt;iframe&gt;</code> — próg <code>@media 861px</code> działa naturalnie. Klasy z prefiksem <code>.x-</code> to tylko oprawa tej strony.</p>
+  </div>
+
+  <!-- ════ PODGLĄD: desktop + mobile jednocześnie ════ -->
+  <div class="x-grp">
+    <div class="x-grphdr"><span>Podgląd · desktop &amp; mobile (żywy iframe)</span><hr></div>
+    <div class="x-duo">
+      <div class="x-card">
+        <div class="x-scaler"><iframe class="x-desk" src="oferta-hub.html" title="Oferta — sedno · desktop" scrolling="no" loading="eager"></iframe></div>
+        <div class="x-hint"><b>desktop</b> ≥1440px (przeskalowane) · karty obok siebie · hover: karta unosi się + jaśniejsza ramka, primary lift+glow, split podświetla pole strzałki</div>
+      </div>
+      <div class="x-card x-mobcard">
+        <iframe class="x-frame" src="oferta-hub.html" title="Oferta — sedno · mobile" style="height:760px" scrolling="no" loading="eager"></iframe>
+        <div class="x-hint"><b>mobile</b> &lt;861px · słupek · Pakiety na górze · karty pełnej szerokości</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ KOD ════ -->
+  <div class="x-grp">
+    <div class="x-grphdr"><span>Wklej u siebie</span><hr></div>
+    <div class="x-card">
+      <div class="x-codehdr"><b>HTML — dołącz oferta-hub.css, wstaw wewnątrz sekcji #oferta (ciemne tło + mgłę dostarcza sekcja)</b></div>
+<pre><span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"ofh"</span><span class="t">&gt;</span>
+  <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"ofh-intro"</span><span class="t">&gt;</span>
+    <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"ofh-lead"</span><span class="t">&gt;</span>Stawiam na konkrety i <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"ofh-serif"</span><span class="t">&gt;</span>pełną przejrzystość<span class="t">&lt;/span&gt;</span>.<span class="t">&lt;/p&gt;</span>
+    <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"ofh-sub"</span><span class="t">&gt;</span>Sprawdź, z jakich rozwiązań możesz skorzystać …<span class="t">&lt;/p&gt;</span>
+  <span class="t">&lt;/div&gt;</span>
+
+  <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"ofh-cards"</span><span class="t">&gt;</span>
+    <span class="c">&lt;!-- Pakiety → primary (jasny solid) --&gt;</span>
+    <span class="t">&lt;article</span> <span class="a">class</span>=<span class="s">"ofh-card ofh-card--feat"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"ofh-kick"</span><span class="t">&gt;</span>01 / Pakiety<span class="t">&lt;/div&gt;</span>
+      <span class="t">&lt;h3</span> <span class="a">class</span>=<span class="s">"ofh-name"</span><span class="t">&gt;</span>Pakiety<span class="t">&lt;/h3&gt;</span>
+      <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"ofh-desc"</span><span class="t">&gt;</span>Przejrzyste warianty i zakres usług.<span class="t">&lt;/p&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"ofh-foot"</span><span class="t">&gt;</span>
+        <span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"pp-btn pp-btn--solid"</span> <span class="a">href</span>=<span class="s">"/pakiety"</span><span class="t">&gt;</span>
+          <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-label"</span><span class="t">&gt;</span>Przeglądaj pakiety<span class="t">&lt;/span&gt;&lt;span</span> <span class="a">class</span>=<span class="s">"pp-arrow"</span> <span class="a">aria-hidden</span>=<span class="s">"true"</span><span class="t">&gt;</span>→<span class="t">&lt;/span&gt;</span>
+        <span class="t">&lt;/a&gt;</span>
+      <span class="t">&lt;/div&gt;</span>
+    <span class="t">&lt;/article&gt;</span>
+
+    <span class="c">&lt;!-- Proces → secondary (panel split) --&gt;</span>
+    <span class="t">&lt;article</span> <span class="a">class</span>=<span class="s">"ofh-card"</span><span class="t">&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"ofh-kick"</span><span class="t">&gt;</span>02 / Proces<span class="t">&lt;/div&gt;</span>
+      <span class="t">&lt;h3</span> <span class="a">class</span>=<span class="s">"ofh-name"</span><span class="t">&gt;</span>Proces<span class="t">&lt;/h3&gt;</span>
+      <span class="t">&lt;p</span> <span class="a">class</span>=<span class="s">"ofh-desc"</span><span class="t">&gt;</span>Od pierwszej rozmowy do publikacji w sieci.<span class="t">&lt;/p&gt;</span>
+      <span class="t">&lt;div</span> <span class="a">class</span>=<span class="s">"ofh-foot"</span><span class="t">&gt;</span>
+        <span class="t">&lt;a</span> <span class="a">class</span>=<span class="s">"pp-btn pp-btn--split"</span> <span class="a">href</span>=<span class="s">"/proces"</span><span class="t">&gt;</span>
+          <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-txt"</span><span class="t">&gt;&lt;span</span> <span class="a">class</span>=<span class="s">"pp-label"</span><span class="t">&gt;</span>Proces współpracy<span class="t">&lt;/span&gt;&lt;span</span> <span class="a">class</span>=<span class="s">"pp-sub"</span><span class="t">&gt;</span>Jak wygląda praca ze mną<span class="t">&lt;/span&gt;&lt;/span&gt;</span>
+          <span class="t">&lt;span</span> <span class="a">class</span>=<span class="s">"pp-arrowcell"</span><span class="t">&gt;&lt;span</span> <span class="a">class</span>=<span class="s">"pp-arrow"</span> <span class="a">aria-hidden</span>=<span class="s">"true"</span><span class="t">&gt;</span>→<span class="t">&lt;/span&gt;&lt;/span&gt;</span>
+        <span class="t">&lt;/a&gt;</span>
+      <span class="t">&lt;/div&gt;</span>
+    <span class="t">&lt;/article&gt;</span>
+  <span class="t">&lt;/div&gt;</span>
+<span class="t">&lt;/div&gt;</span></pre>
+      <div class="x-tok">
+        <span><span class="x-sw" style="background:#F5F0EC"></span><b>ink / primary</b> #F5F0EC</span>
+        <span><span class="x-sw" style="background:#1b1310;outline:1px solid rgba(245,240,236,.2)"></span><b>on-solid</b> #1B1310</span>
+        <span><span class="x-sw" style="background:#FF5A47"></span><b>accent</b> #FF5A47</span>
+        <span><b>font</b> Archivo Variable · Instrument Serif · Space Mono</span>
+        <span><b>próg</b> @media 861px</span>
+        <span><b>radius</b> karta 4px · button 3px</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#100C0E"/><rect x="12" y="30" width="34" height="40" rx="3" fill="none" stroke="#FF5A47" stroke-width="2"/><rect x="54" y="30" width="34" height="40" rx="3" fill="none" stroke="#F5F0EC" stroke-opacity="0.35" stroke-width="1.5"/><rect x="17" y="58" width="24" height="7" rx="1.5" fill="#F5F0EC"/><rect x="59" y="58" width="24" height="7" rx="1.5" fill="none" stroke="#F5F0EC" stroke-opacity="0.4"/></svg>
+</template>
+<script>
+/* skaluj desktopowy iframe (wewn. szerokość 1440 → szerokość kolumny),
+   żeby podgląd pokazywał PRAWDZIWY układ desktop (2 kolumny), nie mobile. */
+(function () {
+  function fit() {
+    document.querySelectorAll(".x-scaler").forEach(function (sc) {
+      var f = sc.querySelector(".x-desk");
+      if (!f) return;
+      var k = sc.clientWidth / 1440;
+      f.style.transform = "scale(" + k + ")";
+      sc.style.height = f.offsetHeight * k + "px";
+    });
+  }
+  window.addEventListener("resize", fit);
+  window.addEventListener("load", fit);
+  fit();
+})();
+</script>
+</body>
+</html>

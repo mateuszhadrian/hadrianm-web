@@ -6,7 +6,7 @@
 // Plan: docs/analiza-podstrona-o-mnie.md.
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
-import { CONTACT_PATH } from "../../src/lib/routes";
+import { CONTACT_PATH, SERVICES_PATH } from "../../src/lib/routes";
 import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
 import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
@@ -93,9 +93,9 @@ for (const p of PAGES) {
       page,
     }) => {
       await gotoReady(page, p.path);
-      // Kotwice sekcji prowadzą na stronę główną (pełna nawigacja).
+      // Pozycja „Oferta" prowadzi na hub /oferta/ (migracja: analiza huba).
       await expect(
-        page.locator(`.nav-link[href="${p.homePath}#services"]`),
+        page.locator(`.nav-link[href="${SERVICES_PATH[p.lang]}"]`),
       ).toBeAttached();
       // Link O mnie wskazuje bieżącą podstronę (aria-current).
       const self = page.locator(`.nav-link[href="${p.path}"]`);

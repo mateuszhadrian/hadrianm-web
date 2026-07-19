@@ -3,11 +3,14 @@
 // na tokeny projektu (docs/analiza-podstrony-oferta.md, D8). Primary
 // „Przeglądaj pakiety" = wspólny AnimatedCta (skórka banera Kontakt:
 // kremowy fill + sheen/puls/ring na desktopie — poprawka 2
-// docs/visual-corrections-part1.md) + secondary „Proces współpracy"
-// (panel split z podpisem mono). Obok siebie na desktop → słupek na mobile;
-// próg = szerokość KONTENERA (container query), więc układa się poprawnie
-// w dowolnej sekcji. Etykiety podaje strona (i18n), strzałki są dekoracją.
+// docs/visual-corrections-part1.md) + secondary „Proces współpracy" =
+// wspólny SplitCta (panel split z podpisem mono; skórka wydzielona dla
+// kart huba /oferta/ — analiza-podstrona-oferta-hub.md). Obok siebie na
+// desktop → słupek na mobile; próg = szerokość KONTENERA (container query),
+// więc układa się poprawnie w dowolnej sekcji. Etykiety podaje strona
+// (i18n), strzałki są dekoracją.
 import AnimatedCta from "@/components/ui/AnimatedCta.astro";
+import SplitCta from "@/components/ui/SplitCta.astro";
 
 interface Props {
   /** Adres CTA primary (Przeglądaj pakiety). */
@@ -46,15 +49,7 @@ const {
       label={packagesLabel}
     />
 
-    <a class="pp-btn pp-btn--split" href={processHref}>
-      <span class="pp-txt">
-        <span class="pp-label">{processLabel}</span>
-        {processSub && <span class="pp-sub">{processSub}</span>}
-      </span>
-      <span class="pp-arrowcell">
-        <span class="pp-arrow" aria-hidden="true">→</span>
-      </span>
-    </a>
+    <SplitCta href={processHref} label={processLabel} sub={processSub} />
   </div>
 </div>
 
@@ -65,100 +60,16 @@ const {
   }
 
   .pp-cta {
-    /* Wartości bez odpowiednika w tokenach globalnych (referencja: faint .38
-       vs token .5) — lokalnie. */
-    --pp-faint: rgba(245, 240, 236, 0.38);
-    --pp-line-hover: rgba(245, 240, 236, 0.34);
-    --pp-panel-hover: rgba(245, 240, 236, 0.09);
-
     display: flex;
     align-items: stretch;
     gap: 18px;
     max-width: 760px;
   }
-  /* :global — root komponentu AnimatedCta nie dostaje atrybutu scopingu
-     Astro; para dzieli szerokość po równo jak dotąd. */
-  .pp-cta > .pp-btn,
+  /* :global — rooty komponentów AnimatedCta/SplitCta nie dostają atrybutu
+     scopingu Astro; para dzieli szerokość po równo jak dotąd. */
+  .pp-cta > :global(.pp-btn),
   .pp-cta > :global(.animated-cta) {
     flex: 1;
-  }
-
-  /* ── bazowy button ── */
-  .pp-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 15px;
-    font-family: var(--font-body), sans-serif;
-    font-size: 17px;
-    line-height: 1;
-    color: var(--ink);
-    text-decoration: none;
-    cursor: pointer;
-    transition:
-      transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
-      background 0.3s,
-      border-color 0.3s,
-      box-shadow 0.3s,
-      color 0.3s;
-  }
-  .pp-label {
-    font-weight: 600;
-    letter-spacing: -0.01em;
-  }
-  .pp-arrow {
-    color: var(--accent);
-    font-weight: 500;
-    transition: transform 0.25s;
-  }
-  .pp-btn:hover .pp-arrow {
-    transform: translateX(5px);
-  }
-  .pp-btn:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
-  }
-
-  /* ── SECONDARY — panel split (Proces współpracy).
-     Świeci pole strzałki, tekst celowo NIE. ── */
-  .pp-btn--split {
-    gap: 0;
-    padding: 0;
-    align-items: stretch;
-    border: 1px solid var(--line);
-    border-radius: 3px;
-    overflow: hidden;
-  }
-  .pp-txt {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    gap: 5px;
-    padding: 15px 24px;
-  }
-  .pp-btn--split .pp-label {
-    font-size: 16px;
-  }
-  .pp-sub {
-    font-family: var(--font-mono), monospace;
-    font-size: 9.5px;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--pp-faint);
-  }
-  .pp-arrowcell {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 22px;
-    border-left: 1px solid var(--line);
-  }
-  .pp-btn--split:hover {
-    border-color: var(--pp-line-hover);
-  }
-  .pp-btn--split:hover .pp-arrowcell {
-    background: var(--pp-panel-hover);
   }
 
   /* ── MOBILE — słupek, pełna szerokość, primary na górze.
@@ -169,13 +80,6 @@ const {
       align-items: stretch;
       gap: 14px;
       max-width: none;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .pp-btn,
-    .pp-arrow {
-      transition: none;
     }
   }
 </style>

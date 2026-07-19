@@ -1,0 +1,298 @@
+/* ═══════════════════════════════════════════════════════════════════
+   oferta-hub.css — „sedno” podstrony Oferta (framework-agnostic)
+   hadrianm.pl · motyw „Czerwona Mgła”
+
+   Zakres: wstęp „Stawiam na konkrety…” + dwie karty-ścieżki:
+     • Pakiety → primary (button wypełniony JASNY) → /pakiety
+     • Proces  → secondary (button panel split)     → /proces
+   Układ: desktop obok siebie (2 kolumny) → mobile w słupku (Pakiety na górze).
+
+   Buttony są WBUDOWANE (self-contained). Klasy `pp-*` są zgodne
+   z `export-buttony-oferta`, z jedną różnicą: PRIMARY jest jasny
+   (`background:var(--ink)`), zgodnie z aktualną wersją na żywej stronie
+   — NIE wypełniony akcentem. Patrz README.
+
+   Fonty: Archivo Variable (600/800) + Instrument Serif (400 italic) + Space Mono (400).
+   Blok NIE maluje tła sekcji — dostarcza je `#oferta` (of-atmo/of-mesh).
+   Wklej `.ofh` do swojego CSS albo zmapuj tokeny na globalne zmienne/@theme.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.ofh {
+  /* ── tokeny motywu (podmień na globalne zmienne projektu) ── */
+  --ink: #f5f0ec;
+  --muted: rgba(245, 240, 236, 0.62);
+  --faint: rgba(245, 240, 236, 0.38);
+  --line: rgba(245, 240, 236, 0.14);
+  --line-hover: rgba(245, 240, 236, 0.22);
+  --panel: rgba(245, 240, 236, 0.014);
+  --panel-hover: rgba(245, 240, 236, 0.03);
+  --accent: #ff5a47;
+  --accent-glow: 255, 90, 71;
+  --on-solid: #1b1310; /* tekst na jasnym primary */
+  --serif-grad: linear-gradient(105deg, #fff6f0 10%, #ffb3a6 90%);
+  --mono: "Space Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  color: var(--ink);
+  font-family: "Archivo Variable", "Archivo", system-ui, sans-serif;
+}
+
+/* ── WSTĘP ── */
+.ofh-lead {
+  margin: 0;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  font-size: clamp(28px, 2.2vw, 41px);
+  line-height: 1.22;
+  color: var(--ink);
+  text-wrap: pretty;
+}
+.ofh-serif {
+  font-family: "Instrument Serif", Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  background: var(--serif-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+}
+.ofh-sub {
+  margin: 22px 0 0;
+  max-width: 770px;
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--muted);
+  text-wrap: pretty;
+}
+
+/* ── KARTY (ścieżki) ── */
+.ofh-cards {
+  margin-top: 54px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+}
+.ofh-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 344px;
+  padding: 36px 38px 34px;
+  border: 1px solid var(--line);
+  border-top: 2px solid rgba(245, 240, 236, 0.3);
+  border-radius: 4px;
+  background: var(--panel);
+  transition:
+    transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 0.35s,
+    background 0.35s;
+}
+.ofh-card:hover {
+  transform: translateY(-5px);
+  background: var(--panel-hover);
+  border-color: var(--line-hover);
+}
+.ofh-card--feat {
+  border-top-color: var(--accent);
+}
+.ofh-kick {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.ofh-card--feat .ofh-kick {
+  color: var(--accent);
+}
+.ofh-name {
+  margin: 18px 0 0;
+  font-weight: 800;
+  font-size: 42px;
+  letter-spacing: -0.03em;
+  line-height: 1;
+  color: var(--ink);
+}
+.ofh-desc {
+  margin: 15px 0 0;
+  max-width: 360px;
+  font-size: 18px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+.ofh-foot {
+  margin-top: auto;
+  padding-top: 36px;
+}
+.ofh-foot .pp-btn {
+  width: 100%;
+}
+
+/* ── BUTTONY (wbudowane) ── */
+.pp-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  font-family: "Archivo Variable", "Archivo", system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--ink);
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+    background 0.3s,
+    border-color 0.3s,
+    box-shadow 0.3s,
+    color 0.3s;
+}
+.pp-label {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.pp-arrow {
+  color: var(--accent);
+  font-weight: 500;
+  transition: transform 0.25s;
+}
+.pp-btn:hover .pp-arrow {
+  transform: translateX(5px);
+}
+.pp-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+/* PRIMARY — wypełniony jasny (Przeglądaj pakiety) */
+.pp-btn--solid {
+  padding: 19px 34px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: var(--ink);
+  color: var(--on-solid);
+}
+.pp-btn--solid:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 18px 46px -16px rgba(245, 240, 236, 0.34);
+}
+
+/* SECONDARY — panel split (Proces współpracy). Świeci pole strzałki, tekst nie. */
+.pp-btn--split {
+  gap: 0;
+  padding: 0;
+  align-items: stretch;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.pp-txt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 15px 24px;
+}
+.pp-btn--split .pp-label {
+  font-size: 16px;
+}
+.pp-sub {
+  font-family: var(--mono);
+  font-size: 9.5px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.pp-arrowcell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 22px;
+  border-left: 1px solid var(--line);
+}
+.pp-btn--split:hover {
+  border-color: rgba(245, 240, 236, 0.34);
+}
+.pp-btn--split:hover .pp-arrowcell {
+  background: rgba(245, 240, 236, 0.09);
+}
+
+/* ── MOBILE (<861px): słupek, karty pełna szerokość, Pakiety na górze ── */
+@media (max-width: 860.98px) {
+  .ofh-lead {
+    font-size: 25px;
+  }
+  .ofh-sub {
+    margin-top: 16px;
+    font-size: 15.5px;
+  }
+  .ofh-cards {
+    margin-top: 34px;
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .ofh-card {
+    min-height: 0;
+    padding: 26px 24px 24px;
+  }
+  .ofh-card:hover {
+    transform: none;
+  }
+  .ofh-name {
+    margin-top: 12px;
+    font-size: 30px;
+  }
+  .ofh-desc {
+    margin-top: 10px;
+    font-size: 15px;
+  }
+  .ofh-foot {
+    padding-top: 22px;
+  }
+  .pp-btn--split .pp-arrowcell {
+    padding: 0 17px;
+  }
+  .pp-btn--split .pp-sub {
+    letter-spacing: 0.12em;
+  }
+}
+
+/* ── WEJŚCIE (reveal) — opcjonalne. Aktywne tylko gdy: motion dozwolony
+   ORAZ blok ma klasę `js` (dodaj z JS). Obserwator dodaje `is-inview`.
+   Bez JS / reduced-motion = wszystko od razu widoczne (fallback SEO). ── */
+@media (prefers-reduced-motion: no-preference) {
+  .ofh.js .ofh-intro,
+  .ofh.js .ofh-card {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+      opacity 0.8s cubic-bezier(0.22, 1, 0.36, 1),
+      transform 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .ofh.js.is-inview .ofh-intro,
+  .ofh.js.is-inview .ofh-card {
+    opacity: 1;
+    transform: none;
+  }
+  .ofh.js.is-inview .ofh-card {
+    transition-delay: 0.08s;
+  }
+  .ofh.js.is-inview .ofh-card:nth-of-type(2) {
+    transition-delay: 0.16s;
+  }
+}
+
+/* ── redukcja ruchu: zero animacji i transformacji ── */
+@media (prefers-reduced-motion: reduce) {
+  .ofh-card,
+  .pp-btn,
+  .pp-arrow {
+    transition: none;
+  }
+  .ofh-card:hover,
+  .pp-btn--solid:hover {
+    transform: none;
+  }
+}

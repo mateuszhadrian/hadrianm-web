@@ -75,6 +75,37 @@ test("sweep zajawki oferty (strona główna) vs baseline", async ({
   }
 });
 
+test("sweep podstrony /oferta/ (hub) vs baseline", async ({
+  page,
+}, testInfo) => {
+  onlySweepProjects(testInfo);
+  await prepareSweep(page, "/oferta/");
+
+  const { anchors, vh, max } = await sectionAnchors(page, "#services", {
+    cards: ".ofh-cards",
+  });
+  await shoot(
+    page,
+    [
+      // Góra strony: chrome (BackButton, tag 02/Oferta; mobile dodatkowo
+      // ghost „oferta" + czerwony kicker) + wstęp i karty (desktop: całość
+      // mieści się w jednym ekranie).
+      { name: "services-hub-01-top", y: 0 },
+      // Mobile: karty w słupku (na desktopie klatka pokrywa się z 01).
+      { name: "services-hub-02-cards", y: anchors.cards - vh * 0.25 },
+    ],
+    max,
+  );
+
+  // Hover karty Proces (lift + jaśniejsza ramka + pole strzałki splita) —
+  // tylko desktop.
+  if (testInfo.project.name === "chromium-1920") {
+    await page.locator("#services .pp-btn--split .pp-label").hover();
+    await settle(page, 600);
+    await expect.soft(page).toHaveScreenshot("services-hub-03-split-hover.png");
+  }
+});
+
 test("sweep podstrony /proces-wspolpracy/ vs baseline", async ({
   page,
 }, testInfo) => {

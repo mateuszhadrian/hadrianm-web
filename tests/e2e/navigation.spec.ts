@@ -1,30 +1,21 @@
 // Nawigacja: anchory, chowanie paska przy scrollu (desktop), menu mobilne.
 import { expect, test } from "@playwright/test";
 import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
-import {
-  expectSectionAtTop,
-  gotoReady,
-  scrollPageTo,
-  settle,
-} from "../helpers/scroll";
+import { gotoReady, scrollPageTo, settle } from "../helpers/scroll";
 
 usePreviewGuard();
 
 test.describe("nawigacja desktop", () => {
   test.skip(({ isMobile }) => !!isMobile, "tylko układ desktop/tablet");
 
-  test("klik w link nawigacji przewija do sekcji i aktualizuje hash", async ({
-    page,
-  }) => {
+  test("link Oferta nawiguje na podstronę /oferta/", async ({ page }) => {
     await gotoReady(page);
-    // #services, nie #work/#audience/#about — te pozycje prowadzą już na
-    // podstrony; Oferta zostaje kotwicą strony głównej.
-    await page.locator('.nav-link[href="#services"]').click();
-    await settle(page);
-    await expect(page).toHaveURL(/#services$/);
-    // Skok immediate — sekcja ma siąść na górze viewportu (retry: sporadyczny
-    // brak precyzji Lenisa pod obciążeniem N warstw tła).
-    await expectSectionAtTop(page, "services");
+    // Od migracji huba Oferty (docs/analiza-podstrona-oferta-hub.md)
+    // WSZYSTKIE pozycje navbara prowadzą na podstrony — w menu nie ma już
+    // ŻADNEJ kotwicy sekcji strony głównej.
+    await page.locator('.nav-link[href="/oferta/"]').click();
+    await expect(page).toHaveURL(/\/oferta\/?$/);
+    await expect(page.locator("#services .ofh-card")).toHaveCount(2);
   });
 
   test("link Realizacje nawiguje na podstronę /realizacje/", async ({
@@ -67,18 +58,14 @@ test.describe("nawigacja mobile", () => {
     await expect(burger).toHaveAttribute("aria-expanded", "false");
   });
 
-  test("link w panelu zamyka menu i przewija do sekcji", async ({ page }) => {
+  test("pozycja Oferta w panelu nawiguje na podstronę", async ({ page }) => {
     await gotoReady(page);
     await page.locator("[data-burger]").click();
-    // #services — od migracji FAQ (docs/analiza-podstrona-faq.md)
-    // OSTATNIA pozycja-kotwica menu (reszta prowadzi na podstrony).
-    await page.locator('.m-link[href="#services"]').click();
-    await settle(page);
-    await expect(page.locator("[data-nav]")).not.toHaveAttribute(
-      "data-open",
-      "",
-    );
-    await expectSectionAtTop(page, "services");
+    // Od migracji huba Oferty menu nie ma już żadnej pozycji-kotwicy —
+    // wszystkie prowadzą na podstrony.
+    await page.locator('.m-link[href="/oferta/"]').click();
+    await expect(page).toHaveURL(/\/oferta\/?$/);
+    await expect(page.locator("#services .ofh-card")).toHaveCount(2);
   });
 
   test("pozycja FAQ w panelu nawiguje na podstronę", async ({ page }) => {

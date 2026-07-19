@@ -1,19 +1,42 @@
-// Podstrony sekcji „Oferta" (docs/analiza-podstrony-oferta.md):
-// /proces-wspolpracy/ (EN: /en/process/) = wariant "process" (nić A z 5
-// krokami + fixed progres), /pakiety/ (EN: /en/packages/) = wariant
-// "packages" (grid P4 + dedykowane + opcje). Chrome strony wg wzorca
-// /dla-kogo/ (BackButton w miejscu brandu, współdzielony Footer, ambient
-// red statyczny), scroll w trybie smoothScroll="desktop" (Lenis desktop,
-// mobile natywnie). Lustro audience-index.spec.ts.
+// Podstrony sekcji „Oferta" (docs/analiza-podstrony-oferta.md +
+// docs/analiza-podstrona-oferta-hub.md): /oferta/ (EN: /en/services/) =
+// wariant "hub" (rozgałęźnik: wstęp + karty Pakiety/Proces, scroll w pełni
+// natywny), /proces-wspolpracy/ (EN: /en/process/) = wariant "process"
+// (nić A z 5 krokami + fixed progres), /pakiety/ (EN: /en/packages/) =
+// wariant "packages" (grid P4 + dedykowane + opcje). Chrome strony wg
+// wzorca /dla-kogo/ (BackButton w miejscu brandu, współdzielony Footer,
+// ambient red statyczny), scroll w trybie smoothScroll="desktop" (Lenis
+// desktop, mobile natywnie) — hub wyjątkowo smoothScroll=false.
+// Lustro audience-index.spec.ts.
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
-import { CONTACT_PATH } from "../../src/lib/routes";
+import { CONTACT_PATH, SERVICES_PATH } from "../../src/lib/routes";
 import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
 import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
 
 const PAGES = [
+  {
+    path: "/oferta/",
+    lang: "pl",
+    kind: "hub",
+    homePath: "/",
+    plPath: "/oferta/",
+    enPath: "/en/services/",
+    title: ui.pl["servicesPage.title"],
+    description: ui.pl["servicesPage.description"],
+  },
+  {
+    path: "/en/services/",
+    lang: "en",
+    kind: "hub",
+    homePath: "/en/",
+    plPath: "/oferta/",
+    enPath: "/en/services/",
+    title: ui.en["servicesPage.title"],
+    description: ui.en["servicesPage.description"],
+  },
   {
     path: "/proces-wspolpracy/",
     lang: "pl",
@@ -88,7 +111,33 @@ for (const p of PAGES) {
       ).toHaveAttribute("href", `${SITE}${p.enPath}`);
     });
 
-    if (p.kind === "process") {
+    if (p.kind === "hub") {
+      test(`wariant hub: wstęp, 2 karty-ścieżki, CTA → pakiety/proces`, async ({
+        page,
+      }) => {
+        await gotoReady(page, p.path);
+        const section = page.locator("#services");
+        await expect(section).toHaveAttribute("data-variant", "hub");
+        await expect(section.locator(".ofh-lead")).toBeVisible();
+        await expect(section.locator(".ofh-card")).toHaveCount(2);
+        // Primary w karcie Pakiety i split w karcie Proces = te same
+        // współdzielone buttony co para CTA zajawki (AnimatedCta/SplitCta).
+        await expect(
+          section.locator(".ofh-card--feat .pp-btn--solid"),
+        ).toHaveAttribute(
+          "href",
+          p.lang === "pl" ? "/pakiety/" : "/en/packages/",
+        );
+        await expect(section.locator(".pp-btn--split")).toHaveAttribute(
+          "href",
+          p.lang === "pl" ? "/proces-wspolpracy/" : "/en/process/",
+        );
+        // Treści pozostałych wariantów tu nie ma.
+        await expect(section.locator(".of-step")).toHaveCount(0);
+        await expect(section.locator(".pk-col")).toHaveCount(0);
+        await expect(section.locator(".of-lead")).toHaveCount(0);
+      });
+    } else if (p.kind === "process") {
       test(`wariant process: nagłówek, 5 kroków, endcap → pakiety, progres`, async ({
         page,
       }) => {
@@ -132,28 +181,43 @@ for (const p of PAGES) {
       });
     }
 
-    test(`desktop: scroll na Lenisie (tryb smoothScroll="desktop")`, async ({
-      page,
-    }) => {
-      await gotoReady(page, p.path);
-      await expect(page.locator("body")).toHaveAttribute(
-        "data-smooth-scroll",
-        "desktop",
-      );
-      // Lenis ładuje się dynamicznie — daj mu chwilę na init (profil
-      // chromium-1920 = bez dotyku, więc tryb "desktop" go ładuje).
-      await expect
-        .poll(() => page.evaluate(() => Boolean(window.__lenis)))
-        .toBe(true);
-    });
+    if (p.kind === "hub") {
+      test(`desktop: scroll natywny (smoothScroll=false — strona 1-ekranowa)`, async ({
+        page,
+      }) => {
+        await gotoReady(page, p.path);
+        await expect(page.locator("body")).toHaveAttribute(
+          "data-smooth-scroll",
+          "off",
+        );
+        // Chwila na ewentualny (błędny) dynamiczny import — potem asercja.
+        await page.waitForTimeout(500);
+        expect(await page.evaluate(() => Boolean(window.__lenis))).toBe(false);
+      });
+    } else {
+      test(`desktop: scroll na Lenisie (tryb smoothScroll="desktop")`, async ({
+        page,
+      }) => {
+        await gotoReady(page, p.path);
+        await expect(page.locator("body")).toHaveAttribute(
+          "data-smooth-scroll",
+          "desktop",
+        );
+        // Lenis ładuje się dynamicznie — daj mu chwilę na init (profil
+        // chromium-1920 = bez dotyku, więc tryb "desktop" go ładuje).
+        await expect
+          .poll(() => page.evaluate(() => Boolean(window.__lenis)))
+          .toBe(true);
+      });
+    }
 
-    test(`navbar podstrony: kotwice → strona główna, język → odpowiednik, Footer`, async ({
+    test(`navbar podstrony: Oferta → hub, język → odpowiednik, Footer`, async ({
       page,
     }) => {
       await gotoReady(page, p.path);
-      // Pozycja „Oferta" prowadzi na sekcję-zajawkę strony głównej.
+      // Pozycja „Oferta" prowadzi na hub /oferta/ (migracja: analiza huba).
       await expect(
-        page.locator(`.nav-link[href="${p.homePath}#services"]`),
+        page.locator(`.nav-link[href="${SERVICES_PATH[p.lang]}"]`),
       ).toBeAttached();
       // Przełącznik języka celuje w odpowiedniki podstrony.
       await expect(
@@ -230,6 +294,26 @@ test.describe("wejście z zajawki + powrót (history.back)", () => {
       await expect.poll(() => new URL(page.url()).pathname).toBe("/");
     });
   }
+
+  // Te same współdzielone buttony na hubie /oferta/ prowadzą głębiej.
+  for (const { btn, path } of [
+    { btn: ".pp-btn--split", path: "/proces-wspolpracy/" },
+    { btn: ".pp-btn--solid", path: "/pakiety/" },
+  ]) {
+    test(`karta huba /oferta/ → ${path} → back button wraca na hub`, async ({
+      page,
+    }) => {
+      await gotoReady(page, "/oferta/");
+      const cta = page.locator(`#services ${btn}`);
+      await cta.scrollIntoViewIfNeeded();
+      await page.waitForTimeout(300);
+      await cta.click();
+      await expect.poll(() => new URL(page.url()).pathname).toBe(path);
+      await page.locator("a[data-back]").click();
+      // history.back() → wracamy na hub (przywrócona historia).
+      await expect.poll(() => new URL(page.url()).pathname).toBe("/oferta/");
+    });
+  }
 });
 
 test.describe("scroll mobile: natywny (tryb smoothScroll='desktop')", () => {
@@ -257,6 +341,20 @@ test.describe("scroll mobile: natywny (tryb smoothScroll='desktop')", () => {
       expect(await page.evaluate(() => Boolean(window.__lenis))).toBe(false);
     });
   }
+
+  test(`/oferta/: scroll natywny także na urządzeniu dotykowym`, async ({
+    page,
+  }) => {
+    await gotoReady(page, "/oferta/");
+    // Hub ma smoothScroll=false — Lenis nie ładuje się niezależnie od
+    // detekcji dotyku (bez gotchy maxTouchPoints trybu "desktop").
+    await expect(page.locator("body")).toHaveAttribute(
+      "data-smooth-scroll",
+      "off",
+    );
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => Boolean(window.__lenis))).toBe(false);
+  });
 });
 
 test.describe("CTA pakietów nawigują na podstronę kontaktu", () => {
@@ -292,5 +390,12 @@ test.describe("fallback bez JS (SEO)", () => {
     await expect(page.locator("#services .pk-col")).toHaveCount(3);
     await expect(page.locator("#services .pk-head h2")).toBeVisible();
     await expect(page.locator("#services .pk-dedy")).toBeVisible();
+  });
+
+  test("/oferta/: wstęp i karty huba widoczne statycznie", async ({ page }) => {
+    await page.goto("/oferta/", { waitUntil: "networkidle" });
+    await expect(page.locator("#services .ofh-lead")).toBeVisible();
+    await expect(page.locator("#services .ofh-card")).toHaveCount(2);
+    await expect(page.locator("#services .pp-btn--split")).toBeVisible();
   });
 });

@@ -12,7 +12,7 @@
 // SolidButton na podstronę) — bez stosu, licznika, cyfr i modułu scrolla.
 import { navItems, navLabel } from "@/i18n/nav";
 import { useTranslations, type Lang } from "@/i18n/utils";
-import { AUDIENCE_PATH, CONTACT_PATH } from "@/lib/routes";
+import { AUDIENCE_PATH, SERVICES_PATH } from "@/lib/routes";
 import SolidButton from "@/components/ui/SolidButton.astro";
 import AudienceMockWindow from "./AudienceMockWindow.astro";
 import ekranHome from "@/assets/audience/ekran-home.webp";
@@ -188,9 +188,10 @@ const caps = [t("audience.cap1"), t("audience.cap2"), t("audience.cap3")];
               </div>
             )}
             {i === 3 && (
-              // CTA rozdziału 03 → podstrona kontaktu (migracja sekcji
-              // kontakt: docs/analiza-podstrona-kontakt.md).
-              <a class="dk-cta" href={CONTACT_PATH[lang]}>
+              // CTA rozdziału 03 „Poznaj ofertę" → hub /oferta/ (migracja
+              // Oferty: docs/analiza-podstrona-oferta-hub.md; wcześniej
+              // tymczasowo /kontakt/).
+              <a class="dk-cta" href={SERVICES_PATH[lang]}>
                 {t("audience.cta")}
                 <span class="arr" aria-hidden="true">
                   →
