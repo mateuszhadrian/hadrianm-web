@@ -1,4 +1,14 @@
 ---
+// Fonty strony drewelomet (makiety ekranów laptopa i telefonu w scenie
+// urządzeń) — importowane TU, nie w BaseLayout: Hero renderuje się wyłącznie
+// na stronie głównej (Home.astro), więc pozostałe 18 podstron nie musi
+// pobierać tych reguł @font-face. Pliki woff2 ściągają się dopiero gdy krój
+// jest realnie użyty; LaptopSite chowa się <760px, ale PhoneSite renderuje
+// się na mobile i używa OBU krojów.
+import "@fontsource/saira-condensed/latin-600.css";
+import "@fontsource/saira-condensed/latin-ext-600.css";
+import "@fontsource/space-mono/latin-400.css";
+
 import { useTranslations, type Lang } from "@/i18n/utils";
 import DeviceScene from "./DeviceScene.astro";
 
