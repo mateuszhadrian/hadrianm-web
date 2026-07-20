@@ -240,7 +240,11 @@ for (const p of PAGES) {
     }) => {
       await gotoReady(page, p.path);
       // Brand ustępuje miejsca przyciskowi „wstecz" (fallback → główna).
-      await expect(page.locator(".brand")).toHaveCount(0);
+      // W PASKU brandu nie ma — jego slot zajmuje przyklejony BackButton.
+      await expect(page.locator(".brand:not(.brand-menu)")).toHaveCount(0);
+      // Brand „tylko w menu" jest w DOM, ale odsłania go dopiero otwarte
+      // menu mobilne (na desktopie: display:none) — patrz Navbar.astro.
+      await expect(page.locator(".brand-menu")).toBeHidden();
       const back = page.locator("a[data-back]");
       await expect(back).toHaveAttribute("href", p.homePath);
       await expect(back).toBeVisible();

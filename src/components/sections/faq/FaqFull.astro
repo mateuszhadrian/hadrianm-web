@@ -751,12 +751,18 @@ const faqSchema = JSON.stringify({
       background: #100b0d;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
-      transition: padding-left 0.3s var(--fq-cz);
+      transition:
+        padding-left 0.3s var(--fq-cz),
+        padding-right 0.3s var(--fq-cz);
     }
     /* Przyklejona u góry (klasa z sondy .fq-sticky-probe): pole odsuwa
-       się spod fixed BackButtona (kółko 46px, prawa krawędź ~66px). */
+       się spod fixed BackButtona po LEWEJ (kółko 46px, prawa krawędź
+       ~66px) oraz spod burgera navbara po PRAWEJ (szer. 26px, lewa
+       krawędź ~46px od prawej). Symetryczne 84px trzyma pole
+       wyśrodkowane i czyste pod oboma stałymi kontrolkami. */
     .fq-search-wrap.is-stuck {
       padding-left: 84px;
+      padding-right: 84px;
     }
     .fq-search {
       padding: 12px 14px;

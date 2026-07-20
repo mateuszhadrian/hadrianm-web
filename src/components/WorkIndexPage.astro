@@ -155,6 +155,10 @@ const projects = entries
   .wix-back {
     position: fixed;
     z-index: 60;
+    /* Sam wrapper nie łapie klików (wzorzec .nav-root z Navbar.astro):
+       przy otwartym menu jego box zasłaniałby logo, mimo że przycisk
+       jest już ukryty. Klik przejmuje .bkb (pointer-events: auto). */
+    pointer-events: none;
     left: clamp(1.25rem, 4vw, 2.75rem);
     top: calc(clamp(1.25rem, 3.2vh, 1.9rem) - 12px);
   }

@@ -42,17 +42,34 @@ const { href, label, class: className } = Astro.props;
   .bkb {
     display: grid;
     place-items: center;
+    /* wrapper strony ma pointer-events:none — klik łapie tylko sam przycisk */
+    pointer-events: auto;
     width: 46px;
     height: 46px;
     border-radius: 999px;
     border: 1px solid var(--line);
-    background: rgba(245, 240, 236, 0.04);
+    /* „Szkło": lekki tint + rozmycie tła. Element ma 46×46 px, więc obszar
+       do rozmycia jest znikomy — koszt kompozytora nieistotny nawet przy
+       animowanym AmbientBackground pod spodem. */
+    background: rgba(245, 240, 236, 0.07);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    backdrop-filter: blur(12px) saturate(1.2);
     color: var(--ink);
     text-decoration: none;
     transition:
       border-color 0.3s,
       background 0.3s,
-      color 0.3s;
+      color 0.3s,
+      opacity 0.4s ease,
+      visibility 0.4s;
+  }
+  /* Otwarte menu mobilne: BackButton ustępuje miejsca logo „hadrianm",
+     które navbar odsłania w tym samym slocie (Navbar.astro → .brand-menu).
+     Crossfade 0.4s = ten sam czas co panel menu. visibility (nie display)
+     zdejmuje go z tab-orderu i drzewa a11y, zachowując przejście. */
+  :global(html[data-nav-open]) .bkb {
+    opacity: 0;
+    visibility: hidden;
   }
   .bkb svg {
     display: block;
@@ -61,7 +78,7 @@ const { href, label, class: className } = Astro.props;
   .bkb:hover,
   .bkb:focus-visible {
     border-color: rgba(245, 240, 236, 0.3);
-    background: rgba(245, 240, 236, 0.06);
+    background: rgba(245, 240, 236, 0.12);
     /* strzałka (currentColor) rozjaśnia się na akcent */
     color: var(--accent-gold);
   }
