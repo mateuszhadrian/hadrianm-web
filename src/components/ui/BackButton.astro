@@ -46,7 +46,12 @@ const { href, label, class: className } = Astro.props;
     height: 46px;
     border-radius: 999px;
     border: 1px solid var(--line);
-    background: rgba(245, 240, 236, 0.04);
+    /* „Szkło": lekki tint + rozmycie tła. Element ma 46×46 px, więc obszar
+       do rozmycia jest znikomy — koszt kompozytora nieistotny nawet przy
+       animowanym AmbientBackground pod spodem. */
+    background: rgba(245, 240, 236, 0.07);
+    -webkit-backdrop-filter: blur(12px) saturate(1.2);
+    backdrop-filter: blur(12px) saturate(1.2);
     color: var(--ink);
     text-decoration: none;
     transition:
@@ -61,7 +66,7 @@ const { href, label, class: className } = Astro.props;
   .bkb:hover,
   .bkb:focus-visible {
     border-color: rgba(245, 240, 236, 0.3);
-    background: rgba(245, 240, 236, 0.06);
+    background: rgba(245, 240, 236, 0.12);
     /* strzałka (currentColor) rozjaśnia się na akcent */
     color: var(--accent-gold);
   }
