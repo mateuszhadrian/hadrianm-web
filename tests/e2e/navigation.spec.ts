@@ -93,6 +93,46 @@ test.describe("nawigacja mobile", () => {
     await expect(page).toHaveURL(/\/kontakt\/?$/);
     await expect(page.locator("#contact .kt-form")).toBeVisible();
   });
+
+  // Podstrony: slot brandu zajmuje BackButton, więc dopiero otwarte menu daje
+  // drogę powrotną na GÓRĘ strony głównej (BackButton = history.back, czyli
+  // przywrócona pozycja scrolla — inna intencja).
+  test("podstrona: otwarte menu podmienia BackButton na logo do strony głównej", async ({
+    page,
+  }) => {
+    await gotoReady(page, "/o-mnie/");
+    const back = page.locator(".bkb");
+    const brand = page.locator(".brand-menu");
+
+    // zamknięte menu: widać „wstecz", logo schowane
+    await expect(back).toBeVisible();
+    await expect(brand).toBeHidden();
+
+    await page.locator("[data-burger]").click();
+
+    // otwarte menu: podmiana w obie strony
+    await expect(brand).toBeVisible();
+    await expect(back).toBeHidden();
+
+    // logo to ZWYKŁA nawigacja — bez data-back, więc bez przywracania scrolla
+    await expect(brand).toHaveAttribute("href", "/");
+    await expect(brand).not.toHaveAttribute("data-back", /.*/);
+
+    // scroll na podstronie nie może „przejechać" na stronę główną
+    await brand.click();
+    await expect(page).toHaveURL(/\/$/);
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+  });
+
+  test("podstrona: zamknięcie menu przywraca BackButton", async ({ page }) => {
+    await gotoReady(page, "/realizacje/");
+    const burger = page.locator("[data-burger]");
+    await burger.click();
+    await expect(page.locator(".brand-menu")).toBeVisible();
+    await burger.click();
+    await expect(page.locator(".brand-menu")).toBeHidden();
+    await expect(page.locator(".bkb")).toBeVisible();
+  });
 });
 
 test("strona główna ładuje się bez błędów konsoli i 404", async ({ page }) => {

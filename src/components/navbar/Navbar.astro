@@ -65,8 +65,18 @@ const t = {
 <div class="nav-root" data-nav data-state="desktop">
   <nav class="nav-bar" aria-label={t.nav}>
     {
-      showBrand && (
+      showBrand ? (
         <a class="brand" href={homeHref}>
+          hadrian<span>m</span>
+        </a>
+      ) : (
+        /* Podstrony: brand ukryty, odsłaniany WYŁĄCZNIE przy otwartym menu
+           mobilnym — wtedy zastępuje przyklejony BackButton (ten chowa się
+           przez :global(html[data-nav-open]) w BackButton.astro). Celowo BEZ
+           data-back: to zwykła nawigacja, więc ląduje na GÓRZE strony
+           głównej — pozycję scrolla przywraca tylko history.back()
+           (patrz scripts/back-link.ts), którego tu nie chcemy. */
+        <a class="brand brand-menu" data-menu-brand href={homeHref}>
           hadrian<span>m</span>
         </a>
       )
@@ -221,6 +231,33 @@ const t = {
   }
   .brand span {
     color: var(--muted);
+  }
+
+  /* Brand „tylko w menu" (podstrony). display:none poza stanem mobile —
+     burger istnieje wyłącznie tam, więc poza mobile nie ma go czym odsłonić.
+     Crossfade opacity+visibility zsynchronizowany z .mobile-menu (0.4s):
+     visibility trzyma go poza tab-orderem i drzewem a11y, gdy menu zamknięte. */
+  .brand-menu {
+    display: none;
+  }
+  .nav-root[data-state="mobile"] .brand-menu {
+    display: block;
+    /* POZA FLOW. Jako zwykłe dziecko flexa podbijał wysokość paska
+       mobilnego 72→80px na KAŻDEJ podstronie (jest wyższy od burgera),
+       co przesuwało treść strony niżej. Zastępowany BackButton jest
+       `fixed` poza paskiem i też nie wnosi nic do layoutu. Bez offsetów:
+       pozycja statyczna abspos-dziecka flexa = początek content-boxu
+       paska, czyli dokładnie slot brandu. */
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    transition:
+      opacity 0.4s ease,
+      visibility 0.4s;
+  }
+  .nav-root[data-state="mobile"][data-open] .brand-menu {
+    opacity: 1;
+    visibility: visible;
   }
 
   /* ── linki desktop (rozdzielone slashem) ── */
@@ -538,7 +575,8 @@ const t = {
     }
     .mobile-menu,
     .m-link,
-    .burger span {
+    .burger span,
+    .nav-root[data-state="mobile"] .brand-menu {
       transition: none;
     }
     .m-link {
@@ -566,7 +604,11 @@ const t = {
     const bar = root.querySelector<HTMLElement>(".nav-bar")!;
     // Brand jest opcjonalny (showBrand=false na podstronach) — wtedy jego
     // miejsce w pomiarach zajmuje rezerwa na przyklejony BackButton (46 px).
-    const brand = root.querySelector<HTMLElement>(".brand");
+    // UWAGA: `:not(.brand-menu)` jest KONIECZNE. Brand „tylko w menu"
+    // (podstrony) przy zamkniętym menu ma offsetWidth 0 — a `?? 46` NIE
+    // złapie zera (0 nie jest nullish), więc bez tego filtra progi
+    // breakpointów policzyłyby się od zerowej szerokości brandu.
+    const brand = root.querySelector<HTMLElement>(".brand:not(.brand-menu)");
     const BRAND_FALLBACK_W = 46;
     const links = root.querySelector<HTMLElement>(".nav-links")!;
     const lang = root.querySelector<HTMLElement>(".lang")!;
@@ -737,6 +779,9 @@ const t = {
       isOpen = true;
       root!.setAttribute("data-open", "");
       root!.removeAttribute("data-hidden");
+      // Flaga na <html>: BackButton żyje w komponencie strony (poza navbarem),
+      // więc nie da się go dosięgnąć selektorem z .nav-root.
+      document.documentElement.setAttribute("data-nav-open", "");
       burger.setAttribute("aria-expanded", "true");
       burger.setAttribute("aria-label", burger.dataset.closeLabel || "");
       lockBody();
@@ -746,6 +791,7 @@ const t = {
       if (!isOpen) return;
       isOpen = false;
       root!.removeAttribute("data-open");
+      document.documentElement.removeAttribute("data-nav-open");
       burger.setAttribute("aria-expanded", "false");
       burger.setAttribute("aria-label", burger.dataset.openLabel || "");
       unlockBody();
