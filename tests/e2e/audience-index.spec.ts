@@ -7,7 +7,11 @@
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
 import { SERVICES_PATH } from "../../src/lib/routes";
-import { collectPageIssues, usePreviewGuard } from "../helpers/guards";
+import {
+  collectPageIssues,
+  useChromium1920Only,
+  usePreviewGuard,
+} from "../helpers/guards";
 import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
@@ -21,13 +25,9 @@ usePreviewGuard();
 
 for (const p of PAGES) {
   test.describe(`${p.path}: meta i treść (jeden profil)`, () => {
-    // eslint-disable-next-line no-empty-pattern -- Playwright wymaga destrukturyzacji fixtures
-    test.beforeEach(async ({}, testInfo) => {
-      test.skip(
-        testInfo.project.name !== "chromium-1920",
-        "meta/treść niezależne od profilu — jeden projekt wystarczy",
-      );
-    });
+    useChromium1920Only(
+      "meta/treść niezależne od profilu — jeden projekt wystarczy",
+    );
 
     test(`lang, tytuł, description, canonical, hreflang`, async ({ page }) => {
       await gotoReady(page, p.path);

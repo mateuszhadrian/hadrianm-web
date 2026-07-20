@@ -1,6 +1,6 @@
 // Scroll w testach — mechanika 1:1 z verify-hero.mjs: Lenis (immediate,
 // force) + natywny window.scrollTo, settle = 2×rAF + timeout.
-import { expect, type Page } from "@playwright/test";
+import { type Page } from "@playwright/test";
 
 /** Czeka aż strona „usiądzie": 2×rAF (GSAP scrub dogania) + timeout. */
 export async function settle(page: Page, ms = 350): Promise<void> {
@@ -9,56 +9,6 @@ export async function settle(page: Page, ms = 350): Promise<void> {
       new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r))),
   );
   await page.waitForTimeout(ms);
-}
-
-/**
- * Zsynchronizuj wewnętrzny scroll Lenisa z realnym window.scrollY.
- * Playwrightowe `scrollIntoViewIfNeeded()` scrolluje NATYWNIE, z pominięciem
- * Lenisa — na wolnych runnerach CI jego sync z natywnego scrolla potrafi nie
- * zdążyć przed klikiem w kotwicę, a handlery CTA liczą cel skoku z
- * wewnętrznej pozycji Lenisa → lądowanie z offsetem (flaki CTA FAQ/Oferty
- * na chromium-1920). Wywołaj po natywnym scrollu, przed klikiem w kotwicę.
- * Realnych użytkowników desync nie dotyczy (scrollują PRZEZ Lenisa).
- */
-export async function syncLenis(page: Page): Promise<void> {
-  await page.evaluate(() => {
-    const lenis = window.__lenis;
-    if (lenis && typeof lenis.scrollTo === "function") {
-      lenis.scrollTo(window.scrollY, { immediate: true, force: true });
-    }
-  });
-}
-
-/**
- * Asercja: sekcja #id siada na górze viewportu (≤5px) po skoku kotwicy.
- * Pojedynczy `scrollTo(immediate)` Lenisa bywa sporadycznie nieprecyzyjny pod
- * obciążeniem głównej nici (wiele warstw tła sterowanych scrollem): przestrzał
- * lub niedostrzał ~kilkadziesiąt px w ~10–25% prób na wolnych runnerach CI.
- * Cel jest stabilny i osiągalny, więc dobijamy TYM SAMYM mechanizmem (Lenis)
- * i ponawiamy, aż siądzie. Próg ≤5px NIE jest luzowany — realne zepsucie
- * (brak nawigacji / zły cel) łapią osobne asercje hash/stanu w miejscu użycia
- * (tam każda próba i tak chybia). Realnych użytkowników brak precyzji nie
- * dotyczy (scrollują PRZEZ Lenisa, bez syntetycznego wyścigu testu).
- */
-export async function expectSectionAtTop(
-  page: Page,
-  id: string,
-): Promise<void> {
-  await expect(async () => {
-    const box = await page.locator(`#${id}`).boundingBox();
-    expect(box, `#${id} bounding box`).not.toBeNull();
-    if (Math.abs(box!.y) > 5) {
-      await page.evaluate((sid) => {
-        const target = document.getElementById(sid);
-        const lenis = window.__lenis;
-        if (target && lenis && typeof lenis.scrollTo === "function") {
-          lenis.scrollTo(target, { offset: 0, immediate: true, force: true });
-        }
-      }, id);
-      await settle(page);
-      throw new Error(`#${id} @ ${Math.round(box!.y)}px — dobito, ponawiam`);
-    }
-  }).toPass({ timeout: 10000, intervals: [250, 500, 1000, 1500] });
 }
 
 /** Przewija stronę do pozycji y przez Lenisa i natywnie, potem settle. */
