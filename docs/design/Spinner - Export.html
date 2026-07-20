@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Spinner — hadrianm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070507;
+  --ink:#F5F0EC;
+  --muted:rgba(245,240,236,0.62);
+  --accent:#FF5A47;
+  --glow:255,90,71; /* rgb komponenty akcentu */
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--bg);color:var(--ink);font-family:'Archivo',sans-serif;-webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;min-height:100vh}
+
+/* ── SPINNER ──────────────────────────────────────────────
+   Kolejność: logo → romb (pierścienie) → wielokropek.
+   Całość wyśrodkowana. Ruch: tylko transform + opacity.
+   Zmienne do dostrojenia:
+     --logo-gap  : odstęp logo od rombu
+     --logo-size : rozmiar wordmarku
+   ─────────────────────────────────────────────────────── */
+.spinner{--logo-gap:4px;--logo-size:32px;
+  display:flex;flex-direction:column;align-items:center}
+
+/* logo: wordmark hadrianm, końcowe "m" przyciemnione */
+.spinner-logo{font-weight:800;font-size:var(--logo-size);letter-spacing:.01em;line-height:1;color:var(--ink);margin-bottom:var(--logo-gap)}
+.spinner-logo i{font-style:normal;color:var(--muted)}
+
+/* romb + rozchodzące się pierścienie */
+.spinner-mark{position:relative;display:grid;place-items:center;width:150px;height:150px}
+.spinner-mark .ring{position:absolute;width:26px;height:26px;transform:rotate(45deg) scale(1);border:1.5px solid var(--accent);opacity:0}
+.spinner-mark .dia{width:18px;height:18px;transform:rotate(45deg);background:var(--accent);box-shadow:0 0 18px rgba(var(--glow),.7)}
+
+/* wielokropek — kropki w fali */
+.spinner-dots{display:flex;align-items:center;gap:11px;margin-top:38px}
+.spinner-dots span{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 10px rgba(var(--glow),.5);opacity:.25}
+
+@media (prefers-reduced-motion:no-preference){
+  .spinner-mark .ring.r1{animation:spn-ping 2s ease-out infinite}
+  .spinner-mark .ring.r2{animation:spn-ping 2s ease-out infinite 1s}
+  .spinner-mark .dia{animation:spn-breathe 2s ease-in-out infinite}
+  .spinner-dots span{animation:spn-wave 1.4s ease-in-out infinite}
+  .spinner-dots span:nth-child(1){animation-delay:0s}
+  .spinner-dots span:nth-child(2){animation-delay:.18s}
+  .spinner-dots span:nth-child(3){animation-delay:.36s}
+}
+@keyframes spn-ping{0%{transform:rotate(45deg) scale(.55);opacity:.6}70%{opacity:0}100%{transform:rotate(45deg) scale(5.4);opacity:0}}
+@keyframes spn-breathe{0%,100%{transform:rotate(45deg) scale(1);box-shadow:0 0 18px rgba(var(--glow),.7)}50%{transform:rotate(45deg) scale(1.14);box-shadow:0 0 30px rgba(var(--glow),.95)}}
+@keyframes spn-wave{0%{opacity:.25;transform:scale(.8)}30%{opacity:1;transform:scale(1.05)}60%,100%{opacity:.25;transform:scale(.8)}}
+</style>
+</head>
+<body>
+  <div class="spinner" role="status" aria-label="Ładowanie">
+    <div class="spinner-logo" aria-hidden="true">hadrian<i>m</i></div>
+    <div class="spinner-mark">
+      <span class="ring r1"></span>
+      <span class="ring r2"></span>
+      <span class="dia"></span>
+    </div>
+    <div class="spinner-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+  </div>
+</body>
+</html>

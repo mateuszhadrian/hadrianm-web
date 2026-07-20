@@ -10,6 +10,7 @@ import "@fontsource/instrument-serif/400-italic.css";
 import "@/styles/global.css";
 
 import Toast from "@/components/ui/toast/Toast.astro";
+import LoadingOverlay from "@/components/ui/LoadingOverlay.astro";
 
 // Preload krojów above-the-fold — skraca okno font-display:swap (mniejszy
 // „przeskok" z fontu systemowego przy nawigacji). Import ?url zamiast
@@ -164,6 +165,7 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <link rel="canonical" href={canonicalUrl} />
   </head>
   <body data-smooth-scroll={smoothScrollAttr}>
+    <LoadingOverlay />
     <slot />
     <Toast />
     <script>

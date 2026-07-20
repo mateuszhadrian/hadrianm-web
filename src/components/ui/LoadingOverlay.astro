@@ -1,0 +1,236 @@
+---
+// Nakładka PRZEJŚĆ między podstronami — TYLKO mobile (wygląd:
+// docs/design/Spinner - Export.html). Pokazuje się WYŁĄCZNIE przy nawigacji
+// między stronami, gdy ta trwa dłużej niż próg — nie na wejściu.
+//
+// DLACZEGO tylko przejścia, a nie ekran startowy (oba warianty zmierzone
+// i ODRZUCONE 2026-07-20):
+//  • na wejściu na stronę główną pełnoekranowa warstwa nad hero <h1>
+//    (elementem LCP) opóźnia LCP — jedyne dwa URL-e mierzone przez
+//    lighthouserc.cjs (required check);
+//  • na wejściu na PODSTRONĘ zasłona podczas `load` i jej zdejmowanie ściga
+//    się z reveal sekcji: axe łapie `.pp-sub` jako color-contrast serious na
+//    /oferta/ + /en/services/ (pixel-5) — 2× deterministycznie w pełnym
+//    test:e2e (kontrola bez auto-show: 634/0). Ta sama klasa problemu co
+//    reguła o ScrollTrigger.refresh() i o measure() w navbarze.
+// Przejścia pokazują nakładkę na STRONIE, z której wychodzimy (jej reveal
+// jest już ustabilizowany), więc nie dotykają żadnego z tych checków.
+//
+// Pomiar przejść (Pixel 5 / 4G): klik → pierwsze malowanie nowej strony
+// ~120 ms typowo, 237 ms najgorzej. Próg 250 ms => na szybkim łączu nakładka
+// się NIE pokazuje (mignięcie byłoby gorsze niż jej brak); pojawia się tylko
+// przy realnie wolnej nawigacji.
+---
+
+<div class="ldo" data-loading-overlay role="status" aria-label="Ładowanie">
+  <div class="ldo-in">
+    <div class="ldo-logo" aria-hidden="true">hadrian<i>m</i></div>
+    <div class="ldo-mark" aria-hidden="true">
+      <span class="r1 ring"></span>
+      <span class="r2 ring"></span>
+      <span class="dia"></span>
+    </div>
+    <div class="ldo-dots" aria-hidden="true">
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Poza mobile nakładka nie istnieje — display:none zdejmuje ją też
+     z hit-testu i z drzewa a11y, więc desktop jest nietknięty. */
+  .ldo {
+    display: none;
+  }
+
+  @media (max-width: 860.98px) {
+    /* Stan domyślny na mobile: OBECNA w DOM, ale NIEwidoczna i bezczynna.
+       Nic jej nie pokazuje na wejściu — dopiero JS przejść (klasa .is-in)
+       przy wolnej nawigacji. Brak auto-show = brak wpływu na LCP/reveal. */
+    .ldo {
+      position: fixed;
+      inset: 0;
+      z-index: 200; /* nad navbarem (50) i BackButtonem (60) */
+      display: grid;
+      place-items: center;
+      background: var(--bg, #070507);
+      opacity: 0;
+      visibility: hidden;
+    }
+    .ldo.is-in {
+      opacity: 1;
+      visibility: visible;
+      transition:
+        opacity 0.28s ease,
+        visibility 0.28s;
+    }
+  }
+
+  .ldo-in {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .ldo-logo {
+    font-family: var(--font-body), sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .ldo-logo i {
+    font-style: normal;
+    color: var(--muted);
+  }
+
+  .ldo-mark {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 150px;
+    height: 150px;
+  }
+  .ldo-mark .ring {
+    position: absolute;
+    width: 26px;
+    height: 26px;
+    transform: rotate(45deg) scale(1);
+    border: 1.5px solid var(--accent);
+    opacity: 0;
+  }
+  .ldo-mark .dia {
+    width: 18px;
+    height: 18px;
+    transform: rotate(45deg);
+    background: var(--accent);
+    box-shadow: 0 0 18px rgba(var(--glow), 0.7);
+  }
+
+  .ldo-dots {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    margin-top: 38px;
+  }
+  .ldo-dots span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 10px rgba(var(--glow), 0.5);
+    opacity: 0.25;
+  }
+
+  /* Ruch tylko przy zgodzie na animacje — statyczny stan (romb + wygaszone
+     kropki) jest czytelny sam w sobie, więc przy `reduce` nic nie tracimy. */
+  @media (prefers-reduced-motion: no-preference) {
+    .ldo-mark .ring.r1 {
+      animation: ldo-ping 2s ease-out infinite;
+    }
+    .ldo-mark .ring.r2 {
+      animation: ldo-ping 2s ease-out infinite 1s;
+    }
+    .ldo-mark .dia {
+      animation: ldo-breathe 2s ease-in-out infinite;
+    }
+    .ldo-dots span {
+      animation: ldo-wave 1.4s ease-in-out infinite;
+    }
+    .ldo-dots span:nth-child(2) {
+      animation-delay: 0.18s;
+    }
+    .ldo-dots span:nth-child(3) {
+      animation-delay: 0.36s;
+    }
+  }
+
+  @keyframes ldo-ping {
+    0% {
+      transform: rotate(45deg) scale(0.55);
+      opacity: 0.6;
+    }
+    70% {
+      opacity: 0;
+    }
+    100% {
+      transform: rotate(45deg) scale(5.4);
+      opacity: 0;
+    }
+  }
+  @keyframes ldo-breathe {
+    0%,
+    100% {
+      transform: rotate(45deg) scale(1);
+      box-shadow: 0 0 18px rgba(var(--glow), 0.7);
+    }
+    50% {
+      transform: rotate(45deg) scale(1.14);
+      box-shadow: 0 0 30px rgba(var(--glow), 0.95);
+    }
+  }
+  @keyframes ldo-wave {
+    0% {
+      opacity: 0.25;
+      transform: scale(0.8);
+    }
+    30% {
+      opacity: 1;
+      transform: scale(1.05);
+    }
+    60%,
+    100% {
+      opacity: 0.25;
+      transform: scale(0.8);
+    }
+  }
+</style>
+
+<script is:inline>
+  // is:inline — bez czekania na bundel modułów (schodzą ~535 ms).
+  (() => {
+    const el = document.querySelector("[data-loading-overlay]");
+    if (!el) return;
+
+    // Poza mobile display:none — nie ruszamy jej wcale.
+    if (!matchMedia("(max-width: 860.98px)").matches) return;
+
+    // Pokazujemy dopiero po progu: szybka nawigacja (większość) NIE zobaczy
+    // nakładki, wolna — tak. Bezwarunkowe pokazanie tylko by mignęło.
+    const THRESHOLD = 250;
+    let timer = 0;
+
+    document.addEventListener("click", (ev) => {
+      const a = ev.target?.closest?.("a[href]");
+      if (!a || ev.defaultPrevented) return;
+      if (
+        ev.metaKey ||
+        ev.ctrlKey ||
+        ev.shiftKey ||
+        ev.altKey ||
+        ev.button !== 0
+      )
+        return;
+      if (a.target === "_blank" || a.hasAttribute("download")) return;
+
+      const url = new URL(a.getAttribute("href"), location.href);
+      if (url.origin !== location.origin) return;
+      // kotwica / ten sam adres = brak nawigacji między stronami
+      if (url.pathname === location.pathname) return;
+
+      clearTimeout(timer);
+      timer = setTimeout(() => el.classList.add("is-in"), THRESHOLD);
+    });
+
+    // Powrót przez bfcache przywraca DOM w stanie sprzed wyjścia — bez tego
+    // użytkownik wróciłby „wstecz" na zamrożoną nakładkę (ten sam gotcha co
+    // handler pageshow w regule scroll-lenis.md).
+    addEventListener("pageshow", () => {
+      clearTimeout(timer);
+      el.classList.remove("is-in");
+    });
+    addEventListener("pagehide", () => clearTimeout(timer));
+  })();
+</script>
