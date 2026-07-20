@@ -8,9 +8,6 @@ export const defaultLang = "pl";
 export const ui = {
   pl: {
     "meta.title": "hadrianm.pl — pracownia stron i aplikacji",
-    "demo.intro": "Start ↓",
-    "demo.box": "hadrianm",
-    "demo.outro": "Koniec 🎉",
     "hero.eyebrow": "PRACOWNIA STRON I APLIKACJI",
     "hero.headlineLead": "strona, która mówi",
     "hero.headlineAccent": "za Ciebie",
@@ -307,9 +304,6 @@ export const ui = {
   },
   en: {
     "meta.title": "hadrianm.pl — web & app studio",
-    "demo.intro": "Start ↓",
-    "demo.box": "hadrianm",
-    "demo.outro": "Finish 🎉",
     "hero.eyebrow": "WEB & APP STUDIO",
     "hero.headlineLead": "a website that speaks",
     "hero.headlineAccent": "for you",
