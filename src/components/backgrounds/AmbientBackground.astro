@@ -173,6 +173,9 @@ for (const [key, color] of Object.entries(v.colors)) {
     .ambient-bg__cloud-c,
     .ambient-bg__cloud-d {
       animation: none;
+      /* Nic się nie animuje → promocja GPU chmur jest czystym kosztem
+         (jak w regule .bg-layer.is-inactive niżej). */
+      will-change: auto;
     }
   }
 
