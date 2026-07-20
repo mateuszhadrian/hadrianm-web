@@ -230,7 +230,7 @@ export const ui = {
     "faqPage.lead":
       "Od pierwszego kontaktu i procesu współpracy, przez technologie i wygląd, po koszty, marketing oraz utrzymanie.",
     "faqPage.leadQ": "Nie znalazłeś swojego pytania?",
-    "faqPage.searchPh": "Szukaj w pytaniach i odpowiedziach…",
+    "faqPage.searchPh": "Szukaj w FAQ…",
     "faqPage.searchClear": "Wyczyść wyszukiwanie",
     "faqPage.searchRegion": "Wyszukiwarka pytań",
     "faqPage.countAll": "{total} pytań",
@@ -526,7 +526,7 @@ export const ui = {
     "faqPage.lead":
       "From the first contact and the collaboration process, through technology and design, to costs, marketing and maintenance.",
     "faqPage.leadQ": "Can't find your question?",
-    "faqPage.searchPh": "Search questions and answers…",
+    "faqPage.searchPh": "Search FAQ…",
     "faqPage.searchClear": "Clear search",
     "faqPage.searchRegion": "Question search",
     "faqPage.countAll": "{total} questions",
