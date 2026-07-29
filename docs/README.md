@@ -15,6 +15,8 @@
 
 | Plik | Czego dotyczy |
 | --- | --- |
+| `hadrianm-history-from-the-first-commit.md` | **Kronika procesu** — cała praca nad projektem od pierwszego commita, krok po kroku (267 commitów, 12.06–20.07.2026), pogrupowana w fazy, z lekcjami/gotchas inline i rekomendacjami kolejności pod przyszłe projekty; docelowo baza pod uniwersalny szablon procesu (znaczniki 🔧/💡/⤴️) |
+| `hadrianm-based-handbook-about-testing.md` | **Podręcznik testów od zera** (dydaktyczny, dla nietechnicznego czytelnika): wyjaśnia baseline'y, komplety darwin/linux + workflow aktualizacji, ratchet, budżety LHCI i „zapas", harness, strażników i flaki — z analogiami, fragmentami realnego configu i drzewkami decyzji „czerwony test → co robić"; słowniczek + tabele-ściągawki. Uzupełnia (nie zastępuje) `testing-tools-and-environemnts-setup-analysis.md` i `.claude/rules/testing.md` |
 | `daily-workflow.md` | **Codzienny proces pracy** (instrukcja operacyjna): feature branch → `/test` → PR → 3 checki → merge → auto-deploy + prod smoke; przypadki specjalne (baseline'y, czerwone checki, CMS, hotfix) |
 | `analiza-refactor-hero-odkruszenie.md` | **Aktualny opis architektury hero** (moduły, stałe, refactor „odkruszający") |
 | `hosting_first_analysis.md` | Obowiązujące decyzje strategiczne: **Astro** (nie Next), Cloudflare Pages, budżety (1 adnotacja: Cloudflare Registrar nie obsługuje `.pl`) |
