@@ -1,6 +1,6 @@
 # Smoke produkcji po każdym push na main (main = produkcja; deploy robi
 # Cloudflare Pages automatycznie). Strategia: zbuduj dist lokalnie, wyciągnij
-# zahashowaną nazwę assetu i czekaj, aż produkcja zacznie ją serwować
+# zahashowane nazwy assetów i czekaj, aż produkcja zacznie je serwować
 # (hash Astro jest deterministyczny dla tej samej treści) — dopiero wtedy
 # odpal testy @prod-smoke przeciw https://hadrianm.pl. Porażka = mail
 # z GitHuba natychmiast po zepsutym deployu.
@@ -8,9 +8,19 @@ name: Prod smoke
 on:
   push:
     branches: [main]
+  # Ręczne odpalenie z zakładki Actions: smoke bywał czerwony przez wyścig
+  # z deployem Cloudflare (rerun), a przy awarii Actions push w ogóle nie
+  # tworzy biegu (2026-08-06: GitHub przetwarzał ~15% webhooków; odrzuconych
+  # zdarzeń nie odtwarza). Wzorzec z nowszych projektów rodziny (C2).
+  workflow_dispatch:
+env:
+  PROD_URL: https://hadrianm.pl
 jobs:
   smoke:
-    runs-on: ubuntu-latest
+    # Przypięta wersja obrazu (nie `ubuntu-latest`): GitHub przełącza `latest`
+    # bez naszej decyzji (2026-10-19), a wersja systemu wpływa na baseline'y
+    # linux i binaria Playwrighta. Bump obrazu = świadoma zmiana (C3).
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6
@@ -22,23 +32,42 @@ jobs:
       - run: pnpm build
       - name: Czekaj na świeży deploy Cloudflare Pages
         run: |
-          asset=$(grep -oE '/_astro/[^"]+' dist/index.html | head -1)
-          if [ -z "$asset" ]; then
-            echo "Nie znalazłem zahashowanego assetu w dist/index.html" >&2
+          # KOMPLET assetów z buildu, nie pierwszy z brzegu (C1): pierwszym
+          # bywał font o stałym hashu między buildami → strażnik zawsze
+          # „świeży" → smoke startował w środku propagacji (nowy HTML, a CSS
+          # jeszcze zwracał stronę 404 jako text/html — flake „MIME
+          # text/html na _astro/*.css" z katalogu flake'ów). Deploy uznajemy
+          # za świeży dopiero, gdy HTML produkcji zawiera WSZYSTKIE assety
+          # buildu i KAŻDY z nich odpowiada 200.
+          # Wzorzec ucina na spacji i przecinku (srcset/imagesrcset trzymają
+          # ścieżkę + deskryptor gęstości w jednej wartości) oraz na
+          # apostrofie i nawiasie (inline url('/_astro/…')).
+          assets=$(grep -oE "/_astro/[^\"' ,)]+" dist/index.html | sort -u)
+          if [ -z "$assets" ]; then
+            echo "Nie znalazłem zahashowanych assetów w dist/index.html" >&2
             exit 1
           fi
-          echo "Czekam, aż https://hadrianm.pl poda: $asset"
+          echo "Czekam, aż $PROD_URL poda komplet:"
+          echo "$assets"
           for i in $(seq 1 30); do
-            html=$(curl -s -H "Cache-Control: no-cache" https://hadrianm.pl/)
-            if echo "$html" | grep -q "$asset"; then
-              ray=$(curl -sI https://hadrianm.pl/ | tr -d '\r' | grep -i '^cf-ray' || true)
+            html=$(curl -s -H "Cache-Control: no-cache" "$PROD_URL/")
+            fresh=1
+            for a in $assets; do
+              # test wbudowany zamiast `echo | grep -q` — grep zamykał potok
+              # wcześniej i próby sypały "echo: write error: Broken pipe".
+              if [[ "$html" != *"$a"* ]]; then fresh=0; break; fi
+              code=$(curl -s -o /dev/null -w '%{http_code}' "$PROD_URL$a")
+              if [ "$code" != "200" ]; then fresh=0; break; fi
+            done
+            if [ "$fresh" = "1" ]; then
+              ray=$(curl -sI "$PROD_URL/" | tr -d '\r' | grep -i '^cf-ray' || true)
               echo "Deploy świeży (próba $i; $ray)"
               exit 0
             fi
-            echo "  próba $i/30 — jeszcze stary build, czekam 20 s…"
+            echo "  próba $i/30 — build niekompletny na produkcji, czekam 20 s…"
             sleep 20
           done
-          echo "Timeout (10 min): produkcja nadal nie serwuje $asset" >&2
+          echo "Timeout (10 min): produkcja nadal nie serwuje kompletu assetów" >&2
           exit 1
       - name: Playwright version (klucz cache)
         id: pw

@@ -11,7 +11,9 @@ permissions:
   contents: write
 jobs:
   update-baselines:
-    runs-on: ubuntu-latest
+    # Ten sam przypięty obraz co w ci.yml (C3) — baseline'y linux muszą
+    # powstawać na tym samym systemie, na którym CI je porównuje.
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/action-setup@v6

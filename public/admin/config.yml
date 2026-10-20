@@ -5,11 +5,25 @@ backend:
   branch: main
   # Worker-logowania (OAuth proxy) — wdrożony w Etapie 3:
   base_url: https://sveltia-cms-auth.tenhadrian.workers.dev
+  # Bez tego panel odpalony na localhoście wysyła site_id=cms.netlify.com
+  # (dziedzictwo Netlify w Sveltii) i wpada na ALLOWED_DOMAINS Workera
+  # (gotcha z projektów klienckich rodziny; backlog M1).
+  site_domain: hadrianm.pl
 
-# ── Gdzie trafiają zdjęcia: Cloudflare R2 (Etap 5) ────────────────────────
+# ── Gdzie trafiają media: Cloudflare R2 (Etap 5) ──────────────────────────
 # Secret Access Key NIE trafia do tego pliku — Sveltia poprosi o niego
 # w panelu przy pierwszym uploadzie i trzyma go w pamięci przeglądarki.
+# Upload do R2 działa przez pola `image` ORAZ `file` (MP4 — potwierdzone
+# w projektach klienckich rodziny); biblioteka Assets poza polem NIE
+# trafia do R2.
 media_libraries:
+  # Nazwy WGRYWANYCH plików przez te same reguły co slug wpisu (blok `slug:`
+  # niżej): spacje → myślniki, polskie znaki transliterowane, małe litery.
+  # Bez tego plik z telefonu ląduje w R2 jako "Img 9635.mp4". Zakres `all`
+  # obejmuje też upload do R2 (opcja obecna w binarium 0.170.0 — sprawdzone
+  # grep-em 2026-10-20). Nazw plików już wgranych NIE zmienia.
+  all:
+    slugify_filename: true
   cloudflare_r2:
     account_id: "a1f687532595bb8659c557adba293d53"
     access_key_id: "d73ebcace4b956ef8a1a4dee8cb77712"
@@ -21,6 +35,20 @@ media_libraries:
 # ── Czyste JSON-y: pomijaj niewypełnione pola opcjonalne (np. liveUrl) ────
 output:
   omit_empty_optional_fields: true
+
+# ── Nazwy plików wpisów: zawsze czyste ASCII ─────────────────────────────
+# Nazwa pliku powstaje z pola „Slug", wpisywanego ręcznie — tekst wklejony
+# z telefonu / aplikacji Apple bywa w formie ROZŁOŻONEJ (NFD: „ą" = „a"
+# + ogonek). Wygląda identycznie, ale to inne bajty: na macOS git trzyma
+# w indeksie nazwę NFD, a z dysku czyta NFC, więc ten sam plik widać dwa
+# razy; `git add .` zrobiłby z tego DWA wpisy na Linuksie i wywrócił test
+# unikalności slugów (incydent w projekcie klienckim rodziny 2026-08-06).
+# `clean_accents` transliteruje polskie znaki (ą→a, ł→l, …), `encoding:
+# ascii` wycina resztę. Dotyczy WYŁĄCZNIE nazwy pliku — wartość pola „Slug"
+# i treść zostają. Istniejących plików nie rusza.
+slug:
+  encoding: "ascii"
+  clean_accents: true
 
 # ── Dwujęzyczność panelu jest zrobiona przez pola {pl,en} (patrz niżej) ───
 
