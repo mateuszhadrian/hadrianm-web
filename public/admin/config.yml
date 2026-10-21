@@ -142,6 +142,29 @@ collections:
               - { label: "English", name: "en", widget: "string" }
           - { label: "Zrzut DESKTOP", name: "desktop", widget: "image" }
           - { label: "Zrzut MOBILE", name: "mobile", widget: "image" }
+          # ── Pętla wideo ekranu (OPCJONALNA) — plan: docs/analiza-realizacje-wideo.md
+          # Oba pliki NARAZ (laptop + telefon) albo żaden. Wyłącznie nagrania ze
+          # skryptu `pnpm capture:site` (1440×900 / 390×800, ≤ 800 KB, pętla bez
+          # szwu); widget `file` wgrywa MP4 prosto do R2 (prefix realizacje/).
+          # Zdjęcia wyżej zostają: są posterem i wersją dla reduce-motion —
+          # najlepiej wgraj tam postery .webp z tego samego nagrania (klatka 0).
+          - label: "Wideo ekranu — opcjonalne (tylko z pnpm capture:site)"
+            name: "video"
+            widget: "object"
+            required: false
+            fields:
+              - {
+                  label: "MP4 LAPTOP (…-desktop.mp4)",
+                  name: "desktop",
+                  widget: "file",
+                  hint: "Nagranie 1440×900 ze skryptu capture:site. Bez tego pola brak pętli — zostaje zdjęcie.",
+                }
+              - {
+                  label: "MP4 TELEFON (…-mobile.mp4)",
+                  name: "mobile",
+                  widget: "file",
+                  hint: "Nagranie 390×800 z tego samego uruchomienia skryptu.",
+                }
 
       # ── Liczby i wyniki (OPCJONALNE — R2 backlogu ewolucji) ──
       # Bez zmierzonych metryk zostaw listę pustą: blok „Liczby i wyniki"

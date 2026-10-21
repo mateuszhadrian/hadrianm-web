@@ -76,4 +76,58 @@ describe("kontrakt CMS: src/content/realizacje/*.json", () => {
       expect(result.data.role).toBeUndefined();
     }
   });
+
+  // R1 (plan wideo, D2): `screens[].video` opcjonalne, oba URL-e naraz.
+  describe("screens[].video (pętla wideo ekranu)", () => {
+    const screen = {
+      key: "home",
+      label: { pl: "Start", en: "Home" },
+      desktop: "https://media.hadrianm.pl/realizacje/x-desktop.webp",
+      mobile: "https://media.hadrianm.pl/realizacje/x-mobile.webp",
+    };
+    const entry = (video?: unknown) => ({
+      slug: "wideo",
+      name: "Wideo",
+      year: "2026",
+      category: { pl: "Strona", en: "Website" },
+      blurb: { pl: "Opis", en: "Blurb" },
+      tags: { pl: ["a"], en: ["a"] },
+      intro: { pl: "Wstęp", en: "Intro" },
+      screens: [video === undefined ? screen : { ...screen, video }],
+      scope: { pl: ["Projekt"], en: ["Design"] },
+    });
+
+    it("ekran bez video przechodzi (pole opcjonalne)", () => {
+      expect(realizacjaSchema.safeParse(entry()).success).toBe(true);
+    });
+
+    it("ekran z video {desktop, mobile} przechodzi", () => {
+      const r = realizacjaSchema.safeParse(
+        entry({
+          desktop:
+            "https://media.hadrianm.pl/realizacje/video/wideo-home-desktop.mp4",
+          mobile:
+            "https://media.hadrianm.pl/realizacje/video/wideo-home-mobile.mp4",
+        }),
+      );
+      expect(r.success, r.success ? "" : z.prettifyError(r.error)).toBe(true);
+    });
+
+    it("video bez mobile NIE przechodzi (oba urządzenia albo żadne)", () => {
+      expect(
+        realizacjaSchema.safeParse(
+          entry({
+            desktop: "https://media.hadrianm.pl/realizacje/video/a.mp4",
+          }),
+        ).success,
+      ).toBe(false);
+    });
+
+    it("video z wartością niebędącą URL-em NIE przechodzi", () => {
+      expect(
+        realizacjaSchema.safeParse(entry({ desktop: "a.mp4", mobile: "b.mp4" }))
+          .success,
+      ).toBe(false);
+    });
+  });
 });

@@ -10,8 +10,10 @@ Prowadzisz proces dodania realizacji „$ARGUMENTS" (jeśli brak nazwy — zapyt
 
 Potrzebne per ekran (min. 1 ekran, typowo: home/gallery/order):
 zrzut desktop + zrzut mobile. Plus: nazwa, rok, kategoria PL/EN, blurb
-PL/EN, intro PL/EN, max 3 tagi na język, wyniki (metric+label), cytat
-klienta (autor, rola PL/EN), zakres prac PL/EN, opcjonalnie liveUrl.
+PL/EN, intro PL/EN, max 3 tagi na język, zakres prac PL/EN; OPCJONALNIE: wyniki
+(metric+label), cytat klienta (autor, rola PL/EN), liveUrl, pętla wideo
+pierwszego ekranu (§2b) — bez danych blok po prostu się nie renderuje,
+niczego nie wymyślamy.
 
 ## 2. Przygotuj zdjęcia (lokalnie, PRZED uploadem)
 
@@ -22,13 +24,24 @@ klienta (autor, rola PL/EN), zakres prac PL/EN, opcjonalnie liveUrl.
   `scripts/prepare-about-photo.mjs`).
 - Pliki wynikowe zostaw w katalogu wskazanym przez Mateusza (NIE w repo).
 
+## 2b. Pętla wideo pierwszego ekranu (opcjonalnie, dla stron „na żywo")
+
+- `pnpm capture:site -- --url https://<strona-klienta> --slug <slug>` →
+  `~/hadrianm-site-videos/<slug>/`: `<slug>-home-desktop.mp4`,
+  `<slug>-home-mobile.mp4` + postery `.webp` (klatka 0). Obejrzyj oba MP4
+  (QuickTime): płynny scroll, brak przyspieszonych animacji wejścia, pętla
+  bez szwu; stroisz `--depth-*`/`--hold*`, chowasz nakładki `--hide`.
+- Postery wgraj w polach „Zrzut DESKTOP / MOBILE" ekranu `home`, MP4 w
+  polach „Wideo ekranu" (widget `file` → R2). Zasady: reguła
+  `cms-realizacje.md` pkt 5; plan: `docs/analiza-realizacje-wideo.md`.
+
 ## 3. Wpis w panelu — robi Mateusz, Ty pilnujesz zasad
 
 Przypomnij checklistę (sam NIE edytuj JSON-ów — pisze je Sveltia):
 
 - panel: https://hadrianm.pl/admin (login przez GitHub);
-- zdjęcia wgrywać WYŁĄCZNIE przez pola Image (upload przez bibliotekę
-  Assets NIE trafia do R2!);
+- zdjęcia wgrywać WYŁĄCZNIE przez pola Image, MP4 przez pola „Wideo
+  ekranu" (upload przez bibliotekę Assets NIE trafia do R2!);
 - slug małymi literami, bez spacji (idzie do URL i nazwy pliku);
 - „Kolejność": mniejsze = wyżej na liście.
 
