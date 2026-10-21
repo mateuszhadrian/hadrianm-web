@@ -82,3 +82,26 @@ historia: `docs/analiza-refactor-hero-odkruszenie.md`.
    urządzeniach (tabela: `docs/analiza-refactor-hero-odkruszenie.md` §4).
 3. Po zmianach w `LaptopSite`/`PhoneSite` — regeneracja wideo:
    `/capture-devices`.
+4. Sweep hero biega też na `webkit-1440` (WebKit desktop, tylko ten spec):
+   Safari ≠ Chromium w renderowaniu tekstu — zielony Chromium nie dowodzi
+   zielonego Safari.
+
+## Obrysy i cienie tekstu (LaptopSite/PhoneSite) — kontrakt silników
+
+- **Nigdy `paint-order: stroke fill` na tekście HTML.** WebKit (Safari
+  macOS/iOS) go nie honoruje: obrys rysuje się NAD wypełnieniem (zjada
+  korpus liter), a sama obecność właściwości WYŁĄCZA malowanie
+  `text-shadow` na tym elemencie (pomiar 2026-10-20, backlog H1).
+- Obrys = pseudoelement `::before` z `content: attr(data-text)` POD
+  tekstem (`z-index: -1`, host `isolation: isolate`), obrys wycentrowany
+  na konturze + wypełnienie w kolorze obrysu; host maluje nieprzezroczysty
+  fill i swoje `text-shadow` na wierzchu. Wzorzec: `.dw-wood::before`,
+  `.dw-steel::before`, `.dwm-*::before`.
+- Bez `background-clip: text` z przezroczystym wypełnieniem + `text-shadow`
+  (Chromium i WebKit malują to różnie) — twarz liter ma być zwykłym,
+  nieprzezroczystym kolorem.
+- Weryfikacja zmian w tym obszarze: sweep hero na `chromium-1920` ORAZ
+  `webkit-1440`; przy wątpliwościach pomiar różnicy pikseli między
+  silnikami (podłoga szumu między WebKit a Chromium na neutralnym
+  fragmencie ≈ 7 jednostek średniej różnicy RGB; wynik w okolicy podłogi
+  = parytet).

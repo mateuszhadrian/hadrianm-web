@@ -70,7 +70,7 @@
             >
           </div>
           <div class="dw-layer dw-layer-steel">
-            <span class="dw-steel dw-mat dw-mat--steel" data-text="i stali"
+            <span class="dw-steel dw-mat--steel" data-text="i stali"
               >i stali</span
             >
           </div>
@@ -318,11 +318,12 @@
     --steel-size: 7cqw;
     --steel-left: 58.5cqw;
     --steel-top: 28cqh;
-    --steel-color: #bfbec4;
-    --steel-stroke-width: 0.48cqw;
-    --steel-stroke-color: #000000;
-    --steel-stroke2-width: 0.19cqw;
-    --steel-stroke2-color: #bfbec4;
+    /* Twarz liter = dawny efekt „biel .7 nad #6c737a" (cień -1px nad
+       przezroczystym wypełnieniem), spłaszczony do jednego koloru. */
+    --steel-color: #d3d5d7;
+    /* Pierścień (jasny obrys) — szerokość = suma dawnych dwóch obrysów. */
+    --steel-ring-width: 0.67cqw;
+    --steel-ring-color: #bfbec4;
 
     /* Nadpisywane z JS (laptop-site.ts → galleryLayout): realna wysokość navbara
        i wysokość kadru galerii. Deklaracja z fallbackiem = brak ostrzeżeń CSS. */
@@ -551,8 +552,29 @@
     text-transform: uppercase;
     color: var(--wood-color);
     font-size: var(--wood-size);
+    /* Obrys NIE na hoście (patrz komentarz przy .dw-wood::before). Własny
+       kontekst stackingu, żeby pseudoelement z z-index:-1 nie uciekł pod
+       warstwy stołu/regału zanim GSAP nada warstwie transform. */
+    isolation: isolate;
+  }
+  /* ── Obrysy tekstu: pierścień na pseudoelemencie POD tekstem ──
+     WebKit (Safari macOS/iOS) nie honoruje `paint-order: stroke fill` dla
+     tekstu HTML: obrys rysuje się NAD wypełnieniem (zjada korpus liter),
+     a sama obecność `paint-order` wyłącza malowanie `text-shadow`. Emulacja
+     niezależna od silnika: kopia tekstu (attr(data-text)) pod spodem,
+     obrys wycentrowany na konturze + wypełnienie w kolorze obrysu; host
+     maluje czysty fill na wierzchu → widoczna jest tylko zewnętrzna połowa
+     obrysu, identycznie w Chromium i WebKicie. (Backlog H1, 2026-10-20.) */
+  .dw-wood::before {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    color: var(--wood-stroke-color);
+    -webkit-text-fill-color: var(--wood-stroke-color);
     -webkit-text-stroke: var(--wood-stroke-width) var(--wood-stroke-color);
-    paint-order: stroke fill;
+    text-shadow: none;
   }
   .dw-steel {
     position: absolute;
@@ -566,10 +588,11 @@
     white-space: nowrap;
     text-transform: uppercase;
     font-size: var(--steel-size);
+    /* Nieprzezroczysta twarz + cienie bevelu (.dw-mat--steel) na hoście;
+       pierścień na ::before (wzorzec jak .dw-wood::before). */
     color: var(--steel-color);
     -webkit-text-fill-color: var(--steel-color);
-    -webkit-text-stroke: var(--steel-stroke-width) var(--steel-stroke-color);
-    paint-order: stroke fill;
+    isolation: isolate;
   }
   .dw-steel::before {
     content: attr(data-text);
@@ -577,19 +600,10 @@
     left: 0;
     top: 0;
     z-index: -1;
-    -webkit-text-stroke: calc(
-        var(--steel-stroke-width) + var(--steel-stroke2-width)
-      )
-      var(--steel-stroke2-color);
-    -webkit-text-fill-color: transparent;
-    paint-order: stroke fill;
-  }
-  .dw-mat {
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    -webkit-text-fill-color: transparent;
-    -webkit-text-stroke: 0;
+    color: var(--steel-ring-color);
+    -webkit-text-fill-color: var(--steel-ring-color);
+    -webkit-text-stroke: var(--steel-ring-width) var(--steel-ring-color);
+    text-shadow: none;
   }
   .dw-mat--wood {
     text-shadow:
