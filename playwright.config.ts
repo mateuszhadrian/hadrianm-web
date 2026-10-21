@@ -49,6 +49,22 @@ export default defineConfig({
         viewport: { width: 1366, height: 768 },
       },
     },
+    // T5 (2026-10-20): WebKit desktop WYŁĄCZNIE dla sweepa hero — błąd
+    // obrysów tekstu w Safari (backlog H1) był przez 3 miesiące niewidoczny
+    // dla CI, bo desktop testował tylko Chromium/Firefox. `testMatch`
+    // zawęża profil do jednego speca: bez tego doszłyby baseline'y
+    // wszystkich sekcji i siódmy przebieg całego e2e. DPR 1 jak
+    // chromium-1920 (rozmiar PNG w repo); geometria obrysów nie zależy
+    // od DPR.
+    {
+      name: "webkit-1440",
+      testMatch: /tests\/visual\/hero\.spec\.ts/,
+      use: {
+        ...devices["Desktop Safari"],
+        viewport: { width: 1440, height: 900 },
+        deviceScaleFactor: 1,
+      },
+    },
     {
       name: "firefox-desktop",
       use: {

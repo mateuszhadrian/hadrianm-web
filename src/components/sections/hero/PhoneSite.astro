@@ -505,21 +505,44 @@
     text-transform: uppercase;
     white-space: nowrap;
     font-size: 16cqw;
-    paint-order: stroke fill;
+    /* Obrys na pseudoelemencie pod tekstem, nie na hoście — WebKit nie
+       honoruje `paint-order` dla tekstu HTML i wyłącza wtedy text-shadow
+       (szczegóły: komentarz przy .dw-wood::before w LaptopSite.astro). */
+    position: relative;
+    isolation: isolate;
+  }
+  .dwm-wood::before,
+  .dwm-steel::before {
+    content: attr(data-text);
+    position: absolute;
+    left: 0;
+    top: 0;
+    z-index: -1;
+    text-shadow: none;
   }
   .dwm-wood {
+    --ring: rgb(240, 232, 215);
     font-family: var(--font-drewelomet-wood), sans-serif;
     color: #3f352c;
-    -webkit-text-stroke: 0.7cqw rgb(240, 232, 215);
+  }
+  .dwm-wood::before {
+    color: var(--ring);
+    -webkit-text-fill-color: var(--ring);
+    -webkit-text-stroke: 0.7cqw var(--ring);
   }
   .dwm-steel {
+    --ring: #000;
     font-family: var(--font-drewelomet-steel), sans-serif;
     font-weight: 700;
     letter-spacing: 0.02em;
     font-size: 13cqw;
     color: #bfbec4;
     -webkit-text-fill-color: #bfbec4;
-    -webkit-text-stroke: 0.45cqw #000;
+  }
+  .dwm-steel::before {
+    color: var(--ring);
+    -webkit-text-fill-color: var(--ring);
+    -webkit-text-stroke: 0.45cqw var(--ring);
   }
   .dwm-mat--wood {
     text-shadow:

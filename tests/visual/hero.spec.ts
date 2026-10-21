@@ -33,12 +33,18 @@ const FLAKY_RATIO = 0.02;
 const FLAKY_PIXEL5_FRAMES = new Set([0, 1, 2, 3]);
 const FLAKY_PIXEL5_RATIO = 0.01;
 
+// Hero dodatkowo sweepuje WebKit desktop (`webkit-1440`, profil zawężony
+// w playwright.config.ts do tego speca): Safari rysuje obrysy/cienie tekstu
+// inaczej niż Chromium (backlog H1, 2026-10-20) — bez tego profilu desktopowe
+// regresje Safari są dla CI niewidoczne.
+const HERO_SWEEP_PROJECTS = [...SWEEP_PROJECTS, "webkit-1440"];
+
 usePreviewGuard();
 
 test("sweep scrolla hero vs baseline", async ({ page }, testInfo) => {
   test.skip(
-    !SWEEP_PROJECTS.includes(testInfo.project.name),
-    "sweep hero tylko na odpowiednikach profili verify-hero",
+    !HERO_SWEEP_PROJECTS.includes(testInfo.project.name),
+    "sweep hero tylko na odpowiednikach profili verify-hero + webkit desktop",
   );
   test.setTimeout(240_000);
 
