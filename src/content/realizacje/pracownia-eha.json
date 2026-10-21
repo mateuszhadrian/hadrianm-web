@@ -1,0 +1,78 @@
+{
+  "slug": "pracownia-eha",
+  "order": 20,
+  "name": "Pracownia EH/A",
+  "year": "2026",
+  "category": {
+    "pl": "Budownictwo & Renowacje",
+    "en": "Construction & Restoration"
+  },
+  "blurb": {
+    "pl": "Pracownia remontująca domy z historią — strona w estetyce szkicownika: papier, odręczne rysunki, karty realizacji w stylu polaroid.",
+    "en": "A workshop restoring historic houses — a site styled like a sketchbook: paper, hand-drawn sketches, polaroid-style project cards."
+  },
+  "tags": {
+    "pl": [
+      "Autorski kierunek wizualny",
+      "Galeria realizacji",
+      "Własny panel treści CMS"
+    ],
+    "en": [
+      "Bespoke visual direction",
+      "Project gallery",
+      "Self-service CMS"
+    ]
+  },
+  "intro": {
+    "pl": "Dwuosobowa pracownia specjalizująca się w tradycyjnym ciesielstwie i murarstwie potrzebowała strony, która odróżni ją od typowych firm budowlanych. Powstała witryna w estetyce szkicownika - faktura papieru, rysunki konstrukcji, karty realizacji w stylu polaroid - z galerią zdjęć i filmów oraz panelem, z którego pracownia sama dodaje swoje kolejne realizacje.",
+    "en": "A two-person workshop specialising in traditional carpentry and masonry needed a site that sets it apart from typical building firms. The result is a sketchbook-style site — paper texture, structural drawings, polaroid-style project cards — with a photo-and-video gallery and a panel from which the workshop adds new houses itself."
+  },
+  "screens": [
+    {
+      "key": "home",
+      "label": {
+        "pl": "Strona główna",
+        "en": "Home"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/pracownia-eha-home-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/pracownia-eha-home-mobile.webp",
+      "video": {
+        "desktop": "https://media.hadrianm.pl/realizacje/pracownia-eha-home-desktop.mp4",
+        "mobile": "https://media.hadrianm.pl/realizacje/pracownia-eha-home-mobile.mp4"
+      }
+    },
+    {
+      "key": "gallery",
+      "label": {
+        "pl": "Realizacje",
+        "en": "Projects"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/pracownia-eha-gallery-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/pracownia-eha-gallery-mobile.webp"
+    },
+    {
+      "key": "skills",
+      "label": {
+        "pl": "Kompetencje i technologie",
+        "en": "Skills and techniques"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/pracownia-eha-skills-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/pracownia-eha-skills-mobile.webp"
+    }
+  ],
+  "scope": {
+    "pl": [
+      "Projekt UI/UX i kierunek wizualny",
+      "Wdrożenie frontendowe (Astro)",
+      "Galeria realizacji z panelem treści",
+      "Formularz kontaktowy i hosting"
+    ],
+    "en": [
+      "UI/UX design and visual direction",
+      "Frontend build (Astro)",
+      "Project gallery with a content panel",
+      "Contact form and hosting"
+    ]
+  },
+  "liveUrl": "https://pracownia-eha.pl"
+}
