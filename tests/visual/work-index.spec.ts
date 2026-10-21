@@ -6,13 +6,15 @@
 // (/cdn-cgi/image istnieje tylko na produkcji) — renderują się jako puste,
 // deterministycznie, tak samo jak w baseline'ach sekcji #work.
 import { expect, test, type Page } from "@playwright/test";
-import { usePreviewGuard } from "../helpers/guards";
+import { useVisualFixtureGuard } from "../helpers/guards";
 import { settle } from "../helpers/scroll";
 import { prepareSweep } from "../helpers/visual";
 
 const PATH = "/realizacje/";
 
-usePreviewGuard();
+// Zrzuty zależą od kolekcji realizacji → dist z `pnpm build:visual`
+// (zamrożona treść), nie ze zwykłego builda; strażnik przerywa z instrukcją.
+useVisualFixtureGuard();
 
 async function prepare(page: Page) {
   // prepareSweep = gotoReady + freeze.css + repaint (wspólny helper).

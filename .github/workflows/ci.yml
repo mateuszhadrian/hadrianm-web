@@ -66,9 +66,17 @@ jobs:
       # zawieszony apt/CDN — lepiej ubić i zrobić rerun niż czekać godzinę.
       - run: pnpm exec playwright install --with-deps chromium webkit firefox
         timeout-minutes: 10
+      # E2E funkcjonalne biegają na dist z treścią PRODUKCYJNĄ (artefakt
+      # `quality`; wpisy czytają dynamicznie, więc zmiany z panelu ich nie ruszają).
       - run: pnpm test:e2e
-      # Testy wizualne: baseline'y *-linux.png w repo (aktualizacja TYLKO
-      # przez workflow update-visual-baselines.yml — patrz .claude/rules/testing.md)
+      # Testy wizualne stoją na ZAMROŻONEJ treści (tests/fixtures/realizacje) —
+      # inaczej każda realizacja dodana/usunięta w panelu rozjeżdżałaby
+      # baseline'y kafli, karuzeli, siatki /realizacje/ i nakładek, blokując
+      # wszystkie PR-y. Stąd drugi build (REALIZACJE_DIR); strażnik
+      # assertVisualFixture pilnuje, że dist pod zrzutami jest tym właściwym.
+      - run: pnpm build:visual
+      # Baseline'y *-linux.png w repo (aktualizacja TYLKO przez workflow
+      # update-visual-baselines.yml — patrz .claude/rules/testing.md)
       - run: pnpm test:visual
       - uses: actions/upload-artifact@v4
         if: failure()

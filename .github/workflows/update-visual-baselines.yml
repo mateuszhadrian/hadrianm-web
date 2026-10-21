@@ -37,7 +37,9 @@ jobs:
       # timeout jak w ci.yml: udokumentowana klasa zawieszeń apt/CDN (>1h).
       - run: pnpm exec playwright install --with-deps chromium webkit firefox
         timeout-minutes: 10
-      - run: pnpm build
+      # Zamrożona treść realizacji (tests/fixtures) — jak w jobie e2e w ci.yml;
+      # baseline'y MUSZĄ powstawać na tym samym zestawie, na którym CI je porównuje.
+      - run: pnpm build:visual
       - run: pnpm test:visual:update
         env:
           CI: "true"

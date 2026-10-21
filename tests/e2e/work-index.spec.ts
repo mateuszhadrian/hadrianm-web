@@ -4,8 +4,6 @@
 // scroll NATYWNY (bez Lenisa — decyzja D1 analizy), meta + hreflang,
 // dojście z przycisków „Więcej realizacji" strony głównej.
 // Plan: docs/analiza-podstrona-realizacje.md.
-import { readdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
 import { SERVICES_PATH } from "../../src/lib/routes";
@@ -14,13 +12,14 @@ import {
   useChromium1920Only,
   usePreviewGuard,
 } from "../helpers/guards";
+import { realizacjeFiles } from "../helpers/realizacje";
 import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
 
-const ENTRY_COUNT = readdirSync(
-  fileURLToPath(new URL("../../src/content/realizacje", import.meta.url)),
-).filter((f) => f.endsWith(".json")).length;
+// Helper zamiast gołego readdirSync: katalog może nie istnieć (pusta
+// kolekcja = stan dopuszczalny; sygnał o braku treści daje cms-contract).
+const ENTRY_COUNT = realizacjeFiles().length;
 
 const PAGES = [
   { path: "/realizacje/", lang: "pl", homePath: "/" },
@@ -161,6 +160,10 @@ for (const p of PAGES) {
 
 test.describe("desktop: Modal na podstronie", () => {
   test.skip(({ isMobile }) => !!isMobile, "modal tylko na desktop");
+  test.skip(
+    ENTRY_COUNT === 0,
+    "brak wpisów realizacji w panelu — nie ma karty do kliknięcia",
+  );
 
   test("klik w kartę otwiera modal z treścią projektu, × zamyka", async ({
     page,
@@ -183,6 +186,10 @@ test.describe("desktop: Modal na podstronie", () => {
 
 test.describe("mobile: BottomSheet na podstronie", () => {
   test.skip(({ isMobile }) => !isMobile, "sheet tylko na mobile");
+  test.skip(
+    ENTRY_COUNT === 0,
+    "brak wpisów realizacji w panelu — nie ma karty do kliknięcia",
+  );
 
   test("tap w kartę otwiera sheet; zamykanie przyciskiem", async ({ page }) => {
     await gotoReady(page, "/realizacje/");

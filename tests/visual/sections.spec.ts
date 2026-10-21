@@ -2,7 +2,7 @@
 // 6 profilach. Diff per sekcja (screenshot elementu, nie całej strony) →
 // czytelniejsze raporty. Determinizm: freeze.css (czasowe animacje CSS off).
 import { expect, test, type Page } from "@playwright/test";
-import { usePreviewGuard } from "../helpers/guards";
+import { useVisualFixtureGuard } from "../helpers/guards";
 import { gotoReady, settle } from "../helpers/scroll";
 import { FREEZE } from "../helpers/visual";
 
@@ -18,7 +18,9 @@ import { FREEZE } from "../helpers/visual";
 // contact-index.spec.ts na /kontakt/.
 const SECTIONS = ["audience", "work", "about", "contact"];
 
-usePreviewGuard();
+// Zrzuty zależą od kolekcji realizacji → dist z `pnpm build:visual`
+// (zamrożona treść), nie ze zwykłego builda; strażnik przerywa z instrukcją.
+useVisualFixtureGuard();
 
 // Celowo NIE prepareSweep: element-screenshoty i tak poprzedza
 // scrollIntoView + settle, więc czekanie na repaint po freeze jest zbędne.

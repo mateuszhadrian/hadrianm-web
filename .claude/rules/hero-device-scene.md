@@ -71,7 +71,7 @@ historia: `docs/analiza-refactor-hero-odkruszenie.md`.
 
 ## Weryfikacja (obowiązkowa dla KAŻDEJ zmiany w tym katalogu)
 
-1. `pnpm build && pnpm test:visual` — sweep hero w
+1. `pnpm build:visual && pnpm test:visual` — sweep hero w
    `tests/visual/hero.spec.ts` vs commitowany baseline (skill
    `/verify-mobile`); biega na preview (strażnik `assertPreview`).
    Zamierzona zmiana wyglądu = po akceptacji Mateusza aktualizacja OBU

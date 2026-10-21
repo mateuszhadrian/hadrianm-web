@@ -34,10 +34,12 @@ export interface WorkProject {
   // ── Treść modala / bottom sheeta ──
   screens: WorkScreen[];
   intro: Localized;
+  // Blok „Liczby i wyniki" renderuje się tylko dla niepustej tablicy
+  // (schemat daje `[]` domyślnie); opinia tylko gdy jest `quote`.
   results: WorkResult[];
-  quote: Localized;
-  author: string;
-  role: Localized;
+  quote?: Localized;
+  author?: string;
+  role?: Localized;
   scope: LocalizedList;
   // Link do strony na żywo. Pominięty (lub „#") → CTA się nie renderuje.
   liveUrl?: string;
@@ -61,9 +63,9 @@ export type LocalizedProject = {
   screens: LocalizedScreen[];
   intro: string;
   results: LocalizedResult[];
-  quote: string;
-  author: string;
-  role: string;
+  quote?: string;
+  author?: string;
+  role?: string;
   scope: string[];
   liveUrl?: string;
 };
@@ -88,9 +90,9 @@ export function localizeProject(p: WorkProject, lang: Lang): LocalizedProject {
       metric: r.metric[lang] ?? r.metric.pl,
       label: r.label[lang] ?? r.label.pl,
     })),
-    quote: p.quote[lang] ?? p.quote.pl,
+    quote: p.quote ? (p.quote[lang] ?? p.quote.pl) : undefined,
     author: p.author,
-    role: p.role[lang] ?? p.role.pl,
+    role: p.role ? (p.role[lang] ?? p.role.pl) : undefined,
     scope: p.scope[lang] ?? p.scope.pl,
     liveUrl: live,
   };

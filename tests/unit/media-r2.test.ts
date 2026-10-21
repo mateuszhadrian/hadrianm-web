@@ -1,19 +1,15 @@
 // Dostępność mediów R2: HEAD do każdego URL-a media.hadrianm.pl z JSON-ów
 // realizacji. Zewnętrzna sieć = flaky ⇒ test NIE biega na PR-ach; odpala się
 // wyłącznie z CHECK_REMOTE_MEDIA=1 (CI na main, /release-check).
-import { readdirSync, readFileSync } from "node:fs";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { readRealizacjaRaw, realizacjeFiles } from "../helpers/realizacje";
 
-const DIR = fileURLToPath(
-  new URL("../../src/content/realizacje", import.meta.url),
-);
-
+// realizacjeFiles(): pusta tablica, gdy katalogu nie ma — bez wywrotki
+// modułu na ENOENT (sygnał o braku treści daje cms-contract.test.ts).
 function collectMediaUrls(): string[] {
   const urls = new Set<string>();
-  for (const name of readdirSync(DIR).filter((f) => f.endsWith(".json"))) {
-    const raw = readFileSync(join(DIR, name), "utf8");
+  for (const name of realizacjeFiles()) {
+    const raw = readRealizacjaRaw(name);
     for (const match of raw.matchAll(
       /https:\/\/media\.hadrianm\.pl\/[^"\s]+/g,
     )) {

@@ -18,6 +18,7 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
+    "build:visual": "REALIZACJE_DIR=./tests/fixtures/realizacje astro build",
     "preview": "astro preview",
     "astro": "astro",
     "typecheck": "astro check",

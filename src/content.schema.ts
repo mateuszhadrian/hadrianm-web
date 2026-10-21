@@ -39,10 +39,15 @@ export const realizacjaSchema = z.object({
       }),
     )
     .min(1),
-  results: z.array(z.object({ metric: localized, label: localized })),
-  quote: localized,
-  author: z.string(),
-  role: localized,
+  // „Liczby i wyniki" oraz opinia są OPCJONALNE (R2 backlogu ewolucji):
+  // prawdziwe realizacje nie mają jeszcze zmierzonych metryk ani cytatów —
+  // nie wymyślamy. WorkDetail pomija puste bloki (results → [] domyślnie).
+  results: z
+    .array(z.object({ metric: localized, label: localized }))
+    .default([]),
+  quote: localized.optional(),
+  author: z.string().optional(),
+  role: localized.optional(),
   scope: localizedList,
   liveUrl: z.string().optional(),
 });
