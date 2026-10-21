@@ -1,0 +1,78 @@
+{
+  "slug": "delung",
+  "order": 30,
+  "name": "Delung Meble",
+  "year": "2026",
+  "category": {
+    "pl": "Meble na wymiar",
+    "en": "Custom furniture"
+  },
+  "blurb": {
+    "pl": "Producent mebli na wymiar — strona z galerią realizacji filtrowaną po kategoriach i panelem, z którego firma sama dodaje projekty.",
+    "en": "A custom-furniture maker — a site with a category-filtered project gallery and a panel from which the company adds its own projects."
+  },
+  "tags": {
+    "pl": [
+      "Galeria realizacji",
+      "Panel CMS",
+      "Hero z animowaną typografią"
+    ],
+    "en": [
+      "Project gallery",
+      "Self-service CMS",
+      "Animated-type hero"
+    ]
+  },
+  "intro": {
+    "pl": "Firma produkująca kuchnie, szafy i zabudowy na wymiar potrzebowała strony, która pokaże jakość wykonania i pozwoli samodzielnie publikować kolejne realizacje. Powstała szybka, statyczna witryna z galerią filtrowaną po kategoriach, lightboxem na zdjęcia i filmy, opisem procesu współpracy oraz panelem treści, z którego zespół dodaje projekty bez programisty.",
+    "en": "A maker of made-to-measure kitchens, wardrobes and built-ins needed a site that shows the quality of its work and lets the team publish new projects on its own. The result is a fast static site with a category-filtered gallery, a lightbox for photos and videos, a walkthrough of the process and a content panel the team uses without a developer."
+  },
+  "screens": [
+    {
+      "key": "home",
+      "label": {
+        "pl": "Strona główna",
+        "en": "Home"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/delung-home-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/delung-home-mobile.webp",
+      "video": {
+        "desktop": "https://media.hadrianm.pl/realizacje/delung-home-desktop.mp4",
+        "mobile": "https://media.hadrianm.pl/realizacje/delung-home-mobile.mp4"
+      }
+    },
+    {
+      "key": "gallery",
+      "label": {
+        "pl": "Realizacje",
+        "en": "Projects"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/delung-gallery-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/delung-gallery-mobile.webp"
+    },
+    {
+      "key": "offer",
+      "label": {
+        "pl": "Oferta",
+        "en": "Offer"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/delung-offer-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/delung-offer-mobile.webp"
+    }
+  ],
+  "scope": {
+    "pl": [
+      "Projekt UI/UX",
+      "Wdrożenie frontendowe (Astro)",
+      "Galeria realizacji z panelem treści",
+      "Formularz kontaktowy i hosting"
+    ],
+    "en": [
+      "UI/UX design",
+      "Frontend build (Astro)",
+      "Project gallery with a content panel",
+      "Contact form and hosting"
+    ]
+  },
+  "liveUrl": "https://delung.pl"
+}
