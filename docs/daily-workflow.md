@@ -11,7 +11,8 @@
 ```bash
 # START — zawsze ze świeżego maina
 git checkout main && git pull
-git checkout -b fix/krotki-opis        # typ: fix/ feat/ chore/ perf/ docs/
+gh run list -L 6                       # czerwone na main? → najpierw diagnoza osobnym małym PR-em
+git checkout -b fix/krotki-opis        # typ: fix/ feat/ chore/ ci/ test/ perf/ docs/
 
 # … praca (sam lub z Claude'em) …
 
@@ -19,8 +20,9 @@ git checkout -b fix/krotki-opis        # typ: fix/ feat/ chore/ perf/ docs/
 #   /test          ← dobiera i odpala tylko potrzebne warstwy testów
 
 # WYŚLIJ
-git add -A
-git commit -m "fix(hero): opis zmiany"  # conventional commit ze scope
+git status                             # obejrzyj listę; NIGDY `git add .` ani `-A`
+git add src/komponent.astro tests/e2e/komponent.spec.ts   # jawne ścieżki
+git commit -m "fix(hero): opis zmiany"  # conventional commit ze scope, małe litery po dwukropku
 git push -u origin fix/krotki-opis
 
 # GITHUB
@@ -73,8 +75,23 @@ w 1–3 min zamiast czekać na runner. Przed release'em na koniec dnia:
 ### 3. Commit + push + PR
 
 Commit po angielsku, conventional ze scope: `fix(hero): …`,
-`feat(work): …`, `docs(testing): …`. Po pushu GitHub pokaże banner
+`feat(work): …`, `docs(testing): …` (temat małą literą — commitlint
+odrzuca wielką). Po pushu GitHub pokaże banner
 **Compare & pull request** — klik, **Create pull request**.
+
+Dwie reguły stagingu i commitów:
+
+- **Jawne ścieżki w `git add`, nigdy `.` ani `-A`.** Panel Sveltia pisze
+  pliki wpisów; slug wklejony z telefonu bywa w formie NFD i na macOS
+  pokazuje się jako „ten sam plik dwa razy" — `git add .` zrobiłby z tego
+  duplikat na Linuksie (incydent w projekcie klienckim rodziny 2026-08-06).
+  Do tego przypadkowe pliki robocze nie trafiają do repo.
+- **Decyzje ze skutkami = osobne commity** (najlepiej osobne PR-y): progi
+  LHCI (po pomiarze na main), baseline'y wizualne (oba komplety), schemat
+  CMS (trzy miejsca naraz). Nigdy doklejane do feature'a — łatwiej cofnąć
+  i czytelniej w historii.
+
+Sesje wdrożeniowe backlogu zaczynaj od `docs/sesja-utrzymaniowa-szablon.md`.
 
 ### 4. Trzy checki bramkują merge
 
@@ -139,6 +156,8 @@ test bez obejrzenia diffu — od łapania regresji one tu są.
   ratchet — podnosimy je tylko świadomą decyzją, osobnym commitem.
 - Wszystko padło na `apt-get`/instalacji przeglądarek: infra GitHuba,
   nie Twój kod → **Re-run failed jobs**.
+- Push nie utworzył biegu (awaria webhooków GitHuba): Actions → **CI** →
+  **Run workflow** → wybierz gałąź (to samo dla **Prod smoke** po merge'u).
 
 ### Nowa realizacja (CMS)
 

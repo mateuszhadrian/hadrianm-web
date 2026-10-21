@@ -1,0 +1,747 @@
+# Analiza — ewolucja warsztatu: hadrianm-web vs delung / pracownia-eha / hetman
+
+Data: 2026-10-20 · Branch: `docs/evolution-analysis-and-video-plan`
+Dokument siostrzany: `docs/analiza-realizacje-wideo.md` (punkt **R1** stąd).
+Szablon sesji: `docs/sesja-utrzymaniowa-szablon.md`.
+
+> **Status: ANALIZA + BACKLOG ŻYWY.** Decyzje ramowe (§1, §8) zapadły w sesji
+> pytań 2026-10-20. Backlog (§6) jest dokumentem roboczym: każda sesja
+> wdrożeniowa zmienia status punktu (☐ → ✅ z datą i PR-em) i dopisuje
+> korekty pod punktem. Nowe punkty dopisuj na końcu właściwej grupy
+> z kolejnym numerem — numerów nie recyklujemy.
+
+## 1. Cel, zakres, metoda
+
+hadrianm-web to pierwsza strona autora zbudowana i wdrożona od zera
+(12.06–29.07.2026, 267 commitów). Od tego czasu powstały trzy strony
+klienckie w tej samej rodzinie szablonu. Pytanie tej analizy: **czego autor
+nauczył się później i co z tego naprawić lub przenieść tutaj** — oraz jak
+dalej pracować nad hadrianm-web jako projektem **utrzymaniowym**, nie
+greenfield.
+
+Ramy (decyzje z sesji pytań):
+
+- **Tożsamość zostaje**: hadrianm-web to animowana wizytówka (GSAP scrub,
+  Lenis, scena urządzeń). Nowsze strony wycięły GSAP/Lenisa z powodów
+  specyficznych dla ich designów (§4.1) — tu przenosimy LEKCJE
+  infrastrukturalne, nie decyzję o uproszczeniu. Jeśli jakaś animacja
+  mierzalnie szkodzi (LCP, a11y), wraca jako osobny punkt decyzji.
+- Hero nie wchodzi w zakres poza naprawą zgłoszonych błędów (H1).
+- Kolejność prac: ta analiza → mechanizm wideo w realizacjach (R1) →
+  podmiana treści (R3) → paczki poprawek z backlogu.
+- Repo hadrianm-web jest publiczne: w tym dokumencie opisujemy WZORCE
+  z projektów klienckich, nie ich treści ani dane.
+
+Metoda: trzy równoległe przeglądy read-only (po jednym na repo nowsze),
+każdy porównujący ten sam zestaw plików z hadrianm-web; wnioski
+o hadrianm-web **zweryfikowane lokalnie** (grep/curl) — oznaczenia:
+`[POTWIERDZONE]` sprawdzone w tym repo lub na produkcji,
+`[Z RAPORTU]` fakt o nowszym repo przyjęty z przeglądu (z odwołaniem do
+pliku tamtego repo), `[DO SPRAWDZENIA]` wymaga pomiaru przy wdrażaniu.
+
+## 2. Rodowód i linia czasu
+
+| Repo | Okres | Commity | Rodowód | Charakter |
+| --- | --- | --- | --- | --- |
+| `hadrianm-web` | 12.06 – 29.07.2026 | 267 | — | wizytówka, PL/EN, GSAP+Lenis, Sveltia, R2 |
+| `delung-web` | 29.07 – 09.08 | 228 | kopia hadrianm-web (`delung-web-entrance-analysis.md` §4: „zostaje / wycinamy / od nowa") | firma meblarska, PL, Sveltia, wideo klientów w realizacjach |
+| `eha/pracownia-eha-web` | 21.08 – 19.09 | 46 | kopia delung-web („trzeci przebieg przepisu: hadrianm → delung → eha") | pracownia budowlana, PL, Sveltia, subsety fontów |
+| `hetmannieruchomosci/hetmannieruchomosci-web` | 30.09 – 17.10 | 47 | kopia pracownia-eha-web | biuro nieruchomości, PL, bez CMS (nocny sync z CRM), Preact-wyspa |
+
+Wniosek nr 1: **rodzina ma jeden szablon, a hadrianm-web jest jego
+najstarszą instancją** — większość ulepszeń infrastruktury (CI, testy,
+CMS, fonty) powstała w delung i była dziedziczona dalej, ale **nigdy nie
+wróciła tu**. Wniosek nr 2: nowsze projekty wykonały rekomendacje z kroniki
+hadrianm (`hadrianm-history-from-the-first-commit.md` §Rekomendacje:
+ekosystem i guardraile w dniu 1, deploy pusty wcześnie, testy przed
+kruchymi animacjami) — eha miała CI z baseline'ami po 4 dniach, hadrianm
+po ~3,5 tygodnia. Ta pętla (analiza → implementacja → testy → PR) działa
+i zostaje.
+
+## 3. Co jest wspólne (rdzeń szablonu — nie ruszamy)
+
+Harness Playwright (6 profili, port 4399, `snapshotPathTemplate`
+per-platform, `maxDiffPixelRatio: 0.0005`), Vitest, `assertPreview`,
+`freeze.css`, trzy joby CI + `update-visual-baselines.yml` + `prod-smoke`,
+Zod-schema jako czysty moduł współdzielony z testem kontraktu, Sveltia + R2
++ `imgAt()`, Pages Function formularza (Resend + Turnstile + honeypot +
+limit KV), mikro-fade `nav-fade`, `overlay.ts` (rdzeń), ekosystem Claude
+(`settings.json`, 4 hooki, skille `/test`, `/release-check`,
+`/new-realizacja`, `/verify-mobile`), `docs/README.md` jako indeks
+statusów, `daily-workflow.md`, husky + commitlint. Hooki i `settings.json`
+w nowszych repo są identyczne — **nic do przeniesienia** w tej warstwie.
+
+## 4. Czym nowsze strony różnią się — per obszar
+
+### 4.1. Scroll i animacje (decyzja: zostaje jak jest)
+
+Delung wyciął Lenisa i GSAP (`delung-web/.claude/rules/scroll.md`
+`[Z RAPORTU]`): klatkowanie w Safari macOS brało się ze **spotkania
+JS-owego scrolla z warstwą drogą do przemalowania** (zdjęcie pod maską
+w kształcie liter), nie z samej biblioteki; 15 wariantów zmierzonych na
+fizycznym Macu; skrypty 68 → 14 KB. Eha i hetman odziedziczyły tę decyzję.
+Dla hadrianm-web: scrub + snap na ScrollTriggerze to fundament hero, about,
+audience; rozdzielone stałe desktop/touch Lenisa są udokumentowanym fixem
+(`.claude/rules/scroll-lenis.md`). **Nie przenosimy.** Przenosimy regułę:
+„Lenis nie jest za darmo przy drogich warstwach — zanim dołożysz kolejną
+warstwę z maską/filtrem pod scrollem, zmierz na fizycznym Macu".
+
+Lekcja pokrewna z delung (`analiza-poprawki-5.md`): **`opacity: 0` NIE
+zwalnia warstwy kompozytora** — 17 warstw/475 MB tekstur na hero przy 4K;
+fix = `visibility` w keyframes. Dla hadrianm (ambient + scena urządzeń na
+DPR 2) to realny trop na flaky klatki desktop 05–09 i limit warstw GPU
+Androida (punkt H3).
+
+### 4.2. Testy
+
+| Wzorzec | Gdzie w nowszych | Stan hadrianm `[POTWIERDZONE]` |
+| --- | --- | --- |
+| Zamrożony fixture treści dla `test:visual` (`REALIZACJE_DIR`, `build:visual`, strażnik `assertVisualFixture`) | delung/eha/hetman; powód: wpis z panelu rozjeżdżał zrzuty i blokował WSZYSTKIE PR-y (incydent 2026-08-05) | `content.config.ts` ma ścieżkę na sztywno; `work-index.spec.ts` (visual) i modal/sheet zależą od treści produkcyjnej |
+| Testy odporne na pustą kolekcję (helper `realizacjeFiles()` → `[]`, `test.skip` z powodem) | eha/hetman; incydent 2026-08-06: klient usunął ostatni wpis → katalog zniknął z gita → `readdirSync` przy ładowaniu modułu → `quality` i `prod-smoke` czerwone z `ENOENT` | goły `readdirSync` przy ładowaniu modułu w 4 plikach: `tests/unit/cms-contract.test.ts:16`, `tests/unit/media-r2.test.ts:15`, `tests/e2e/work.spec.ts:9`, `tests/e2e/work-index.spec.ts:21` |
+| `settleImages()` (eager + sync + `decode()` przed zrzutem elementu wyższego niż viewport) | delung/hetman; objaw: diff tylko na krawędziach zdjęć, zielone lokalnie, czerwone w CI | `prepareSweep` bez tego kroku |
+| Kontrakt progu `expectBreakpointFlip(page, minPx)` (pomiar `display` przy `minPx-1` i `minPx`) | delung/eha/hetman; „sześć z siedmiu stałych deklarowało ochronę testami, której nie było" | pięć stałych `*_DESKTOP_MIN_PX = 861` + 760/761 (hero, work) + 768 (ambient) — reguła „utrzymuj W PARZE" bez strażnika; profile testowe tylko 1366/1920 |
+| `update-visual-baselines.yml` z inputami `spec` i `mode=changed/all` | eha/hetman | gołe `workflow_dispatch`, zawsze cały `test:visual:update` |
+| „Zielony ≠ aktualny": pomiar progiem 0 bez ruszania baseline'u; próg per-shot podnosić dopiero po policzeniu sufitu klasy; geometria sub-pikselowo (`getBoundingClientRect`, nie `offsetHeight`) | eha/hetman (`testing.md`) | reguły nie ma w `.claude/rules/testing.md` |
+| Testy na `dist` (`vitest.dist.config.ts`: skan zbudowanego HTML pod kątem pól zabronionych, localhost, spójności `_redirects`) | hetman, w jobie `quality` | odpowiednik = ręczny grep w `/release-check` |
+
+### 4.3. CI i deploy
+
+- **Strażnik prod-smoke** `[POTWIERDZONE]`: `prod-smoke.yml:25` bierze
+  PIERWSZY asset z `dist/index.html` (`head -1`) i czeka tylko na jego
+  obecność w HTML. Pierwszym bywa font o stałym hashu → strażnik zawsze
+  „świeży" → smoke startuje w środku propagacji → flake „MIME `text/html`
+  na `_astro/*.css`" z katalogu flake'ów. Eha/hetman czekają na KOMPLET
+  assetów i sprawdzają `200` na każdym (wzorzec `/_astro/[^"' ,)]+` ucina
+  na spacji/przecinku srcset i apostrofie inline `url()`); trzy iteracje tej
+  poprawki w rodzinie (2026-07-31, srcset, inline url).
+- **`workflow_dispatch`** `[POTWIERDZONE: brak]` w `ci.yml`
+  i `prod-smoke.yml`: awaria webhooków GitHuba 2026-08-06 (odrzucone
+  zdarzenia nie są odtwarzane) — jedyne wyjście to pusty commit.
+- **`runs-on: ubuntu-latest`** `[POTWIERDZONE]` we wszystkich 5 jobach;
+  GitHub przełączył `latest` na nową wersję 2026-10-19 → dryf baseline'ów
+  linux bez zmiany kodu. Hetman przypina `ubuntu-24.04`.
+- **Pomiar LHCI jako workflow** (`lhci-measure.yml`: 5 przebiegów × 2
+  configi → mediany w summary) zamiast ręcznego `lhci-median.mjs`.
+
+### 4.4. Budżety Lighthouse
+
+`[POTWIERDZONE]` hadrianm: `numberOfRuns: 3`, LCP mobile 3565 = mediana
+3100 × 1,15 (**zapas 465 ms**), desktop TBT 100 ms, `font:count` warn.
+Eha zmierzyła **wariancję runnera ±1300 ms LCP przy identycznym co do
+bajta `resource-summary`** (dwa runy A/B); hetman wprowadził regułę
+**LCP = max(mediana × 1,15; mediana + 1300 ms)** i jednocześnie
+zacieśnił `total`; TBT = max(×2; +300) lub 1,15 × najgorszego
+zaobserwowanego, zaokrąglone do granicy „poor" Google; `font:count`
+i `font:size` jako `error`. Konsekwencja dla hadrianm: nasz zapas LCP
+leży **wewnątrz** pasma szumu — to dokładnie klasa „LCP o ułamek % nad
+budżetem" z katalogu flake'ów. Reguła hetmana: „pojedynczy czerwony
+`lighthouse` NIE dowodzi regresji — porównaj `resource-summary` obu runów;
+sygnałem jest różnica w BAJTACH".
+
+### 4.5. CMS (Sveltia)
+
+- `widget: file` **wgrywa MP4 do R2** (delung: spike + produkcja od
+  2026-08-05; eha to samo) — reguła „tylko pola Image" w naszym
+  `cms-realizacje.md` jest nieaktualna (prawdą zostaje: biblioteka Assets
+  nie trafia do R2, Sveltia nie kasuje z R2).
+- `config.yml` eha/hetman mają trzy linie, których u nas brak
+  `[POTWIERDZONE]`: `site_domain` (bez tego panel na localhoście wysyła
+  `site_id=cms.netlify.com` i wpada na `ALLOWED_DOMAINS` Workera),
+  `slug: { encoding: ascii, clean_accents: true }` (slug wklejony
+  z telefonu w formie NFD → macOS widzi plik dwa razy → `git add .`
+  tworzy duplikat → test unikalności slugów pada; incydent 2026-08-06),
+  `media_libraries.all.slugify_filename: true` (plik lądował w R2 jako
+  `Img 9635.mp4`).
+- Sveltia **0.170.0 u nas vs 0.178.0** w nowszych `[POTWIERDZONE]`;
+  procedura bumpu z sondą binarium i jednolinijkowym wycofaniem:
+  `delung-web/docs/analiza-remont-panelu.md` §12.
+- Reguła „NIGDY `git add .` / `-A`" (delung/eha/hetman) — nasz
+  `daily-workflow.md:21` w ściądze ma `git add -A` `[POTWIERDZONE]`.
+
+### 4.6. Fonty
+
+`[POTWIERDZONE]` `BaseLayout.astro:2` importuje
+`@fontsource-variable/archivo/index.css` (komplet subsetów: cyrylica, greka,
+wietnamski — Vite kopiuje wszystkie pliki do `dist`, choć pobierane są tylko
+te z pasującym `unicode-range`) i preloaduje gotowe `latin-ext`. Eha
+zmierzyła, że z całego `latin-ext` polski serwis używa **16 glifów**
+(`ĄąĆćĘęŁłŃńŚśŹźŻż`) i tnie je harfbuzzem (`scripts/subset-fonts.mjs`,
+`subset-font`), generat commitowany w `src/assets/fonts/` (hashowanie
+Vite + `immutable`), własny `src/styles/fonts.css`, **`assetsInlineLimit`
+wyłączony dla `.woff2`** (GOTCHA: subset 2–3 KB wpada pod 4096 B i Vite
+wkleja go jako base64 do CSS blokującego render, a preload wskazuje plik,
+którego nikt nie używa), test kontraktu `fonts-subset.test.ts` skanujący
+źródła treści (w tym JSON-y CMS) pod kątem znaków spoza subsetu. Efekt
+eha: fonty 458 → 211 KB. Dla hadrianm (lżejsze kroje) szacunek
+`[DO SPRAWDZENIA]`: ~59 KB latin-ext na PL → ~7 KB; EN bez zmian
+(`unicode-range`).
+
+Lekcja pokrewna (delung): **`document.fonts.ready` to fałszywy sygnał przy
+preloadowanych fontach** — przy bramce fontu używać `document.fonts.load`.
+U nas `fonts.ready` zdejmuje tylko mikro-fade z twardym timeoutem — ryzyko
+małe, wiedza do reguły.
+
+### 4.7. SEO i chrome strony
+
+- **Soft-404** `[POTWIERDZONE NA PRODUKCJI]`: `curl -o /dev/null -w
+  "%{http_code}" https://hadrianm.pl/nie-ma-takiej-strony-xyz/` → **200**
+  (Cloudflare Pages bez `dist/404.html` serwuje stronę główną). Brak
+  `src/pages/404.astro`. Eha/hetman: `404.astro` + prop `noindex`
+  w BaseLayout (bez canonicala/og:url — „canonical wskazywałby na adres,
+  który nie istnieje") + smoke „status 404, nie soft-404".
+- `og:image` 1200×1200 + `twitter:card summary` `[POTWIERDZONE]`; nowsze:
+  1200×630 + `summary_large_image` („kwadrat: FB/X/LinkedIn kadrują po
+  bokach"; `summary` redukuje podgląd do kwadracika).
+- `color-scheme` niezadeklarowany `[POTWIERDZONE]` (nowsze: `only light`;
+  u nas analogicznie `dark` — zapobiega auto-darkening Chrome Android
+  na elementach formularza); `text-size-adjust: none` (WebView przeliczał
+  skalę tekstu przy zmianie wysokości viewportu); `theme-color` = tło
+  (Android: biały pas przy zwijaniu paska URL). `scrollbar-gutter: stable`
+  już mamy.
+- Komentarze wewnątrz `is:inline` są wysyłane na każdej stronie
+  (`BaseLayout.astro:107-116` ~10 linii) — hetman wyniósł je poza blok
+  (−705 B/trasę). `<slot name="head">` dla skryptów przed paintem.
+- Generator ikon `make-icons.mjs` (favicon jako wektor 786 B zamiast
+  43 KB base64, komplet rastrów + og jednym poleceniem).
+- Fade przejść po `document.referrer` zamiast `sessionStorage` (hetman:
+  polityka deklaruje brak zapisu w urządzeniu) — u nas `[DO SPRAWDZENIA]`,
+  czy polityka prywatności hadrianm wspomina sessionStorage.
+
+### 4.8. Dostępność
+
+Nowsze projekty startują z **pustą allowlistą axe** i traktują kontrast
+jako pomiar, nie gust (hetman: 14 szerokości okna × Chromium + WebKit, bo
+axe nie liczy tekstu nad obrazem/szkłem; każda wartość krycia w docs ma
+znacznik „(kontrast)"). Nasza allowlista `[POTWIERDZONE]`:
+`color-contrast: [/\.of-w/, /\.acc\b/]` (intro Oferty) — eha cytuje ją
+wprost jako „wzorzec wyjątku". Rozwiązanie z rodziny: osobny token tekstowy
+(`--accent-ink` / `--copper-text` ≥ 4,5:1) dla drobnego druku zamiast
+koloru akcentu. Pamięć projektu: `.pp-sub` → `--faint` (ratchet zacieśniony
+2026-07-19) — ten sam kierunek.
+
+### 4.9. Nakładki (BottomSheet)
+
+Delung/hetman „Runda 4" `overlay.ts`: swipe-down łapany także w TREŚCI
+sheeta (gdy przewinięta na górę), przez `touch*` non-passive zamiast
+`pointer*` (Playwright wykonuje gest myszą — mysz nie zastępuje palca;
+`preventDefault` w PIERWSZEJ klatce ruchu, bo `cancelable` jest `true`
+tylko raz), `DRAG_SLOP_PX`, i druga połowa naprawy: `overscroll-behavior:
+contain` na `[data-overlay-scroll],[data-overlay-panel]` — objaw:
+„mocniejszy gest w dół na Androidzie odświeżał stronę zamiast zamknąć
+sheet". Nasz `overlay.ts` ma starszą wersję (grab-handle, `pointer*`)
+i gałąź Lenisa w lock/unlock — port ręczny, test na fizycznym Androidzie.
+Ocena: nasze generyczne `Modal.astro`/`BottomSheet.astro` są lepsze do
+reużycia niż inline-sheety hetmana — bierzemy poprawkę gestu, nie
+organizację.
+
+### 4.10. Dokumentacja i proces
+
+Co nowsze repo mają, a my nie (`[Z RAPORTU]`, oceniam jako warte
+przeniesienia w wersji „utrzymaniowej"):
+
+- **Prompt sesji o stałej strukturze**: bramka startowa (oczekiwany SHA
+  `origin/main`, czysty `git status`, stan `gh run list`), pytania do
+  Mateusza „bez czekania na odpowiedź", **pierwsze zadanie = domknięcie
+  wpisu poprzedniej sesji**, zakres, **Definition of Done**, lista „na
+  telefon". Przeniesione jako `docs/sesja-utrzymaniowa-szablon.md`.
+- **„Usterki zbieramy, nie naprawiamy przy okazji"**
+  (`poprawki-po-implementacji.md` hetmana): każda pozycja to rozwiązanie,
+  które DZIAŁA — pytanie „czy tak ma zostać", nie „czy to błąd"; PR per
+  widok; **każdy naprawiony błąd dostaje test, który by go wykrył**.
+- **Szablon promptu korekty** z klasyfikacją „błąd / decyzja wyglądu /
+  zmiana zakresu — nie ruszaj".
+- **Rejestr decyzji** (D01…, „zapadłe — nie otwierać") i oznaczenia
+  pewności `[POTWIERDZONE]/[PRAWDOPODOBNE]/[DO SPRAWDZENIA]`.
+- **`optional-todos.md` jako dwie tabele**: cykliczne (co / jak często /
+  po co) i odłożone (co / do kiedy–warunek) + „Zamknięte w …". Nasz plik
+  to lista checkboxów z przeterminowanymi punktami; brak polityki
+  **backupu R2** (wskazany już w kronice §E).
+- **„Rozważone i ODRZUCONE"** w analizach — żeby pomysły nie wracały.
+- Mini-analizy z sekcją **„§10 Uzupełnienia po implementacji z pomiarem"**.
+- **Czego NIE kopiować**: hetman/eha trzymają log etapów w `CLAUDE.md`
+  (116–176 KB ładowane do każdej sesji). Nasz podział (zwarty `CLAUDE.md`
+  + `docs/` + pamięć) jest lepszy; do `CLAUDE.md` tylko fakty i odsyłacze.
+
+## 5. Błędy „pierwszej strony" — stan faktyczny
+
+| # | Objaw | Dowód | Punkt backlogu |
+| --- | --- | --- | --- |
+| 1 | Safari macOS: „i stali" / „z drewna" na ekranie laptopa w hero mają grube obrysy (zgłoszenie Mateusza) | reprodukcja Playwright WebKit vs Chromium (opis w H1) | **H1** |
+| 2 | Soft-404 na produkcji | `curl` → 200 dla nieistniejącego adresu; brak `404.astro` | **S1** |
+| 3 | Prod smoke startuje w środku propagacji | `prod-smoke.yml:25` `head -1` | **C1** |
+| 4 | Brak ręcznego wyzwalania CI przy awarii webhooków | `ci.yml` bez `workflow_dispatch` | **C2** |
+| 5 | Runner `ubuntu-latest` zmienia wersję bez naszej decyzji | 5 × `runs-on: ubuntu-latest` | **C3** |
+| 6 | LCP mobile: zapas 465 ms < szum runnera 1300 ms | `lighthouserc.cjs:31` | **L1** |
+| 7 | Wpis z panelu rozjeżdża baseline'y; usunięcie ostatniego wpisu wywraca `quality` | `content.config.ts`, 4 × `readdirSync` | **T1**, **T2** |
+| 8 | Panel: brak `site_domain`, slug NFD, nazwy plików z telefonu | `config.yml` | **M1** |
+| 9 | Sveltia 0.170.0 (nowsze 0.178.0) | `public/admin/index.html:11` | **M2** |
+| 10 | Fonty: pełny `index.css` + cały `latin-ext` | `BaseLayout.astro:2,22-25` | **F1** |
+| 11 | og 1:1 + `summary`; brak `color-scheme`/`theme-color`/`text-size-adjust` | `BaseLayout.astro`, `global.css` | **S2**, **S3** |
+| 12 | Allowlista axe z 2 wpisami | `tests/e2e/a11y.spec.ts:24-26` | **A1** |
+| 13 | Trzy progi breakpointów (861 / 760–761 / 768) bez strażnika | `*-config.ts`, `sections.md` | **T4** |
+| 14 | `git add -A` w ściądze vs reguła rodziny | `daily-workflow.md:21` | **D1** |
+
+Nie potwierdzone (odrzucone z raportów): CTA-placeholdery `href="#"`
+(brak w `src/` — zmigrowane na `/kontakt/`), `scrollbar-gutter` (jest).
+
+## 6. Backlog
+
+Priorytety: **MUST** (naprawia realny błąd produkcyjny lub flake CI, albo
+blokuje R1–R3), **SHOULD** (wymierny zysk, mały/średni koszt), **COULD**
+(opcjonalne). Koszt: S (< 1 h sesji), M (1 sesja), L (> 1 sesji).
+Każdy punkt ma samowystarczalną instrukcję — prompt do osobnej sesji
+(razem z `docs/sesja-utrzymaniowa-szablon.md`).
+
+### H — Hero (błędy zgłoszone)
+
+**H1 · MUST · M · ✅ wdrożone lokalnie 2026-10-20 (branch `fix/hero-safari-stroke`, PR P2) — Safari: obrys tekstu „z drewna" / „i stali" rysowany NAD wypełnieniem**
+
+*Korekta diagnozy po eksperymencie (2026-10-20, 14 wariantów CSS
+wstrzykiwanych w obu silnikach, miara = średnia różnica pikseli crop-a;
+podłoga szumu między silnikami na neutralnym fragmencie = 7,3):* w WebKicie
+sama OBECNOŚĆ `paint-order: stroke fill` na elemencie (nawet przy zerowym
+obrysie) **wyłącza malowanie `text-shadow`** — to, a nie tylko obrys nad
+wypełnieniem, dawało „grube krawędzie" bez bevelu. Fix zgodny z opisem
+niżej (pierścień na `::before` z nieprzezroczystym wypełnieniem, host =
+nieprzezroczysta twarz + cienie; stal bez `.dw-mat`/`background-clip`,
+twarz spłaszczona do `#d3d5d7`). Wynik: drewno WebKit↔Chromium 8,3 → 4,5
+(poniżej podłogi), stal 27,5 → 11,2; Chromium: drewno bez zmian (0,03),
+stal 4,5 (pierścień ~10% jaśniejszy — sweep hero na 3 profilach ZIELONY
+bez regeneracji baseline'ów). PhoneSite ten sam wzorzec. e2e hero + a11y
+zielone. Do potwierdzenia przez Mateusza: Safari macOS (laptop + telefon
+w scenie) i iPhone (faza żywa PhoneSite przed wideo, jeśli występuje).
+
+*Diagnoza (2026-10-20, reprodukcja Playwright 1.61 chromium vs webkit,
+viewport 1440×900, DPR 2, scroll 0.24 zakresu hero).* W WebKicie glify
+`.dw-wood` i `.dw-steel` mają obrys ~2× grubszy i „zjedzony" korpus:
+WebKit **nie honoruje `paint-order: stroke fill` dla tekstu HTML** (działa
+tylko w SVG) — `-webkit-text-stroke` jest centrowany na konturze i jego
+wewnętrzna połowa maluje się NA wypełnieniu. W Chromium `paint-order`
+chowa wewnętrzną połowę pod fill. Dotyczy:
+`LaptopSite.astro` `.dw-wood` (stroke na hoście + `paint-order`),
+`.dw-steel::before` (podwójny obrys na pseudoelemencie, `z-index:-1`;
+dodatkowo w WebKicie gradient `background-clip:text` hosta `.dw-mat` maluje
+się w fazie tła, czyli POD pseudoelementem — twarz traci gradient), oraz
+`PhoneSite.astro` `.dwm-wood` / `.dwm-steel` (ten sam `paint-order` —
+**iOS Safari ma ten sam błąd**, do potwierdzenia na telefonie). Wideo
+mobile (`public/drewelomet/video/*.mp4`) nagrywane jest Chromium, więc na
+telefonach obrys jest poprawny w nagraniu, ale PhoneSite renderuje się też
+żywo w fazie przed wideo? — `[DO SPRAWDZENIA]` w `mobile-phases.ts`,
+czy `.dwm-*` jest kiedykolwiek widoczne na iOS poza nagraniem.
+
+*Naprawa (emulacja `paint-order` niezależna od silnika).* Obrys idzie na
+pseudoelement pod spodem z **podwójną** szerokością i wypełnieniem w kolorze
+obrysu; host (lub wewnętrzny span) maluje czysty fill NA WIERZCHU:
+
+- `.dw-wood`: usuń `-webkit-text-stroke` i `paint-order` z hosta; dodaj
+  `.dw-wood::before { content: attr(data-text); position:absolute; inset:0;
+  z-index:-1; -webkit-text-stroke: calc(2 * var(--wood-stroke-width))
+  var(--wood-stroke-color); -webkit-text-fill-color: var(--wood-stroke-color);
+  text-shadow: <dotychczasowe z .dw-mat--wood>; }` i `isolation: isolate`
+  na hoście (własny kontekst stackingu, żeby `z-index:-1` nie uciekł pod
+  tło sceny). Host zachowuje `color`/`text-shadow` bez obrysu.
+- `.dw-steel` (dwa obrysy + gradientowa twarz): markup
+  `<span class="dw-steel" data-text="i stali"><span class="dw-steel__face">i stali</span></span>`;
+  `::before` = obrys zewnętrzny jasny (`2 × (w1 + w2)`, fill = jasny),
+  `::after` = obrys wewnętrzny czarny (`2 × w1`, fill = czarny,
+  `text-shadow` ze `.dw-mat--steel`, `z-index` wyżej niż `::before`, oba
+  ujemne); `.dw-steel__face` = `position:relative; z-index:1` +
+  dotychczasowy gradient `background-clip:text` z `.dw-mat` / `.dw-mat--steel`
+  (bez `text-shadow`, bo cień ma być pod twarzą). Pozycjonowany element
+  z `z-index:1` maluje się nad ujemnymi pseudoelementami w OBU silnikach,
+  niezależnie od fazy malowania `background-clip:text`.
+- To samo 1:1 w `PhoneSite.astro` (`.dwm-wood`, `.dwm-steel`;
+  `data-text` już jest).
+- `filter: drop-shadow` z `.dw-mat--steel` zostaje na hoście.
+
+*Weryfikacja.* (1) Skrypt ad hoc (node + `playwright` z repo): dla
+chromium i webkit załaduj `/`, przewiń do 0.24 zakresu hero
+(`window.__lenis?.scrollTo(y,{immediate:true,force:true})` + `scrollTo`),
+zrób clip `.dw-wood` i `.dw-steel` przy DPR 2 — obrysy mają być tej samej
+grubości w obu silnikach, twarz stali z gradientem. (2) `pnpm build &&
+pnpm test:visual` — sweep hero chromium: klatki z widocznym napisem
+(ok. 02–05) mogą zmienić się o subpiksele AA → pokazać diff, regeneracja
+baseline'ów po akceptacji (darwin + workflow linux). (3) Mateusz: Safari
+macOS na fizycznym Macu + iPhone (faza żywa PhoneSite, jeśli istnieje).
+(4) `pnpm test:e2e` (a11y bez zmian — tekst dekoracyjny sceny).
+*Luka testowa do zamknięcia przy okazji (T5):* sweep hero nie ma profilu
+WebKit desktop — dlatego ten błąd przeżył 3 miesiące.
+
+Commit: `fix(hero): emulate paint-order for device-site headings (WebKit draws stroke over fill)`
+
+**H2 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-20 (PR P2) — reguła w `hero-device-scene.md`**: „`paint-order`
+nie działa dla tekstu HTML w WebKicie; obrysy tekstu zawsze przez
+pseudoelement pod spodem (wzorzec H1)". Razem z H1.
+
+**H3 · COULD · M · ☐ — audyt warstw kompozytora hero + ambient** (CDP
+`LayerTree`, DPR 2 i 3): elementy `opacity:0` trzymające warstwy →
+`visibility` w keyframes (lekcja delung `analiza-poprawki-5.md`). Kryterium:
+liczba warstw i MB tekstur przed/po; potencjalnie flaky klatki 05–09
+i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
+
+### R — Realizacje (treść i prezentacja)
+
+**R1 · MUST · L · ☐ — wideo w podglądzie realizacji** — plan i etapy:
+`docs/analiza-realizacje-wideo.md`.
+
+**R2 · MUST · S · ☐ — `results` i `quote`/`author`/`role` opcjonalne**:
+Zod `.optional()` / `.default([])`, `config.yml` `required: false`,
+`WorkDetail.astro` renderuje blok „Liczby i wyniki" tylko gdy `results.length
+> 0` i cytat tylko gdy `quote` (siatka `.wdx__results` na 1–2 pozycje:
+`repeat(auto-fit, minmax(120px, 1fr))`), `work-data.ts` typy. Powód:
+prawdziwe realizacje nie mają jeszcze zmierzonych metryk ani cytatów —
+nie wymyślamy. Test: `cms-contract` z wpisem bez tych pól; e2e modal bez
+bloku. Baseline'y modal/sheet zmienią się dopiero z treścią (R3).
+Commit: `feat(cms): make results and testimonial optional`.
+**Wdrożyć PRZED Etapem 6 planu wideo.**
+
+**R3 · MUST · M (głównie praca Mateusza w panelu) · ☐ — podmiana treści**:
+3 wpisy (delung, pracownia-eha, hetman) wg Etapu 6 planu wideo; usunięcie
+aura/dab/sielski; sprzątanie sierot w R2; `liveUrl` hetmana po
+przełączeniu domeny. Warunek wstępny: **T1** (fixture), inaczej baseline'y
+siatki/kafelków rozjadą się z każdą korektą wpisu.
+
+**R4 · COULD · M · ☐ — hover-play wideo na kafelkach desktop** (po R1;
+budżet LHCI: `preload="none"`, start dopiero po `mouseenter`).
+
+### T — Testy
+
+**T1 · MUST · M · ☐ — zamrożony fixture treści dla `test:visual`**:
+`content.config.ts` czyta `base` z `process.env.REALIZACJE_DIR ??
+"./src/content/realizacje"`; `tests/fixtures/realizacje/*.json` (3 wpisy:
+kopie dzisiejszych aura/dab/sielski — po R3 podmienione na nowe, z 1 wpisem
+z `video`); skrypt `build:visual` = `REALIZACJE_DIR=./tests/fixtures/
+realizacje astro build`; strażnik `assertVisualFixture(page)` w
+`tests/helpers/guards.ts` (liczba `template[data-work-detail]` = liczba
+plików fixture, inaczej czytelny błąd „build z treścią produkcyjną —
+uruchom `pnpm build:visual`"), użyty w specach visual dotykających work
+(`sections.spec.ts`, `work-index.spec.ts`); `ci.yml` job `e2e`: osobny
+build pod visual (lub artefakt `dist-visual`); `update-visual-baselines.yml`
+analogicznie; kontrakt `tests/unit/visual-fixture.test.ts` (fixture
+przechodzi schemat). `.claude/rules/testing.md`: akapit „visual =
+fixture, e2e = treść produkcyjna". Wzorzec: `delung-web/tests/helpers/
+guards.ts` `assertVisualFixture`, `delung-web/package.json` `build:visual`.
+Commit: `test(visual): freeze realizacje fixture for screenshot builds`.
+
+**T2 · MUST · S · ☐ — testy odporne na pustą kolekcję**:
+`tests/helpers/realizacje.ts` z `realizacjeFiles(): string[]`
+(`existsSync` → `[]`) i `realizacjeDir`; zamiana w 4 plikach (§5 pkt 7);
+w e2e `test.skip(ENTRY_COUNT === 0, "brak wpisów w panelu")`; jeden
+czerwony kontrakt zostaje w `cms-contract.test.ts` („katalog zawiera co
+najmniej jeden wpis") — świadomie, bo pusta lista realizacji na wizytówce
+to błąd treści, nie infrastruktury. Commit: `test: tolerate missing realizacje directory`.
+
+**T3 · SHOULD · S · ☐ — `settleImages()` w `prepareSweep`/`prepare`**
+(eager + `decode()` dla obrazów w kadrze przed zrzutem) — port z
+`delung-web/tests/helpers/visual.ts:14-40`. Spodziewany efekt: mniej
+diffów „tylko krawędzie zdjęć" na runnerach. Commit: `test(visual): settle images before screenshots`.
+
+**T4 · SHOULD · M · ☐ — kontrakt progów breakpointów**:
+`tests/helpers/breakpoint.ts` `expectBreakpointFlip(page, url, selector,
+minPx)` mierzący `display`/układ przy `minPx-1` i `minPx`; po jednym teście
+dla 861 (about, audience, services, faq, contact), 761 (work modal↔sheet),
+768 (ambient tekstura mobile). Decyzji o ujednoliceniu progów NIE
+podejmujemy (ruszyłaby baseline'y wszystkich sekcji) — tylko strażnik.
+Commit: `test(e2e): guard section breakpoints at minPx-1/minPx`.
+
+**T5 · SHOULD · M · ✅ kod wdrożony lokalnie 2026-10-20 (PR P2); baseline'y czekają na Mateusza — profil WebKit desktop w sweepie hero**:
+`playwright.config.ts` projekt `webkit-1440` (viewport 1440×900, **DPR 1**
+jak chromium-1920 — rozmiar PNG w repo; geometria obrysów nie zależy od
+DPR) z `testMatch` zawężającym do `tests/visual/hero.spec.ts` (bez tego
+doszłyby baseline'y wszystkich sekcji i siódmy przebieg e2e);
+`HERO_SWEEP_PROJECTS = [...SWEEP_PROJECTS, "webkit-1440"]` w hero.spec.
+Dry-run `--update-snapshots=none` przeszedł do końca sweepa (fail tylko
+na brakujących snapshotach). Baseline'y: darwin przez
+`pnpm exec playwright test tests/visual/hero.spec.ts --project=webkit-1440
+--update-snapshots` (11 klatek), linux przez workflow na gałęzi PR-a.
+Commit: `test(visual): add webkit desktop profile to hero sweep`.
+
+**T6 · SHOULD · S · ☐ — `update-visual-baselines.yml` z inputami `spec`
+(ścieżka speca, domyślnie `tests/visual`) i `mode` (`changed`/`all`)** +
+akapit „zielony ≠ aktualny: pomiar progiem 0 bez ruszania baseline'u" w
+`.claude/rules/testing.md` (procedura: `maxDiffPixelRatio: 0` na jeden
+przebieg, odczyt, przywrócenie). Wzorzec: `eha/pracownia-eha-web/.github/
+workflows/update-visual-baselines.yml:12-33`.
+Commit: `ci(baselines): allow spec and mode inputs`.
+
+**T7 · COULD · S · ☐ — warstwa `test:dist`** (`vitest.dist.config.ts`,
+`tests/dist/dist.test.ts`): skan `dist/**/*.html` pod kątem `localhost`,
+portów dev, pełnych adresów e-mail poza mechanizmem „[ POKAŻ ]", obecności
+`robots.txt`/`sitemap-index.xml`; w jobie `quality` po buildzie. Zastępuje
+ręczny grep w `/release-check`. Wzorzec: hetman `tests/dist/dist.test.ts`.
+
+**T8 · COULD · S · ☐ — reguły testów z rodziny do `testing.md`**:
+geometria sub-pikselowo (`getBoundingClientRect` + tolerancja, nie
+`offsetHeight`); próg per-shot podnosić dopiero po policzeniu sufitu klasy
+(udział elementu w kadrze × czułość percepcyjna); czas mierz wewnątrz
+przeglądarki (`performance.now()` + `MutationObserver`), nie timerami
+testu; „czerwone w izolacji = z definicji nie flake".
+
+### C — CI / deploy
+
+**C1 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — strażnik prod-smoke na komplet assetów**: w
+`prod-smoke.yml` zamiast `head -1`: `assets=$(grep -oE "/_astro/[^\"' ,)]+"
+dist/index.html | sort -u)`; pętla czeka, aż (a) HTML produkcji zawiera
+KAŻDY asset (`[[ "$html" == *"$a"* ]]` — bez `echo | grep`, Broken pipe) i
+(b) `curl -s -o /dev/null -w "%{http_code}"` każdego = `200`; dopiero
+wtedy smoke. Wzorzec: `hetmannieruchomosci-web/.github/workflows/
+prod-smoke.yml:35-65`. Aktualizacja wpisu w pamięci/katalogu flake'ów po
+wdrożeniu. Commit: `ci(prod-smoke): wait for every hashed asset with 200`.
+
+**C2 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — `workflow_dispatch`** w `ci.yml` i `prod-smoke.yml`
+(z komentarzem „awaria webhooków GH 2026-08-06"). Commit:
+`ci: allow manual dispatch of ci and prod-smoke`.
+
+**C3 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1; kontrola baseline'ów linux w CI tego PR-a) — `runs-on: ubuntu-24.04`** we wszystkich workflowach
+(5 miejsc) + nota w `testing.md`: „bump obrazu runnera = świadoma decyzja,
+razem z kontrolą baseline'ów linux". Zrobić w JEDNYM PR z C1/C2 i sprawdzić,
+czy baseline'y linux nie drgnęły (jeśli `latest` już jest 24.04 — zero
+zmian). Commit: `ci: pin runners to ubuntu-24.04`.
+
+**C4 · SHOULD · S · ☐ — `lhci-measure.yml`** (`workflow_dispatch`: 5
+przebiegów × mobile/desktop → mediany w `$GITHUB_STEP_SUMMARY` + artefakt
+30 dni) jako jedyne źródło liczb do L1. Wzorzec: hetman
+`.github/workflows/lhci-measure.yml`. Commit: `ci(lhci): add measurement workflow`.
+
+### L — Lighthouse
+
+**L1 · MUST · S · ☐ — progi LCP z zapasem ≥ szumu runnera**: po pomiarze
+(C4 lub `lhci-median.mjs` z 5 przebiegów na main): LCP =
+`max(mediana × 1,15; mediana + 1300)` (mobile i desktop), TBT desktop
+100 → wg reguły `max(mediana × 2; mediana + 300)` zaokrąglone do granicy
+Google, `numberOfRuns: 5`, `font:count` → `error`, nowy `error`
+`resource-summary:font:size` (po F1 — zacieśnić), przy każdej asercji
+komentarz „dlaczego ten próg" z datą i numerem runu. **Osobny commit,
+osobny PR, po pomiarze na main** (ratchet-reguła). Dopisać do
+`.claude/rules/testing.md`: „pojedynczy czerwony lighthouse nie dowodzi
+regresji — porównaj `resource-summary` obu runów; sygnał = bajty".
+Commit: `chore(lhci): set budgets to runner medians plus variance margin`.
+
+**L2 · COULD · S · ☐ — trasa-sensor** `/polityka-prywatnosci/` jako drugi
+URL mobile (koszt samego chrome'u bez mediów) obok `/`; `/en/` zostaje
+tylko jeśli budżet czasu joba pozwala.
+
+### M — CMS
+
+**M1 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — `config.yml`**: `site_domain: hadrianm.pl`,
+`slug: { encoding: ascii, clean_accents: true }` (opcja globalna, nie per
+kolekcja), `media_libraries.all.slugify_filename: true` (binarium 0.170.0
+zna wszystkie trzy opcje — sprawdzone grep-em bundle'a 2026-10-20).
+Weryfikacja w panelu po merge'u: otwórz istniejący wpis, zapisz bez zmian
+→ nazwa pliku bez zmian; upload testowego pliku „Test Obraz.webp" → w R2
+`test-obraz.webp` (potem usuń w dashboardzie). Aktualizacja
+`.claude/rules/cms-realizacje.md`: (a) `file` wgrywa do R2 (Assets nadal
+nie), (b) „nigdy `git add .`", (c) nazwy plików slugifikowane.
+Commit: `chore(cms): ascii slugs, site_domain, slugified media names`.
+
+**M2 · SHOULD · S · ☐ — Sveltia 0.170.0 → 0.178.0** wg procedury
+`delung-web/docs/analiza-remont-panelu.md` §12 (sonda binarium, test w
+trybie lokalnego repo, wycofanie = jedna linia w `public/admin/index.html`).
+Robić PRZED Etapem 2 planu wideo (widget `file`, `accept`).
+Commit: `chore(cms): bump sveltia to 0.178.0`.
+
+**M3 · COULD · S · ☐ — skrypt `scripts/upload-r2.mjs`** (plan B z
+`analiza-realizacje-wideo.md` §8) + `scripts/r2-orphans.mjs` (lista
+plików w R2 nieużytych w żadnym JSON-ie — sprzątanie sierot zamiast
+klikania w dashboardzie). Wzorzec: hetman `@aws-sdk/client-s3`,
+endpoint `{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
+
+### F — Fonty
+
+**F1 · SHOULD · M · ☐ — polskie subsety fontów**: `scripts/subset-fonts.mjs`
+(`subset-font`, stała `SUBSET_CHARS = "ĄąĆćĘęŁłŃńŚśŹźŻż"` + ewentualne
+znaki z i18n EN spoza `latin` — test wskaże) → `src/assets/fonts/*.woff2`
+(commitowane); `src/styles/fonts.css` z deskryptorami 1:1 z Fontsource
+(`latin` dalej z pakietu, `latin-ext` = subset); usunięcie importów
+`index.css`; `astro.config.mjs`: `vite.build.assetsInlineLimit` zwracający
+`false` dla `.woff2`; preloady wskazują subsety; test
+`tests/unit/fonts-subset.test.ts` skanujący `src/**/*.astro`, `src/i18n`,
+`src/content/realizacje/*.json`, `docs`-nie. Pomiar przed/po:
+`resource-summary:font:size` na `/` i `/en/` (wpisać do L1). Wzorzec:
+`eha/pracownia-eha-web/scripts/subset-fonts.mjs`, `src/styles/fonts.css`,
+`tests/unit/fonts-subset.test.ts`. Commit: `perf(fonts): ship polish subsets instead of full latin-ext`.
+
+**F2 · COULD · S · ☐ — reguła**: „`document.fonts.ready` jest fałszywym
+sygnałem przy preloadowanych fontach — do bramek używać `fonts.load()`"
+w `.claude/rules/sections.md`.
+
+### S — SEO i chrome
+
+**S1 · MUST · S · ☐ — prawdziwa strona 404**: `src/pages/404.astro`
+(jeden plik → `dist/404.html`; Cloudflare Pages używa go dla każdego
+nieistniejącego adresu), dwujęzyczna (PL domyślnie, EN gdy
+`location.pathname.startsWith("/en/")` — inline skrypt przełączający
+widoczność bloków, bez SSR), chrome jak podstrony (Navbar + Footer, ambient
+`red`), `BaseLayout` prop `noindex` (`<meta name="robots"
+content="noindex">`, BEZ canonicala i `og:url`), link do strony głównej
+obu języków; `tests/e2e/not-found.spec.ts` (preview: `/xyz/` → 404 +
+treść); smoke `@prod-smoke`: `GET /nie-ma-takiej-strony/` → status 404
+(nie 200). Wzorzec: `eha/pracownia-eha-web/src/pages/404.astro`,
+`tests/e2e/not-found.spec.ts`, `smoke.spec.ts` „status 404".
+Commit: `feat(seo): real 404 page with noindex`.
+
+**S2 · SHOULD · S · ☐ — og:image 1200×630 + `summary_large_image`**:
+nowy obraz (eksport z designu albo generator `make-icons.mjs` — S4),
+kompresja (lekcja delung: 649 → 98 KB), `BaseLayout` meta
+`og:image:width/height`, `twitter:card`. Sprawdzić podgląd w debugerze
+LinkedIn/X. Commit: `feat(seo): landscape og image and large summary card`.
+
+**S3 · SHOULD · S · ☐ — chrome mobile**: `global.css` `:root {
+color-scheme: dark; }`, `html { -webkit-text-size-adjust: none;
+text-size-adjust: none; }`, `<meta name="theme-color">` = kolor tła
+strony; komentarze z bloków `is:inline` w `BaseLayout` przenieść nad
+blok (poza wysyłany HTML). Baseline'y: brak wpływu (zweryfikować
+`test:visual`). Commit: `fix(layout): color-scheme, text-size-adjust, theme-color`.
+
+**S4 · COULD · S · ☐ — `scripts/make-icons.mjs`** (wektor → komplet ikon +
+og jednym poleceniem; strażnik „GENERAT" w `seo.spec.ts`). Wzorzec: eha.
+
+**S5 · COULD · S · ☐ — fade przejść po `document.referrer`** zamiast
+`sessionStorage` — tylko jeśli polityka prywatności hadrianm deklaruje
+brak zapisu w urządzeniu (sprawdzić treść `polityka-prywatnosci.astro`).
+
+### A — Dostępność
+
+**A1 · SHOULD · S · ☐ — allowlista axe do zera**: dla `.of-w`/`.acc`
+(intro Oferty) osobny token tekstowy (np. `--accent-ink`, pomiar ≥ 4,5:1
+na tle sekcji w 3 szerokościach, Chromium + WebKit), zmiana koloru TYLKO
+w stanie spoczynku spanów (animacja rozjaśniania zostaje), usunięcie wpisów
+z `KNOWN_VIOLATIONS`. Baseline'y `services.spec.ts` do regeneracji po
+akceptacji. Przy wartościach w docs znacznik „(kontrast)" = wynik pomiaru.
+Commit: `fix(services): aa contrast for intro accents, empty axe allowlist`.
+
+### U — Nakładki
+
+**U1 · SHOULD · M · ☐ — swipe-down „Runda 4"**: port z hetman
+`src/scripts/overlay.ts:201-261` (gest przez `touch*` non-passive,
+`preventDefault` w pierwszej klatce ruchu w dół, `DRAG_SLOP_PX`, gest także
+w treści sheeta przewiniętej na górę) + `overscroll-behavior: contain` na
+`[data-overlay-scroll], [data-overlay-panel]`; nasza gałąź Lenisa w
+`lockScroll/unlockScroll` zostaje. Testy: e2e przez CDP
+`Input.dispatchTouchEvent` (nie `page.mouse`). Fizyczny Android:
+pull-to-refresh nie odpala przy zamykaniu sheeta. Commit:
+`fix(overlay): touch-based swipe-down and overscroll containment`.
+
+### D — Dokumentacja i proces
+
+**D1 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — `daily-workflow.md`**: `git add <ścieżki>` zamiast
+`git add -A` (+ zdanie dlaczego: NFD/duplikaty z panelu, pliki
+przypadkowe), zasada „decyzje ze skutkami (progi LHCI, baseline'y,
+schemat) = osobne commity", krok `gh run list -L 6` w bramce startowej,
+odsyłacz do `sesja-utrzymaniowa-szablon.md`. Commit: `docs(workflow): explicit git add and separate decision commits`.
+
+**D2 · SHOULD · S · ☐ — `optional-todos.md` w formie dwóch tabel**:
+cykliczne (Worker auth + rotacja sekretów, przypięta wersja Sveltii, backup
+R2 `rclone sync` co tydzień/miesiąc, `pnpm outdated` kwartalnie z regułą
+„playwright parą", przegląd zużycia transformacji obrazów, sprzątanie
+sierot R2, kontrola obrazu runnera przy bumpie Playwrighta, przegląd LHCI
+po bloku zmian) i odłożone (co / do kiedy–warunek) + „Zamknięte"; usunięcie
+przeterminowanych punktów. Dodatkowo: UptimeRobot (keyword) + Search
+Console (brak wskazany w kronice §E). Commit: `docs(todos): recurring and deferred tables`.
+
+**D3 · SHOULD · S · ☐ — `docs/decyzje.md`**: rejestr decyzji zapadłych
+(numer · decyzja · gdzie uzasadnienie · status), zasiany z pamięci
+projektu i analiz (stałe Lenisa rozdzielone; `data-lenis-prevent-horizontal`;
+JSON-LD FAQ tylko na podstronie; entry-overlay zakazany; navbar `measure()`
+nie optymalizować; `ScrollTrigger.refresh()` nie do rAF; Oferta w EN z PLN;
+…). Bramka startowa sesji czyta go zamiast pamięci rozproszonej.
+Commit: `docs: decision register`.
+
+**D4 · SHOULD · S · ☐ — `docs/poprawki-po-implementacji.md`**: jedno
+miejsce na usterki i decyzje wyglądu z testów na urządzeniach (reguła „nie
+naprawiamy przy okazji", klasyfikacja błąd / decyzja wyglądu / zmiana
+zakresu, każdy naprawiony błąd dostaje test). Zasiać: strojenie pkt 4/5
+i test fizyczny pkt 8 z `visual-corrections-part1.md`, H1 do czasu
+wdrożenia. Commit: `docs: post-implementation corrections list`.
+
+**D5 · COULD · S · ☐ — `docs/pulapki.md`**: skondensowany katalog pułapek
+pomiarowych/środowiskowych z rodziny (przejście CSS fałszuje odczyt
+geometrii; `opacity:0` łapie kliknięcia; na preview `/cdn-cgi/` nie
+istnieje → pixel-diff nie widzi regresji obrazów R2; `strict_required_status_checks`
+— zapis w panelu unieważnia „up to date" PR-a; Astro inlinuje małe CSS
+przed bundlami → override `:root` przegrywa, potrzebny `html:root`;
+komentarz frontmatteru z `<` psuje `astro check`; `*/` w komentarzu CSS
+wywraca Tailwind 4; `git worktree` + symlink `node_modules` psuje Tailwind;
+R2 EU wymaga endpointu `.eu.`; cron GH opóźniony ~6 h).
+
+### Odrzucone z raportów (nie wchodzą do backlogu)
+
+Preact (brak zastosowania); wycięcie Lenisa/GSAP (§4.1); log etapów
+w `CLAUDE.md`; Cloudflare Stream i `cdn-cgi/media` jako poster
+(`analiza-realizacje-wideo.md` §3.1); `site-config.ts` (nasze przełączniki
+żyją w `*-config.ts` per sekcja — wystarcza); `MotionGate`/`html.js-motion`
+dla istniejących sekcji (ruszyłoby baseline'y bez zysku; dla NOWYCH sekcji
+wzorzec dopuszczalny); ujednolicenie progów 760/768/861 (T4 tylko
+strażnik); `scrollbar-gutter` (już jest); CTA-placeholdery (już
+zmigrowane).
+
+## 7. Kolejność wdrażania (paczki = PR-y)
+
+| Paczka | Punkty | Dlaczego razem | Baseline'y |
+| --- | --- | --- | --- |
+| P0 | ta analiza + `analiza-realizacje-wideo.md` + szablon sesji + README | docs | — |
+| P1 „CI i panel" | C1, C2, C3, M1, D1 | zero zmian w UI, zamyka 2 flaki i 2 ryzyka incydentów | brak |
+| P2 „Hero Safari" | H1, H2, T5 | jeden obszar, jedna weryfikacja na fizycznym Macu/iPhonie | hero (klatki z napisem) + nowy profil webkit |
+| P3 „Fundament treści" | T2, T1, R2, M2 | warunek dla wideo i podmiany treści | brak (fixture = kopia dzisiejszych wpisów) |
+| P4 „Wideo — mechanizm" | R1 Etapy 1–4 | wg planu wideo | brak (bez wpisu z wideo) |
+| P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | work-modal/sheet/index + kafelki (raz) |
+| P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | prawdopodobnie brak (sprawdzić) |
+| P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | brak |
+| P8 „Jakość" | A1, T4, U1, F1 | każdy z własnym pomiarem | services (A1); reszta brak |
+| P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
+| później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
+
+Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
+merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
+(kolejność linux-workflow → darwin z `daily-workflow.md`); L1 zawsze jako
+osobny PR po pomiarze na main.
+
+## 8. Workflow kontynuacji (tryb utrzymaniowy)
+
+1. **Jedna sesja = jedna paczka (lub jeden punkt)**, start od
+   `docs/sesja-utrzymaniowa-szablon.md` wypełnionego numerami punktów.
+   Pierwsze zadanie sesji: domknąć status poprzedniej (✅ + data + PR w §6,
+   `docs/README.md`, ewentualnie `decyzje.md`).
+2. **Bramka startowa**: `git checkout main && git pull`, oczekiwany SHA,
+   czysty `git status`, `gh run list -L 6` — czerwone na main = najpierw
+   diagnoza osobnym małym PR-em (nigdy „przy okazji").
+3. **Definition of Done paczki**: `/test` zielone lokalnie na właściwych
+   warstwach; e2e + unit zielone w CI; baseline'y (jeśli ruszone) w obu
+   kompletach w tym samym PR; LHCI nietknięte albo osobny PR; wpis w §6
+   i `docs/README.md`; reguła w `.claude/rules/*` jeśli powstała nowa
+   wiedza; lista „na telefon" przekazana Mateuszowi, gdy emulacja nie
+   wystarcza (Low Power Mode, limit GPU, toolbar Safari, zimny cache).
+4. **Usterki z testów na urządzeniach** trafiają do
+   `docs/poprawki-po-implementacji.md` (D4) — nie są naprawiane w trakcie
+   innej paczki; każdy naprawiony błąd dostaje test, który by go wykrył.
+5. **Pomiary → decyzje → osobne commity**: progi LHCI (C4 → L1),
+   baseline'y, schemat CMS — nigdy doklejane do feature'a.
+6. **Panel Sveltia pisze na main** — po każdej edycji treści: `git pull`,
+   `pnpm test:unit`; otwarte PR-y tracą „up to date" (rebase).
+7. **Co miesiąc** (D2): tabela cykliczna — Worker auth/sekrety, backup R2,
+   `pnpm outdated`, sieroty R2, przegląd flake'ów w katalogu pamięci.
+8. **Reguła Lenisa** (§4.1) i **reguła WebKit `paint-order`** (H2) wchodzą
+   do `.claude/rules/` przy pierwszej paczce, która ich dotyka.
+
+## 9. Rozważone i ODRZUCONE (żeby nie wracały)
+
+- Uproszczenie hadrianm-web do natywnego scrolla jak delung/eha/hetman —
+  tożsamość wizytówki; wraca tylko z pomiarem konkretnej szkody.
+- Przeniesienie całego procesu greenfield (instrukcja wykonawcza Etapy
+  0–9, baza wiedzy klienta) — hadrianm-web jest w utrzymaniu, zostaje
+  lżejszy wariant z §8.
+- Log stanu w `CLAUDE.md` (116–176 KB w nowszych repo) — koszt kontekstu
+  każdej sesji; fakty do §6/§10 i pamięci.
+- Generyczne nakładki zastąpione inline-sheetami (hetman) — nasze
+  `Modal`/`BottomSheet` są reużywane w 3 miejscach.
+- Cloudflare Stream — patrz plan wideo.
+
+## 10. Log sesji (append-only)
+
+- **2026-10-20** — analiza + backlog + plan wideo + szablon sesji
+  (branch `docs/evolution-analysis-and-video-plan`, P0). Zweryfikowane
+  lokalnie: soft-404 (prod 200), `prod-smoke` `head -1`, brak
+  `workflow_dispatch`, `ubuntu-latest` ×5, Sveltia 0.170.0, LCP 3565 =
+  ×1,15, allowlista axe 2 wpisy, fonty `index.css`, `config.yml` bez 3
+  linii, `git add -A` w ściądze, `readdirSync` ×4, reprodukcja H1
+  (WebKit vs Chromium). Nie ruszono żadnego pliku w `src/`.

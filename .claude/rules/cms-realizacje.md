@@ -16,6 +16,11 @@ paths:
   commituje przez GitHub API na `main`, omijając husky). Ręczna edycja
   zabroniona (jest hook-guard); pliki są w `.prettierignore` — Sveltia ma
   własny formater (tablice zawsze wielolinijkowe).
+- NIGDY `git add .` / `git add -A` — zawsze jawne ścieżki. Nazwy plików
+  wpisów są wymuszane jako ASCII (`slug: {encoding, clean_accents}` w
+  `config.yml`), ale starsze pliki lub slug wklejony w formie NFD mogą
+  pokazać się na macOS jako „ten sam plik dwa razy" — `git add .` zrobiłby
+  z tego duplikat na Linuksie i wywrócił test unikalności slugów.
 
 ## Schemat danych — zmiana w TRZECH miejscach naraz
 
@@ -31,9 +36,14 @@ paths:
 
 - Bucket `hadrianm-media`, domena publiczna `https://media.hadrianm.pl`,
   prefix `realizacje/`. Zdjęcia NIE trafiają do repo.
-- Sveltia wgrywa do R2 TYLKO przez pola Image (nie przez bibliotekę
-  Assets) i NIE kasuje plików z R2 przy usuwaniu wpisu — osierocone pliki
-  trzeba sprzątać ręcznie w dashboardzie R2.
+- Sveltia wgrywa do R2 przez pola `image` ORAZ `file` (MP4 — potwierdzone
+  w projektach klienckich rodziny; stara reguła „tylko Image" nieaktualna),
+  ale NIE przez bibliotekę Assets poza polem, i NIE kasuje plików z R2 przy
+  usuwaniu wpisu — osierocone pliki trzeba sprzątać ręcznie w dashboardzie
+  R2. Nazwy wgrywanych plików są slugifikowane
+  (`media_libraries.all.slugify_filename`); już wgranych nie zmienia.
+- Panel z localhosta wymaga `backend.site_domain` (inaczej Worker auth
+  odrzuca `site_id=cms.netlify.com`).
 - Rozmiary obrazów: wyłącznie przez `imgAt()` (`src/lib/img.ts`) —
   Cloudflare Image Transformations (`/cdn-cgi/image/...`). W dev endpoint
   nie istnieje → funkcja zwraca oryginał; NIE debuguj „złych rozmiarów"
