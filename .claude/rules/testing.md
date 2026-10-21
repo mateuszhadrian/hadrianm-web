@@ -47,6 +47,10 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   (zewnętrzna sieć = flaky).
 - Wersje `playwright` i `@playwright/test` podnoś PARĄ (jeden zestaw
   binariów); bump = też tag obrazu Dockera w procedurze baseline'ów.
+- Runnery GitHub są PRZYPIĘTE (`ubuntu-24.04` we wszystkich workflowach,
+  nie `ubuntu-latest`): wersja systemu wpływa na binaria Playwrighta
+  i baseline'y linux. Bump obrazu = świadoma zmiana w osobnym PR z kontrolą
+  baseline'ów (rerun `test:visual` na main przed i po).
 
 ## Czego emulacja NIE wykrywa → fizyczne urządzenie
 
