@@ -1,0 +1,79 @@
+{
+  "slug": "hetman",
+  "order": 10,
+  "name": "Hetman Nieruchomości",
+  "year": "2026",
+  "category": {
+    "pl": "Nieruchomości",
+    "en": "Real estate"
+  },
+  "blurb": {
+    "pl": "Biuro nieruchomości z Poznania — strona z ofertami aktualizowanymi automatycznie z systemu CRM z filtrami i stroną każdej oferty.",
+    "en": "A Poznań real-estate agency — a site with listings updated automatically from the CRM system with filters and a page for every offer."
+  },
+  "tags": {
+    "pl": [
+      "integracja z CRM",
+      "Filtry i strony ofert",
+      "Formularze kontaktowe"
+    ],
+    "en": [
+      "CRM integration",
+      "Filters & offer pages",
+      "Contact forms"
+    ]
+  },
+  "intro": {
+    "pl": "Agencja nieruchomości potrzebowała strony, na której oferty pojawiają się same, bez ręcznego przepisywania. Zbudowałem statyczną witrynę zasilaną nocnym pobraniem ofert z systemu biura — z listą, filtrami i statusami (aktywne, rezerwacje, archiwalne), osobną stroną każdej oferty oraz sekcjami dla sprzedających i o zespole.",
+    "en": "The agency needed a site where listings appear on their own, with no manual re-typing. I built a static site fed by a nightly import from the agency's system — with a listing, filters and statuses (active, reserved, archived), a page for every offer, plus sections for sellers and about the team."
+  },
+  "screens": [
+    {
+      "key": "home",
+      "label": {
+        "pl": "Strona główna",
+        "en": "Home"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/hetman-home-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/hetman-home-mobile.webp",
+      "video": {
+        "desktop": "https://media.hadrianm.pl/realizacje/hetman-home-desktop.mp4",
+        "mobile": "https://media.hadrianm.pl/realizacje/hetman-home-mobile.mp4"
+      }
+    },
+    {
+      "key": "offers",
+      "label": {
+        "pl": "Lista ofert",
+        "en": "Listings"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/hetman-offers-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/hetman-offers-mobile.webp"
+    },
+    {
+      "key": "sell",
+      "label": {
+        "pl": "Sprzedaj z nami",
+        "en": "Sell with us"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/hetman-sell-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/hetman-sell-mobile.webp"
+    }
+  ],
+  "scope": {
+    "pl": [
+      "Projekt UI/UX",
+      "Wdrożenie frontendowe (Astro)",
+      "Automatyczna synchronizacja ofert",
+      "Formularz kontaktowy i hosting",
+      "Integracja z zewnętrznym systemem CRM"
+    ],
+    "en": [
+      "UI/UX design",
+      "Frontend build (Astro)",
+      "Automatic listings sync",
+      "Contact form and hosting"
+    ]
+  },
+  "liveUrl": "https://nowa.hetmannieruchomosci.com"
+}
