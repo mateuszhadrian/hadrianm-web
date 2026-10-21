@@ -2,7 +2,11 @@
 // WorkDetail. Desktop (≥761px): galeria `.work__gallery` → Modal. Mobile
 // (≤760px): karuzela `.wk-car` → BottomSheet. Strona główna pokazuje max 3.
 import { expect, test, type Page } from "@playwright/test";
-import { HOME_MAX, realizacjeFiles } from "../helpers/realizacje";
+import {
+  firstScreenVideo,
+  HOME_MAX,
+  realizacjeFiles,
+} from "../helpers/realizacje";
 import { gotoReady } from "../helpers/scroll";
 
 // Liczymy wpisy helperem (katalog może nie istnieć — pusta kolekcja to stan
@@ -82,5 +86,110 @@ test.describe("mobile: BottomSheet (karuzela)", () => {
     await sheet.locator("[data-overlay-close]").click();
     await expect(sheet).toBeHidden();
     await expect(sheet.locator(".wdx")).toHaveCount(0);
+  });
+});
+
+// ── Pętla wideo pierwszego ekranu (plan: docs/analiza-realizacje-wideo.md, D10) ──
+// Warunkowo na treści: gdy pierwszy wpis nie ma `screens[0].video`, nakładka
+// nie może zawierać <video> (kod „ślepy"); gdy ma — wideo dostaje src po
+// otwarciu i gra (asercje odtwarzania tylko chromium: WebKit w emulacji
+// odrzuca play() nawet dla muted — D10), a zamknięcie zwalnia src.
+const FIRST_VIDEO = firstScreenVideo();
+
+test.describe("wideo ekranów w nakładce", () => {
+  async function openFirst(page: Page, isMobile: boolean) {
+    await gotoReady(page);
+    const selector = isMobile
+      ? ".wk-car [data-work-slug]"
+      : ".work__gallery [data-work-slug]";
+    const card = await revealFirstCard(page, selector);
+    await card.click();
+    const overlay = page.locator(isMobile ? "#work-sheet" : "#work-modal");
+    await expect(overlay).toHaveClass(/is-open/);
+    return overlay;
+  }
+
+  test("bez wpisu z wideo nakładka nie ma <video>", async ({
+    page,
+    isMobile,
+  }) => {
+    test.skip(!!FIRST_VIDEO, "pierwszy wpis MA wideo — testuje to test niżej");
+    const overlay = await openFirst(page, !!isMobile);
+    await expect(overlay.locator("video")).toHaveCount(0);
+    // Poster/zdjęcie ekranu jest zawsze w DOM (semantyczny obraz z alt).
+    await expect(overlay.locator(".wd__img").first()).toBeAttached();
+  });
+
+  test("pierwszy ekran: wideo dostaje src po otwarciu i gra; zamknięcie zwalnia", async ({
+    page,
+    isMobile,
+    browserName,
+  }, testInfo) => {
+    test.skip(!FIRST_VIDEO, "brak wpisu z wideo — nic do odtworzenia");
+    const overlay = await openFirst(page, !!isMobile);
+    const videos = overlay.locator("video.wd__video");
+    await expect(videos).toHaveCount(2); // laptop + telefon
+    const read = () =>
+      videos.evaluateAll((els) =>
+        (els as HTMLVideoElement[]).map((v) => ({
+          src: v.getAttribute("src") ?? "",
+          paused: v.paused,
+          t: v.currentTime,
+          autoplayAttr: v.hasAttribute("autoplay"),
+          muted: v.muted,
+          hidden: v.getAttribute("aria-hidden"),
+        })),
+      );
+    const first = await read();
+    expect(first.map((v) => v.src)).toEqual([
+      FIRST_VIDEO!.desktop,
+      FIRST_VIDEO!.mobile,
+    ]);
+    for (const v of first) {
+      expect(v.autoplayAttr, "bez atrybutu autoplay (bramka reduce w JS)").toBe(
+        false,
+      );
+      expect(v.muted).toBe(true);
+      expect(v.hidden, "dekoracyjne: aria-hidden").toBe("true");
+    }
+    if (
+      browserName === "chromium" &&
+      !testInfo.project.name.includes("firefox")
+    ) {
+      await expect
+        .poll(async () => (await read()).every((v) => !v.paused), {
+          message: "oba wideo grają",
+        })
+        .toBe(true);
+      const before = await read();
+      await page.waitForTimeout(600);
+      const after = await read();
+      after.forEach((v, i) =>
+        expect(v.t, `wideo #${i}: currentTime rośnie`).toBeGreaterThan(
+          before[i].t,
+        ),
+      );
+    }
+    await overlay.locator("[data-overlay-close]").click();
+    await expect(overlay).toBeHidden();
+    await expect(overlay.locator("video")).toHaveCount(0);
+  });
+
+  // Punktowy, ŚWIADOMY wyjątek od zakazu emulacji reduce (jak FAQ/contact):
+  // sprawdza bramkę D6 — przy reduce <video> nie dostaje src.
+  test.describe("prefers-reduced-motion: reduce", () => {
+    test.use({ contextOptions: { reducedMotion: "reduce" } });
+    test("wideo nie jest ładowane — zostaje zdjęcie", async ({
+      page,
+      isMobile,
+    }) => {
+      test.skip(!FIRST_VIDEO, "brak wpisu z wideo");
+      const overlay = await openFirst(page, !!isMobile);
+      const srcs = await overlay
+        .locator("video.wd__video")
+        .evaluateAll((els) => els.map((v) => v.getAttribute("src")));
+      expect(srcs.every((s) => s === null)).toBe(true);
+      await expect(overlay.locator(".wd__img").first()).toBeAttached();
+    });
   });
 });

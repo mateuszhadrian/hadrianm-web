@@ -12,7 +12,7 @@ import {
   useChromium1920Only,
   usePreviewGuard,
 } from "../helpers/guards";
-import { realizacjeFiles } from "../helpers/realizacje";
+import { firstScreenVideo, realizacjeFiles } from "../helpers/realizacje";
 import { gotoReady, scrollPageTo } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
@@ -20,6 +20,20 @@ const SITE = "https://hadrianm.pl";
 // Helper zamiast gołego readdirSync: katalog może nie istnieć (pusta
 // kolekcja = stan dopuszczalny; sygnał o braku treści daje cms-contract).
 const ENTRY_COUNT = realizacjeFiles().length;
+// Pętla wideo pierwszego ekranu pierwszego wpisu (plan wideo, D10): bez niej
+// nakładka nie ma <video>; z nią — <video> dostaje src po otwarciu.
+const FIRST_VIDEO = firstScreenVideo();
+
+async function expectVideoState(overlay: ReturnType<Page["locator"]>) {
+  const videos = overlay.locator("video.wd__video");
+  if (!FIRST_VIDEO) {
+    await expect(videos).toHaveCount(0);
+    return;
+  }
+  await expect(videos).toHaveCount(2);
+  await expect(videos.first()).toHaveAttribute("src", FIRST_VIDEO.desktop);
+  await expect(videos.nth(1)).toHaveAttribute("src", FIRST_VIDEO.mobile);
+}
 
 const PAGES = [
   { path: "/realizacje/", lang: "pl", homePath: "/" },
@@ -177,6 +191,7 @@ test.describe("desktop: Modal na podstronie", () => {
     await expect(modal).toBeVisible();
     await expect(modal).toHaveClass(/is-open/);
     await expect(modal.locator(".wdx__title")).toHaveText(name ?? "");
+    await expectVideoState(modal);
 
     await modal.locator("[data-overlay-close]").click();
     await expect(modal).toBeHidden();
@@ -202,6 +217,7 @@ test.describe("mobile: BottomSheet na podstronie", () => {
     await expect(sheet.locator(".wdx__title")).toHaveText(
       (await card.getAttribute("data-work-name")) ?? "",
     );
+    await expectVideoState(sheet);
 
     await sheet.locator("[data-overlay-close]").click();
     await expect(sheet).toBeHidden();

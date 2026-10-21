@@ -4,11 +4,14 @@ Data: 2026-10-20 · Branch: `docs/evolution-analysis-and-video-plan`
 Kontekst nadrzędny: `docs/analiza-ewolucja-vs-nowsze-projekty.md` (backlog
 powrotu do hadrianm-web; ten dokument to punkt **R1** tamtego backlogu).
 
-> **Status: PLAN ZAAKCEPTOWANY co do założeń (sesja pytań 2026-10-20),
-> wdrożenie w etapach — żaden etap jeszcze nie ruszył.** Decyzje D1–D13
-> są zapadłe; „decyzje wykonawcze" §4 można korygować w trakcie, ale każdą
-> korektę dopisz tu (jak w innych planach). Etapy wdrażane w osobnych
-> sesjach, każdy = osobny PR (proces: §7 i `docs/daily-workflow.md`).
+> **Status (2026-10-21): Etapy 1–4 WDROŻONE lokalnie w jednym PR
+> (`feat/work-video`, paczka P4). Korekty decyzji: D9 (tryb `clock` zamiast
+> CDP virtual time) i nowa decyzja D14 (wypieczony crossfade końcówki
+> pętli). Etapy 5–7 (nagrania, treść w panelu, telefony) = paczka P5.**
+> Decyzje D1–D13 są zapadłe; „decyzje wykonawcze" §4 można korygować
+> w trakcie, ale każdą korektę dopisz tu (jak w innych planach). Etapy
+> wdrażane w osobnych sesjach, każdy = osobny PR (proces: §7 i
+> `docs/daily-workflow.md`).
 
 ## 1. Cel
 
@@ -58,10 +61,11 @@ przez panel Sveltia dopiero PO wdrożeniu schematu (żeby wpisywać raz).
 | D6 | Reduced motion | Przy `prefers-reduced-motion: reduce` **wideo nie jest ani renderowane w DOM nakładki, ani ładowane** — zostaje `<picture>` jak dziś. Bramka w JS (`matchMedia`) + CSS obronnie. Poster = ten sam obraz, więc brak zgody na autoplay (iOS Low Power Mode) daje identyczny efekt jak reduce. |
 | D7 | Choreografia (wypieczona w pliku) | hold **2.5 s** na górze → zjazd do punktu `D` przez **4 s** (smootherstep) → hold **0.8 s** → powrót na górę przez **3 s** → hold **0.7 s** → cięcie do klatki 0 (ta sama pozycja, zero szwu). Łącznie ~11 s, 30 fps. `D` = min(2.2 × wysokość viewportu, maks. scroll strony) na desktopie, min(2.5 × vh, maks.) na telefonie; parametry per strona do strojenia w skrypcie (CLI). |
 | D8 | Nagranie | Nowy skrypt `scripts/capture-site-videos.mjs` (Playwright chromium, **strona publiczna klienta**), klatka-po-klatce: ustaw `scrollTo(y(t))`, posuń czas deterministycznie, zrzut viewportu; enkod jak w hero (libx264, 2-pass, limit wagi), poster WebP z klatki 0. Viewporty dobrane do aspektów `WorkDeviceDuo`: desktop **1440×900** (1.6), telefon **390×800** (0.4875), DPR 1; finalne szerokości 720 px / 432 px (jak hero). |
-| D9 | Determinizm czasu | Animacje „na czas" (reveal, przejścia CSS) na stronach klientów nie mogą zależeć od tempa zrzutów. Pierwszy wybór: **CDP `Emulation.setVirtualTimePolicy`** (budżet 1000/30 ms na klatkę). Fallback (gdy strona się na tym wywraca): `recordVideo` kontekstu Playwrighta w czasie rzeczywistym + ffmpeg. Decyzja po spike'u (Etap 1). |
+| D9 | Determinizm czasu | Animacje „na czas" (reveal, przejścia CSS) na stronach klientów nie mogą zależeć od tempa zrzutów. Pierwszy wybór: **CDP `Emulation.setVirtualTimePolicy`** (budżet 1000/30 ms na klatkę). Fallback (gdy strona się na tym wywraca): `recordVideo` kontekstu Playwrighta w czasie rzeczywistym + ffmpeg. Decyzja po spike'u (Etap 1). **Korekta po spike'u (2026-10-21):** zamiast CDP virtual time → **`page.clock` Playwrighta** (fałszywe `Date`/timery/`rAF`/`performance.now`) + ręczne krokowanie animacji CSS przez Web Animations API (`document.getAnimations()`, każda klatka = 1/30 s czasu strony). Powód: przy zatrzymanym czasie wirtualnym `Page.captureScreenshot` potrafi wisieć (znany problem headless), a `page.clock` daje ten sam determinizm bez tego ryzyka. Tryb `record` (webm w czasie rzeczywistym) zaimplementowany jako fallback; oba dały 11 s / ≤ 760 KB na delung.pl. |
 | D10 | Testy | e2e: po otwarciu nakładki wideo ma `src`, gra (`paused=false`, `currentTime` rośnie) na profilach chromium; na webkit tylko atrybuty + poster. Wizualne: `mask` na `.wd__video` w work-modal/work-sheet (+ `/realizacje/`); baseline'y tych klatek do regeneracji (darwin + workflow linux) PO akceptacji. Unit: kontrakt CMS (bez zmian), test schematu dla `video` opcjonalnego, `media-r2` bez zmian (regex łapie `.mp4`). |
 | D11 | Budżety | Wideo nie dotyka strony głównej (treść w `<template>` jest inertna, `preload="none"`) → LHCI bez zmian. Koszt danych: ~1.3 MB na otwartą realizację na mobile — akceptowalny; `navigator.connection.saveData` → COULD (§9). |
 | D12 | Self-heal iOS | **Nie** przenosimy mechanizmu self-heal z hero (`android-mobile.ts`). Nakładka żyje krótko; jedna próba `play()` przy otwarciu + ponowna przy `visibilitychange→visible`, nic więcej. |
+| D14 | Szew pętli (nowa, 2026-10-21) | Strony klientów mają elementy żyjące w czasie (slider w hero delung zmienia slajd niezależnie od scrolla), więc ostatnia klatka ≠ klatce 0 mimo tej samej pozycji scrolla. Rozwiązanie: **wypieczony crossfade** — skrypt wtapia klatki końcowego holdu (0.7 s = 21 klatek) liniowo w klatkę 0 (sharp, alfa narastająca do 1). Runtime nadal nic nie robi (§10 „nie próbować crossfade'u w runtime" obowiązuje). `--no-loop-blend` wyłącza. |
 | D13 | Dostępność | `<video>` dekoracyjne: `aria-hidden="true"`, bez `controls`, nie w kolejności fokusu; `<img>` z `alt` zostaje w DOM (poster semantyczny). Hero ma już `<video>` bez `<track>` i axe przechodzi — ten sam stan. |
 
 ### 3.1. Precedens w rodzinie projektów (delung-web, pracownia-eha-web)
@@ -145,16 +149,16 @@ pliki ≤ 800 KB), odtwarzania na tap.
 
 ## 6. Etapy
 
-1. **Spike nagrania (bez zmian w `src/`)** — `scripts/capture-site-videos.mjs`
+1. ✅ 2026-10-21 (oba tryby na delung.pl: desktop 710 KB, mobile 742 KB, 11 s, 720×450 / 432×886; pliki do obejrzenia: `~/hadrianm-site-videos/spike-delung/{clock,record}/`; decyzja D9 skorygowana, D14 dodana) — **Spike nagrania (bez zmian w `src/`)** — `scripts/capture-site-videos.mjs`
    v0 na `https://delung.pl`, tylko desktop, 90 klatek, dwa warianty czasu
    (virtual time vs `recordVideo`). Wynik: dwa MP4 w katalogu poza repo;
    Mateusz ogląda, wybiera wariant (D9), stroi głębokość/holdy (D7). Kryterium:
    brak „przyspieszonych" animacji wejścia, płynny scroll, waga ≤ 800 KB.
    Commit: `feat(scripts): add site video capture spike`.
-2. **Schemat + CMS + typy** — Zod, `config.yml`, `work-data.ts`, unit testy.
+2. ✅ 2026-10-21 — **Schemat + CMS + typy** — Zod, `config.yml`, `work-data.ts`, unit testy.
    Istniejące JSON-y (bez `video`) przechodzą bez zmian. Commit:
    `feat(cms): optional per-screen video urls`.
-3. **Komponenty + odtwarzanie** — `WorkDeviceDuo`, `WorkDetail`,
+3. ✅ 2026-10-21 (kod „ślepy": bez wpisu z wideo DOM nakładki bez zmian — potwierdzone e2e i visual bez regeneracji baseline'ów) — **Komponenty + odtwarzanie** — `WorkDeviceDuo`, `WorkDetail`,
    `work-video.ts`, `open-detail.ts`, CSS, bramka reduce. Lokalna
    weryfikacja na tymczasowym wpisie? **Nie** — JSON-ów nie edytujemy
    ręcznie; do podglądu lokalnego użyj gałęzi testowej panelu? Też nie
@@ -164,7 +168,7 @@ pliki ≤ 800 KB), odtwarzania na tap.
    z wideo = brak zmian w DOM, co widać w testach), a pierwszy realny wpis
    z wideo powstaje w Etapie 6 i tam wykonujemy pełną weryfikację wizualną.
    Commit: `feat(work): play per-screen videos in WorkDetail`.
-4. **Testy** — e2e (warunkowe na obecności `video` w pierwszym wpisie),
+4. ✅ 2026-10-21 (helper `firstScreenVideo()` w `tests/helpers/realizacje.ts`; test „bez wpisu z wideo nakładka nie ma <video>" biega dziś, testy odtwarzania i bramki reduce odpalą się same po pierwszym wpisie z wideo) — **Testy** — e2e (warunkowe na obecności `video` w pierwszym wpisie),
    maski w visual. Bez regeneracji baseline'ów (maska bez wideo w DOM nic nie
    zmienia). Commit: `test(work): cover video playback and mask videos`.
    Etapy 2–4 mogą iść w JEDNYM PR (`feat/work-video`).

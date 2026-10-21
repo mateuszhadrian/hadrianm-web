@@ -4,8 +4,14 @@
 // nakładki tuż przed otwarciem i czyszczona po zamknięciu (zwalnia obrazy/DOM).
 // Wybór modal↔sheet wynika z tego samego progu 760 px, który steruje layoutem.
 
+import { armVideos } from "./work-video";
+
 // `window.overlay` typowane w scripts/overlay.ts (declare global).
 export const sheetMQ = matchMedia("(max-width: 760px)");
+
+// Sprzątanie pętli wideo per host (otwarcie kolejnej realizacji bez
+// zamknięcia poprzedniej też musi zwolnić stare <video>).
+const disarmMap = new WeakMap<HTMLElement, () => void>();
 
 function hostOf(id: string) {
   return document
@@ -23,9 +29,16 @@ export function openWorkDetail(slug: string, name: string) {
   const host = hostOf(id);
   if (!host) return;
 
+  disarmMap.get(host)?.();
   host.replaceChildren(tpl.content.cloneNode(true));
+  // Wideo ekranów: src + play() dopiero po wstawieniu klonu (work-video.ts).
+  disarmMap.set(host, armVideos(host));
   window.overlay.open(id, {
     label: name,
-    onClose: () => host.replaceChildren(),
+    onClose: () => {
+      disarmMap.get(host)?.();
+      disarmMap.delete(host);
+      host.replaceChildren();
+    },
   });
 }

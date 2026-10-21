@@ -36,6 +36,15 @@ export const realizacjaSchema = z.object({
         label: localized,
         desktop: z.string(), // ścieżka/URL zrzutu desktop
         mobile: z.string(), // ścieżka/URL zrzutu mobile
+        // Pętla wideo ekranu (R1, plan: docs/analiza-realizacje-wideo.md):
+        // OPCJONALNA, oba urządzenia naraz; zdjęcia wyżej zostają wymagane —
+        // są posterem, fallbackiem reduce-motion i obrazem kafelka.
+        video: z
+          .object({
+            desktop: z.string().url(), // MP4 w R2 (…/realizacje/video/<slug>-<key>-desktop.mp4)
+            mobile: z.string().url(),
+          })
+          .optional(),
       }),
     )
     .min(1),

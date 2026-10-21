@@ -8,11 +8,18 @@ type Localized = { pl: string; en: string };
 type LocalizedList = { pl: string[]; en: string[] };
 
 // Pojedynczy ekran realizacji (laptop + telefon) prezentowany w modalu/sheecie.
+// Pętla wideo ekranu (opcjonalna; URL-e MP4 w R2, nie tłumaczone).
+export interface WorkScreenVideo {
+  desktop: string;
+  mobile: string;
+}
+
 export interface WorkScreen {
   key: string;
   label: Localized;
   desktop: string;
   mobile: string;
+  video?: WorkScreenVideo;
 }
 
 // Liczba/wynik w sekcji „Liczby i wyniki". `metric` lokalizowane, bo formaty
@@ -50,6 +57,7 @@ export type LocalizedScreen = {
   label: string;
   desktop: string;
   mobile: string;
+  video?: WorkScreenVideo;
 };
 export type LocalizedResult = { metric: string; label: string };
 
@@ -84,6 +92,7 @@ export function localizeProject(p: WorkProject, lang: Lang): LocalizedProject {
       label: s.label[lang] ?? s.label.pl,
       desktop: s.desktop,
       mobile: s.mobile,
+      video: s.video,
     })),
     intro: p.intro[lang] ?? p.intro.pl,
     results: p.results.map((r) => ({

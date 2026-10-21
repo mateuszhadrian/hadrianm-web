@@ -65,7 +65,11 @@ test.describe("nakładki WorkDetail", () => {
     // Zrzut VIEWPORTU, nie panelu: panel jest wyższy niż okno i żyje w fixed
     // scroll-containerze — element-screenshot doscrollowuje między próbami
     // i nigdy nie jest stabilny (złapane przy generowaniu baseline'ów).
-    await expect(page).toHaveScreenshot("work-modal.png");
+    // Wideo ekranów (gdy wpis je ma) zawsze pod maską — klatka to loteria
+    // (kontrakt testów). Bez <video> w DOM maska jest no-opem.
+    await expect(page).toHaveScreenshot("work-modal.png", {
+      mask: [page.locator(".wd__video")],
+    });
   });
 
   test("otwarty BottomSheet vs baseline", async ({ page, isMobile }) => {
@@ -81,6 +85,8 @@ test.describe("nakładki WorkDetail", () => {
     await expect(page.locator("#work-sheet")).toHaveClass(/is-open/);
     await settle(page);
     // Zrzut viewportu — jak w modalu (stabilność > kadr samego panelu).
-    await expect(page).toHaveScreenshot("work-sheet.png");
+    await expect(page).toHaveScreenshot("work-sheet.png", {
+      mask: [page.locator(".wd__video")],
+    });
   });
 });

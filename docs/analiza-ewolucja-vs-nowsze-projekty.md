@@ -382,7 +382,7 @@ i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 
 ### R — Realizacje (treść i prezentacja)
 
-**R1 · MUST · L · ☐ — wideo w podglądzie realizacji** — plan i etapy:
+**R1 · MUST · L · ◐ Etapy 1–4 wdrożone lokalnie 2026-10-21 (PR P4 `feat/work-video`); Etapy 5–7 = P5 — wideo w podglądzie realizacji** — plan i etapy:
 `docs/analiza-realizacje-wideo.md`.
 
 **R2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — `results` i `quote`/`author`/`role` opcjonalne**:
@@ -776,3 +776,15 @@ osobny PR po pomiarze na main.
   sonda binarium = delung). Sveltia najnowsza to dziś 0.250.1 — świadomie
   wzięta wersja sprawdzona produkcyjnie w delung/eha; dalsze podbicie =
   osobny punkt po potrzebie (M3).
+- **2026-10-21 (sesja 2)** — P3 na main (PR #52; panel potwierdzony:
+  pola opcjonalne bez gwiazdek — w Sveltii gwiazdka = pole wymagane).
+  P4 wdrożone lokalnie (branch `feat/work-video`, Etapy 1–4 planu wideo):
+  spike `capture:site` na delung.pl w dwóch trybach (oba ≤ 800 KB, 11 s,
+  720×450 / 432×886); korekta D9: zamiast CDP virtual time → `page.clock`
+  + krokowanie WAAPI (`captureScreenshot` wisi przy zatrzymanym czasie
+  wirtualnym); nowa decyzja: wypieczony crossfade końcówki w klatkę 0
+  (slider hero delung robił szew). Schemat/panel/typy (`screens[].video`),
+  `WorkDeviceDuo` warstwa `<video>` + `work-video.ts` + `open-detail.ts`,
+  testy warunkowe (dziś: „bez wpisu z wideo nakładka nie ma <video>"),
+  maski w visual. Prod smoke po #51 czerwony = deploy Cloudflare > 10 min
+  (hashe deterministyczne, 46/46) — katalog flake'ów.

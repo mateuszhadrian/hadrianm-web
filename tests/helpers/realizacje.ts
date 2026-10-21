@@ -39,5 +39,26 @@ export function readRealizacja<T>(name: string): T {
   return JSON.parse(readRealizacjaRaw(name)) as T;
 }
 
+/** Wpisy posortowane jak na stronie (rosnąco po `order`) — [0] to pierwsza
+ *  karta galerii/karuzeli/siatki, w którą klikają testy nakładek. */
+export function readRealizacje<T extends { order?: number }>(): T[] {
+  return realizacjeFiles()
+    .map((name) => readRealizacja<T>(name))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
+/** Pętla wideo pierwszego ekranu pierwszego wpisu (albo undefined) — testy
+ *  odtwarzania są warunkowe: dziś żaden wpis nie ma wideo, więc sprawdzają
+ *  tylko, że kod „ślepy" nie dodaje <video> do nakładki. */
+export function firstScreenVideo():
+  | { desktop: string; mobile: string }
+  | undefined {
+  const first = readRealizacje<{
+    order?: number;
+    screens?: { video?: { desktop: string; mobile: string } }[];
+  }>()[0];
+  return first?.screens?.[0]?.video;
+}
+
 /** Ile realizacji pokazuje sekcja #work na stronie głównej (kap z Work.astro). */
 export const HOME_MAX = 3;

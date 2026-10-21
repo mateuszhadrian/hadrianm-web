@@ -38,6 +38,11 @@ na main.
   wymaga `pnpm build:visual`, NIE `pnpm build`; webServer sam wstaje na 4399);
   `pnpm test:visual:update` (nowe baseline'y — TYLKO za zgodą Mateusza);
   `pnpm test:smoke:prod` (smoke przeciw produkcji)
+- `pnpm capture:site -- --url https://… --slug <slug>` — nagranie pętli
+  „wejście → scroll → powrót" publicznej strony klienta (laptop + telefon +
+  postery) do pola „Wideo ekranu" realizacji; pliki lądują w
+  `~/hadrianm-site-videos/<slug>/`, NIE w repo (plan:
+  `docs/analiza-realizacje-wideo.md`)
 - `pnpm capture:devices` — regeneracja MP4 ekranów urządzeń (użyj skilla
   `/capture-devices`, ma pre-checki)
 - `pnpm capture:ambient-bg` — regeneracja statycznych tekstur tła ambient
