@@ -40,6 +40,24 @@
         "desktop": "https://media.hadrianm.pl/realizacje/pracownia-eha-home-desktop.mp4",
         "mobile": "https://media.hadrianm.pl/realizacje/pracownia-eha-home-mobile.mp4"
       }
+    },
+    {
+      "key": "gallery",
+      "label": {
+        "pl": "Realizacje",
+        "en": "Projects"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/pracownia-eha-gallery-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/pracownia-eha-gallery-mobile.webp"
+    },
+    {
+      "key": "skills",
+      "label": {
+        "pl": "Kompetencje i technologie",
+        "en": "Skills and techniques"
+      },
+      "desktop": "https://media.hadrianm.pl/realizacje/pracownia-eha-skills-desktop.webp",
+      "mobile": "https://media.hadrianm.pl/realizacje/pracownia-eha-skills-mobile.webp"
     }
   ],
   "scope": {
