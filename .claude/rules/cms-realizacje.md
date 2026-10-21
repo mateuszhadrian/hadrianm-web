@@ -41,7 +41,8 @@ paths:
    cytatów dla realizacji, które ich nie mają. Jeśli cytat jest, wypełnij OBA
    języki (schemat wymaga pary `{pl, en}`).
 5. `screens[].video` (opcjonalne, R1): `{desktop, mobile}` = URL-e MP4 w R2
-   (`realizacje/video/<slug>-<key>-desktop.mp4` / `-mobile.mp4`), OBA naraz
+   (`realizacje/<slug>-<key>-desktop.mp4` / `-mobile.mp4` — płasko obok
+   zdjęć, jeden prefix uploadu Sveltii), OBA naraz
    albo żadne (Zod). Tylko nagrania z `pnpm capture:site` (1440×900 /
    390×800, ≤ 800 KB, pętla bez szwu). Zdjęcia ekranu zostają wymagane —
    są posterem, wersją reduce-motion i obrazem kafelka; najlepiej wgrać tam

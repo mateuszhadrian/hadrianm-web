@@ -382,7 +382,7 @@ i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 
 ### R — Realizacje (treść i prezentacja)
 
-**R1 · MUST · L · ◐ Etapy 1–4 wdrożone lokalnie 2026-10-21 (PR P4 `feat/work-video`); Etapy 5–7 = P5 — wideo w podglądzie realizacji** — plan i etapy:
+**R1 · MUST · L · ◐ Etapy 1–4 na main 2026-10-21 (PR #53, P4); Etap 5 (nagrania) 2026-10-21 na branchu `feat/work-video-content` (P5), Etapy 6–7 w toku — wideo w podglądzie realizacji** — plan i etapy:
 `docs/analiza-realizacje-wideo.md`.
 
 **R2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — `results` i `quote`/`author`/`role` opcjonalne**:
@@ -788,3 +788,21 @@ osobny PR po pomiarze na main.
   testy warunkowe (dziś: „bez wpisu z wideo nakładka nie ma <video>"),
   maski w visual. Prod smoke po #51 czerwony = deploy Cloudflare > 10 min
   (hashe deterministyczne, 46/46) — katalog flake'ów.
+- **2026-10-21 (sesja 3)** — P4 na main (PR #53). Mateusz obejrzał spike
+  i zaakceptował tryb `clock` + domyślne D7 (zapis w planie wideo, Etap 1).
+  P5 Etap 5 (branch `feat/work-video-content`): sonda na żywo (bez
+  nakładek, bez Lenisa na żadnej z trzech stron), 6 MP4 ≤ 800 KB + 6
+  posterów + zrzuty dodatkowych ekranów (`--screens`) w
+  `~/hadrianm-site-videos/`. Dwa błędy skryptu znalezione na
+  kontakt-arkuszach: (1) krokowanie animacji CSS NIE wykonywało się —
+  `page.evaluate(STRING, arg)` ewaluuje string jako wyrażenie i nie
+  wywołuje funkcji; slider hero delung leciał ~13× za szybko, także
+  w zaakceptowanym spike'u (D9 korekta 2); (2) `<video>` hero Hetmana
+  biegło w czasie rzeczywistym — teraz pauza + `currentTime` per klatka.
+  Po obejrzeniu przez Mateusza dwie kolejne poprawki: start nowej animacji
+  od poprzedniego kroku (przejścia CSS ze scrolla w „Co tworzymy?" delung
+  zacinały się) i shim Range dla `<video>` (podgląd Hetmana nie obsługuje
+  Range → `seekable` [0,0], film stał na klatce 0); film rusza od klatki
+  0 pętli, `ended` → zdjęcie jak na żywo. Korekta D4: Sveltia ma jeden prefix uploadu, MP4 lądują płasko
+  w `realizacje/`. Etapy 6–7 + baseline'y + fixture (rekomendacja:
+  podmiana na 3 nowe wpisy w tej paczce) — po treści z panelu.

@@ -20,17 +20,28 @@ niczego nie wymyślamy.
 - Ujednolić format do WebP/wysokiej jakości JPEG; sensowne wymiary źródła:
   desktop ~1920 px szer., mobile ~800 px szer. (serving robi Cloudflare
   Image Transformations przez `imgAt()` — do R2 idzie JEDEN oryginał).
-- Do konwersji użyj `sharp` przez node (wzorzec w
-  `scripts/prepare-about-photo.mjs`).
+- Strona klienta jest publiczna? Zrzuty ekranów robi skrypt tym samym
+  viewportem co pętla wideo (spójny kadr, 1440 px / 780 px, WebP q80),
+  wynik: `~/hadrianm-site-videos/<slug>/screens/<slug>-<klucz>-{desktop,mobile}.webp`:
+
+  ```
+  pnpm capture:site -- --url https://<strona> --slug <slug> --device none --screens "gallery=/realizacje/,offer=/oferta/"
+  ```
+
+- Zdjęcia spoza skryptu (makiety, strona niepubliczna): konwersja `sharp`
+  przez node (wzorzec w `scripts/prepare-about-photo.mjs`).
 - Pliki wynikowe zostaw w katalogu wskazanym przez Mateusza (NIE w repo).
 
 ## 2b. Pętla wideo pierwszego ekranu (opcjonalnie, dla stron „na żywo")
 
 - `pnpm capture:site -- --url https://<strona-klienta> --slug <slug>` →
   `~/hadrianm-site-videos/<slug>/`: `<slug>-home-desktop.mp4`,
-  `<slug>-home-mobile.mp4` + postery `.webp` (klatka 0). Obejrzyj oba MP4
-  (QuickTime): płynny scroll, brak przyspieszonych animacji wejścia, pętla
-  bez szwu; stroisz `--depth-*`/`--hold*`, chowasz nakładki `--hide`.
+  `<slug>-home-mobile.mp4` + postery `.webp` (klatka 0). Najpierw sonda
+  na żywo (Playwright): nakładki do ukrycia (cookie/czat/toast → `--hide`),
+  Lenis (`--lenis`). Obejrzyj oba MP4 (QuickTime) albo kontakt-arkusz
+  (`ffmpeg … tile=6x2`): płynny scroll, slidery/ken-burns w tempie jak na
+  żywo (szybciej = krokowanie animacji nie działa), brak przyspieszonych
+  animacji wejścia, pętla bez szwu; stroisz `--depth-*`/`--hold*`.
 - Postery wgraj w polach „Zrzut DESKTOP / MOBILE" ekranu `home`, MP4 w
   polach „Wideo ekranu" (widget `file` → R2). Zasady: reguła
   `cms-realizacje.md` pkt 5; plan: `docs/analiza-realizacje-wideo.md`.
