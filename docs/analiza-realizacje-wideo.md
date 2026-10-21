@@ -8,8 +8,10 @@ powrotu do hadrianm-web; ten dokument to punkt **R1** tamtego backlogu).
 > decyzji: D9 (tryb `clock` zamiast CDP virtual time; w P5 druga korekta —
 > krokowanie animacji w P4 nie działało, patrz D9), D4 (pliki widgetu `file`
 > lądują płasko w `realizacje/`), nowa decyzja D14 (wypieczony crossfade
-> końcówki pętli). Paczka P5 (branch `feat/work-video-content`): Etap 5
-> nagrania gotowe 2026-10-21, Etapy 6–7 w toku.**
+> końcówki pętli). Paczka P5 (branch `feat/work-video-content`): Etapy 5–6
+> GOTOWE 2026-10-21 (nagrania zaakceptowane, 3 prawdziwe wpisy na main przez
+> panel, placeholdery i sieroty R2 usunięte, fixture + baseline'y `work-*`
+> podmienione), Etap 7 (telefony) po merge'u.**
 > Decyzje D1–D13 są zapadłe; „decyzje wykonawcze" §4 można korygować
 > w trakcie, ale każdą korektę dopisz tu (jak w innych planach). Etapy
 > wdrażane w osobnych sesjach, każdy = osobny PR (proces: §7 i
@@ -174,14 +176,27 @@ pliki ≤ 800 KB), odtwarzania na tap.
    maski w visual. Bez regeneracji baseline'ów (maska bez wideo w DOM nic nie
    zmienia). Commit: `test(work): cover video playback and mask videos`.
    Etapy 2–4 mogą iść w JEDNYM PR (`feat/work-video`).
-5. ◐ 2026-10-21 (6 MP4 ≤ 800 KB + 6 posterów w `~/hadrianm-site-videos/{delung,pracownia-eha,hetman}/`, kontakt-arkusze `contact-{desktop,mobile}.png` obok; sonda na żywo: żadna z trzech stron nie ma cookie-bannera/czatu/toastu ani Lenisa → bez `--hide`/`--lenis`; Hetman nagrany z `nowa.`; przy okazji zrzuty dodatkowych ekranów w `<slug>/screens/` tym samym viewportem; po drodze naprawiony skrypt — korekta 2 w D9; czeka na obejrzenie przez Mateusza) — **Nagrania** — 3 strony × (desktop + mobile) + 6 posterów; `--hide` per
+5. ✅ 2026-10-21 (6 MP4 ≤ 800 KB + 6 posterów w `~/hadrianm-site-videos/{delung,pracownia-eha,hetman}/`, kontakt-arkusze `contact-{desktop,mobile}.png` obok; sonda na żywo: żadna z trzech stron nie ma cookie-bannera/czatu/toastu ani Lenisa → bez `--hide`/`--lenis`; Hetman nagrany z `nowa.`; przy okazji zrzuty dodatkowych ekranów w `<slug>/screens/` tym samym viewportem; po drodze naprawiony skrypt — korekty 2 i 3 w D9; Mateusz obejrzał, zgłosił zacięcie delung desktop i brak wideo hero Hetmana, po poprawkach zaakceptował) — **Nagrania** — 3 strony × (desktop + mobile) + 6 posterów; `--hide` per
    strona; pliki czekają w katalogu poza repo (upload robi panel w Etapie 6
    przez pola `file`/`image`; `HEAD` na URL-ach: `CHECK_REMOTE_MEDIA=1` po
    wpisie). Nic do commitu poza ewentualnym strojeniem skryptu.
    **Warunek wstępny Etapu 6**: punkt **T1** backlogu ewolucji (zamrożony
    fixture treści dla `test:visual`) — inaczej każda zmiana wpisu w panelu
    rozjeżdża baseline'y siatki i kafelków (incydent szablonu 2026-08-05).
-6. **Treść** — Mateusz w panelu: 3 nowe wpisy (delung, pracownia-eha,
+6. ✅ 2026-10-21 (Mateusz w panelu: hetman `order` 10, pracownia-eha 20,
+   delung 30 — nowe wpisy jako NOWE pliki, nie edycja placeholderów w
+   miejscu (nazwa pliku = pole slug); `results`/`quote` puste (R2); Hetman
+   z `liveUrl` na `nowa.` — podmiana po domenie = punkt R5 backlogu;
+   sieroty: 18 plików aura/dab/sielski skasowane z R2 ręcznie, HEAD = 404;
+   po każdym zapisie `test:unit` + `CHECK_REMOTE_MEDIA=1` zielone; e2e na
+   realnej treści: testy wideo nakładki odpaliły się po raz pierwszy, 646
+   passed; fixture `tests/fixtures/realizacje` = kopie 3 nowych JSON-ów;
+   `test:visual`: 26 rozjazdów WYŁĄCZNIE w `section-work`, `work-modal`,
+   `work-sheet`, `work-index-*` — treść, maska wideo widoczna po raz
+   pierwszy, karty mobile wyższe o trzeci tag (stopka `/realizacje/`
+   przesunięta o 1 px na iphone-14/pixel-5), hero i pozostałe sekcje bez
+   zmian → baseline'y darwin + linux w tej paczce)
+   — **Treść** — Mateusz w panelu: 3 nowe wpisy (delung, pracownia-eha,
    hetman) z posterami przez pola Image + URL-e wideo; usunięcie aura/dab/
    sielski; sprzątanie sierot w R2 (ręcznie). Potem lokalnie: `git pull`,
    `pnpm test:unit`, `pnpm build && pnpm test:visual` → diffy work-modal/
@@ -190,7 +205,8 @@ pliki ≤ 800 KB), odtwarzania na tap.
    (intro, wyniki, cytaty, zakres PL/EN) — patrz §9 „results/quote
    opcjonalne" w backlogu ewolucji (punkt **R2**), który powinien wejść
    PRZED tym etapem, żeby nie wymyślać metryk.
-7. **Weryfikacja na urządzeniach** — iPhone (Safari, Low Power Mode: poster
+7. ☐ (po merge'u P5 na main — na produkcji, nie na preview)
+   **Weryfikacja na urządzeniach** — iPhone (Safari, Low Power Mode: poster
    zamiast wideo, bez czarnego prostokąta), Android Chrome (pętla bez
    zacięcia, zamknięcie sheeta zwalnia wideo), desktop Safari/Chrome/Firefox;
    `/release-check`. Lista „na co patrzeć" (P5):

@@ -382,7 +382,7 @@ i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 
 ### R — Realizacje (treść i prezentacja)
 
-**R1 · MUST · L · ◐ Etapy 1–4 na main 2026-10-21 (PR #53, P4); Etap 5 (nagrania) 2026-10-21 na branchu `feat/work-video-content` (P5), Etapy 6–7 w toku — wideo w podglądzie realizacji** — plan i etapy:
+**R1 · MUST · L · ◐ Etapy 1–4 na main 2026-10-21 (PR #53, P4); Etapy 5–6 (nagrania, treść, fixture + baseline'y) 2026-10-21 na branchu `feat/work-video-content` (P5); Etap 7 (telefony) po merge'u P5 — wideo w podglądzie realizacji** — plan i etapy:
 `docs/analiza-realizacje-wideo.md`.
 
 **R2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — `results` i `quote`/`author`/`role` opcjonalne**:
@@ -396,22 +396,32 @@ bloku. Baseline'y modal/sheet zmienią się dopiero z treścią (R3).
 Commit: `feat(cms): make results and testimonial optional`.
 **Wdrożyć PRZED Etapem 6 planu wideo.**
 
-**R3 · MUST · M (głównie praca Mateusza w panelu) · ☐ — podmiana treści**:
+**R3 · MUST · M (głównie praca Mateusza w panelu) · ✅ 2026-10-21 (P5; na main przez commity Sveltii, `order` 10/20/30, sieroty R2 skasowane ręcznie) — podmiana treści**:
 3 wpisy (delung, pracownia-eha, hetman) wg Etapu 6 planu wideo; usunięcie
 aura/dab/sielski; sprzątanie sierot w R2; `liveUrl` hetmana po
-przełączeniu domeny. Warunek wstępny: **T1** (fixture), inaczej baseline'y
+przełączeniu domeny → wydzielone jako **R5**. Warunek wstępny: **T1** (fixture), inaczej baseline'y
 siatki/kafelków rozjadą się z każdą korektą wpisu.
 
 **R4 · COULD · M · ☐ — hover-play wideo na kafelkach desktop** (po R1;
 budżet LHCI: `preload="none"`, start dopiero po `mouseenter`).
+
+**R5 · SHOULD · XS · ☐ — `liveUrl` Hetmana po przełączeniu domeny**: wpis
+`hetman` wskazuje tymczasowo `https://nowa.hetmannieruchomosci.com` (tam
+stoi nowa strona do czasu podmiany DNS). Gdy nowa strona wejdzie na
+`https://hetmannieruchomosci.com`: w panelu zmienić pole „Adres strony"
+(tylko link „Zobacz stronę na żywo" w nakładce — żaden test ani baseline nie
+zależy od tej wartości; nagrania i zrzuty zostają, bo treść strony ta sama).
+Sygnał: HEAD na `nowa.` zaczyna przekierowywać albo klient potwierdza
+przełączenie.
 
 ### T — Testy
 
 **T1 · MUST · M · ✅ wdrożone lokalnie 2026-10-21 (PR P3; baseline'y bez zmian — fixture = kopia wpisów) — zamrożony fixture treści dla `test:visual`**:
 `content.config.ts` czyta `base` z `process.env.REALIZACJE_DIR ??
 "./src/content/realizacje"`; `tests/fixtures/realizacje/*.json` (3 wpisy:
-kopie dzisiejszych aura/dab/sielski — po R3 podmienione na nowe, z 1 wpisem
-z `video`); skrypt `build:visual` = `REALIZACJE_DIR=./tests/fixtures/
+od P5 2026-10-21 kopie hetman/pracownia-eha/delung z dnia podmiany treści —
+hetman jako pierwszy wpis ma `video`, więc maska `.wd__video` jest widoczna
+na baseline'ach modal/sheet; pierwotnie kopie aura/dab/sielski); skrypt `build:visual` = `REALIZACJE_DIR=./tests/fixtures/
 realizacje astro build`; strażnik `assertVisualFixture(page)` w
 `tests/helpers/guards.ts` (liczba `template[data-work-detail]` = liczba
 plików fixture, inaczej czytelny błąd „build z treścią produkcyjną —
@@ -804,5 +814,13 @@ osobny PR po pomiarze na main.
   zacinały się) i shim Range dla `<video>` (podgląd Hetmana nie obsługuje
   Range → `seekable` [0,0], film stał na klatce 0); film rusza od klatki
   0 pętli, `ended` → zdjęcie jak na żywo. Korekta D4: Sveltia ma jeden prefix uploadu, MP4 lądują płasko
-  w `realizacje/`. Etapy 6–7 + baseline'y + fixture (rekomendacja:
-  podmiana na 3 nowe wpisy w tej paczce) — po treści z panelu.
+  w `realizacje/`. Mateusz zaakceptował nagrania. Etap 6 tego samego
+  dnia: 3 wpisy w panelu (nowe pliki, `order` 10/20/30, nie edycja
+  placeholderów w miejscu — nazwa pliku = pole slug), placeholdery
+  usunięte, 18 sierot z R2 skasowanych (HEAD 404), katalog treści nigdy
+  nie był pusty (Sveltia commitowała naprzemiennie). Na branchu: merge
+  main, fixture → kopie 3 nowych wpisów, e2e 646 passed (testy wideo
+  nakładki po raz pierwszy aktywne), `test:visual` 26 rozjazdów wyłącznie
+  `work-*` (treść + maska wideo + wyższe karty mobile → stopka
+  `/realizacje/` o 1 px) → baseline'y darwin+linux w P5. Nowy punkt R5
+  (`liveUrl` Hetmana po domenie). Etap 7 (telefony) po merge'u.
