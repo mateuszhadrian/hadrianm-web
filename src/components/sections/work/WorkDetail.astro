@@ -52,40 +52,51 @@ const p = project;
   </div>
 
   <div class="wdx__body">
-    <section class="wdx__block">
-      <p class="wdx__block-head">{resultsLabel}</p>
-      <div class="wdx__results">
-        {
-          p.results.map((r) => (
-            <div class="wdx__result">
-              <div class="wdx__metric">{r.metric}</div>
-              <div class="wdx__result-label">{r.label}</div>
-            </div>
-          ))
-        }
-      </div>
-    </section>
+    {
+      /* „Liczby i wyniki" oraz opinia są opcjonalne (R2): bez zmierzonych
+         metryk / bez cytatu blok nie istnieje w DOM — nie pokazujemy pustych
+         ram ani zmyślonych liczb. data-count steruje siatką 1–2 pozycji. */
+    }
+    {
+      p.results.length > 0 && (
+        <section class="wdx__block">
+          <p class="wdx__block-head">{resultsLabel}</p>
+          <div class="wdx__results" data-count={Math.min(p.results.length, 3)}>
+            {p.results.map((r) => (
+              <div class="wdx__result">
+                <div class="wdx__metric">{r.metric}</div>
+                <div class="wdx__result-label">{r.label}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
 
-    <figure class="wdx__quote">
-      <blockquote class="wdx__quote-text">{`„${p.quote}”`}</blockquote>
-      <figcaption class="wdx__author">
-        <span class="wdx__avatar" aria-hidden="true">
-          {
-            p.author
-              .split(/[\s&]+/)
-              .filter(Boolean)
-              .slice(0, 2)
-              .map((w) => w[0])
-              .join("")
-              .toUpperCase()
-          }
-        </span>
-        <span>
-          <span class="wdx__author-name">{p.author}</span>
-          <span class="wdx__author-role">{p.role}</span>
-        </span>
-      </figcaption>
-    </figure>
+    {
+      p.quote && (
+        <figure class="wdx__quote">
+          <blockquote class="wdx__quote-text">{`„${p.quote}”`}</blockquote>
+          {p.author && (
+            <figcaption class="wdx__author">
+              <span class="wdx__avatar" aria-hidden="true">
+                {p.author
+                  .split(/[\s&]+/)
+                  .filter(Boolean)
+                  .slice(0, 2)
+                  .map((w) => w[0])
+                  .join("")
+                  .toUpperCase()}
+              </span>
+              <span>
+                <span class="wdx__author-name">{p.author}</span>
+                {p.role && <span class="wdx__author-role">{p.role}</span>}
+              </span>
+            </figcaption>
+          )}
+        </figure>
+      )
+    }
 
     <section class="wdx__block">
       <p class="wdx__block-head">{scopeLabel}</p>
@@ -256,6 +267,14 @@ const p = project;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 12px;
+  }
+  /* 1–2 wyniki: tyle kolumn, ile pozycji (bez pustego trzeciego slotu);
+     3 = dotychczasowa siatka, piksel w piksel. */
+  .wdx__results[data-count="1"] {
+    grid-template-columns: 1fr;
+  }
+  .wdx__results[data-count="2"] {
+    grid-template-columns: repeat(2, 1fr);
   }
   .wdx__result {
     background: rgba(245, 240, 236, 0.04);

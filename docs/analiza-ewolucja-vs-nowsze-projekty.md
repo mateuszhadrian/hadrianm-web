@@ -280,6 +280,7 @@ przeniesienia w wersji „utrzymaniowej"):
 | 12 | Allowlista axe z 2 wpisami | `tests/e2e/a11y.spec.ts:24-26` | **A1** |
 | 13 | Trzy progi breakpointów (861 / 760–761 / 768) bez strażnika | `*-config.ts`, `sections.md` | **T4** |
 | 14 | `git add -A` w ściądze vs reguła rodziny | `daily-workflow.md:21` | **D1** |
+| 15 | Link „polityka prywatności" w nocie RODO formularza różni się od tekstu tylko kolorem (1,37:1 vs wymagane 3:1, bez podkreślenia) — axe `link-in-text-block`, wykrywany NIEdeterministycznie (CI PR #51 czerwone raz na trzy biegi; lokalnie zielone) | `Contact.astro` `.kt a { text-decoration: none }` + `.kt-note { color: var(--faint) }`; raport axe z run 39567243908 | **A2** |
 
 Nie potwierdzone (odrzucone z raportów): CTA-placeholdery `href="#"`
 (brak w `src/` — zmigrowane na `/kontakt/`), `scrollbar-gutter` (jest).
@@ -294,7 +295,7 @@ Każdy punkt ma samowystarczalną instrukcję — prompt do osobnej sesji
 
 ### H — Hero (błędy zgłoszone)
 
-**H1 · MUST · M · ✅ wdrożone lokalnie 2026-10-20 (branch `fix/hero-safari-stroke`, PR P2) — Safari: obrys tekstu „z drewna" / „i stali" rysowany NAD wypełnieniem**
+**H1 · MUST · M · ✅ na main 2026-10-21 (PR #51; Safari na Macu potwierdzony przez Mateusza) — Safari: obrys tekstu „z drewna" / „i stali" rysowany NAD wypełnieniem**
 
 *Korekta diagnozy po eksperymencie (2026-10-20, 14 wariantów CSS
 wstrzykiwanych w obu silnikach, miara = średnia różnica pikseli crop-a;
@@ -369,7 +370,7 @@ WebKit desktop — dlatego ten błąd przeżył 3 miesiące.
 
 Commit: `fix(hero): emulate paint-order for device-site headings (WebKit draws stroke over fill)`
 
-**H2 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-20 (PR P2) — reguła w `hero-device-scene.md`**: „`paint-order`
+**H2 · SHOULD · S · ✅ na main 2026-10-21 (PR #51) — reguła w `hero-device-scene.md`**: „`paint-order`
 nie działa dla tekstu HTML w WebKicie; obrysy tekstu zawsze przez
 pseudoelement pod spodem (wzorzec H1)". Razem z H1.
 
@@ -384,7 +385,7 @@ i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 **R1 · MUST · L · ☐ — wideo w podglądzie realizacji** — plan i etapy:
 `docs/analiza-realizacje-wideo.md`.
 
-**R2 · MUST · S · ☐ — `results` i `quote`/`author`/`role` opcjonalne**:
+**R2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — `results` i `quote`/`author`/`role` opcjonalne**:
 Zod `.optional()` / `.default([])`, `config.yml` `required: false`,
 `WorkDetail.astro` renderuje blok „Liczby i wyniki" tylko gdy `results.length
 > 0` i cytat tylko gdy `quote` (siatka `.wdx__results` na 1–2 pozycje:
@@ -406,7 +407,7 @@ budżet LHCI: `preload="none"`, start dopiero po `mouseenter`).
 
 ### T — Testy
 
-**T1 · MUST · M · ☐ — zamrożony fixture treści dla `test:visual`**:
+**T1 · MUST · M · ✅ wdrożone lokalnie 2026-10-21 (PR P3; baseline'y bez zmian — fixture = kopia wpisów) — zamrożony fixture treści dla `test:visual`**:
 `content.config.ts` czyta `base` z `process.env.REALIZACJE_DIR ??
 "./src/content/realizacje"`; `tests/fixtures/realizacje/*.json` (3 wpisy:
 kopie dzisiejszych aura/dab/sielski — po R3 podmienione na nowe, z 1 wpisem
@@ -423,7 +424,7 @@ fixture, e2e = treść produkcyjna". Wzorzec: `delung-web/tests/helpers/
 guards.ts` `assertVisualFixture`, `delung-web/package.json` `build:visual`.
 Commit: `test(visual): freeze realizacje fixture for screenshot builds`.
 
-**T2 · MUST · S · ☐ — testy odporne na pustą kolekcję**:
+**T2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — testy odporne na pustą kolekcję**:
 `tests/helpers/realizacje.ts` z `realizacjeFiles(): string[]`
 (`existsSync` → `[]`) i `realizacjeDir`; zamiana w 4 plikach (§5 pkt 7);
 w e2e `test.skip(ENTRY_COUNT === 0, "brak wpisów w panelu")`; jeden
@@ -444,7 +445,7 @@ dla 861 (about, audience, services, faq, contact), 761 (work modal↔sheet),
 podejmujemy (ruszyłaby baseline'y wszystkich sekcji) — tylko strażnik.
 Commit: `test(e2e): guard section breakpoints at minPx-1/minPx`.
 
-**T5 · SHOULD · M · ✅ kod wdrożony lokalnie 2026-10-20 (PR P2); baseline'y czekają na Mateusza — profil WebKit desktop w sweepie hero**:
+**T5 · SHOULD · M · ✅ na main 2026-10-21 (PR #51, oba komplety baseline'ów) — profil WebKit desktop w sweepie hero**:
 `playwright.config.ts` projekt `webkit-1440` (viewport 1440×900, **DPR 1**
 jak chromium-1920 — rozmiar PNG w repo; geometria obrysów nie zależy od
 DPR) z `testMatch` zawężającym do `tests/visual/hero.spec.ts` (bez tego
@@ -479,7 +480,7 @@ testu; „czerwone w izolacji = z definicji nie flake".
 
 ### C — CI / deploy
 
-**C1 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — strażnik prod-smoke na komplet assetów**: w
+**C1 · MUST · S · ✅ na main 2026-10-21 (PR #50) — strażnik prod-smoke na komplet assetów**: w
 `prod-smoke.yml` zamiast `head -1`: `assets=$(grep -oE "/_astro/[^\"' ,)]+"
 dist/index.html | sort -u)`; pętla czeka, aż (a) HTML produkcji zawiera
 KAŻDY asset (`[[ "$html" == *"$a"* ]]` — bez `echo | grep`, Broken pipe) i
@@ -488,11 +489,11 @@ wtedy smoke. Wzorzec: `hetmannieruchomosci-web/.github/workflows/
 prod-smoke.yml:35-65`. Aktualizacja wpisu w pamięci/katalogu flake'ów po
 wdrożeniu. Commit: `ci(prod-smoke): wait for every hashed asset with 200`.
 
-**C2 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — `workflow_dispatch`** w `ci.yml` i `prod-smoke.yml`
+**C2 · MUST · S · ✅ na main 2026-10-21 (PR #50) — `workflow_dispatch`** w `ci.yml` i `prod-smoke.yml`
 (z komentarzem „awaria webhooków GH 2026-08-06"). Commit:
 `ci: allow manual dispatch of ci and prod-smoke`.
 
-**C3 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1; kontrola baseline'ów linux w CI tego PR-a) — `runs-on: ubuntu-24.04`** we wszystkich workflowach
+**C3 · MUST · S · ✅ na main 2026-10-21 (PR #50; kontrola baseline'ów linux w CI tego PR-a) — `runs-on: ubuntu-24.04`** we wszystkich workflowach
 (5 miejsc) + nota w `testing.md`: „bump obrazu runnera = świadoma decyzja,
 razem z kontrolą baseline'ów linux". Zrobić w JEDNYM PR z C1/C2 i sprawdzić,
 czy baseline'y linux nie drgnęły (jeśli `latest` już jest 24.04 — zero
@@ -523,7 +524,7 @@ tylko jeśli budżet czasu joba pozwala.
 
 ### M — CMS
 
-**M1 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — `config.yml`**: `site_domain: hadrianm.pl`,
+**M1 · MUST · S · ✅ na main 2026-10-21 (PR #50) — `config.yml`**: `site_domain: hadrianm.pl`,
 `slug: { encoding: ascii, clean_accents: true }` (opcja globalna, nie per
 kolekcja), `media_libraries.all.slugify_filename: true` (binarium 0.170.0
 zna wszystkie trzy opcje — sprawdzone grep-em bundle'a 2026-10-20).
@@ -534,7 +535,7 @@ Weryfikacja w panelu po merge'u: otwórz istniejący wpis, zapisz bez zmian
 nie), (b) „nigdy `git add .`", (c) nazwy plików slugifikowane.
 Commit: `chore(cms): ascii slugs, site_domain, slugified media names`.
 
-**M2 · SHOULD · S · ☐ — Sveltia 0.170.0 → 0.178.0** wg procedury
+**M2 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3; sonda binarium = wynik delung co do bajta: 1 972 914 → 2 480 375 B, `cloudflare_r2` 5→14 = tłumaczenia, reszta symboli bez zmian, brak CSP; przeklik panelu w trybie lokalnym — Mateusz) — Sveltia 0.170.0 → 0.178.0** wg procedury
 `delung-web/docs/analiza-remont-panelu.md` §12 (sonda binarium, test w
 trybie lokalnego repo, wycofanie = jedna linia w `public/admin/index.html`).
 Robić PRZED Etapem 2 planu wideo (widget `file`, `accept`).
@@ -610,6 +611,19 @@ z `KNOWN_VIOLATIONS`. Baseline'y `services.spec.ts` do regeneracji po
 akceptacji. Przy wartościach w docs znacznik „(kontrast)" = wynik pomiaru.
 Commit: `fix(services): aa contrast for intro accents, empty axe allowlist`.
 
+**A2 · MUST · S · ☐ — link w nocie RODO odróżnialny nie tylko kolorem**
+(§5 pkt 15): `Contact.astro` — `.kt-note a { text-decoration: underline;
+text-underline-offset: 0.15em; text-decoration-thickness: 1px; }` (bez
+zmiany koloru; kontrast tekst↔link 1,37:1 nie da się podnieść do 3:1 bez
+porzucenia akcentu, podkreślenie spełnia regułę wprost). Dotyczy
+`/kontakt/` i `/en/contact/` (ta sama nota) oraz noty na stronie głównej,
+jeśli korzysta z `.kt-note`. Test: `tests/e2e/a11y.spec.ts` bez nowego wpisu
+w allowliście (ratchet); baseline'y `contact-index.spec.ts` (element z notą)
+do regeneracji po pokazaniu diffu. Dlaczego osobno: axe zgłasza to losowo
+(zależnie od geometrii/nakładania przy skanie), więc czerwony `e2e` na
+niezwiązanym PR-ze = rerun tego samego SHA, a naprawa tutaj. Commit:
+`fix(contact): underline privacy link in form note (axe link-in-text-block)`.
+
 ### U — Nakładki
 
 **U1 · SHOULD · M · ☐ — swipe-down „Runda 4"**: port z hetman
@@ -624,7 +638,7 @@ pull-to-refresh nie odpala przy zamykaniu sheeta. Commit:
 
 ### D — Dokumentacja i proces
 
-**D1 · MUST · S · ✅ wdrożone lokalnie 2026-10-20 (PR P1) — `daily-workflow.md`**: `git add <ścieżki>` zamiast
+**D1 · MUST · S · ✅ na main 2026-10-21 (PR #50) — `daily-workflow.md`**: `git add <ścieżki>` zamiast
 `git add -A` (+ zdanie dlaczego: NFD/duplikaty z panelu, pliki
 przypadkowe), zasada „decyzje ze skutkami (progi LHCI, baseline'y,
 schemat) = osobne commity", krok `gh run list -L 6` w bramce startowej,
@@ -687,7 +701,7 @@ zmigrowane).
 | P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | work-modal/sheet/index + kafelki (raz) |
 | P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | prawdopodobnie brak (sprawdzić) |
 | P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | brak |
-| P8 „Jakość" | A1, T4, U1, F1 | każdy z własnym pomiarem | services (A1); reszta brak |
+| P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | contact-index (A2), services (A1); reszta brak |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
 | później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
 
@@ -745,3 +759,20 @@ osobny PR po pomiarze na main.
   ×1,15, allowlista axe 2 wpisy, fonty `index.css`, `config.yml` bez 3
   linii, `git add -A` w ściądze, `readdirSync` ×4, reprodukcja H1
   (WebKit vs Chromium). Nie ruszono żadnego pliku w `src/`.
+- **2026-10-21** — P1 (PR #50) i P2 (PR #51) na main; prod-smoke z nowym
+  strażnikiem zielony (2 m 40 s). P2: Safari na Macu potwierdzony wizualnie,
+  baseline'y `webkit-1440` darwin+linux. Incydent przy merge'u P2: po
+  `gh pr update-branch` czerwony `e2e` — axe `link-in-text-block` na
+  `/en/contact/` (pixel-5), ten sam SHA zielony po rerunie; usterka realna
+  i stara → nowy punkt **A2** (§5 pkt 15), nie allowlista. P3 wdrożone
+  lokalnie (branch `feat/p3-content-foundation`): T2 (`tests/helpers/
+  realizacje.ts`, 4 pliki bez gołego `readdirSync`, skipy e2e), T1
+  (`REALIZACJE_DIR`, `tests/fixtures/realizacje` = kopia aura/dab/sielski,
+  `build:visual`, `assertVisualFixture`/`useVisualFixtureGuard` w
+  `sections.spec.ts` i `work-index.spec.ts`, drugi build w `ci.yml` i
+  `update-visual-baselines.yml`, kontrakt `visual-fixture.test.ts`), R2
+  (Zod `.default([])`/`.optional()`, `required: false` w panelu, WorkDetail
+  bez pustych bloków, siatka 1–2 wyników przez `data-count`), M2 (0.178.0,
+  sonda binarium = delung). Sveltia najnowsza to dziś 0.250.1 — świadomie
+  wzięta wersja sprawdzona produkcyjnie w delung/eha; dalsze podbicie =
+  osobny punkt po potrzebie (M3).

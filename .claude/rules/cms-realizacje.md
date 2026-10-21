@@ -22,6 +22,11 @@ paths:
   pokazać się na macOS jako „ten sam plik dwa razy" — `git add .` zrobiłby
   z tego duplikat na Linuksie i wywrócił test unikalności slugów.
 
+- `tests/fixtures/realizacje/*.json` to NASZE pliki (zamrożony zestaw pod
+  testy wizualne, `pnpm build:visual`) — Sveltia ich nie dotyka, hook-guard
+  ich nie blokuje, Prettier je formatuje. Nie synchronizuj ich z panelem
+  (reguła: `testing.md`).
+
 ## Schemat danych — zmiana w TRZECH miejscach naraz
 
 1. Zod: `src/content.schema.ts` — źródło prawdy (czysty Zod, współdzielony
@@ -31,6 +36,10 @@ paths:
    przez obiekty `{pl, en}`),
 3. konsumenci: `src/components/sections/work/*`.
    Niespójność = build przechodzi lokalnie, a wpis z panelu wybucha w CI.
+4. Pola OPCJONALNE (od 2026-10-21): `results` (domyślnie `[]`), `quote`,
+   `author`, `role` — WorkDetail pomija puste bloki; nie wymyślamy metryk ani
+   cytatów dla realizacji, które ich nie mają. Jeśli cytat jest, wypełnij OBA
+   języki (schemat wymaga pary `{pl, en}`).
 
 ## Media (Cloudflare R2)
 

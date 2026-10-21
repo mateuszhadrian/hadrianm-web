@@ -16,7 +16,8 @@ git status --short tests/visual/__screenshots__ | head -5
 - Testy wizualne biegają na PREVIEW (build produkcyjny) — webServer configu
   wstaje sam na porcie 4399 (nie 4321 — tam często wisi dev do testów na
   telefonie). Helper `assertPreview` wykrywa dev server i przerwie.
-- Przebieg: `pnpm build && pnpm test:visual` (sweep hero biega na projektach
+- Przebieg: `pnpm build:visual && pnpm test:visual` (build na zamrożonym
+  fixture realizacji — zwykły `pnpm build` zatrzyma strażnik; sweep hero biega na projektach
   chromium-1920 / webkit-iphone-14 / chromium-pixel-5; sekcje na wszystkich 6).
 - Tylko sweep hero:
   `pnpm exec playwright test tests/visual/hero.spec.ts`

@@ -27,14 +27,15 @@ na main.
 ## Komendy
 
 - `pnpm dev` — dev server (port 4321)
-- `pnpm build` / `pnpm preview`
+- `pnpm build` / `pnpm preview`; `pnpm build:visual` — build na ZAMROŻONEJ
+  treści realizacji (`tests/fixtures/realizacje`), wymagany pod `test:visual`
 - `pnpm typecheck` — `astro check` (typy; to już NIE jedyna weryfikacja —
   patrz testy niżej)
 - `pnpm lint` / `pnpm lint:fix` / `pnpm format` / `pnpm format:check`
 - Testy (kontrakt: `.claude/rules/testing.md`): `pnpm test` (wszystko);
   `pnpm test:unit` (Vitest, sekundy); `pnpm test:e2e` (Playwright:
   funkcjonalne+a11y+SEO); `pnpm test:visual` (screenshoty vs baseline;
-  wymaga `pnpm build`; webServer sam wstaje na 4399);
+  wymaga `pnpm build:visual`, NIE `pnpm build`; webServer sam wstaje na 4399);
   `pnpm test:visual:update` (nowe baseline'y — TYLKO za zgodą Mateusza);
   `pnpm test:smoke:prod` (smoke przeciw produkcji)
 - `pnpm capture:devices` — regeneracja MP4 ekranów urządzeń (użyj skilla
@@ -100,7 +101,7 @@ na main.
   numerowane etapy.
 - Media realizacji żyją w R2 (`https://media.hadrianm.pl`), NIE w repo.
   Upload wyłącznie przez pola Image w panelu Sveltia.
-- Weryfikacja wizualna: `pnpm build && pnpm test:visual` — hero (sweep
+- Weryfikacja wizualna: `pnpm build:visual && pnpm test:visual` — hero (sweep
   `tests/visual/hero.spec.ts`, 3 profile) + sekcje (6 profili); baseline'y
   per-platform (darwin lokalnie + linux z workflow
   `update-visual-baselines.yml`) commitowane w

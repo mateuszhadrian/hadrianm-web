@@ -128,7 +128,8 @@ deployu. Zielony = zmiana jest na produkcji i zweryfikowana.
 1. Obejrzyj diffy (`test-results/**/…-diff.png` albo
    `pnpm exec playwright show-report`) — upewnij się, że różnice to
    dokładnie to, co zamierzałeś.
-2. Lokalnie: `pnpm test:visual:update` → nowe baseline'y `*-darwin.png`
+2. Lokalnie: `pnpm build:visual && pnpm test:visual:update` → nowe
+   baseline'y `*-darwin.png` (build na zamrożonym fixture — jak w workflow)
    — ale **jeszcze ich nie commituj** (kolejność niżej ma znaczenie).
 3. Push samego kodu na gałąź PR-a. Checki mogą być chwilowo czerwone
    na starych `*-linux.png` — to oczekiwany stan przejściowy.

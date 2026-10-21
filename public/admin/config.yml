@@ -143,11 +143,15 @@ collections:
           - { label: "Zrzut DESKTOP", name: "desktop", widget: "image" }
           - { label: "Zrzut MOBILE", name: "mobile", widget: "image" }
 
-      # ── Liczby i wyniki ──
-      - label: "Wyniki (liczby)"
+      # ── Liczby i wyniki (OPCJONALNE — R2 backlogu ewolucji) ──
+      # Bez zmierzonych metryk zostaw listę pustą: blok „Liczby i wyniki"
+      # nie pokaże się w podglądzie (zero zmyślonych liczb). 1–2 pozycje =
+      # siatka na tyle kolumn, ile wyników.
+      - label: "Wyniki (liczby) — opcjonalne"
         name: "results"
         widget: "list"
         label_singular: "Wynik"
+        required: false
         fields:
           - label: "Metryka"
             name: "metric"
@@ -162,17 +166,27 @@ collections:
               - { label: "Polski", name: "pl", widget: "string" }
               - { label: "English", name: "en", widget: "string" }
 
-      # ── Opinia ──
-      - label: "Cytat / opinia"
+      # ── Opinia (OPCJONALNA — R2) ──
+      # Bez cytatu blok opinii nie istnieje w podglądzie. Jeśli cytat jest,
+      # wypełnij OBA języki (schemat wymaga pary pl/en); autor i rola też
+      # opcjonalne — bez autora cytat renderuje się bez podpisu.
+      - label: "Cytat / opinia — opcjonalny"
         name: "quote"
         widget: "object"
+        required: false
         fields:
           - { label: "Polski", name: "pl", widget: "text" }
           - { label: "English", name: "en", widget: "text" }
-      - { label: "Autor opinii", name: "author", widget: "string" }
-      - label: "Rola autora"
+      - {
+          label: "Autor opinii — opcjonalny",
+          name: "author",
+          widget: "string",
+          required: false,
+        }
+      - label: "Rola autora — opcjonalna"
         name: "role"
         widget: "object"
+        required: false
         fields:
           - { label: "Polski", name: "pl", widget: "string" }
           - { label: "English", name: "en", widget: "string" }

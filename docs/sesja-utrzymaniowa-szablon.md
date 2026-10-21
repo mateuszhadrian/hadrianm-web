@@ -46,7 +46,7 @@ z testów Mateusza: `[lista albo „brak"]`.
 
 - [ ] `/test` zielone lokalnie na warstwach wynikających z diffu
       (`.claude/rules/testing.md`); jeśli zmiana wyglądu —
-      `pnpm build && pnpm test:visual` i diffy POKAZANE przed regeneracją.
+      `pnpm build:visual && pnpm test:visual` i diffy POKAZANE przed regeneracją.
 - [ ] Baseline'y (jeśli ruszone): kolejność kod → workflow linux →
       commit darwin NA KOŃCU (`docs/daily-workflow.md`).
 - [ ] Progi LHCI nietknięte (zmiana progów = osobny PR po pomiarze na main,

@@ -4,20 +4,43 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
 
 ## Co zmieniasz → co uruchamiasz
 
-| Zmiana                                                        | Warstwa (komenda)                                                                              |
-| ------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `src/components/sections/hero/**`                             | `pnpm test:unit` + `pnpm build && pnpm test:visual` (skill `/verify-mobile`) + `pnpm test:e2e` |
-| `src/content.schema.ts` / `content.config.ts` / nowy wpis CMS | `pnpm test:unit` (kontrakt CMS)                                                                |
-| `src/i18n/**`, `src/lib/img.ts`, `platform.ts`                | `pnpm test:unit`                                                                               |
-| `src/scripts/**`, navbar, Work/overlaye                       | `pnpm test:e2e`                                                                                |
-| Każda zmiana wyglądu                                          | `pnpm build && pnpm test:visual`                                                               |
-| Przed release                                                 | pełne `pnpm test` + skill `/release-check`                                                     |
+| Zmiana                                                        | Warstwa (komenda)                                                                                     |
+| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `src/components/sections/hero/**`                             | `pnpm test:unit` + `pnpm build:visual && pnpm test:visual` (skill `/verify-mobile`) + `pnpm test:e2e` |
+| `src/content.schema.ts` / `content.config.ts` / nowy wpis CMS | `pnpm test:unit` (kontrakt CMS)                                                                       |
+| `src/i18n/**`, `src/lib/img.ts`, `platform.ts`                | `pnpm test:unit`                                                                                      |
+| `src/scripts/**`, navbar, Work/overlaye                       | `pnpm test:e2e`                                                                                       |
+| Każda zmiana wyglądu                                          | `pnpm build:visual && pnpm test:visual`                                                               |
+| Przed release                                                 | pełne `pnpm test` + skill `/release-check`                                                            |
 
 ## Zasady twarde
 
 - Testy wizualne WYŁĄCZNIE na preview (webServer configu, port 4399 — na
   4321 często wisi dev do telefonu). Helper `assertPreview` wykrywa
   `/@vite/client` i przerywa — nie obchodź go.
+- Testy wizualne stoją na **ZAMROŻONEJ treści realizacji**
+  (`tests/fixtures/realizacje` — 3 wpisy), bo baseline to obraz: realizacja
+  dodana/usunięta/przestawiona w panelu rozjeżdżałaby zrzuty kafli, karuzeli,
+  siatki `/realizacje/` i nakładek WorkDetail, czyli blokowała WSZYSTKIE PR-y
+  do czasu regeneracji baseline'ów. Stąd `pnpm build:visual` (przestawia
+  `REALIZACJE_DIR` w `content.config.ts`) zamiast `pnpm build`; strażnik
+  `assertVisualFixture` porównuje liczbę wpisów w `dist` z fixture i przerywa
+  z instrukcją zamiast pixel-diffa. **Fixture jest niezależny od treści
+  produkcyjnej** — nie synchronizuj go z `src/content/realizacje` i nie
+  „aktualizuj" po zmianach w panelu; zmieniaj wyłącznie wtedy, gdy zrzut ma
+  świadomie pokazać inny UKŁAD (wtedy = nowe baseline'y w tym samym PR;
+  kontrakt schematu: `tests/unit/visual-fixture.test.ts`). Testy e2e
+  funkcjonalne fixture'u NIE używają: czytają treść produkcyjną dynamicznie.
+- **Test NIE MOŻE wywracać się na treści z panelu.** Wpisy realizacji czyta
+  się wyłącznie przez `tests/helpers/realizacje.ts` (`realizacjeFiles()` /
+  `readRealizacja()`) — nigdy gołym `readdirSync` na `src/content/realizacje`:
+  git nie przechowuje pustych katalogów, więc usunięcie ostatniego wpisu
+  w panelu kasuje CAŁY katalog i goły odczyt wywraca moduł przy ładowaniu
+  (`ENOENT` w `quality`/`prod-smoke`, incydent delung 2026-08-06). Testy
+  zależne od liczby wpisów robią `test.skip(...)` z jawnym powodem — pusta
+  lista jest stanem dopuszczalnym (strona buduje się i deployuje). JEDYNYM
+  sygnałem o braku treści jest kontrakt „katalog zawiera co najmniej jeden
+  wpis" w `tests/unit/cms-contract.test.ts`, z komunikatem dla człowieka.
 - Baseline'y (`tests/visual/__screenshots__/`, commitowane): DWA komplety
   per plik — `*-darwin.png` (lokalnie: `pnpm test:visual:update`) i
   `*-linux.png` (ręcznie wyzwalany workflow `update-visual-baselines.yml`,

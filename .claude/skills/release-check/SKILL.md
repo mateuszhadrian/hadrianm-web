@@ -23,8 +23,10 @@ Uruchom po kolei; każdy błąd napraw albo zgłoś:
 
 - `pnpm test:e2e` — funkcjonalne + a11y + SEO/linki (webServer wstaje sam
   na 4399);
-- `pnpm test:visual` — pełna siatka wizualna vs baseline (FAIL = diff do
-  obejrzenia w `test-results/`; interpretacja: skill `/verify-mobile`);
+- `pnpm build:visual && pnpm test:visual` — pełna siatka wizualna vs
+  baseline na ZAMROŻONEJ treści realizacji (drugi build, jak w CI; FAIL =
+  diff do obejrzenia w `test-results/`; interpretacja: skill `/verify-mobile`);
+  po nim `pnpm build`, jeśli jeszcze coś ma biec na treści produkcyjnej;
 - `CHECK_REMOTE_MEDIA=1 pnpm exec vitest run tests/unit/media-r2.test.ts`
   — dostępność mediów R2 (HEAD);
 - `pnpm exec lhci autorun --config=lighthouserc.cjs` oraz

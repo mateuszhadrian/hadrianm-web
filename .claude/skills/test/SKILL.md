@@ -33,8 +33,12 @@ Zmiana przekrojowa albo wątpliwość → pełne `pnpm test`.
 ## 3. Wykonanie (kolejność od najszybszej warstwy)
 
 1. `pnpm test:unit` — zawsze, gdy cokolwiek z mapy się łapie (sekundy).
-2. Warstwy Playwright wymagają świeżego builda: `pnpm build` (RAZ),
-   potem odpowiednio `pnpm test:e2e` / `pnpm test:visual`.
+2. Warstwy Playwright wymagają świeżego builda — DWA RÓŻNE:
+   `pnpm build` (treść produkcyjna) → `pnpm test:e2e`;
+   `pnpm build:visual` (zamrożony fixture `tests/fixtures/realizacje`) →
+   `pnpm test:visual`. Kolejność jak w CI: e2e na zwykłym buildzie, potem
+   `build:visual` i visual. Strażnik `assertVisualFixture` przerwie visual
+   na niewłaściwym dist z instrukcją — to nie regresja.
    - Zawężenie do pliku/projektu, gdy zmiana jest punktowa:
      `pnpm exec playwright test tests/e2e/i18n.spec.ts`,
      `pnpm exec playwright test tests/visual/hero.spec.ts`.

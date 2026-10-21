@@ -16,7 +16,7 @@ msg=""
 case "$rel" in
   src/components/sections/hero/*)
     layer="hero"
-    msg="Zmiana w hero NIE jest zweryfikowana bez: pnpm test:unit (inwarianty hero-config) + pnpm build && pnpm test:visual (skill /verify-mobile)."
+    msg="Zmiana w hero NIE jest zweryfikowana bez: pnpm test:unit (inwarianty hero-config) + pnpm build:visual && pnpm test:visual (skill /verify-mobile)."
     ;;
   src/content.schema.ts | src/content.config.ts | public/admin/config.yml)
     layer="cms"
@@ -32,7 +32,7 @@ case "$rel" in
     ;;
   src/layouts/* | src/styles/*)
     layer="visual"
-    msg="Zmiana globalna (layout/tokeny): pnpm build && pnpm test:visual (siatka wizualna, 6 profili)."
+    msg="Zmiana globalna (layout/tokeny): pnpm build:visual && pnpm test:visual (siatka wizualna, 6 profili)."
     ;;
   *)
     exit 0

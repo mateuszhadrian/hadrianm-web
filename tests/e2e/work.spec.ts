@@ -1,17 +1,22 @@
 // Sekcja Realizacje: kafle z Content Collections + otwieranie/zamykanie
 // WorkDetail. Desktop (≥761px): galeria `.work__gallery` → Modal. Mobile
 // (≤760px): karuzela `.wk-car` → BottomSheet. Strona główna pokazuje max 3.
-import { readdirSync } from "node:fs";
-import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
+import { HOME_MAX, realizacjeFiles } from "../helpers/realizacje";
 import { gotoReady } from "../helpers/scroll";
 
-const ENTRY_COUNT = readdirSync(
-  fileURLToPath(new URL("../../src/content/realizacje", import.meta.url)),
-).filter((f) => f.endsWith(".json")).length;
+// Liczymy wpisy helperem (katalog może nie istnieć — pusta kolekcja to stan
+// dopuszczalny: strona buduje się bez wpisów; sygnał o braku treści daje
+// kontrakt CMS w tests/unit, nie te testy).
+const ENTRY_COUNT = realizacjeFiles().length;
 
 // Strona główna kapuje listę do 3 (pełna lista: /realizacje/, work-index.spec.ts).
-const HOME_COUNT = Math.min(3, ENTRY_COUNT);
+const HOME_COUNT = Math.min(HOME_MAX, ENTRY_COUNT);
+
+test.skip(
+  ENTRY_COUNT === 0,
+  "brak wpisów realizacji w panelu — nie ma czego klikać",
+);
 
 /** Dociera do kafla i uspokaja scroll (guard „strona w ruchu" blokuje otwarcie
  *  nakładki przez ~110 ms po scrollu). Selektor zależny od layoutu. */
