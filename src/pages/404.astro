@@ -1,0 +1,244 @@
+---
+// Strona 404 (backlog ewolucji S1, 2026-10-22). Astro buduje ją jako JEDEN
+// plik `dist/404.html`, a Cloudflare Pages serwuje go pod KAŻDYM
+// nieistniejącym adresem z prawdziwym statusem 404. Bez tego pliku Pages
+// traktował serwis jak SPA i odpowiadał na śmieciowy adres stroną główną
+// z kodem 200 (soft-404 potwierdzony na produkcji 2026-10-20 — Google
+// indeksowałby takie adresy jako kopie „/").
+//
+// Dwujęzyczność BEZ SSR: plik jest jeden, więc język dobiera się po
+// ścieżce w przeglądarce (`/en/…` → EN, reszta → PL). Oba warianty
+// (razem z chrome'em: Navbar + BackButton + Footer) są wyrenderowane
+// statycznie w blokach `[data-nf-lang]`; pierwszy inline skrypt ustawia
+// `html[lang]` PRZED blokami (CSS chowa niewłaściwy blok już przy pierwszym
+// malowaniu), drugi — po blokach — USUWA nieaktywny blok z DOM, zanim
+// odpalą się moduły komponentów (skrypt Navbara wiąże się z pierwszym
+// `[data-nav]` i menu mobilne ma stałe `id`; dwa egzemplarze w DOM = martwy
+// burger w jednym z nich). Bez JS: PL widoczny, EN schowany CSS-em.
+//
+// Dobre praktyki stron 404 (wzorzec: pracownia-eha-web):
+// — `noindex`, bez canonicala i og:url (prop BaseLayout), bez hreflang
+//   (brak odpowiednika w drugim języku), poza sitemapą (@astrojs/sitemap
+//   pomija 404 sam);
+// — pełny chrome podstron (Navbar bez brandu, BackButton, Footer, ambient
+//   red), żeby z błędnego adresu dało się wyjść w dowolne miejsce serwisu;
+// — jeden komunikat i jedna akcja (strona główna właściwego języka);
+// — linki ABSOLUTNE od „/" — ta sama treść odpowiada pod adresem dowolnej
+//   głębokości (/a/b/c/), ścieżki względne by się rozjechały;
+// — scroll natywny (jak /kontakt/, /realizacje/) — brak scen scrollowych.
+// Teksty: src/i18n/ui.ts (`notFound.*`). Testy: tests/e2e/not-found.spec.ts
+// + smoke `@prod-smoke` (status 404 na produkcji).
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import Navbar from "@/components/navbar/Navbar.astro";
+import AmbientBackground from "@/components/backgrounds/AmbientBackground.astro";
+import BackButton from "@/components/ui/BackButton.astro";
+import SolidButton from "@/components/ui/SolidButton.astro";
+import Footer from "@/components/Footer.astro";
+import { useTranslations, type Lang } from "@/i18n/utils";
+import { HOME_PATH } from "@/lib/routes";
+
+const LANGS: Lang[] = ["pl", "en"];
+const tPl = useTranslations("pl");
+---
+
+<BaseLayout
+  title={tPl("notFound.title")}
+  lang="pl"
+  smoothScroll={false}
+  noindex
+>
+  {
+    /* Język po ścieżce — PRZED blokami treści (patrz nagłówek pliku).
+       Komentarze poza blokiem is:inline: nie są wysyłane w HTML. */
+  }
+  <script is:inline>
+    if (/^\/en(\/|$)/.test(location.pathname))
+      document.documentElement.lang = "en";
+  </script>
+
+  <div class="nf-bg" aria-hidden="true">
+    <AmbientBackground variant="red" />
+  </div>
+
+  {
+    LANGS.map((lang) => {
+      const t = useTranslations(lang);
+      return (
+        <div data-nf-lang={lang} data-title={t("notFound.title")}>
+          <Navbar lang={lang} showBrand={false} />
+
+          {/* „Wstecz" w miejscu brandu — wzorzec podstron (ContactPage). */}
+          <div class="nf-back">
+            <BackButton href={HOME_PATH[lang]} label={t("notFound.back")} />
+          </div>
+
+          <main class="nf">
+            <div class="nf-in">
+              <p class="nf-mono">{t("notFound.eyebrow")}</p>
+              <h1>
+                {t("notFound.headLead")}
+                <span class="sf">{t("notFound.headAccent")}</span>
+              </h1>
+              <p class="nf-txt">{t("notFound.text")}</p>
+              <SolidButton
+                href={HOME_PATH[lang]}
+                label={t("notFound.cta")}
+                class="nf-cta"
+              />
+            </div>
+          </main>
+
+          <div class="nf-foot">
+            <Footer lang={lang} />
+          </div>
+        </div>
+      );
+    })
+  }
+
+  {
+    /* Po blokach: usuń nieaktywny wariant z DOM (zanim odpalą się moduły
+       Navbara/Footera) i ustaw tytuł dokumentu w języku aktywnego bloku. */
+  }
+  <script is:inline>
+    (() => {
+      const lang = document.documentElement.lang === "en" ? "en" : "pl";
+      let active = null;
+      document.querySelectorAll("[data-nf-lang]").forEach((el) => {
+        if (el.getAttribute("data-nf-lang") === lang) active = el;
+        else el.remove();
+      });
+      const title = active && active.getAttribute("data-title");
+      if (title) document.title = title;
+    })();
+  </script>
+</BaseLayout>
+
+<style>
+  :global(body) {
+    background: #000;
+  }
+
+  /* Bez JS / przed skryptem: PL widoczny, EN schowany; po ustawieniu
+     html[lang="en"] (pierwszy inline skrypt) odwrotnie. Drugi skrypt i tak
+     usuwa nieaktywny blok z DOM. `html` jest poza komponentem → :global. */
+  [data-nf-lang="en"] {
+    display: none;
+  }
+  :global(html[lang="en"]) [data-nf-lang="pl"] {
+    display: none;
+  }
+  :global(html[lang="en"]) [data-nf-lang="en"] {
+    display: block;
+  }
+
+  /* Jedna statyczna warstwa ambientu (jak /kontakt/) — wspólna dla obu
+     bloków językowych. */
+  .nf-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: #000;
+    pointer-events: none;
+  }
+
+  /* Pozycja = slot brandu w navbarze (te same clampy paddingu paska);
+     korekta -12px centruje 46-px kółko na linii treści paska. z-index nad
+     nav-root (50): przycisk widoczny ZAWSZE. Wrapper nie łapie klików
+     (przejmuje je .bkb). */
+  .nf-back {
+    position: fixed;
+    z-index: 60;
+    pointer-events: none;
+    left: clamp(1.25rem, 4vw, 2.75rem);
+    top: calc(clamp(1.25rem, 3.2vh, 1.9rem) - 12px);
+  }
+
+  /* Komunikat zajmuje pierwszy ekran (pod fixed paskiem), stopka pod
+     zgięciem — 404 nie „wisi" nad stopką na wysokim ekranie. */
+  .nf {
+    position: relative;
+    z-index: 1;
+    min-height: 100svh;
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    padding: 120px 24px 72px;
+    color: var(--ink);
+    font-family: var(--font-body), sans-serif;
+    text-align: center;
+  }
+
+  .nf-in {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .nf-mono {
+    margin: 0;
+    font-family: var(--font-mono), monospace;
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  h1 {
+    margin: 14px 0 0;
+    font-family: var(--font-display), sans-serif;
+    font-weight: 800;
+    font-size: clamp(38px, 6.4vw, 72px);
+    line-height: 1.04;
+    letter-spacing: -0.03em;
+    text-wrap: balance;
+  }
+  h1 .sf {
+    display: block;
+    font-family: var(--font-serif), serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 1.06em;
+    letter-spacing: 0;
+    background: var(--accent-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    /* zapas na wysunięcia kursywy — clip tekstu obcinałby ogonki */
+    padding: 0 0.08em 0.06em;
+  }
+
+  .nf-txt {
+    margin: 26px 0 0;
+    max-width: 44ch;
+    font-size: 17px;
+    line-height: 1.65;
+    color: var(--muted);
+    text-wrap: balance;
+  }
+
+  /* SolidButton: na mobile pełna szerokość (wariant MB), od 861px auto —
+     margines z góry tu, bo komponent jest bezmarginesowy. */
+  :global(.nf-cta) {
+    margin-top: 34px;
+  }
+
+  /* Stopka: kontener współdzielonego Footer.astro (szerokość jak na
+     pozostałych podstronach). */
+  .nf-foot {
+    position: relative;
+    z-index: 1;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 0 5vw 42px;
+  }
+
+  @media (max-width: 640px) {
+    .nf {
+      padding-top: 104px;
+    }
+  }
+</style>

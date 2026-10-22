@@ -37,6 +37,11 @@ interface Props {
    *  scrub+snap na Lenisie, mobile natywnie — same reveale once:true;
    *  docs/analiza-podstrona-dla-kogo.md §VII). */
   smoothScroll?: boolean | "desktop";
+  /** Strona spoza indeksu (404): `<meta name="robots" content="noindex">`
+   *  i BEZ canonicala ani og:url — Cloudflare Pages serwuje `dist/404.html`
+   *  pod KAŻDYM nieistniejącym adresem, więc canonical wskazywałby adres,
+   *  który nie istnieje (backlog ewolucji S1). */
+  noindex?: boolean;
 }
 const {
   title = "hadrianm.pl — pracownia stron i aplikacji",
@@ -44,6 +49,7 @@ const {
   description,
   alternates,
   smoothScroll = true,
+  noindex = false,
 } = Astro.props;
 
 const smoothScrollAttr =
@@ -156,13 +162,19 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="hadrianm.pl" />
     <meta property="og:title" content={title} />
-    <meta property="og:url" content={canonicalUrl} />
+    {!noindex && <meta property="og:url" content={canonicalUrl} />}
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="1200" />
     <meta property="og:locale" content={lang === "pl" ? "pl_PL" : "en_US"} />
     <meta name="twitter:card" content="summary" />
-    <link rel="canonical" href={canonicalUrl} />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <link rel="canonical" href={canonicalUrl} />
+      )
+    }
   </head>
   <body data-smooth-scroll={smoothScrollAttr}>
     <LoadingOverlay />
