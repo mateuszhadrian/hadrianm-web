@@ -32,6 +32,14 @@ for (const { path, locale } of [
       "content",
       `${SITE}/og-image.png`,
     );
+    // Kadr 1.91:1 (S2): zgodność wymiarów z plikiem pilnuje
+    // tests/unit/og-image.test.ts — tu tylko deklaracja w meta.
+    await expect(
+      head.locator('meta[property="og:image:width"]'),
+    ).toHaveAttribute("content", "1200");
+    await expect(
+      head.locator('meta[property="og:image:height"]'),
+    ).toHaveAttribute("content", "630");
     await expect(head.locator('meta[property="og:locale"]')).toHaveAttribute(
       "content",
       locale,
@@ -40,9 +48,11 @@ for (const { path, locale } of [
       .locator('meta[property="og:title"]')
       .getAttribute("content");
     expect(ogTitle).toBe(await page.title());
+    // summary_large_image = pełny kadr; `summary` redukował podgląd do
+    // kwadracika obok tytułu (S2).
     await expect(head.locator('meta[name="twitter:card"]')).toHaveAttribute(
       "content",
-      "summary",
+      "summary_large_image",
     );
   });
 }
