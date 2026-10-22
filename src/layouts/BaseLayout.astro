@@ -73,6 +73,12 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    {
+      /* theme-color = kolor tła strony (body #000 na każdej trasie, warstwa
+         ambientu też startuje od #000) — pasek przeglądarki na Androidzie
+         / Safari iOS zlewa się z tłem zamiast zostawiać jasny pas przy
+         zwijaniu paska URL. Ta sama wartość w public/site.webmanifest. */
+    }
     <meta name="theme-color" content="#000000" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
@@ -110,14 +116,19 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
         </>
       )
     }
+    {
+      /* Mikro-fade przy nawigacji WEWNĘTRZNEJ (docs/visual-corrections-part1.md
+         pkt 8): pierwsza wizyta w karcie (brak flagi sessionStorage) renderuje
+         się bez żadnej bramki — zero wpływu na LCP (LHCI i Playwright wchodzą
+         na zimno). Przy kolejnych nawigacjach treść wjeżdża krótkim fade'em
+         zdejmowanym przez document.fonts.ready LUB twardy timeout 300 ms —
+         strona nigdy nie zostaje ukryta (błąd JS/brak JS = brak klasy
+         nav-fade, czyli domyślnie widoczna). Komentarz CELOWO poza blokiem
+         is:inline — Astro wysyła treść takiego bloku 1:1 na każdej trasie
+         (backlog ewolucji S3). Catch bez komentarza z tego samego powodu:
+         sessionStorage niedostępny (tryb prywatny) = bez fade'u. */
+    }
     <script is:inline>
-      // Mikro-fade przy nawigacji WEWNĘTRZNEJ (docs/visual-corrections-part1.md
-      // pkt 8): pierwsza wizyta w karcie (brak flagi sessionStorage) renderuje
-      // się bez żadnej bramki — zero wpływu na LCP (LHCI i Playwright wchodzą
-      // na zimno). Przy kolejnych nawigacjach treść wjeżdża krótkim fade'em
-      // zdejmowanym przez document.fonts.ready LUB twardy timeout 300 ms —
-      // strona nigdy nie zostaje ukryta (błąd JS/brak JS = brak klasy
-      // nav-fade, czyli domyślnie widoczna).
       (() => {
         try {
           const KEY = "hm:visited";
@@ -131,7 +142,7 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
           if (document.fonts && document.fonts.ready)
             document.fonts.ready.then(reveal, reveal);
         } catch {
-          /* sessionStorage niedostępny (tryb prywatny) — bez fade */
+          /* bez fade */
         }
       })();
     </script>

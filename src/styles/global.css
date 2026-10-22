@@ -22,6 +22,13 @@
    przy każdym otwarciu nakładki. Na macOS paski są nakładkowe → bez efektu. ── */
 html {
   scrollbar-gutter: stable;
+  /* ── Bez automatycznego powiększania tekstu przez przeglądarki mobilne
+     (iOS Safari w poziomie, WebView Androida przy zmianie wysokości
+     viewportu — zwijany pasek URL przeliczał skalę tekstu i „skakał"
+     układ). Tailwind preflight ustawia 100% — nadpisujemy po imporcie.
+     Zoom pinch użytkownika działa dalej (to inny mechanizm). ── */
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
 }
 
 /* ── Design system: tokeny brandowe (jedno źródło prawdy).
@@ -29,6 +36,12 @@ html {
    element naprawdę odbiega od marki. Wymiary/chassis sceny urządzeń są
    celowo lokalne w DeviceScene.astro (specyficzne dla komponentu). ── */
 :root {
+  /* Strona jest wyłącznie ciemna — deklaracja mówi przeglądarce, że
+     kontrolki natywne (pola formularza, scrollbary, select, date picker)
+     mają rysować się w wariancie ciemnym i wyłącza auto-darkening
+     Chrome Android (który „poprawiałby" już ciemne elementy). */
+  color-scheme: dark;
+
   /* foreground / brand */
   --ink: #f5f0ec;
   --muted: rgba(245, 240, 236, 0.58);
