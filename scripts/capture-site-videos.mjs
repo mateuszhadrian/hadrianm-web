@@ -14,7 +14,10 @@
 //        --hold 2.5 --down 4 --hold-bottom 0.8 --up 3 --hold-end 0.7 (s) |
 //        --hide "<sel>,<sel>" | --lenis | --out <dir> (domyślnie ~/hadrianm-site-videos) |
 //        --sample (co 3. klatka — szybki podgląd tempa) | --recapture | --keep-frames |
-//        --no-loop-blend (bez wtapiania końcówki w klatkę 0)
+//        --no-loop-blend (bez wtapiania końcówki w klatkę 0) |
+//        --screens "gallery=/realizacje/,offer=/oferta/" (statyczne zrzuty
+//        podstron jako pozostałe ekrany wpisu → <out>/<slug>/screens/;
+//        z `--device none` = same zrzuty, bez nagrania)
 //
 // Determinizm czasu (D9): tryb `clock` używa fałszywego zegara Playwrighta
 // (page.clock: Date, timery, rAF, performance.now) + ręcznego krokowania
@@ -70,6 +73,21 @@ const LENIS = flag("lenis");
 // w pliku — runtime nic nie robi, D7/§10 planu). Tylko tryb clock (klatki).
 const LOOP_BLEND = !flag("no-loop-blend");
 const SAMPLE = flag("sample");
+// Pozostałe ekrany wpisu (galeria, oferta…) = zwykłe zrzuty podstron tym
+// samym viewportem co nagranie (spójny kadr z posterem `home`), po
+// odczekaniu na animacje wejścia w czasie rzeczywistym; "klucz=ścieżka".
+const SCREENS = opt("screens", "")
+  .split(",")
+  .map((s) => s.trim())
+  .filter(Boolean)
+  .map((s) => {
+    const [key, p] = s.split("=");
+    if (!key || !p) {
+      console.error(`--screens: oczekiwano "klucz=/sciezka/", dostałem "${s}"`);
+      process.exit(2);
+    }
+    return { key, path: p };
+  });
 const OUT_DIR = path.resolve(
   opt("out", path.join(os.homedir(), "hadrianm-site-videos")),
   SLUG,
@@ -78,7 +96,9 @@ const TMP = path.join(os.tmpdir(), "hadrianm-site-frames", SLUG);
 
 const FPS = 30;
 const TARGET_KB = 800; // twardy limit wagi / plik (jak w hero)
-const R2_BASE = "https://media.hadrianm.pl/realizacje/video";
+// Panel wgrywa pliki widgetu `file` do prefixu `realizacje/` z config.yml
+// (płasko, bez podfolderu `video/` — korekta D4 planu, 2026-10-21).
+const R2_BASE = "https://media.hadrianm.pl/realizacje";
 
 // ── Choreografia (D7): hold → zjazd → hold → powrót → hold; cięcie do klatki 0 ──
 const T = {
@@ -102,7 +122,7 @@ function depthAt(t) {
   return 0;
 }
 
-const DEVICES = [
+const ALL_DEVICES = [
   {
     key: "desktop",
     viewport: { width: 1440, height: 900 }, // aspekt 1.6 = ekran laptopa w WorkDeviceDuo
@@ -121,7 +141,9 @@ const DEVICES = [
     posterWidth: 780,
     isMobile: true,
   },
-].filter((d) => DEVICES_ARG.includes(d.key));
+];
+// `--device none --screens …` = same zrzuty podstron, bez nagrania.
+const DEVICES = ALL_DEVICES.filter((d) => DEVICES_ARG.includes(d.key));
 
 const ff = (args) => execFileSync("ffmpeg", ["-y", ...args], { stdio: "pipe" });
 const sizeKB = (f) => statSync(f).size / 1024;
@@ -151,15 +173,139 @@ function scrollExpr(y) {
     : `window.scrollTo(0, ${y})`;
 }
 
-// ── Tryb A: fałszywy zegar + krokowanie animacji CSS ──────────────────────
-/** Przesuwa animacje CSS/WAAPI do czasu strony `now` (ms od startu nagrania):
- *  każda nowo napotkana animacja startuje w chwili, w której ją zobaczyliśmy. */
-const STEP_ANIMATIONS = `(now) => {
+// ── Tryb A: fałszywy zegar + krokowanie animacji CSS i <video> ────────────
+/** Przesuwa animacje CSS/WAAPI i elementy <video> z czasu strony `prev` do
+ *  `now` (ms od startu nagrania). MUSI być prawdziwą funkcją, nie stringiem:
+ *  `page.evaluate("(now) => {…}")` traktuje string jako WYRAŻENIE (wynik =
+ *  niewywołana funkcja, zwrot `undefined`) — tak było w P4 i animacje CSS
+ *  biegły w czasie rzeczywistym (slider hero delung ~13× za szybko).
+ *  - Animacja napotkana po raz pierwszy liczy się od POPRZEDNIEGO kroku
+ *    (`prev`), nie od zera: przejścia CSS wyzwalane przez JS co klatkę
+ *    (pasek kart „Co tworzymy?" delung: `transition: transform` na wartość
+ *    ze scrolla) powstają po kroku i są zastępowane przed następnym — ze
+ *    startem od 0 element stałby w miejscu przez cały zjazd. Start od
+ *    `prev` = dokładnie 1 klatka postępu, jak w prawdziwej przeglądarce
+ *    przy 30 fps. Ujemny `animation-delay` jest w `currentTime` już
+ *    uwzględniony — nie dodawać go drugi raz.
+ *  - <video> grające samo (hero Hetmana) jest pauzowane i przewijane
+ *    (`currentTime`) przyrostowo: Δt × `playbackRate` (strona klienta może
+ *    zwalniać film pod koniec); po dojściu do końca dostaje zdarzenie
+ *    `ended` (seek go nie wyzwala), żeby JS klienta zrobił to, co na żywo
+ *    (Hetman: podmiana na zdjęcie). W fazie „po wejściu" (`holdVideo`)
+ *    film stoi na klatce 0 — pętla zaczyna się tam, gdzie wejście
+ *    odwiedzającego: animacje wejścia usiadły, film rusza od początku.
+ *    Czekanie na `seeked` robi strona Node (fałszywy zegar nie odpala
+ *    `setTimeout` w stronie). Wymaga serwera z obsługą Range — patrz
+ *    `installMediaRangeShim`. */
+function stepPageTime({ now, prev, holdVideo }) {
   for (const a of document.getAnimations()) {
-    if (a.__capStart === undefined) { a.__capStart = now; try { a.pause(); } catch {} }
-    try { a.currentTime = Math.max(0, now - a.__capStart); } catch {}
+    if (a.__capStart === undefined) {
+      a.__capStart = prev;
+      try {
+        a.pause();
+      } catch {
+        /* animacja już zakończona — nic do pauzy */
+      }
+    }
+    try {
+      a.currentTime = Math.max(0, now - a.__capStart);
+    } catch {
+      /* animacja usunięta między wywołaniami */
+    }
   }
-}`;
+  let seeking = 0;
+  for (const v of document.querySelectorAll("video")) {
+    if (v.__capT === undefined) {
+      if (v.paused) continue; // jeszcze nie gra — nie ruszamy
+      v.__capT = 0;
+    }
+    if (!v.paused) v.pause();
+    const dur = Number.isFinite(v.duration) ? v.duration : Infinity;
+    const rate = v.playbackRate || 1;
+    if (!holdVideo)
+      v.__capT = Math.min(v.__capT + ((now - prev) / 1000) * rate, dur);
+    if (Math.abs(v.currentTime - v.__capT) > 0.001) {
+      v.currentTime = v.__capT;
+      seeking++;
+    }
+    if (v.__capT >= dur && !v.__capEnded) {
+      v.__capEnded = true;
+      v.dispatchEvent(new Event("ended"));
+    }
+  }
+  return seeking;
+}
+/** Chromium pozwala przewijać <video> tylko wtedy, gdy serwer obsługuje
+ *  Range (206 + `Accept-Ranges`); bez tego `seekable` = [0, 0] i każdy seek
+ *  ląduje na 0 (tak serwuje np. podgląd `nowa.hetmannieruchomosci.com`).
+ *  Pliki wideo przechodzą więc przez `route`: pobrane raz w całości,
+ *  odpowiedzi na Range składane lokalnie. */
+const mediaCache = new Map();
+async function installMediaRangeShim(ctx) {
+  await ctx.route(/\.(mp4|webm|mov|m4v)(\?.*)?$/i, async (route) => {
+    const req = route.request();
+    const url = req.url();
+    let entry = mediaCache.get(url);
+    if (!entry) {
+      const headers = { ...req.headers() };
+      delete headers.range;
+      const res = await route.fetch({ headers });
+      entry = {
+        body: await res.body(),
+        type: res.headers()["content-type"] || "video/mp4",
+      };
+      mediaCache.set(url, entry);
+    }
+    const total = entry.body.length;
+    const m = /bytes=(\d*)-(\d*)/.exec(req.headers().range || "");
+    if (!m) {
+      return route.fulfill({
+        status: 200,
+        headers: {
+          "content-type": entry.type,
+          "accept-ranges": "bytes",
+          "content-length": String(total),
+        },
+        body: entry.body,
+      });
+    }
+    const start = m[1] ? Number(m[1]) : Math.max(0, total - Number(m[2]));
+    const end = m[1] && m[2] ? Math.min(Number(m[2]), total - 1) : total - 1;
+    return route.fulfill({
+      status: 206,
+      headers: {
+        "content-type": entry.type,
+        "accept-ranges": "bytes",
+        "content-range": `bytes ${start}-${end}/${total}`,
+        "content-length": String(end - start + 1),
+      },
+      body: entry.body.subarray(start, end + 1),
+    });
+  });
+}
+/** Krok czasu strony + (gdy trzeba) oczekiwanie na dosunięcie <video>;
+ *  limit po stronie Node, bo timery strony są fałszywe. */
+async function stepPage(page, now, prev, holdVideo = false) {
+  const seeking = await page.evaluate(stepPageTime, { now, prev, holdVideo });
+  if (!seeking) return;
+  await Promise.race([
+    page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          const pending = [...document.querySelectorAll("video")].filter(
+            (v) => v.seeking,
+          );
+          if (!pending.length) return resolve();
+          let left = pending.length;
+          for (const v of pending)
+            v.addEventListener("seeked", () => --left || resolve(), {
+              once: true,
+            });
+        }),
+    ),
+    new Promise((r) => setTimeout(r, 1000)),
+  ]);
+}
 
 async function captureFramesClock(browser, dev) {
   const dir = path.join(TMP, dev.key);
@@ -185,6 +331,7 @@ async function captureFramesClock(browser, dev) {
       ? "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1"
       : undefined,
   });
+  await installMediaRangeShim(ctx);
   const page = await ctx.newPage();
   // Zegar fałszywy OD STARTU: animacje wejścia biegną tylko wtedy, gdy my
   // przesuwamy czas — stan „po wejściu" jest powtarzalny co do klatki.
@@ -197,10 +344,12 @@ async function captureFramesClock(browser, dev) {
 
   // „Po wejściu": 2.5 s czasu strony w krokach, żeby animacje wejścia usiadły.
   let now = 0;
+  let prev = 0;
   for (let i = 0; i < 10; i++) {
     await page.clock.runFor(250);
     now += 250;
-    await page.evaluate(STEP_ANIMATIONS, now);
+    await stepPage(page, now, prev, true);
+    prev = now;
     await page.waitForTimeout(20);
   }
   const t0 = now;
@@ -214,7 +363,8 @@ async function captureFramesClock(browser, dev) {
     await page.waitForTimeout(25);
     await page.clock.runFor(Math.round((1000 * step) / FPS));
     now = t0 + Math.round(t * 1000);
-    await page.evaluate(STEP_ANIMATIONS, now);
+    await stepPage(page, now, prev);
+    prev = now;
     await page.screenshot({
       path: path.join(dir, String(i).padStart(4, "0") + ".png"),
       animations: "allow",
@@ -411,6 +561,49 @@ function poster(dev, pngFrame0) {
   return out;
 }
 
+// ── Pozostałe ekrany: statyczne zrzuty podstron (--screens) ───────────────
+async function captureScreens(browser) {
+  if (!SCREENS.length) return [];
+  const dir = path.join(OUT_DIR, "screens");
+  mkdirSync(dir, { recursive: true });
+  const origin = new globalThis.URL(URL).origin;
+  const out = [];
+  for (const { key, path: p } of SCREENS) {
+    console.log(`\n■ ekran ${key} ← ${origin}${p}`);
+    for (const dev of ALL_DEVICES) {
+      const ctx = await browser.newContext({
+        viewport: dev.viewport,
+        deviceScaleFactor: dev.dpr,
+        isMobile: dev.isMobile,
+        hasTouch: dev.isMobile,
+        reducedMotion: "no-preference",
+      });
+      const page = await ctx.newPage();
+      await page.goto(origin + p, {
+        waitUntil: "networkidle",
+        timeout: 90_000,
+      });
+      if (HIDE.length) {
+        await page.addStyleTag({
+          content: `${HIDE.join(",")}{display:none!important;visibility:hidden!important}`,
+        });
+      }
+      await page.evaluate(() => document.fonts?.ready);
+      await page.waitForTimeout(3500); // animacje wejścia w czasie rzeczywistym
+      const png = await page.screenshot({
+        animations: "disabled",
+        caret: "hide",
+      });
+      const file = path.join(dir, `${SLUG}-${key}-${dev.key}.webp`);
+      await sharp(png).webp({ quality: 80 }).toFile(file);
+      console.log(`  ${path.basename(file)}: ${sizeKB(file).toFixed(0)} KB`);
+      out.push(file);
+      await ctx.close();
+    }
+  }
+  return out;
+}
+
 // ── Main ──────────────────────────────────────────────────────────────────
 async function main() {
   console.log(
@@ -467,6 +660,7 @@ async function main() {
       if (!flag("keep-frames")) rmSync(dir, { recursive: true, force: true });
     }
   }
+  const shots = await captureScreens(browser);
   await browser.close();
 
   console.log("\n✓ Pliki:");
@@ -498,6 +692,12 @@ async function main() {
   console.log(
     "Postery (.webp) wgraj przez pola „Zrzut DESKTOP / MOBILE” tego samego ekranu.",
   );
+  if (shots.length) {
+    console.log(
+      "\nZrzuty pozostałych ekranów (pola „Zrzut” kolejnych ekranów wpisu):",
+    );
+    for (const f of shots) console.log(`  ${f}`);
+  }
   if (SAMPLE)
     console.log(
       "\n(--sample: 10 fps — tylko podgląd tempa; do publikacji nagraj bez --sample)",

@@ -49,7 +49,11 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   wyglądu = kod + OBA komplety w jednym PR.
 - ZAKAZ regenerowania baseline'u w celu „naprawienia" czerwonego testu bez
   pokazania diffu Mateuszowi i jego zgody (blokada Edit/Write także
-  w settings.json). Nigdy nie „naprawiaj" rozjazdu darwin↔linux globalnym
+  w settings.json). Po `pnpm test:visual:update` ZAWSZE `git status`:
+  `--update-snapshots` nadpisuje też pliki różniące się W GRANICACH progu
+  (np. flaky klatki hero desktop 05–09, które w `test:visual` przechodzą) —
+  pliki spoza zaakceptowanego zestawu cofnij `git checkout --` (P5,
+  2026-10-22). Nigdy nie „naprawiaj" rozjazdu darwin↔linux globalnym
   progiem — od tego jest `{platform}` w ścieżce snapshotów.
 - Flaky klatki hero desktop 05–09 (ekran telefonu + ambient, ~0.5–2%):
   mają podwyższony próg w hero.spec.ts; FAIL tam najpierw porównaj
