@@ -4,14 +4,15 @@ Data: 2026-10-20 · Branch: `docs/evolution-analysis-and-video-plan`
 Kontekst nadrzędny: `docs/analiza-ewolucja-vs-nowsze-projekty.md` (backlog
 powrotu do hadrianm-web; ten dokument to punkt **R1** tamtego backlogu).
 
-> **Status (2026-10-21): Etapy 1–4 NA MAIN (PR #53, paczka P4). Korekty
-> decyzji: D9 (tryb `clock` zamiast CDP virtual time; w P5 druga korekta —
-> krokowanie animacji w P4 nie działało, patrz D9), D4 (pliki widgetu `file`
-> lądują płasko w `realizacje/`), nowa decyzja D14 (wypieczony crossfade
-> końcówki pętli). Paczka P5 (branch `feat/work-video-content`): Etapy 5–6
-> GOTOWE 2026-10-21 (nagrania zaakceptowane, 3 prawdziwe wpisy na main przez
-> panel, placeholdery i sieroty R2 usunięte, fixture + baseline'y `work-*`
-> podmienione), Etap 7 (telefony) po merge'u.**
+> **Status (2026-10-22): PLAN ZAMKNIĘTY — Etapy 1–7 NA MAIN (PR #53 paczka
+> P4: Etapy 1–4; PR #54 paczka P5: Etapy 5–6, zmergowany 2026-10-22; Etap 7
+> wykonany na produkcji 2026-10-22 — bez usterek). Korekty decyzji: D9 (tryb
+> `clock` zamiast CDP virtual time; w P5 druga korekta — krokowanie animacji
+> w P4 nie działało, patrz D9), D4 (pliki widgetu `file` lądują płasko
+> w `realizacje/`), nowa decyzja D14 (wypieczony crossfade końcówki pętli).
+> Decyzje i gotchas tego dokumentu NADAL OBOWIĄZUJĄ (to nie dokument
+> historyczny) — przy zmianach w `WorkDeviceDuo`/`work-video.ts`/skrypcie
+> `capture:site` czytaj §3–§4 i §10.**
 > Decyzje D1–D13 są zapadłe; „decyzje wykonawcze" §4 można korygować
 > w trakcie, ale każdą korektę dopisz tu (jak w innych planach). Etapy
 > wdrażane w osobnych sesjach, każdy = osobny PR (proces: §7 i
@@ -205,7 +206,10 @@ pliki ≤ 800 KB), odtwarzania na tap.
    (intro, wyniki, cytaty, zakres PL/EN) — patrz §9 „results/quote
    opcjonalne" w backlogu ewolucji (punkt **R2**), który powinien wejść
    PRZED tym etapem, żeby nie wymyślać metryk.
-7. ☐ (po merge'u P5 na main — na produkcji, nie na preview)
+7. ✅ 2026-10-22 (Mateusz na produkcji po merge'u #54: iPhone Safari zwykły
+   + Low Power Mode, Android Chrome, desktop Safari/Chrome/Firefox — komplet
+   z listy niżej, ZERO usterek; `docs/poprawki-po-implementacji.md` nie
+   powstał, bo nie było czego wpisać)
    **Weryfikacja na urządzeniach** — iPhone (Safari, Low Power Mode: poster
    zamiast wideo, bez czarnego prostokąta), Android Chrome (pętla bez
    zacięcia, zamknięcie sheeta zwalnia wideo), desktop Safari/Chrome/Firefox;

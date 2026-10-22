@@ -37,6 +37,11 @@ interface Props {
    *  scrub+snap na Lenisie, mobile natywnie — same reveale once:true;
    *  docs/analiza-podstrona-dla-kogo.md §VII). */
   smoothScroll?: boolean | "desktop";
+  /** Strona spoza indeksu (404): `<meta name="robots" content="noindex">`
+   *  i BEZ canonicala ani og:url — Cloudflare Pages serwuje `dist/404.html`
+   *  pod KAŻDYM nieistniejącym adresem, więc canonical wskazywałby adres,
+   *  który nie istnieje (backlog ewolucji S1). */
+  noindex?: boolean;
 }
 const {
   title = "hadrianm.pl — pracownia stron i aplikacji",
@@ -44,6 +49,7 @@ const {
   description,
   alternates,
   smoothScroll = true,
+  noindex = false,
 } = Astro.props;
 
 const smoothScrollAttr =
@@ -52,8 +58,11 @@ const smoothScrollAttr =
 // Adresy absolutne dla podglądów linków (iMessage/Messenger/X wymagają pełnego URL).
 // W dev bazą jest bieżący host (np. adres w sieci lokalnej), by podgląd linka
 // działał przed deployem; w buildzie produkcyjnym — domena z astro.config.
-// og-image.png = kwadratowy screenshot pierwszego widoku strony (wersja EN);
-// bez og:image iMessage sam wybierał duży obrazek ze strony (tło drewelomet).
+// og-image.png = kadr 1200×630 (proporcja 1.91:1 — FB/X/LinkedIn/iMessage
+// pokazują go w całości; kwadrat 1200×1200 z pierwszej wersji strony był
+// kadrowany po bokach). Wymiary niżej MUSZĄ zgadzać się z plikiem —
+// kontrakt: tests/unit/og-image.test.ts. Bez og:image iMessage sam wybierał
+// duży obrazek ze strony (tło drewelomet).
 const urlBase = import.meta.env.DEV ? Astro.url : Astro.site;
 const canonicalUrl = new URL(Astro.url.pathname, urlBase);
 const ogImageUrl = new URL("/og-image.png", urlBase);
@@ -67,6 +76,12 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <link rel="icon" href="/favicon.ico" sizes="32x32" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
+    {
+      /* theme-color = kolor tła strony (body #000 na każdej trasie, warstwa
+         ambientu też startuje od #000) — pasek przeglądarki na Androidzie
+         / Safari iOS zlewa się z tłem zamiast zostawiać jasny pas przy
+         zwijaniu paska URL. Ta sama wartość w public/site.webmanifest. */
+    }
     <meta name="theme-color" content="#000000" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="generator" content={Astro.generator} />
@@ -104,14 +119,19 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
         </>
       )
     }
+    {
+      /* Mikro-fade przy nawigacji WEWNĘTRZNEJ (docs/visual-corrections-part1.md
+         pkt 8): pierwsza wizyta w karcie (brak flagi sessionStorage) renderuje
+         się bez żadnej bramki — zero wpływu na LCP (LHCI i Playwright wchodzą
+         na zimno). Przy kolejnych nawigacjach treść wjeżdża krótkim fade'em
+         zdejmowanym przez document.fonts.ready LUB twardy timeout 300 ms —
+         strona nigdy nie zostaje ukryta (błąd JS/brak JS = brak klasy
+         nav-fade, czyli domyślnie widoczna). Komentarz CELOWO poza blokiem
+         is:inline — Astro wysyła treść takiego bloku 1:1 na każdej trasie
+         (backlog ewolucji S3). Catch bez komentarza z tego samego powodu:
+         sessionStorage niedostępny (tryb prywatny) = bez fade'u. */
+    }
     <script is:inline>
-      // Mikro-fade przy nawigacji WEWNĘTRZNEJ (docs/visual-corrections-part1.md
-      // pkt 8): pierwsza wizyta w karcie (brak flagi sessionStorage) renderuje
-      // się bez żadnej bramki — zero wpływu na LCP (LHCI i Playwright wchodzą
-      // na zimno). Przy kolejnych nawigacjach treść wjeżdża krótkim fade'em
-      // zdejmowanym przez document.fonts.ready LUB twardy timeout 300 ms —
-      // strona nigdy nie zostaje ukryta (błąd JS/brak JS = brak klasy
-      // nav-fade, czyli domyślnie widoczna).
       (() => {
         try {
           const KEY = "hm:visited";
@@ -125,7 +145,7 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
           if (document.fonts && document.fonts.ready)
             document.fonts.ready.then(reveal, reveal);
         } catch {
-          /* sessionStorage niedostępny (tryb prywatny) — bez fade */
+          /* bez fade */
         }
       })();
     </script>
@@ -156,13 +176,19 @@ const ogImageUrl = new URL("/og-image.png", urlBase);
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="hadrianm.pl" />
     <meta property="og:title" content={title} />
-    <meta property="og:url" content={canonicalUrl} />
+    {!noindex && <meta property="og:url" content={canonicalUrl} />}
     <meta property="og:image" content={ogImageUrl} />
     <meta property="og:image:width" content="1200" />
-    <meta property="og:image:height" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content={lang === "pl" ? "pl_PL" : "en_US"} />
-    <meta name="twitter:card" content="summary" />
-    <link rel="canonical" href={canonicalUrl} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {
+      noindex ? (
+        <meta name="robots" content="noindex" />
+      ) : (
+        <link rel="canonical" href={canonicalUrl} />
+      )
+    }
   </head>
   <body data-smooth-scroll={smoothScrollAttr}>
     <LoadingOverlay />

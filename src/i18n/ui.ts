@@ -301,6 +301,14 @@ export const ui = {
     "contactPage.description":
       "Skontaktuj się ze mną — formularz kontaktowy, e-mail i telefon. Napisz, czego potrzebujesz: nowa strona, wsparcie aplikacji czy pytania o proces współpracy. Odpowiadam do 24 h w dni robocze.",
     "contactPage.back": "Wróć",
+    "notFound.title": "Nie znaleziono strony — hadrianm.pl",
+    "notFound.eyebrow": "BŁĄD 404 — NIE ZNALEZIONO STRONY",
+    "notFound.headLead": "tej strony",
+    "notFound.headAccent": "tu nie ma",
+    "notFound.text":
+      "Adres mógł się zmienić albo wkradła się literówka — wszystko, czego szukasz, znajdziesz na stronie głównej.",
+    "notFound.cta": "Wróć na stronę główną",
+    "notFound.back": "Wróć",
   },
   en: {
     "meta.title": "hadrianm.pl — web & app studio",
@@ -596,5 +604,13 @@ export const ui = {
     "contactPage.description":
       "Get in touch — contact form, e-mail and phone. Tell me what you need: a new website, app support or questions about the process. I reply within 24 h on business days.",
     "contactPage.back": "Back",
+    "notFound.title": "Page not found — hadrianm.pl",
+    "notFound.eyebrow": "ERROR 404 — PAGE NOT FOUND",
+    "notFound.headLead": "this page",
+    "notFound.headAccent": "isn't here",
+    "notFound.text":
+      "The address may have changed or there's a typo — everything you're looking for is on the home page.",
+    "notFound.cta": "Back to the home page",
+    "notFound.back": "Back",
   },
 } as const;

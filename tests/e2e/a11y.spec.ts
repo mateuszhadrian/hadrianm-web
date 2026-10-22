@@ -48,6 +48,9 @@ for (const path of [
   "/en/contact/",
   "/faq/",
   "/en/faq/",
+  // strona 404 (jeden plik dist/404.html; język po ścieżce — oba warianty)
+  "/nie-ma-takiej-strony/",
+  "/en/no-such-page/",
 ]) {
   test(`axe: brak naruszeń critical/serious na ${path}`, async ({
     page,

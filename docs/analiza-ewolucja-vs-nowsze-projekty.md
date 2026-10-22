@@ -382,8 +382,8 @@ i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 
 ### R — Realizacje (treść i prezentacja)
 
-**R1 · MUST · L · ◐ Etapy 1–4 na main 2026-10-21 (PR #53, P4); Etapy 5–6 (nagrania, treść, fixture + baseline'y) 2026-10-21 na branchu `feat/work-video-content` (P5); Etap 7 (telefony) po merge'u P5 — wideo w podglądzie realizacji** — plan i etapy:
-`docs/analiza-realizacje-wideo.md`.
+**R1 · MUST · L · ✅ 2026-10-22 (PR #53 P4: Etapy 1–4; PR #54 P5: Etapy 5–6; Etap 7 — telefony i desktopy na produkcji 2026-10-22, bez usterek) — wideo w podglądzie realizacji** — plan i etapy:
+`docs/analiza-realizacje-wideo.md` (zamknięty; decyzje D1–D14 obowiązują).
 
 **R2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — `results` i `quote`/`author`/`role` opcjonalne**:
 Zod `.optional()` / `.default([])`, `config.yml` `required: false`,
@@ -578,7 +578,7 @@ w `.claude/rules/sections.md`.
 
 ### S — SEO i chrome
 
-**S1 · MUST · S · ☐ — prawdziwa strona 404**: `src/pages/404.astro`
+**S1 · MUST · S · ✅ 2026-10-22 (P6, branch `feat/chrome-seo`; korekta wykonawcza: oba warianty językowe RAZEM z chrome'em w blokach `[data-nf-lang]`, skrypt po blokach USUWA nieaktywny — Navbar wiąże się z pierwszym `[data-nav]`, menu mobilne ma stałe `id`; `astro preview` serwuje `404.html` ze statusem 404, więc test statusu działa też lokalnie; 404 dopisana do skanu axe; reguła `.claude/rules/layout-seo.md`) — prawdziwa strona 404**: `src/pages/404.astro`
 (jeden plik → `dist/404.html`; Cloudflare Pages używa go dla każdego
 nieistniejącego adresu), dwujęzyczna (PL domyślnie, EN gdy
 `location.pathname.startsWith("/en/")` — inline skrypt przełączający
@@ -591,13 +591,13 @@ treść); smoke `@prod-smoke`: `GET /nie-ma-takiej-strony/` → status 404
 `tests/e2e/not-found.spec.ts`, `smoke.spec.ts` „status 404".
 Commit: `feat(seo): real 404 page with noindex`.
 
-**S2 · SHOULD · S · ☐ — og:image 1200×630 + `summary_large_image`**:
+**S2 · SHOULD · S · ◐ kod gotowy 2026-10-22 (P6: meta `og:image:width/height` 1200×630, `twitter:card summary_large_image`, `seo.spec.ts`, nowy kontrakt `tests/unit/og-image.test.ts` — wymiary z IHDR PNG MUSZĄ zgadzać się z meta, waga ≤ 300 KB); CZEKA NA OBRAZ od Mateusza (w drzewie roboczym placeholder 1200×630 — NIE commitować; stary kwadrat w repo obleje nowy test, więc commit S2 = plik + meta + test razem) — og:image 1200×630 + `summary_large_image`**:
 nowy obraz (eksport z designu albo generator `make-icons.mjs` — S4),
 kompresja (lekcja delung: 649 → 98 KB), `BaseLayout` meta
 `og:image:width/height`, `twitter:card`. Sprawdzić podgląd w debugerze
 LinkedIn/X. Commit: `feat(seo): landscape og image and large summary card`.
 
-**S3 · SHOULD · S · ☐ — chrome mobile**: `global.css` `:root {
+**S3 · SHOULD · S · ✅ 2026-10-22 (P6; `color-scheme: dark` w `:root`, `text-size-adjust: none` na `html` — nadpisuje preflight Tailwinda `100%`; komentarze wyniesione z `is:inline` = −575 B/trasę; `theme-color` `#000000` BYŁ już równy tłu `body` (każda trasa `background: #000`, manifest też `#000000`) — hipoteza z §4.7 nie potwierdziła się u nas, wartość bez zmian + komentarz; `test:visual` 114 passed, baseline'y nietknięte) — chrome mobile**: `global.css` `:root {
 color-scheme: dark; }`, `html { -webkit-text-size-adjust: none;
 text-size-adjust: none; }`, `<meta name="theme-color">` = kolor tła
 strony; komentarze z bloków `is:inline` w `BaseLayout` przenieść nad
@@ -708,8 +708,8 @@ zmigrowane).
 | P2 „Hero Safari" | H1, H2, T5 | jeden obszar, jedna weryfikacja na fizycznym Macu/iPhonie | hero (klatki z napisem) + nowy profil webkit |
 | P3 „Fundament treści" | T2, T1, R2, M2 | warunek dla wideo i podmiany treści | brak (fixture = kopia dzisiejszych wpisów) |
 | P4 „Wideo — mechanizm" | R1 Etapy 1–4 | wg planu wideo | brak (bez wpisu z wideo) |
-| P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | work-modal/sheet/index + kafelki (raz) |
-| P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | prawdopodobnie brak (sprawdzić) |
+| P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | ✅ PR #54 (2026-10-22): zregenerowane 26 darwin + 25 linux, WYŁĄCZNIE `work-*` (section-work, work-modal, work-sheet, work-index-*) |
+| P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ◐ 2026-10-22 (`feat/chrome-seo`): S1 ✅, S3 ✅, S2 czeka na obraz; baseline'y: patrz §10 (sesja 4) |
 | P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | brak |
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | contact-index (A2), services (A1); reszta brak |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
@@ -824,3 +824,26 @@ osobny PR po pomiarze na main.
   `work-*` (treść + maska wideo + wyższe karty mobile → stopka
   `/realizacje/` o 1 px) → baseline'y darwin+linux w P5. Nowy punkt R5
   (`liveUrl` Hetmana po domenie). Etap 7 (telefony) po merge'u.
+- **2026-10-22 (sesja 4)** — P5 na main (PR #54, prod-smoke zielony).
+  Baseline'y P5 faktycznie zregenerowane: 26 darwin + 25 linux, wyłącznie
+  `work-*`. Gotcha z `.claude/rules/testing.md` potwierdzona w praktyce: po
+  `pnpm test:visual:update` ZAWSZE `git status` i cofnięcie plików spoza
+  zaakceptowanego zestawu — `--update-snapshots` nadpisuje także klatki
+  różniące się W GRANICACH progu (flaky hero desktop 05–09), które
+  w `test:visual` przechodzą. Etap 7 planu wideo wykonany przez Mateusza
+  na produkcji (iPhone Safari + Low Power Mode, Android Chrome, desktop
+  Safari/Chrome/Firefox): zero usterek → R1 ✅, plan wideo zamknięty
+  (status „WDROŻONY", decyzje nadal obowiązują), `poprawki-po-implementacji.md`
+  nie utworzony (brak usterek). P5 zmieniła bajty strony głównej (treść
+  `#work`: 3 nowe wpisy, posterzy) — pomiar median LHCI pod L1 odkłada się
+  do P7, bo `lhci-measure.yml` (C4) jeszcze nie istnieje. Start P6 „Chrome
+  i SEO" (branch `feat/chrome-seo`): S1 → S3 → S2.
+  Wynik sesji: S1 ✅ (404 + testy + reguła `.claude/rules/layout-seo.md`),
+  S3 ✅ (`test:visual` bez zmian baseline'ów; jedyny FAIL = `webkit-1440`
+  klatki 05–09 ratio 0.01–0.02 WYŁĄCZNIE na ekranie telefonu = znana loteria
+  klatki wideo, kontrolny rerun tego samego buildu zielony; uwaga: profil
+  `webkit-1440` z T5 NIE ma podwyższonego progu `FLAKY_DESKTOP_FRAMES`
+  z `hero.spec.ts` — ma go tylko `chromium-1920`; kandydat do osobnego
+  punktu T, nie naprawiany „przy okazji"), S2 ◐ kod + kontrakt
+  `og-image.test.ts` gotowe, czeka na obraz 1200×630.
+
