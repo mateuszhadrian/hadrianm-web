@@ -6,7 +6,32 @@
 # o merge'u. Procedura: docs/testing-tools-and-environemnts-setup-analysis.md
 # §III.4c (awaryjna alternatywa: Docker mcr.microsoft.com/playwright).
 name: Update linux visual baselines
-on: workflow_dispatch
+on:
+  workflow_dispatch:
+    inputs:
+      spec:
+        description: >-
+          Zakres do przeliczenia. Domyślnie CAŁY tests/visual; podaj
+          konkretny spec (np. tests/visual/hero.spec.ts), gdy zmiana
+          dotyczy jednego obszaru — wtedy „znani intruzi" bot-commitów
+          (flaky klatki w granicach progu) nie mają jak wejść. NIE
+          zostawiaj pustego: bez ścieżki Playwright wziąłby też tests/e2e
+          (testDir to ./tests).
+        required: false
+        default: tests/visual
+      mode:
+        description: >-
+          changed = przepisuje TYLKO zrzuty powyżej progu (domyślne
+          Playwrighta). all = przepisuje też te, które przechodzą, ale mają
+          nieaktualną treść pod per-shot maxDiffPixelRatio. „all" używaj
+          ŚWIADOMIE i zawsze razem ze zawężonym `spec` — każdy przepisany
+          PNG zostaje w historii gita na zawsze.
+        required: false
+        default: changed
+        type: choice
+        options:
+          - changed
+          - all
 permissions:
   contents: write
 jobs:
@@ -40,7 +65,13 @@ jobs:
       # Zamrożona treść realizacji (tests/fixtures) — jak w jobie e2e w ci.yml;
       # baseline'y MUSZĄ powstawać na tym samym zestawie, na którym CI je porównuje.
       - run: pnpm build:visual
-      - run: pnpm test:visual:update
+      # Zamiast `pnpm test:visual:update` (stały zakres tests/visual, tryb
+      # bez wartości): inputs sterują zakresem i trybem przepisywania (T6).
+      - name: Przelicz baseline'y
+        run: >-
+          pnpm exec playwright test
+          ${{ inputs.spec }}
+          --update-snapshots=${{ inputs.mode }}
         env:
           CI: "true"
       - name: Commit updated baselines
