@@ -4,7 +4,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { useVisualFixtureGuard } from "../helpers/guards";
 import { gotoReady, settle } from "../helpers/scroll";
-import { FREEZE } from "../helpers/visual";
+import { FREEZE, settleImages } from "../helpers/visual";
 
 // Kolejność jak w Home.astro (hero, services i faq mają własne sweepy
 // w hero.spec.ts, services.spec.ts i faq.spec.ts — sekcje animowane,
@@ -24,9 +24,12 @@ useVisualFixtureGuard();
 
 // Celowo NIE prepareSweep: element-screenshoty i tak poprzedza
 // scrollIntoView + settle, więc czekanie na repaint po freeze jest zbędne.
+// settleImages (T3) zostaje — kafle #work i zajawki mają zdjęcia, a zszywany
+// element-screenshot łapie ten sam wyścig dekodowania co sweepy.
 async function prepare(page: Page) {
   await gotoReady(page);
   await page.addStyleTag({ path: FREEZE });
+  await settleImages(page);
 }
 
 for (const id of SECTIONS) {
