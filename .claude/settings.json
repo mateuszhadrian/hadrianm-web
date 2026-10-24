@@ -2,21 +2,15 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "permissions": {
     "deny": [
-      "Bash(git commit)",
       "Bash(git commit *)",
-      "Bash(git push)",
       "Bash(git push *)",
       "Read(.env*)",
       "Read(**/.env*)",
       "Edit(.env*)",
-      "Write(.env*)",
       "Edit(dist/**)",
-      "Write(dist/**)",
       "Edit(.astro/**)",
-      "Write(.astro/**)",
       "Edit(pnpm-lock.yaml)",
-      "Edit(tests/visual/__screenshots__/**)",
-      "Write(tests/visual/__screenshots__/**)"
+      "Edit(tests/visual/__screenshots__/**)"
     ],
     "allow": [
       "Bash(pnpm install)",
@@ -32,8 +26,11 @@
       "Bash(pnpm lint:fix)",
       "Bash(pnpm format)",
       "Bash(pnpm format:check)",
-      "Bash(pnpm test)",
-      "Bash(pnpm test:*)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm test:unit *)",
+      "Bash(pnpm test:e2e *)",
+      "Bash(pnpm test:visual)",
+      "Bash(pnpm test:smoke:prod *)",
       "Bash(pnpm -s *)",
       "Bash(pnpm exec *)",
       "Bash(node scripts/*)",
