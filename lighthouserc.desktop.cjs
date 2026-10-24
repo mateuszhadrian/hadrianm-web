@@ -43,10 +43,12 @@ module.exports = {
         // Desktop ładuje fonty drewelomet (LaptopSite) — baseline to 7,
         // nie 6 jak w pierwotnym szkicu analizy (stan = wzorzec).
         // L1 (run 40079996952): count warn → error (próg 7 bez zmian);
-        // size NOWY error = mediana 153 419 B + 10% ≈ 168 800. Po F1
-        // zacieśnić do świeżego pomiaru.
+        // size zacieśniony 2026-10-24 po F1 (polskie subsety latin-ext,
+        // PR #59): run lhci-measure.yml 40124168778 na main cc3a05a —
+        // 7 × 107 275 B na /, deterministycznie 5/5 (było 153 419 B, próg
+        // 168 800); próg = mediana + 10% w górę do setki.
         "resource-summary:font:count": ["error", { maxNumericValue: 7 }],
-        "resource-summary:font:size": ["error", { maxNumericValue: 168800 }],
+        "resource-summary:font:size": ["error", { maxNumericValue: 118100 }],
       },
     },
     upload: { target: "temporary-public-storage" },
