@@ -21,6 +21,13 @@ const A11Y_PROJECTS = ["chromium-1920", "chromium-pixel-5"];
 // kontrast od razu), a czytnik ekranu ma pełny tekst zawsze; słowa rozjaśniają
 // się do --ink/--accent przy scrollu. Podniesienie krycia do AA (~0.49)
 // zabiłoby efekt → świadomy wyjątek. (.acc występuje tylko w tym intro.)
+//
+// 2026-10-24 (A1, P8): kolor nie jest problemem — axe zgłasza WYŁĄCZNIE stan
+// startowy (słowo 0.14 → #222221, akcent 0.24 → #3d1611; 1.31:1 na czerni),
+// przy takim kryciu żaden kolor nie da 4.5:1. Stan końcowy spełnia AA na
+// najjaśniejszym pikselu ambientu (kontrast): akcent 4.60:1 (WebKit 1920) –
+// 5.07:1 (Chromium 390), --ink ≥ 12.5:1 — osobny token akcentu niepotrzebny.
+// Decyzja Mateusza: wyjątek zostaje, wpisy NIE do usunięcia bez zmiany efektu.
 const KNOWN_VIOLATIONS: Record<string, RegExp[]> = {
   "color-contrast": [/\.of-w/, /\.acc\b/],
 };

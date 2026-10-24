@@ -71,6 +71,7 @@
     "prettier-plugin-astro": "^0.14.1",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "sharp": "^0.35.2",
+    "subset-font": "^2.9.0",
     "typescript-eslint": "^8.61.0",
     "vitest": "^4.1.10"
   }

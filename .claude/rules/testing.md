@@ -78,6 +78,23 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
 - a11y (axe): allowlista znanych naruszeń w `tests/e2e/a11y.spec.ts` to
   RATCHET — wpis wolno usunąć po realnej poprawie; nowych nie dopisuj bez
   decyzji Mateusza.
+  Jedyne wpisy (`.of-w`/`.acc`) to STAN STARTOWY animacji intro Oferty
+  (krycie 0.14/0.24) — kolor nie jest problemem (stan końcowy AA, pomiar
+  A1 2026-10-24); zero = tylko zmiana efektu, decyzja Mateusza: zostają.
+  Naruszenie „losowe" (zależne od geometrii skanu) diagnozuj przez
+  `withRules([...])` i węzeł w `incomplete` vs `passes` — czysty skan
+  niczego nie dowodzi (A2: link w nocie RODO był `incomplete`).
+- Gesty dotykowe (swipe sheeta) testuj przez CDP `Input.dispatchTouchEvent`
+  (`page.context().newCDPSession(page)`, tylko Chromium) — `page.mouse`
+  idzie ścieżką `pointer*` i przechodzi przy martwym dotyku (`touch*` +
+  `preventDefault`). Wzorzec: `tests/e2e/overlay-swipe.spec.ts`.
+- Funkcja w `test.skip(fn, …)` dostaje TYLKO fixture'y (bez `testInfo`) —
+  skip po nazwie projektu rób w `test.beforeEach(({ … }, testInfo) => …)`.
+- Zawężanie baseline'ów do JEDNEGO testu: filtr `plik:linia`
+  (`tests/visual/contact-index.spec.ts:29`) — działa lokalnie
+  z `--update-snapshots` i jako input `spec` workflowu
+  `update-visual-baselines.yml` (bez spacji). Zmiana POD progiem (zielona,
+  ale nieaktualna) wymaga `mode=all` — `changed` jej nie przepisze.
 - Test mediów R2 (`CHECK_REMOTE_MEDIA=1`) tylko poza ścieżką PR
   (zewnętrzna sieć = flaky).
 - Wersje `playwright` i `@playwright/test` podnoś PARĄ (jeden zestaw

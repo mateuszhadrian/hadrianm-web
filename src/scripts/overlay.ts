@@ -206,34 +206,117 @@ document.addEventListener("click", (e) => {
 // Chwyt za "kreseczkę"/nagłówek [data-overlay-drag] i pociągnięcie w dół
 // zamyka sheet; puszczenie poniżej progu (dystans lub prędkość „flick”)
 // przywraca go płynnie na miejsce. Desktopowy Modal nie ma tej strefy.
+//
+// Runda 4: gest łapie się także W TREŚCI sheeta, ale WYŁĄCZNIE gdy jest ona
+// przewinięta na samą górę — bo dopiero wtedy ciągnięcie w dół nie ma nic do
+// przewijania. Wcześniej taki gest szedł do przeglądarki i mocniejszy ruch
+// ODŚWIEŻAŁ STRONĘ zamiast zamknąć sheet (zgłoszenie w hetman, port P8/U1;
+// druga połowa naprawy: overscroll-behavior w global.css). Start z treści
+// jest „warunkowy" (pending): przejmujemy go dopiero, gdy palec pójdzie w dół
+// wyraźnie bardziej niż w bok — inaczej pozioma karuzela galerii w detalu
+// zamykałaby sheet przy każdym przesunięciu kadru. `[data-overlay-nodrag]`
+// wyłącza gest dla obszaru z własną obsługą przeciągania (dziś: brak).
+//
+// DOTYK IDZIE PRZEZ `touch*`, NIE PRZEZ `pointer*` (korekta po teście na
+// telefonie): uchwyt działa na pointerach tylko dlatego, że ma w CSS
+// `touch-action: none`, więc przeglądarka nie rości sobie do niego prawa.
+// W treści `touch-action` musi zostać przewijalne — a wtedy przeglądarka
+// uznaje gest za scroll i przerywa strumień pointerów `pointercancel`, zanim
+// zdążymy przekroczyć próg. Zabrać jej gest da się WYŁĄCZNIE przez
+// `preventDefault()` na `touchmove` w listenerze non-passive. Mysz i pióro
+// zostają na pointerach (m.in. dlatego testy z myszą przechodziły mimo
+// niedziałającego dotyku — emulacja tej różnicy nie pokazuje).
 const DRAG_CLOSE_PX = 96; // minimalny dystans, by zamknąć
 const DRAG_CLOSE_FRACTION = 0.28; // …lub ten ułamek wysokości panelu
 const DRAG_FLICK_VY = 0.55; // …lub prędkość „flick” w px/ms
+const DRAG_SLOP_PX = 8; // dystans, po którym rozstrzygamy kierunek gestu
 
 interface DragState {
   root: HTMLElement;
   panel: HTMLElement;
+  startX: number;
   startY: number;
   lastY: number;
   lastT: number;
   dy: number;
   vy: number;
   moved: boolean;
+  /** gest z treści czeka na rozstrzygnięcie kierunku (uchwyt = od razu false) */
+  pending: boolean;
+  /** obszar scrollowalny pod palcem — musi zostać na górze, by przejąć gest */
+  scroller: HTMLElement | null;
 }
 let drag: DragState | null = null;
 
-function onDragMove(e: PointerEvent) {
+function detachDrag() {
+  window.removeEventListener("pointermove", onDragMove);
+  window.removeEventListener("pointerup", endDrag);
+  window.removeEventListener("pointercancel", endDrag);
+  window.removeEventListener("touchmove", onTouchMove);
+  window.removeEventListener("touchend", onTouchEnd);
+  window.removeEventListener("touchcancel", onTouchEnd);
+  drag = null;
+}
+
+/** Wspólny rdzeń ruchu — wołany z pointermove (mysz) i touchmove (dotyk).
+ *  `prevent` odcina natywne zachowanie przeglądarki, gdy gest już przejęliśmy;
+ *  zwraca false, gdy zdarzenia nie da się anulować (przeglądarka zdążyła
+ *  rozpocząć przewijanie) — wtedy gest oddajemy. */
+function moveDrag(
+  x: number,
+  y: number,
+  t: number,
+  prevent: () => boolean,
+): void {
   if (!drag) return;
-  const dy = Math.max(0, e.clientY - drag.startY); // tylko w dół
+
+  if (drag.pending) {
+    const dx = Math.abs(x - drag.startX);
+    const dyRaw = y - drag.startY;
+    // ruch w górę albo w bok = to nie jest gest zamykający: oddajemy go
+    // przeglądarce (scroll treści, karuzela galerii) i nie wracamy do niego.
+    // Progi 2 px to tolerancja na szum palca w pierwszej klatce.
+    if (dyRaw < -2 || dx > Math.max(dyRaw, 2)) {
+      detachDrag();
+      return;
+    }
+    if (dyRaw <= 0) return; // jeszcze nie wiadomo, dokąd idzie palec
+    // treść zdążyła podjechać (np. przez bezwładność) — nie przejmujemy
+    if (drag.scroller && drag.scroller.scrollTop > 0) {
+      detachDrag();
+      return;
+    }
+    // Gest trzeba odebrać przeglądarce W PIERWSZEJ KLATCE ruchu w dół, nie po
+    // przekroczeniu progu: po pierwszym niezablokowanym `touchmove` przeglądarka
+    // uznaje gest za przewijanie i kolejne zdarzenia przychodzą już z
+    // `cancelable === false` (zmierzone w hetman, runda 4). Blokada jest
+    // bezpieczna, bo przy `scrollTop === 0` ruch w dół i tak nie ma czego
+    // przewijać, a ruch w bok odsialiśmy wyżej.
+    if (!prevent()) {
+      detachDrag();
+      return;
+    }
+    if (dyRaw < DRAG_SLOP_PX) return; // gest już nasz, panel jeszcze stoi
+    drag.pending = false;
+    drag.startY = y; // panel rusza od zera, bez skoku o próg
+  }
+
+  const dy = Math.max(0, y - drag.startY); // tylko w dół
   if (!drag.moved && dy > 0) {
+    // przejmujemy gest — jeśli przeglądarka już go sobie wzięła, odpuszczamy
+    if (!prevent()) {
+      detachDrag();
+      return;
+    }
     drag.moved = true;
     drag.panel.style.transition = "none"; // podążaj 1:1 za palcem
+  } else if (drag.moved) {
+    prevent();
   }
-  if (drag.moved) e.preventDefault();
-  const dt = e.timeStamp - drag.lastT;
-  if (dt > 0) drag.vy = (e.clientY - drag.lastY) / dt;
-  drag.lastY = e.clientY;
-  drag.lastT = e.timeStamp;
+  const dt = t - drag.lastT;
+  if (dt > 0) drag.vy = (y - drag.lastY) / dt;
+  drag.lastY = y;
+  drag.lastT = t;
   drag.dy = dy;
   drag.panel.style.transform = `translateY(${dy}px)`;
   // przygaszaj tło proporcjonalnie do przeciągnięcia
@@ -241,13 +324,37 @@ function onDragMove(e: PointerEvent) {
   drag.root.style.opacity = String(1 - Math.min(1, dy / h) * 0.85);
 }
 
+function onDragMove(e: PointerEvent) {
+  moveDrag(e.clientX, e.clientY, e.timeStamp, () => {
+    e.preventDefault();
+    return true;
+  });
+}
+
+function onTouchMove(e: TouchEvent) {
+  const t = e.touches[0];
+  if (!t) return;
+  moveDrag(t.clientX, t.clientY, e.timeStamp, () => {
+    // `cancelable === false` znaczy, że przeglądarka już przewija i gestu
+    // odebrać się nie da — lepiej oddać go w całości niż szarpać panelem
+    if (!e.cancelable) return false;
+    e.preventDefault();
+    return true;
+  });
+}
+
+function onTouchEnd(e: TouchEvent) {
+  finishDrag(e.type === "touchcancel");
+}
+
 function endDrag(e: PointerEvent) {
+  finishDrag(e.type === "pointercancel");
+}
+
+function finishDrag(cancelled: boolean) {
   if (!drag) return;
   const { root, panel, dy, vy, moved } = drag;
-  window.removeEventListener("pointermove", onDragMove);
-  window.removeEventListener("pointerup", endDrag);
-  window.removeEventListener("pointercancel", endDrag);
-  drag = null;
+  detachDrag();
 
   if (!moved) {
     // czysty tap — nic nie ruszaliśmy, wyczyść ewentualne inline style
@@ -259,7 +366,7 @@ function endDrag(e: PointerEvent) {
 
   const h = panel.offsetHeight || 1;
   const shouldClose =
-    e.type !== "pointercancel" &&
+    !cancelled &&
     (dy > DRAG_CLOSE_PX || dy > h * DRAG_CLOSE_FRACTION || vy > DRAG_FLICK_VY);
 
   if (shouldClose) {
@@ -281,35 +388,77 @@ function endDrag(e: PointerEvent) {
   }
 }
 
-document.addEventListener("pointerdown", (e) => {
-  if (drag) return;
-  const target = e.target as HTMLElement;
+/** Kwalifikuje dotknięcie i uzbraja stan gestu. Zwraca false, gdy w tym
+ *  miejscu gest nas nie dotyczy (modal, przycisk X, treść przewinięta niżej). */
+function startDrag(
+  target: HTMLElement,
+  x: number,
+  y: number,
+  t: number,
+): boolean {
+  if (drag) return false;
   const handle = target.closest<HTMLElement>("[data-overlay-drag]");
-  if (!handle) return;
-  if (target.closest("[data-overlay-close]")) return; // nie startuj z przycisku X
-  const root = handle.closest<HTMLElement>("[data-overlay]");
+  if (target.closest("[data-overlay-close]")) return false; // nie z przycisku X
+  if (target.closest("[data-overlay-nodrag]")) return false; // własna obsługa
+  const root = (handle ?? target).closest<HTMLElement>("[data-overlay]");
   if (
     !root ||
     root.hidden ||
     root.getAttribute("data-overlay-kind") !== "sheet" ||
     reduceMQ.matches
   )
-    return;
+    return false;
+
+  let scroller: HTMLElement | null = null;
+  if (!handle) {
+    // start z treści: tylko wewnątrz panelu (klik w tło ma własną obsługę)
+    // i tylko gdy obszar pod palcem jest przewinięty na samą górę
+    if (!target.closest("[data-overlay-panel]")) return false;
+    scroller =
+      target.closest<HTMLElement>("[data-overlay-scroll]") ?? panelOf(root);
+    if (scroller.scrollTop > 0) return false;
+  }
 
   drag = {
     root,
     panel: panelOf(root),
-    startY: e.clientY,
-    lastY: e.clientY,
-    lastT: e.timeStamp,
+    startX: x,
+    startY: y,
+    lastY: y,
+    lastT: t,
     dy: 0,
     vy: 0,
     moved: false,
+    pending: !handle,
+    scroller,
   };
+  return true;
+}
+
+document.addEventListener("pointerdown", (e) => {
+  // dotyk obsługuje ścieżka touch* (patrz komentarz nad stałymi gestu)
+  if (e.pointerType === "touch") return;
+  if (!startDrag(e.target as HTMLElement, e.clientX, e.clientY, e.timeStamp))
+    return;
   window.addEventListener("pointermove", onDragMove, { passive: false });
   window.addEventListener("pointerup", endDrag);
   window.addEventListener("pointercancel", endDrag);
 });
+
+document.addEventListener(
+  "touchstart",
+  (e) => {
+    if (e.touches.length !== 1) return; // gest wielopalcowy = nie nasz
+    const t = e.touches[0];
+    if (!startDrag(e.target as HTMLElement, t.clientX, t.clientY, e.timeStamp))
+      return;
+    // non-passive: to TU odbieramy gest przeglądarce
+    window.addEventListener("touchmove", onTouchMove, { passive: false });
+    window.addEventListener("touchend", onTouchEnd);
+    window.addEventListener("touchcancel", onTouchEnd);
+  },
+  { passive: true },
+);
 
 document.addEventListener("keydown", (e) => {
   if (!activeEl) return;
