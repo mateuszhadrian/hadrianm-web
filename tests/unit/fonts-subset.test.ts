@@ -15,7 +15,7 @@ import { describe, expect, it } from "vitest";
 import { REALIZACJE_DIR, realizacjeFiles } from "../helpers/realizacje";
 
 /** Zakres `latin-ext` wg subsetów Fontsource — ZGODNY z `unicode-range`
- *  w src/styles/fonts.css i fonts-hero.css. */
+ *  w src/styles/fonts.css (fonts-hero.css celowo bez zakresu — H4). */
 const LATIN_EXT: [number, number][] = [
   [0x0100, 0x02ba],
   [0x02bd, 0x02c5],

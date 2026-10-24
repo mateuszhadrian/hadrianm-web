@@ -57,8 +57,12 @@ Kontekst decyzji: `docs/analiza-ewolucja-vs-nowsze-projekty.md` §4.7 i §6
   commitowany). NIE importuj gotowych `index.css`/`400-italic.css`/
   `latin-ext-*.css` z pakietów — kontrakt `tests/unit/fonts-subset.test.ts`
   (także: znak latin-ext spoza `SUBSET_CHARS` w treści = FAIL → dopisz
-  i przegeneruj). Deskryptory 1:1 z PEŁNYCH arkuszy Fontsource'a
-  (per-subset `latin-ext-600.css` nie ma `unicode-range`!).
+  i przegeneruj). Deskryptory 1:1 z arkuszy Fontsource'a, które były
+  importowane. WYJĄTEK świadomy: Saira `latin-ext` w `fonts-hero.css` BEZ
+  `unicode-range` — zakres opóźnia start pobrania za jednorazowy pomiar
+  layoutu `phone-site.ts` (sweep hero `webkit-1440` 05–09 czerwony na CI,
+  lokalnie niewidoczne; backlog H4). Zmiana momentu ładowania fontu
+  w hero = weryfikacja na CI, nie tylko lokalnym preview.
 - Preloady w BaseLayout wskazują TE SAME pliki co `@font-face` (subsety);
   `assetsInlineLimit` = `false` dla `.woff2` w `astro.config.mjs` (subsety
   < 4 KB inaczej lądują jako `data:` w CSS blokującym render).

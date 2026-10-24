@@ -1,11 +1,18 @@
 /* Saira Condensed 600 `latin-ext` — polski subset (F1, P8; generuje
  * `node scripts/subset-fonts.mjs`, nagłówek src/styles/fonts.css).
  * Importowany przez Hero.astro (krój drewelomet, tylko strona główna),
- * PO gotowym `@fontsource/saira-condensed/latin-600.css`. Deskryptory 1:1
- * z `@fontsource/saira-condensed/600.css` — arkusz per-subset
- * (`latin-ext-600.css`) nie ma `unicode-range`, przez co pobierał się na
- * KAŻDYM tekście Sairy; z zakresem plik dociąga się tylko przy polskich
- * znakach. 14 736 → 3 864 B. */
+ * PO gotowym `@fontsource/saira-condensed/latin-600.css`.
+ *
+ * Deskryptory 1:1 z dawnego `@fontsource/saira-condensed/latin-ext-600.css`
+ * — CELOWO BEZ `unicode-range`. Bez zakresu face jest pytany o KAŻDY znak
+ * tekstu w Sairze, więc plik startuje RAZEM z `latin` (pierwszy layout),
+ * a nie dopiero przy pierwszym polskim glifie. Z zakresem (wersja z PR #59)
+ * dochodził ~50 ms później i na runnerach CI lądował PO jednorazowym
+ * pomiarze layoutu ekranu telefonu (`layout()` w phone-site.ts, bez
+ * relayoutu po fonts.ready) → przesunięta treść telefonu, sweep hero
+ * `webkit-1440` klatki 05–09 czerwony 3/3 (main zielony). Nie dodawaj
+ * zakresu, dopóki phone-site nie przelicza layoutu po fontach (backlog H4).
+ * 14 736 → 3 864 B. */
 @font-face {
   font-family: "Saira Condensed";
   font-style: normal;
@@ -13,8 +20,4 @@
   font-weight: 600;
   src: url("../assets/fonts/saira-condensed-latin-ext-600-normal-pl.woff2")
     format("woff2");
-  unicode-range:
-    U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304,
-    U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB,
-    U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
 }

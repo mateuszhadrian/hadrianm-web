@@ -380,6 +380,18 @@ pseudoelement pod spodem (wzorzec H1)". Razem z H1.
 liczba warstw i MB tekstur przed/po; potencjalnie flaky klatki 05–09
 i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 
+**H4 · SHOULD · S · ☐ — `phone-site.ts` bez relayoutu po fontach** (znalezione
+w P8, PR #59): `layout()` mierzy `offsetTop`/wysokości sekcji ekranu telefonu
+RAZ przy inicjalizacji (relayout tylko na `resize`) — font dochodzący po
+pomiarze przesuwa treść telefonu w sweepie hero. Objaw: F1 z `unicode-range`
+na Sairze `latin-ext` (subset startował ~50 ms później) → `webkit-1440`
+klatki 05–09 czerwone 3/3 na CI, main zielony; obejście w P8 = deklaracja
+bez zakresu (jak przed F1). Naprawa: `document.fonts.ready.then(relayout)`
+wg wzorca re-glue z `timeline-base.ts` (z latchem na teardown), potem
+dopiero zakres w `fonts-hero.css`. Weryfikacja: sweep hero (chromium-1920
++ webkit-1440), oba komplety baseline'ów tylko jeśli diff. Commit:
+`fix(hero): relayout phone screen after fonts load`.
+
 ### R — Realizacje (treść i prezentacja)
 
 **R1 · MUST · L · ✅ 2026-10-22 (PR #53 P4: Etapy 1–4; PR #54 P5: Etapy 5–6; Etap 7 — telefony i desktopy na produkcji 2026-10-22, bez usterek) — wideo w podglądzie realizacji** — plan i etapy:
@@ -572,7 +584,7 @@ endpoint `{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
 
 ### F — Fonty
 
-**F1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; arkusz per-subset Fontsource'a NIE miał `unicode-range`, więc ext pobierał się na każdym tekście Sairy — zakres wzięty z `600.css`); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte — zacieśnienie `font:size` = mini-PR po merge'u) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
+**F1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja CELOWO bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersja z zakresem z `600.css` wywróciła na CI sweep hero `webkit-1440` 05–09 3/3, przyczyna i naprawa docelowa = H4); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte — zacieśnienie `font:size` = mini-PR po merge'u) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
 (`subset-font`, stała `SUBSET_CHARS = "ĄąĆćĘęŁłŃńŚśŹźŻż"` + ewentualne
 znaki z i18n EN spoza `latin` — test wskaże) → `src/assets/fonts/*.woff2`
 (commitowane); `src/styles/fonts.css` z deskryptorami 1:1 z Fontsource
@@ -954,4 +966,19 @@ osobny PR po pomiarze na main.
   reguły w `testing.md` (axe incomplete vs passes, CDP touch, `test.skip`
   bez `testInfo`, filtr `plik:linia` + `mode=all`) i `layout-seo.md`
   (fonty F1, pułapka lockfile'a `@paulirish/trace_engine`).
+  **PR #59 — checki:** `quality` i `lighthouse` zielone za pierwszym razem
+  (progi nietknięte); `e2e` czerwony 3/3 na tym samym SHA — sweep hero
+  `webkit-1440` klatki 05–09 (diff wyłącznie na ekranie telefonu: treść
+  przesunięta o kilka px, napisy z polskimi znakami bez różnic), reszta
+  zielona (e2e 682/682, visual 114). Kontrolne CI na main
+  (`workflow_dispatch`, run 40101301327) ZIELONE → regresja P8, nie T9.
+  Przyczyna: `unicode-range` dodany Sairze `latin-ext` w `fonts-hero.css`
+  przesunął start pobrania subsetu za pierwszy layout (zmierzone lokalnie
+  w WebKit: 437 ms vs `latin` 384 ms), a `phone-site.ts` mierzy layout raz,
+  bez relayoutu po fontach → na runnerze subset dochodzi po pomiarze.
+  Poprawka: deklaracja bez zakresu (subset startuje 308 ms, PRZED `latin`
+  — jak przed F1; bajty bez zmian); lokalnie hero sweep zielony, unit
+  zielone. Dług → nowy punkt **H4**. Lekcja: lokalny preview (localhost)
+  nie odtworzy wyścigu fontów z runnerem — zmiana momentu pobrania fontu
+  w hero wymaga CI, nie tylko lokalnego `test:visual`.
 
