@@ -48,6 +48,24 @@ Kontekst decyzji: `docs/analiza-ewolucja-vs-nowsze-projekty.md` §4.7 i §6
   `tests/unit/og-image.test.ts` (czyta IHDR PNG; limit wagi 300 KB) —
   podmiana obrazu = plik + meta w jednym commicie.
 
+## Fonty (F1, P8)
+
+- `@font-face` WŁASNE: `src/styles/fonts.css` (Archivo, Instrument Serif
+  TYLKO italic) + `src/styles/fonts-hero.css` (Saira, import w Hero).
+  `latin` z plików Fontsource'a, `latin-ext` = polskie subsety
+  `src/assets/fonts/*-pl.woff2` (generat `node scripts/subset-fonts.mjs`,
+  commitowany). NIE importuj gotowych `index.css`/`400-italic.css`/
+  `latin-ext-*.css` z pakietów — kontrakt `tests/unit/fonts-subset.test.ts`
+  (także: znak latin-ext spoza `SUBSET_CHARS` w treści = FAIL → dopisz
+  i przegeneruj). Deskryptory 1:1 z PEŁNYCH arkuszy Fontsource'a
+  (per-subset `latin-ext-600.css` nie ma `unicode-range`!).
+- Preloady w BaseLayout wskazują TE SAME pliki co `@font-face` (subsety);
+  `assetsInlineLimit` = `false` dla `.woff2` w `astro.config.mjs` (subsety
+  < 4 KB inaczej lądują jako `data:` w CSS blokującym render).
+- `pnpm add` przelicza pływający zakres `@paulirish/trace_engine`
+  (Lighthouse) — po dodaniu zależności sprawdź diff lockfile'a pod kątem
+  `third-party-web`/`legacy-javascript` i cofnij przy-okazyjne podbicie.
+
 ## global.css
 
 - `:root { color-scheme: dark }` — strona jest wyłącznie ciemna; kontrolki
