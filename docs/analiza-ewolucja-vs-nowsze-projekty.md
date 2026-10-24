@@ -458,7 +458,7 @@ to błąd treści, nie infrastruktury. Commit: `test: tolerate missing realizacj
 `delung-web/tests/helpers/visual.ts:14-40`. Spodziewany efekt: mniej
 diffów „tylko krawędzie zdjęć" na runnerach. Commit: `test(visual): settle images before screenshots`.
 
-**T4 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8 `fix/p8-quality`; `tests/helpers/breakpoint.ts` + `tests/e2e/breakpoints.spec.ts`, 8 testów na chromium-1920: 861 = `.om-stage` position na /o-mnie/, `.dk-meta` /dla-kogo/, `.of-meta` /, `.fq-meta` /faq/, `.kt-meta` /kontakt/; 761 = `.wk-car` display + klik → `#work-sheet`/`#work-modal`; 769 = `.ambient-bg__clouds` (CSS `max-width: 768px`); stałe importowane z configów sekcji; mutacja kontrolna: próg Oferty w CSS przesunięty o 1 px → czytelny FAIL) — kontrakt progów breakpointów**:
+**T4 · SHOULD · M · ✅ na main 2026-10-24 (PR #59 `fix/p8-quality`, merge `cc3a05a`; `tests/helpers/breakpoint.ts` + `tests/e2e/breakpoints.spec.ts`, 8 testów na chromium-1920: 861 = `.om-stage` position na /o-mnie/, `.dk-meta` /dla-kogo/, `.of-meta` /, `.fq-meta` /faq/, `.kt-meta` /kontakt/; 761 = `.wk-car` display + klik → `#work-sheet`/`#work-modal`; 769 = `.ambient-bg__clouds` (CSS `max-width: 768px`); stałe importowane z configów sekcji; mutacja kontrolna: próg Oferty w CSS przesunięty o 1 px → czytelny FAIL) — kontrakt progów breakpointów**:
 `tests/helpers/breakpoint.ts` `expectBreakpointFlip(page, url, selector,
 minPx)` mierzący `display`/układ przy `minPx-1` i `minPx`; po jednym teście
 dla 861 (about, audience, services, faq, contact), 761 (work modal↔sheet),
@@ -583,7 +583,7 @@ endpoint `{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
 
 ### F — Fonty
 
-**F1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersję z zakresem cofnięto w trakcie diagnozy czerwonego sweepa `webkit-1440`, który okazał się klasą T9, nie winą zakresu); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte — zacieśnienie `font:size` = mini-PR po merge'u) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
+**F1 · SHOULD · M · ✅ na main 2026-10-24 (PR #59; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersję z zakresem cofnięto w trakcie diagnozy czerwonego sweepa `webkit-1440`, który okazał się klasą T9, nie winą zakresu); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte w P8; zacieśnienie `font:size` = mini-PR `chore/lhci-font-budgets` po pomiarze `lhci-measure.yml` run 40124168778 na main `cc3a05a`: mobile 4 × 67 998 B (`/`, było 103 268) → próg 74 800 (było 113 600), desktop 7 × 107 275 B (`/`, było 153 419) → próg 118 100 (było 168 800), deterministycznie 5/5, formuła L1 mediana + 10%) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
 (`subset-font`, stała `SUBSET_CHARS = "ĄąĆćĘęŁłŃńŚśŹźŻż"` + ewentualne
 znaki z i18n EN spoza `latin` — test wskaże) → `src/assets/fonts/*.woff2`
 (commitowane); `src/styles/fonts.css` z deskryptorami 1:1 z Fontsource
@@ -645,7 +645,7 @@ z `KNOWN_VIOLATIONS`. Baseline'y `services.spec.ts` do regeneracji po
 akceptacji. Przy wartościach w docs znacznik „(kontrast)" = wynik pomiaru.
 Commit: `fix(services): aa contrast for intro accents, empty axe allowlist`.
 
-**A2 · MUST · S · ✅ wdrożone lokalnie 2026-10-24 (PR P8; `.kt-note a` underline/0,15em/1px, kolor bez zmian; strona główna NIE ma `.kt-note` — tylko baner; dowód deterministyczny: axe `link-in-text-block` dla linku na `/kontakt/` i `/en/contact/` przed = `incomplete` (źródło losowych zgłoszeń), po = `passes`; allowlista bez nowych wpisów; diff `contact-index-form` POD progiem 0,0005 na 6 profilach (pomiar progiem 0: tylko podkreślenie + animowane logo navbara) — zaakceptowany przez Mateusza jako „zielony, ale nieaktualny”, darwin zregenerowany filtrem `tests/visual/contact-index.spec.ts:29` (6 plików, kontrola 18/18), linux workflow z tym samym filtrem i `mode=all`) — link w nocie RODO odróżnialny nie tylko kolorem**
+**A2 · MUST · S · ✅ na main 2026-10-24 (PR #59; `.kt-note a` underline/0,15em/1px, kolor bez zmian; strona główna NIE ma `.kt-note` — tylko baner; dowód deterministyczny: axe `link-in-text-block` dla linku na `/kontakt/` i `/en/contact/` przed = `incomplete` (źródło losowych zgłoszeń), po = `passes`; allowlista bez nowych wpisów; diff `contact-index-form` POD progiem 0,0005 na 6 profilach (pomiar progiem 0: tylko podkreślenie + animowane logo navbara) — zaakceptowany przez Mateusza jako „zielony, ale nieaktualny”, darwin zregenerowany filtrem `tests/visual/contact-index.spec.ts:29` (6 plików, kontrola 18/18), linux workflow z tym samym filtrem i `mode=all`) — link w nocie RODO odróżnialny nie tylko kolorem**
 (§5 pkt 15): `Contact.astro` — `.kt-note a { text-decoration: underline;
 text-underline-offset: 0.15em; text-decoration-thickness: 1px; }` (bez
 zmiany koloru; kontrast tekst↔link 1,37:1 nie da się podnieść do 3:1 bez
@@ -660,7 +660,7 @@ niezwiązanym PR-ze = rerun tego samego SHA, a naprawa tutaj. Commit:
 
 ### U — Nakładki
 
-**U1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; port 1:1 bloku gestu z hetman do `src/scripts/overlay.ts` — `touch*` non-passive, `pending`/`DRAG_SLOP_PX`, start z treści przewiniętej na górę, `[data-overlay-nodrag]`; `overscroll-behavior: contain` na `[data-overlay-scroll], [data-overlay-panel]` w `global.css`; `lockScroll/unlockScroll` z Lenisem nietknięte; `tests/e2e/overlay-swipe.spec.ts` (CDP `Input.dispatchTouchEvent`, chromium-pixel-5): 5 testów — swipe z treści na górze zamyka, z treści przewiniętej przewija, w bok nie zamyka, uchwyt zamyka dotykiem, krótki ruch wraca; na starym `overlay.ts` pada test „z treści” — reszta to strażnicy regresji; pull-to-refresh = telefon) — swipe-down „Runda 4"**: port z hetman
+**U1 · SHOULD · M · ✅ na main 2026-10-24 (PR #59; port 1:1 bloku gestu z hetman do `src/scripts/overlay.ts` — `touch*` non-passive, `pending`/`DRAG_SLOP_PX`, start z treści przewiniętej na górę, `[data-overlay-nodrag]`; `overscroll-behavior: contain` na `[data-overlay-scroll], [data-overlay-panel]` w `global.css`; `lockScroll/unlockScroll` z Lenisem nietknięte; `tests/e2e/overlay-swipe.spec.ts` (CDP `Input.dispatchTouchEvent`, chromium-pixel-5): 5 testów — swipe z treści na górze zamyka, z treści przewiniętej przewija, w bok nie zamyka, uchwyt zamyka dotykiem, krótki ruch wraca; na starym `overlay.ts` pada test „z treści” — reszta to strażnicy regresji; pull-to-refresh = telefon) — swipe-down „Runda 4"**: port z hetman
 `src/scripts/overlay.ts:201-261` (gest przez `touch*` non-passive,
 `preventDefault` w pierwszej klatce ruchu w dół, `DRAG_SLOP_PX`, gest także
 w treści sheeta przewiniętej na górę) + `overscroll-behavior: contain` na
@@ -735,7 +735,7 @@ zmigrowane).
 | P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | ✅ PR #54 (2026-10-22): zregenerowane 26 darwin + 25 linux, WYŁĄCZNIE `work-*` (section-work, work-modal, work-sheet, work-index-*) |
 | P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ✅ PR #55 (2026-10-22), baseline'y nietknięte |
 | P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B #57 (L1) ✅ na main 2026-10-24 — **P7 ✅ W CAŁOŚCI** (PR #56 + #57) |
-| P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ◐ wdrożone lokalnie 2026-10-24 (`fix/p8-quality`): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
+| P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
 | później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
 
@@ -989,4 +989,16 @@ osobny PR po pomiarze na main.
   timingu — runner CI bywa deterministyczny, a stan i tak zależy od
   środowiska; przed szukaniem „winnego pliku" porównaj kadry między
   środowiskami (płynne przesunięcie = timing, skok/zawinięcie = metryka).
+  **Domknięcie:** checki PR #59 zielone po T9 (`e2e` 682 + 115), merge
+  `cc3a05a`; CI na main (run 40121771030) i Prod smoke (40121770985)
+  zielone za pierwszym razem, subsety na produkcji. Test Mateusza na
+  telefonie (U1: swipe-down sheeta bez pull-to-refresh na Androidzie,
+  sheet przewinięty przewija treść; F1: fonty bez regresji FOUT) — bez
+  usterek, `poprawki-po-implementacji.md` nie utworzony. Następnie:
+  pomiar `lhci-measure.yml` na `cc3a05a` (run 40124168778) → mini-PR
+  `chore/lhci-font-budgets`. Wynik pomiaru (mediany z 5, gorszy URL `/`):
+  `font:size` mobile 67 998 B / desktop 107 275 B (−34% / −30% vs L1),
+  co do bajta 5/5; LCP mobile 3378 ms (L1: 3551), desktop 1877 ms
+  (L1: 1910 /en/), perf 0,90 (m) / 0,92 (d). W mini-PR WYŁĄCZNIE progi
+  `font:size` (74 800 / 118 100); ratchet LCP/perf = osobna decyzja.
 
