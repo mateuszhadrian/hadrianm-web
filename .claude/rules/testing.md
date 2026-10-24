@@ -64,8 +64,12 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   `update-visual-baselines.yml` z inputami `spec` (ZAWĘŻONY do jednego
   speca) i `mode: all` — nigdy do naprawiania czerwonego testu.
 - Flaky klatki hero desktop 05–09 (ekran telefonu + ambient, ~0.5–2%):
-  mają podwyższony próg w hero.spec.ts; FAIL tam najpierw porównaj
-  z przebiegiem kontrolnym, dopiero potem podejrzewaj regresję.
+  mają podwyższony próg w hero.spec.ts na `chromium-1920` ORAZ (od T9,
+  2026-10-24) `webkit-1440`; FAIL tam najpierw porównaj z przebiegiem
+  kontrolnym, dopiero potem podejrzewaj regresję. Treść telefonu przesuwa
+  się PŁYNNIE zależnie od środowiska/timingu ładowania — runner potrafi
+  dawać diff identyczny co do piksela w każdym przebiegu, a i tak to
+  timing (P8: zmiana fontów przesunęła stan runnera; Docker ≠ runner).
 - Flaky klatki hero pixel-5 00–03 (loteria maszyn runnerów GH: różne CPU →
   inne zaokrąglenia AA serifowego akcentu przy ułamkowym DPR 2.75; ~0.35%
   diffu, deterministycznie per maszyna): próg 0.01 w hero.spec.ts. NIE
@@ -78,6 +82,23 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
 - a11y (axe): allowlista znanych naruszeń w `tests/e2e/a11y.spec.ts` to
   RATCHET — wpis wolno usunąć po realnej poprawie; nowych nie dopisuj bez
   decyzji Mateusza.
+  Jedyne wpisy (`.of-w`/`.acc`) to STAN STARTOWY animacji intro Oferty
+  (krycie 0.14/0.24) — kolor nie jest problemem (stan końcowy AA, pomiar
+  A1 2026-10-24); zero = tylko zmiana efektu, decyzja Mateusza: zostają.
+  Naruszenie „losowe" (zależne od geometrii skanu) diagnozuj przez
+  `withRules([...])` i węzeł w `incomplete` vs `passes` — czysty skan
+  niczego nie dowodzi (A2: link w nocie RODO był `incomplete`).
+- Gesty dotykowe (swipe sheeta) testuj przez CDP `Input.dispatchTouchEvent`
+  (`page.context().newCDPSession(page)`, tylko Chromium) — `page.mouse`
+  idzie ścieżką `pointer*` i przechodzi przy martwym dotyku (`touch*` +
+  `preventDefault`). Wzorzec: `tests/e2e/overlay-swipe.spec.ts`.
+- Funkcja w `test.skip(fn, …)` dostaje TYLKO fixture'y (bez `testInfo`) —
+  skip po nazwie projektu rób w `test.beforeEach(({ … }, testInfo) => …)`.
+- Zawężanie baseline'ów do JEDNEGO testu: filtr `plik:linia`
+  (`tests/visual/contact-index.spec.ts:29`) — działa lokalnie
+  z `--update-snapshots` i jako input `spec` workflowu
+  `update-visual-baselines.yml` (bez spacji). Zmiana POD progiem (zielona,
+  ale nieaktualna) wymaga `mode=all` — `changed` jej nie przepisze.
 - Test mediów R2 (`CHECK_REMOTE_MEDIA=1`) tylko poza ścieżką PR
   (zewnętrzna sieć = flaky).
 - Wersje `playwright` i `@playwright/test` podnoś PARĄ (jeden zestaw

@@ -1,11 +1,12 @@
 ---
-import "@fontsource-variable/archivo/index.css";
-// Instrument Serif TYLKO italic — odmiana prosta (400.css) nie jest w repo
-// używana: wszystkie 16 konsumentów --font-serif ustawia font-style: italic
-// (patrz komentarz przy preloadach niżej), więc jej @font-face nigdy się nie
-// dopasowywał. Fonty drewelomet (Saira Condensed, Space Mono) importuje
-// Hero.astro — są potrzebne tylko na stronie głównej.
-import "@fontsource/instrument-serif/400-italic.css";
+// Deklaracje @font-face (Archivo latin/latin-ext, Instrument Serif TYLKO
+// italic — odmiana prosta nie jest w repo używana: wszystkie 16 konsumentów
+// --font-serif ustawia font-style: italic) stoją w src/styles/fonts.css:
+// `latin` z plików Fontsource'a, `latin-ext` = polskie subsety (F1).
+// Gotowych index.css / 400-italic.css z pakietów NIE importujemy — kontrakt
+// tests/unit/fonts-subset.test.ts. Fonty drewelomet (Saira Condensed, Space
+// Mono) importuje Hero.astro — są potrzebne tylko na stronie głównej.
+import "@/styles/fonts.css";
 
 import "@/styles/global.css";
 
@@ -18,11 +19,13 @@ import LoadingOverlay from "@/components/ui/LoadingOverlay.astro";
 // (docs/visual-corrections-part1.md pkt 8): Archivo latin wszędzie;
 // Instrument Serif TYLKO italic (repo nie używa odmiany prostej — wszystkie
 // akcenty .sf/em mają font-style: italic); subsety latin-ext tylko na PL
-// (polskie diakrytyki w tekście i akcentach; EN jest czystym latin).
+// (polskie diakrytyki w tekście i akcentach; EN jest czystym latin) —
+// od F1 to polskie subsety z src/assets/fonts/ (te same pliki co fonts.css,
+// inaczej preload pobierałby plik, którego @font-face nie używa).
 import archivoWoff2 from "@fontsource-variable/archivo/files/archivo-latin-wght-normal.woff2?url";
-import archivoExtWoff2 from "@fontsource-variable/archivo/files/archivo-latin-ext-wght-normal.woff2?url";
+import archivoExtWoff2 from "@/assets/fonts/archivo-latin-ext-wght-normal-pl.woff2?url";
 import serifItalicWoff2 from "@fontsource/instrument-serif/files/instrument-serif-latin-400-italic.woff2?url";
-import serifItalicExtWoff2 from "@fontsource/instrument-serif/files/instrument-serif-latin-ext-400-italic.woff2?url";
+import serifItalicExtWoff2 from "@/assets/fonts/instrument-serif-latin-ext-400-italic-pl.woff2?url";
 
 interface Props {
   title?: string;

@@ -1,0 +1,20 @@
+/* Saira Condensed 600 `latin-ext` — polski subset (F1, P8; generuje
+ * `node scripts/subset-fonts.mjs`, nagłówek src/styles/fonts.css).
+ * Importowany przez Hero.astro (krój drewelomet, tylko strona główna),
+ * PO gotowym `@fontsource/saira-condensed/latin-600.css`.
+ *
+ * Deskryptory 1:1 z dawnego `@fontsource/saira-condensed/latin-ext-600.css`
+ * (ten arkusz był importowany przed F1) — bez `unicode-range`, więc plik
+ * startuje razem z `latin`, jak przed F1. Wersja z zakresem była
+ * podejrzewana o czerwony sweep hero `webkit-1440` 05–09 na PR #59 —
+ * hipoteza OBALONA (diff identyczny co do piksela po jej cofnięciu;
+ * faktyczna klasa: timing ekranu telefonu, T9 w hero.spec.ts). Zakres
+ * można dodać osobną zmianą z pomiarem. 14 736 → 3 864 B. */
+@font-face {
+  font-family: "Saira Condensed";
+  font-style: normal;
+  font-display: swap;
+  font-weight: 600;
+  src: url("../assets/fonts/saira-condensed-latin-ext-600-normal-pl.woff2")
+    format("woff2");
+}

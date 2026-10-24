@@ -380,6 +380,17 @@ pseudoelement pod spodem (wzorzec H1)". Razem z H1.
 liczba warstw i MB tekstur przed/po; potencjalnie flaky klatki 05–09
 i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 
+**H4 · COULD · S · ☐ — `phone-site.ts` bez relayoutu po fontach** (hipoteza
+z P8, NIEPOTWIERDZONA): `layout()` mierzy `offsetTop`/wysokości sekcji ekranu
+telefonu RAZ przy inicjalizacji (relayout tylko na `resize`). W P8
+podejrzewany o czerwony sweep `webkit-1440` 05–09 (PR #59) — cofnięcie
+`unicode-range` Sairy NIE zmieniło diffu ani o piksel, więc nie to było
+przyczyną (faktyczna klasa: timing ekranu telefonu → T9). Zostaje jako
+kandydat na źródło wrażliwości ekranu telefonu na timing: tylko z pomiarem
+(np. `fonts.ready.then(relayout)` wg wzorca re-glue z `timeline-base.ts`
+i porównanie rozrzutu klatek 05–09 między przebiegami). Commit:
+`fix(hero): relayout phone screen after fonts load`.
+
 ### R — Realizacje (treść i prezentacja)
 
 **R1 · MUST · L · ✅ 2026-10-22 (PR #53 P4: Etapy 1–4; PR #54 P5: Etapy 5–6; Etap 7 — telefony i desktopy na produkcji 2026-10-22, bez usterek) — wideo w podglądzie realizacji** — plan i etapy:
@@ -447,7 +458,7 @@ to błąd treści, nie infrastruktury. Commit: `test: tolerate missing realizacj
 `delung-web/tests/helpers/visual.ts:14-40`. Spodziewany efekt: mniej
 diffów „tylko krawędzie zdjęć" na runnerach. Commit: `test(visual): settle images before screenshots`.
 
-**T4 · SHOULD · M · ☐ — kontrakt progów breakpointów**:
+**T4 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8 `fix/p8-quality`; `tests/helpers/breakpoint.ts` + `tests/e2e/breakpoints.spec.ts`, 8 testów na chromium-1920: 861 = `.om-stage` position na /o-mnie/, `.dk-meta` /dla-kogo/, `.of-meta` /, `.fq-meta` /faq/, `.kt-meta` /kontakt/; 761 = `.wk-car` display + klik → `#work-sheet`/`#work-modal`; 769 = `.ambient-bg__clouds` (CSS `max-width: 768px`); stałe importowane z configów sekcji; mutacja kontrolna: próg Oferty w CSS przesunięty o 1 px → czytelny FAIL) — kontrakt progów breakpointów**:
 `tests/helpers/breakpoint.ts` `expectBreakpointFlip(page, url, selector,
 minPx)` mierzący `display`/układ przy `minPx-1` i `minPx`; po jednym teście
 dla 861 (about, audience, services, faq, contact), 761 (work modal↔sheet),
@@ -488,7 +499,7 @@ geometria sub-pikselowo (`getBoundingClientRect` + tolerancja, nie
 przeglądarki (`performance.now()` + `MutationObserver`), nie timerami
 testu; „czerwone w izolacji = z definicji nie flake".
 
-**T9 · COULD · S · ☐ — próg `FLAKY_DESKTOP_FRAMES` także dla `webkit-1440`**:
+**T9 · COULD · S · ✅ wdrożone 2026-10-24 w P8 (PR #59, decyzja Mateusza; `FLAKY_DESKTOP_PROJECTS` = chromium-1920 + webkit-1440, próg 0,02 na klatkach 05–09; wyzwalacz: po F1 CI `webkit-1440` 05–09 czerwone 4/4 z diffem wyłącznie w kadrze telefonu, max ~0,011, identycznym co do piksela w każdym przebiegu; kontrolne CI na main zielone; w Dockerze Playwright 1.61.1 (arm64 i amd64) klatki telefonu odbiegały od baseline'u CI także na main, a main i branch dawały tam identyczne zrzuty → przesunięcie treści telefonu płynne i zależne od środowiska/timingu, nie od metryki fontu) — próg `FLAKY_DESKTOP_FRAMES` także dla `webkit-1440`**:
 profil `webkit-1440` (T5) NIE ma podwyższonego progu dla flaky klatek hero
 05–09 (ekran telefonu + ambient) — ma go tylko `chromium-1920` w
 `hero.spec.ts`. Objaw zaobserwowany przy S3 (sesja 4, §10): FAIL ratio
@@ -524,7 +535,7 @@ przebiegów × mobile/desktop → mediany w `$GITHUB_STEP_SUMMARY` + artefakt
 
 ### L — Lighthouse
 
-**L1 · MUST · S · ✅ wdrożone lokalnie 2026-10-24 (PR B `chore/lhci-budgets`; pomiar: run `lhci-measure.yml` 40079996952 na main `fe4914f`, mediany z 5; progi: LCP mobile 4851 = 3551 + 1300, desktop 3210 = 1910 + 1300 — gorszy URL to /en/; TBT desktop 300 = max(0×2; 0+300), między granicami Google 200/600 — bez snapu; perf 0,80 (m) / 0,85 (d) = mediana − 0,05 w dół do 0,05; `font:count` → error, nowy `font:size` error 113 600 (m) / 168 800 (d) = mediana + 10%, deterministyczny co do bajta w 5/5 przebiegów; `numberOfRuns: 5`) — progi LCP z zapasem ≥ szumu runnera**: po pomiarze
+**L1 · MUST · S · ✅ na main 2026-10-24 (PR #57 `chore/lhci-budgets`, merge `d9750ce`; kontrolne CI na main run 40083791571 zielone, checki na PR za pierwszym razem; pomiar: run `lhci-measure.yml` 40079996952 na main `fe4914f`, mediany z 5; progi: LCP mobile 4851 = 3551 + 1300, desktop 3210 = 1910 + 1300 — gorszy URL to /en/; TBT desktop 300 = max(0×2; 0+300), między granicami Google 200/600 — bez snapu; perf 0,80 (m) / 0,85 (d) = mediana − 0,05 w dół do 0,05; `font:count` → error, nowy `font:size` error 113 600 (m) / 168 800 (d) = mediana + 10%, deterministyczny co do bajta w 5/5 przebiegów; `numberOfRuns: 5`) — progi LCP z zapasem ≥ szumu runnera**: po pomiarze
 (C4 lub `lhci-median.mjs` z 5 przebiegów na main): LCP =
 `max(mediana × 1,15; mediana + 1300)` (mobile i desktop), TBT desktop
 100 → wg reguły `max(mediana × 2; mediana + 300)` zaokrąglone do granicy
@@ -572,7 +583,7 @@ endpoint `{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
 
 ### F — Fonty
 
-**F1 · SHOULD · M · ☐ — polskie subsety fontów**: `scripts/subset-fonts.mjs`
+**F1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersję z zakresem cofnięto w trakcie diagnozy czerwonego sweepa `webkit-1440`, który okazał się klasą T9, nie winą zakresu); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte — zacieśnienie `font:size` = mini-PR po merge'u) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
 (`subset-font`, stała `SUBSET_CHARS = "ĄąĆćĘęŁłŃńŚśŹźŻż"` + ewentualne
 znaki z i18n EN spoza `latin` — test wskaże) → `src/assets/fonts/*.woff2`
 (commitowane); `src/styles/fonts.css` z deskryptorami 1:1 z Fontsource
@@ -626,7 +637,7 @@ brak zapisu w urządzeniu (sprawdzić treść `polityka-prywatnosci.astro`).
 
 ### A — Dostępność
 
-**A1 · SHOULD · S · ☐ — allowlista axe do zera**: dla `.of-w`/`.acc`
+**A1 · SHOULD · S · ✅ ZAMKNIĘTE jako przeformułowane 2026-10-24 (P8, decyzja Mateusza: wyjątek zostaje, allowlista NIE jest pusta) — pomiar obalił założenie punktu: stan końcowy akcentu spełnia AA na najjaśniejszym pikselu ambientu (kontrast): `--accent` 4,60:1 (WebKit 1920) / 4,66 (WebKit 1024, Chromium 1920) / 4,77 (Chromium 1024) / 4,81 (WebKit 390) / 5,07:1 (Chromium 390), `--ink` ≥ 12,5:1 — token `--accent-ink` niepotrzebny. axe zgłasza WYŁĄCZNIE stan startowy animacji „czytania scrollem” (słowo krycie 0,14 → `#222221`, akcent 0,24 → `#3d1611`; 1,31:1 na czerni; 60 węzłów desktop / 6 mobile na `/`), przy takim kryciu żaden kolor nie da 4,5:1. Jedyna realna droga do zera = podniesienie krycia startowego do ~0,5 (zabija efekt) — odrzucona; komentarz allowlisty w `a11y.spec.ts` z pomiarem. Baseline'y `services` nietknięte.** Pierwotny opis — allowlista axe do zera: dla `.of-w`/`.acc`
 (intro Oferty) osobny token tekstowy (np. `--accent-ink`, pomiar ≥ 4,5:1
 na tle sekcji w 3 szerokościach, Chromium + WebKit), zmiana koloru TYLKO
 w stanie spoczynku spanów (animacja rozjaśniania zostaje), usunięcie wpisów
@@ -634,7 +645,7 @@ z `KNOWN_VIOLATIONS`. Baseline'y `services.spec.ts` do regeneracji po
 akceptacji. Przy wartościach w docs znacznik „(kontrast)" = wynik pomiaru.
 Commit: `fix(services): aa contrast for intro accents, empty axe allowlist`.
 
-**A2 · MUST · S · ☐ — link w nocie RODO odróżnialny nie tylko kolorem**
+**A2 · MUST · S · ✅ wdrożone lokalnie 2026-10-24 (PR P8; `.kt-note a` underline/0,15em/1px, kolor bez zmian; strona główna NIE ma `.kt-note` — tylko baner; dowód deterministyczny: axe `link-in-text-block` dla linku na `/kontakt/` i `/en/contact/` przed = `incomplete` (źródło losowych zgłoszeń), po = `passes`; allowlista bez nowych wpisów; diff `contact-index-form` POD progiem 0,0005 na 6 profilach (pomiar progiem 0: tylko podkreślenie + animowane logo navbara) — zaakceptowany przez Mateusza jako „zielony, ale nieaktualny”, darwin zregenerowany filtrem `tests/visual/contact-index.spec.ts:29` (6 plików, kontrola 18/18), linux workflow z tym samym filtrem i `mode=all`) — link w nocie RODO odróżnialny nie tylko kolorem**
 (§5 pkt 15): `Contact.astro` — `.kt-note a { text-decoration: underline;
 text-underline-offset: 0.15em; text-decoration-thickness: 1px; }` (bez
 zmiany koloru; kontrast tekst↔link 1,37:1 nie da się podnieść do 3:1 bez
@@ -649,7 +660,7 @@ niezwiązanym PR-ze = rerun tego samego SHA, a naprawa tutaj. Commit:
 
 ### U — Nakładki
 
-**U1 · SHOULD · M · ☐ — swipe-down „Runda 4"**: port z hetman
+**U1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; port 1:1 bloku gestu z hetman do `src/scripts/overlay.ts` — `touch*` non-passive, `pending`/`DRAG_SLOP_PX`, start z treści przewiniętej na górę, `[data-overlay-nodrag]`; `overscroll-behavior: contain` na `[data-overlay-scroll], [data-overlay-panel]` w `global.css`; `lockScroll/unlockScroll` z Lenisem nietknięte; `tests/e2e/overlay-swipe.spec.ts` (CDP `Input.dispatchTouchEvent`, chromium-pixel-5): 5 testów — swipe z treści na górze zamyka, z treści przewiniętej przewija, w bok nie zamyka, uchwyt zamyka dotykiem, krótki ruch wraca; na starym `overlay.ts` pada test „z treści” — reszta to strażnicy regresji; pull-to-refresh = telefon) — swipe-down „Runda 4"**: port z hetman
 `src/scripts/overlay.ts:201-261` (gest przez `touch*` non-passive,
 `preventDefault` w pierwszej klatce ruchu w dół, `DRAG_SLOP_PX`, gest także
 w treści sheeta przewiniętej na górę) + `overscroll-behavior: contain` na
@@ -723,8 +734,8 @@ zmigrowane).
 | P4 „Wideo — mechanizm" | R1 Etapy 1–4 | wg planu wideo | brak (bez wpisu z wideo) |
 | P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | ✅ PR #54 (2026-10-22): zregenerowane 26 darwin + 25 linux, WYŁĄCZNIE `work-*` (section-work, work-modal, work-sheet, work-index-*) |
 | P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ✅ PR #55 (2026-10-22), baseline'y nietknięte |
-| P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B `chore/lhci-budgets` (L1) wdrożony lokalnie 2026-10-24 |
-| P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | contact-index (A2), services (A1); reszta brak |
+| P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B #57 (L1) ✅ na main 2026-10-24 — **P7 ✅ W CAŁOŚCI** (PR #56 + #57) |
+| P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ◐ wdrożone lokalnie 2026-10-24 (`fix/p8-quality`): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
 | później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
 
@@ -917,4 +928,65 @@ osobny PR po pomiarze na main.
   w §6), komentarz „dlaczego ten próg" z datą i numerem runu przy
   każdej asercji. Po merge'u PR B czerwony `lighthouse` z `d0ce27f`
   zamknięty definitywnie. Następna paczka: P8 „Jakość" (A2 pierwszy).
+  **Domknięcie (2026-10-24):** PR B **#57 zmergowany** (main `d9750ce`);
+  checki na PR przeszły za pierwszym razem (bez rerunów — nowe progi mają
+  zapas); kontrolne CI na main (run 40083791571): quality/e2e/lighthouse
+  zielone + Prod smoke zielony → czerwony `lighthouse` z `d0ce27f`
+  zamknięty definitywnie. Job `lighthouse` z `numberOfRuns: 5` trwa
+  ~5 min (było ~3). Między paczkami mini-PR **#58** `chore/claude-settings`
+  (reguła: zmiany ekosystemu Claude osobnym PR-em między paczkami):
+  usunięte 4 martwe reguły `Write(...)` (uprawnienia plikowe matchują tylko
+  `Edit`/`Read`; `Edit` pokrywa Write/NotebookEdit), duplikaty
+  `Bash(git commit)`/`Bash(git push)`, gotcha `Bash(pnpm test:*)` → jawna
+  lista (`:*` = skrót na ` *`, więc stare NIE łapało `test:unit`/
+  `test:e2e`/`test:visual`); `test:visual:update` celowo poza allowlistą.
+  Ostrzeżenia o regułach na starcie sesji znikły (potwierdził Mateusz).
+- **2026-10-24 (sesja 7)** — bramka: main `dff73e4` (merge #58), CI +
+  Prod smoke po #58 zielone. Start P8 „Jakość" (branch `fix/p8-quality`,
+  kolejność A2 → A1 → T4 → U1 → F1, szczegóły i liczby przy punktach w §6).
+  **A2** ✅: axe `link-in-text-block` dla linku w nocie RODO było
+  `incomplete` (źródło losowych zgłoszeń), po podkreśleniu `passes`; diff
+  `contact-index-form` pod progiem 0,0005 — zaakceptowany przez Mateusza,
+  darwin zregenerowany filtrem `spec:linia` (6 plików). **A1** — pomiar
+  obalił założenie (akcent w stanie końcowym AA, 4,60–5,07:1; axe łapie
+  stan startowy animacji przy kryciu 0,14/0,24); decyzja Mateusza: wyjątek
+  zostaje, A1 zamknięte jako przeformułowane, allowlista NIE pusta
+  (świadomie niespełniony punkt DoD). **T4** ✅ (mutacja 1 px → FAIL).
+  **U1** ✅ (CDP touch; stary kod oblewa test gestu z treści). **F1** ✅
+  (59 728 → 13 588 B subsetów; pobrane fonty `/` mobile 66 780 B, desktop
+  105 144 B). Weryfikacja lokalna: unit 13 plików zielone, `test:visual`
+  115/115 (F1 bez zmian w pikselach), `test:e2e` 4 pełne przebiegi po
+  681 passed + 1 fail każdy — `work.spec.ts:123` (wideo w nakładce nie
+  rusza, `currentTime` 0) 2/4 i axe `.pp-sub` `/oferta/`|`/en/services/`
+  pixel-5 2/4; **kontrola na main `dff73e4`** (worktree, osobny preview):
+  2 przebiegi, te same dwa flaki po 1/2 → zastane, lokalne pod pełnym
+  obciążeniem (CI na main zielone), nie regresja P8; w izolacji wideo 5/5.
+  Progi LHCI nietknięte; po merge'u mini-PR `font:size`. Ekosystem:
+  reguły w `testing.md` (axe incomplete vs passes, CDP touch, `test.skip`
+  bez `testInfo`, filtr `plik:linia` + `mode=all`) i `layout-seo.md`
+  (fonty F1, pułapka lockfile'a `@paulirish/trace_engine`).
+  **PR #59 — checki:** `quality` i `lighthouse` zielone za pierwszym razem
+  (progi nietknięte); `e2e` czerwony 3/3 na tym samym SHA — sweep hero
+  `webkit-1440` klatki 05–09 (diff wyłącznie na ekranie telefonu: treść
+  przesunięta o kilka px, napisy z polskimi znakami bez różnic), reszta
+  zielona (e2e 682/682, visual 114). Kontrolne CI na main
+  (`workflow_dispatch`, run 40101301327) ZIELONE → regresja P8, nie T9.
+  Diagnoza (dwie hipotezy obalone po kolei — zapis uczciwy):
+  (1) `unicode-range` Sairy `latin-ext` opóźniał pobranie subsetu za
+  jednorazowy pomiar `phone-site.ts` → cofnięty (`b17193b`), diff
+  IDENTYCZNY co do piksela → obalone; (2) tablice/metryki subsetów
+  (hinting, hhea) — identyczne z oryginałami; znaki łączące/wietnamskie
+  w treści — brak. Bisekcja w Dockerze (Playwright 1.61.1, arm64 i amd64)
+  nie odtwarza runnera: tam klatki telefonu odbiegają od baseline'u CI
+  także na main, a main i branch dają identyczne zrzuty; porównanie
+  kadrów (baseline CI / branch CI / main Docker) pokazało PŁYNNE
+  przesunięcie treści telefonu zależne od środowiska → klasa timingu
+  ekranu telefonu (jak flaki 05–09 chromium-1920), którą zmiana ładowania
+  fontów F1 przesunęła na runnerze ponad domyślny próg. Decyzja Mateusza:
+  **T9** (próg 0,02 klatek 05–09 także dla `webkit-1440`), baseline'y
+  bez zmian. Hipoteza o `phone-site.ts` → H4 jako COULD do pomiaru.
+  Lekcja: identyczny co do piksela diff w N przebiegach ≠ dowód braku
+  timingu — runner CI bywa deterministyczny, a stan i tak zależy od
+  środowiska; przed szukaniem „winnego pliku" porównaj kadry między
+  środowiskami (płynne przesunięcie = timing, skok/zawinięcie = metryka).
 

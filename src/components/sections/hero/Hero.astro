@@ -6,7 +6,8 @@
 // jest realnie użyty; LaptopSite chowa się <760px, ale PhoneSite renderuje
 // się na mobile i używa OBU krojów.
 import "@fontsource/saira-condensed/latin-600.css";
-import "@fontsource/saira-condensed/latin-ext-600.css";
+// latin-ext = polski subset z unicode-range (F1) — PO arkuszu latin
+import "@/styles/fonts-hero.css";
 import "@fontsource/space-mono/latin-400.css";
 
 import { useTranslations, type Lang } from "@/i18n/utils";

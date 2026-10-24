@@ -18,6 +18,12 @@ const POINTS = [0, 0.06, 0.14, 0.24, 0.36, 0.5, 0.64, 0.78, 0.9, 1.0, 1.06];
 // przebiegami (ekran telefonu + ambient) — podwyższony próg TYLKO tam.
 const FLAKY_DESKTOP_FRAMES = new Set([5, 6, 7, 8, 9]);
 const FLAKY_RATIO = 0.02;
+// Ta sama klasa na WebKit desktop (T9, 2026-10-24, PR #59): treść ekranu
+// telefonu przy danej pozycji scrolla przesuwa się płynnie zależnie od
+// środowiska/timingu ładowania (CI main ≠ CI z nowymi fontami F1 ≠ Docker;
+// diff tylko w kadrze telefonu, max ~0.011). Desktop = chromium-1920
+// i webkit-1440 — ten sam próg, te same klatki.
+const FLAKY_DESKTOP_PROJECTS = new Set(["chromium-1920", "webkit-1440"]);
 
 // Utrwalona wiedza projektu (2026-07-12, PR polityki prywatności): flota
 // runnerów GH nie renderuje jednolicie — te same binaria (cache
@@ -61,7 +67,8 @@ test("sweep scrolla hero vs baseline", async ({ page }, testInfo) => {
       Math.round(frac * 100),
     ).padStart(3, "0")}.png`;
     const ratio =
-      testInfo.project.name === "chromium-1920" && FLAKY_DESKTOP_FRAMES.has(i)
+      FLAKY_DESKTOP_PROJECTS.has(testInfo.project.name) &&
+      FLAKY_DESKTOP_FRAMES.has(i)
         ? FLAKY_RATIO
         : testInfo.project.name === "chromium-pixel-5" &&
             FLAKY_PIXEL5_FRAMES.has(i)
