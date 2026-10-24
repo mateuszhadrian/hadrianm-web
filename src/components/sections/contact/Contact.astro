@@ -817,6 +817,14 @@ const topics = [
     color: var(--faint);
     text-wrap: balance;
   }
+  /* link w nocie odróżnialny nie tylko kolorem (axe link-in-text-block):
+     kontrast akcent↔--faint to ~1,4:1, a 3:1 wymagałoby porzucenia akcentu
+     — podkreślenie spełnia regułę wprost; kolor bez zmian */
+  .kt-note a {
+    text-decoration: underline;
+    text-underline-offset: 0.15em;
+    text-decoration-thickness: 1px;
+  }
   /* kontener Turnstile: pusty (przed pierwszym submitem) nie zabiera
      miejsca; widget w trybie interaction-only pokazuje się tylko przy
      podejrzanym ruchu */
