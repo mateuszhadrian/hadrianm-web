@@ -13,24 +13,31 @@ module.exports = {
     collect: {
       staticDistDir: "./dist",
       url: ["/", "/en/"], // ścieżki w obrębie staticDistDir
-      numberOfRuns: 3, // mediana — tłumi szum runnera
+      numberOfRuns: 5, // mediana z 5 (L1) — tłumi loterię maszyn lepiej niż 3
     },
     assert: {
-      // Baseline CI 2026-07-07 (run 28884218254, mediany z 5 przebiegów;
-      // gorszy z dwóch URL-i): perf 0.94, LCP 2573 ms, TBT 25 ms,
-      // CLS 0.0173, script 68 KB, total 1801 KB, fonty 4.
-      // Ratchet po etapie 7 (run 28894534750): perf 0.95/0.97,
-      // CLS 0.0007 (preload fontu) → zacieśnione minScore i CLS.
-      // Re-baseline LCP 2026-07-09: dryf runnerów GitHuba (~+13%) — TEN SAM
-      // SHA maina zmierzył 2745 ms o 14:01 i 3111 ms o 16:56 (re-run joba,
-      // run 29023439109); kod bez zmian, czysty dryf infry. Mediana pomiarów
-      // z 2026-07-09 (3017/3100/3101/3111) = 3100 → próg 3100 × 1,15 ≈ 3565.
+      // Baseline 2026-10-24 (L1; workflow lhci-measure.yml, run 40079996952,
+      // mediany z 5 przebiegów na main fe4914f — pierwszy pomiar po P5
+      // (treść #work) i P6; gorszy z dwóch URL-i): perf 0.89 (/),
+      // LCP 3551 ms (/), TBT 9 ms, CLS 0.0000, script 88 KB,
+      // total 1868 KB, fonty 4 × 103 268 B (/).
+      // Historia poprzednich baseline'ów (2026-07): git blame + §III.5
+      // analizy testów. Formuły progów: §6 L1 analizy ewolucji.
       aggregationMethod: "median-run",
       assertions: {
-        "categories:performance": ["error", { minScore: 0.9 }],
-        "largest-contentful-paint": ["error", { maxNumericValue: 3565 }],
-        // TBT ×1,15 dałoby 29 ms — próg-podłoga 150 ms, bo pojedyncze ms
-        // to czysty szum runnera; realna regresja JS i tak go przebije.
+        // perf = mediana 0.89 − 0.05, w dół do wielokrotności 0.05 → 0.80
+        // (decyzja Mateusza 2026-10-23: stały 0.9 leżał NA medianie —
+        // 2× czerwony na d0ce27f przy bajtach co do bajta identycznych).
+        // Strażnik zgrubny; realny ratchet to budżety bajtów niżej.
+        "categories:performance": ["error", { minScore: 0.8 }],
+        // LCP = max(3551 × 1,15 = 4084; 3551 + 1300 = 4851) = 4851
+        // (run 40079996952, 2026-10-24). Poprzedni próg 3565 (mediana
+        // 2026-07-09 × 1,15) miał zapas MNIEJSZY niż dryf floty (~13%)
+        // i leżał na medianie dzisiejszych runnerów.
+        "largest-contentful-paint": ["error", { maxNumericValue: 4851 }],
+        // TBT: mediana 9 ms (run 40079996952) — podłoga 150 ms bez zmian,
+        // pojedyncze ms to czysty szum; realną regresję JS złapie
+        // script:size.
         "total-blocking-time": ["error", { maxNumericValue: 150 }],
         "cumulative-layout-shift": ["error", { maxNumericValue: 0.005 }],
         // Re-baseline 2026-07-10 po sekcji Oferta (PR #16, run 29109723817):
@@ -40,13 +47,19 @@ module.exports = {
         // powiadomień; ~1,1 KB gzip doliczane przy starcie, montowany globalnie
         // w BaseLayout): zmierzone 86 941 B (run 29331137496) → próg
         // 86 941 × 1,1 ≈ 95 700. Rozmiar bundle'a jest deterministyczny (nie
-        // dryf runnera). Po optymalizacji zacieśnić do nowego baseline'u.
+        // dryf runnera). Mediana 2026-10-24: 90 065 B — w budżecie, próg
+        // bez zmian. Po optymalizacji zacieśnić do nowego baseline'u.
         "resource-summary:script:size": ["error", { maxNumericValue: 95700 }],
         "resource-summary:total:size": [
           "error",
-          { maxNumericValue: 2030000 }, // 1801 KB × 1,1
+          { maxNumericValue: 2030000 }, // 1801 KB × 1,1; mediana 2026-10-24: 1868 KB — w budżecie
         ],
-        "resource-summary:font:count": ["warn", { maxNumericValue: 5 }],
+        // Fonty (L1, run 40079996952): count warn → error (mediana 4,
+        // próg 5 bez zmian); size NOWY error = mediana 103 268 B + 10%
+        // ≈ 113 600. Po F1 (subsetting/preload) zacieśnić do świeżego
+        // pomiaru.
+        "resource-summary:font:count": ["error", { maxNumericValue: 5 }],
+        "resource-summary:font:size": ["error", { maxNumericValue: 113600 }],
       },
     },
     upload: { target: "temporary-public-storage" },
