@@ -380,16 +380,15 @@ pseudoelement pod spodem (wzorzec H1)". Razem z H1.
 liczba warstw i MB tekstur przed/po; potencjalnie flaky klatki 05–09
 i limit GPU Androida. Tylko z pomiarem; bez pomiaru nie ruszać.
 
-**H4 · SHOULD · S · ☐ — `phone-site.ts` bez relayoutu po fontach** (znalezione
-w P8, PR #59): `layout()` mierzy `offsetTop`/wysokości sekcji ekranu telefonu
-RAZ przy inicjalizacji (relayout tylko na `resize`) — font dochodzący po
-pomiarze przesuwa treść telefonu w sweepie hero. Objaw: F1 z `unicode-range`
-na Sairze `latin-ext` (subset startował ~50 ms później) → `webkit-1440`
-klatki 05–09 czerwone 3/3 na CI, main zielony; obejście w P8 = deklaracja
-bez zakresu (jak przed F1). Naprawa: `document.fonts.ready.then(relayout)`
-wg wzorca re-glue z `timeline-base.ts` (z latchem na teardown), potem
-dopiero zakres w `fonts-hero.css`. Weryfikacja: sweep hero (chromium-1920
-+ webkit-1440), oba komplety baseline'ów tylko jeśli diff. Commit:
+**H4 · COULD · S · ☐ — `phone-site.ts` bez relayoutu po fontach** (hipoteza
+z P8, NIEPOTWIERDZONA): `layout()` mierzy `offsetTop`/wysokości sekcji ekranu
+telefonu RAZ przy inicjalizacji (relayout tylko na `resize`). W P8
+podejrzewany o czerwony sweep `webkit-1440` 05–09 (PR #59) — cofnięcie
+`unicode-range` Sairy NIE zmieniło diffu ani o piksel, więc nie to było
+przyczyną (faktyczna klasa: timing ekranu telefonu → T9). Zostaje jako
+kandydat na źródło wrażliwości ekranu telefonu na timing: tylko z pomiarem
+(np. `fonts.ready.then(relayout)` wg wzorca re-glue z `timeline-base.ts`
+i porównanie rozrzutu klatek 05–09 między przebiegami). Commit:
 `fix(hero): relayout phone screen after fonts load`.
 
 ### R — Realizacje (treść i prezentacja)
@@ -500,7 +499,7 @@ geometria sub-pikselowo (`getBoundingClientRect` + tolerancja, nie
 przeglądarki (`performance.now()` + `MutationObserver`), nie timerami
 testu; „czerwone w izolacji = z definicji nie flake".
 
-**T9 · COULD · S · ☐ — próg `FLAKY_DESKTOP_FRAMES` także dla `webkit-1440`**:
+**T9 · COULD · S · ✅ wdrożone 2026-10-24 w P8 (PR #59, decyzja Mateusza; `FLAKY_DESKTOP_PROJECTS` = chromium-1920 + webkit-1440, próg 0,02 na klatkach 05–09; wyzwalacz: po F1 CI `webkit-1440` 05–09 czerwone 4/4 z diffem wyłącznie w kadrze telefonu, max ~0,011, identycznym co do piksela w każdym przebiegu; kontrolne CI na main zielone; w Dockerze Playwright 1.61.1 (arm64 i amd64) klatki telefonu odbiegały od baseline'u CI także na main, a main i branch dawały tam identyczne zrzuty → przesunięcie treści telefonu płynne i zależne od środowiska/timingu, nie od metryki fontu) — próg `FLAKY_DESKTOP_FRAMES` także dla `webkit-1440`**:
 profil `webkit-1440` (T5) NIE ma podwyższonego progu dla flaky klatek hero
 05–09 (ekran telefonu + ambient) — ma go tylko `chromium-1920` w
 `hero.spec.ts`. Objaw zaobserwowany przy S3 (sesja 4, §10): FAIL ratio
@@ -584,7 +583,7 @@ endpoint `{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
 
 ### F — Fonty
 
-**F1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja CELOWO bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersja z zakresem z `600.css` wywróciła na CI sweep hero `webkit-1440` 05–09 3/3, przyczyna i naprawa docelowa = H4); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte — zacieśnienie `font:size` = mini-PR po merge'u) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
+**F1 · SHOULD · M · ✅ wdrożone lokalnie 2026-10-24 (PR P8; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersję z zakresem cofnięto w trakcie diagnozy czerwonego sweepa `webkit-1440`, który okazał się klasą T9, nie winą zakresu); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte — zacieśnienie `font:size` = mini-PR po merge'u) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
 (`subset-font`, stała `SUBSET_CHARS = "ĄąĆćĘęŁłŃńŚśŹźŻż"` + ewentualne
 znaki z i18n EN spoza `latin` — test wskaże) → `src/assets/fonts/*.woff2`
 (commitowane); `src/styles/fonts.css` z deskryptorami 1:1 z Fontsource
@@ -972,13 +971,22 @@ osobny PR po pomiarze na main.
   przesunięta o kilka px, napisy z polskimi znakami bez różnic), reszta
   zielona (e2e 682/682, visual 114). Kontrolne CI na main
   (`workflow_dispatch`, run 40101301327) ZIELONE → regresja P8, nie T9.
-  Przyczyna: `unicode-range` dodany Sairze `latin-ext` w `fonts-hero.css`
-  przesunął start pobrania subsetu za pierwszy layout (zmierzone lokalnie
-  w WebKit: 437 ms vs `latin` 384 ms), a `phone-site.ts` mierzy layout raz,
-  bez relayoutu po fontach → na runnerze subset dochodzi po pomiarze.
-  Poprawka: deklaracja bez zakresu (subset startuje 308 ms, PRZED `latin`
-  — jak przed F1; bajty bez zmian); lokalnie hero sweep zielony, unit
-  zielone. Dług → nowy punkt **H4**. Lekcja: lokalny preview (localhost)
-  nie odtworzy wyścigu fontów z runnerem — zmiana momentu pobrania fontu
-  w hero wymaga CI, nie tylko lokalnego `test:visual`.
+  Diagnoza (dwie hipotezy obalone po kolei — zapis uczciwy):
+  (1) `unicode-range` Sairy `latin-ext` opóźniał pobranie subsetu za
+  jednorazowy pomiar `phone-site.ts` → cofnięty (`b17193b`), diff
+  IDENTYCZNY co do piksela → obalone; (2) tablice/metryki subsetów
+  (hinting, hhea) — identyczne z oryginałami; znaki łączące/wietnamskie
+  w treści — brak. Bisekcja w Dockerze (Playwright 1.61.1, arm64 i amd64)
+  nie odtwarza runnera: tam klatki telefonu odbiegają od baseline'u CI
+  także na main, a main i branch dają identyczne zrzuty; porównanie
+  kadrów (baseline CI / branch CI / main Docker) pokazało PŁYNNE
+  przesunięcie treści telefonu zależne od środowiska → klasa timingu
+  ekranu telefonu (jak flaki 05–09 chromium-1920), którą zmiana ładowania
+  fontów F1 przesunęła na runnerze ponad domyślny próg. Decyzja Mateusza:
+  **T9** (próg 0,02 klatek 05–09 także dla `webkit-1440`), baseline'y
+  bez zmian. Hipoteza o `phone-site.ts` → H4 jako COULD do pomiaru.
+  Lekcja: identyczny co do piksela diff w N przebiegach ≠ dowód braku
+  timingu — runner CI bywa deterministyczny, a stan i tak zależy od
+  środowiska; przed szukaniem „winnego pliku" porównaj kadry między
+  środowiskami (płynne przesunięcie = timing, skok/zawinięcie = metryka).
 

@@ -4,15 +4,12 @@
  * PO gotowym `@fontsource/saira-condensed/latin-600.css`.
  *
  * Deskryptory 1:1 z dawnego `@fontsource/saira-condensed/latin-ext-600.css`
- * — CELOWO BEZ `unicode-range`. Bez zakresu face jest pytany o KAŻDY znak
- * tekstu w Sairze, więc plik startuje RAZEM z `latin` (pierwszy layout),
- * a nie dopiero przy pierwszym polskim glifie. Z zakresem (wersja z PR #59)
- * dochodził ~50 ms później i na runnerach CI lądował PO jednorazowym
- * pomiarze layoutu ekranu telefonu (`layout()` w phone-site.ts, bez
- * relayoutu po fonts.ready) → przesunięta treść telefonu, sweep hero
- * `webkit-1440` klatki 05–09 czerwony 3/3 (main zielony). Nie dodawaj
- * zakresu, dopóki phone-site nie przelicza layoutu po fontach (backlog H4).
- * 14 736 → 3 864 B. */
+ * (ten arkusz był importowany przed F1) — bez `unicode-range`, więc plik
+ * startuje razem z `latin`, jak przed F1. Wersja z zakresem była
+ * podejrzewana o czerwony sweep hero `webkit-1440` 05–09 na PR #59 —
+ * hipoteza OBALONA (diff identyczny co do piksela po jej cofnięciu;
+ * faktyczna klasa: timing ekranu telefonu, T9 w hero.spec.ts). Zakres
+ * można dodać osobną zmianą z pomiarem. 14 736 → 3 864 B. */
 @font-face {
   font-family: "Saira Condensed";
   font-style: normal;

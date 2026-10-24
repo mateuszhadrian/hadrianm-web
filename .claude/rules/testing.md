@@ -64,8 +64,12 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   `update-visual-baselines.yml` z inputami `spec` (ZAWĘŻONY do jednego
   speca) i `mode: all` — nigdy do naprawiania czerwonego testu.
 - Flaky klatki hero desktop 05–09 (ekran telefonu + ambient, ~0.5–2%):
-  mają podwyższony próg w hero.spec.ts; FAIL tam najpierw porównaj
-  z przebiegiem kontrolnym, dopiero potem podejrzewaj regresję.
+  mają podwyższony próg w hero.spec.ts na `chromium-1920` ORAZ (od T9,
+  2026-10-24) `webkit-1440`; FAIL tam najpierw porównaj z przebiegiem
+  kontrolnym, dopiero potem podejrzewaj regresję. Treść telefonu przesuwa
+  się PŁYNNIE zależnie od środowiska/timingu ładowania — runner potrafi
+  dawać diff identyczny co do piksela w każdym przebiegu, a i tak to
+  timing (P8: zmiana fontów przesunęła stan runnera; Docker ≠ runner).
 - Flaky klatki hero pixel-5 00–03 (loteria maszyn runnerów GH: różne CPU →
   inne zaokrąglenia AA serifowego akcentu przy ułamkowym DPR 2.75; ~0.35%
   diffu, deterministycznie per maszyna): próg 0.01 w hero.spec.ts. NIE
