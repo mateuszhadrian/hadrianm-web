@@ -55,11 +55,12 @@ module.exports = {
           { maxNumericValue: 2030000 }, // 1801 KB × 1,1; mediana 2026-10-24: 1868 KB — w budżecie
         ],
         // Fonty (L1, run 40079996952): count warn → error (mediana 4,
-        // próg 5 bez zmian); size NOWY error = mediana 103 268 B + 10%
-        // ≈ 113 600. Po F1 (subsetting/preload) zacieśnić do świeżego
-        // pomiaru.
+        // próg 5 bez zmian). size zacieśniony 2026-10-24 po F1 (polskie
+        // subsety latin-ext, PR #59): run lhci-measure.yml 40124168778 na
+        // main cc3a05a — 4 × 67 998 B na /, deterministycznie 5/5 (było
+        // 103 268 B, próg 113 600); próg = mediana + 10% w górę do setki.
         "resource-summary:font:count": ["error", { maxNumericValue: 5 }],
-        "resource-summary:font:size": ["error", { maxNumericValue: 113600 }],
+        "resource-summary:font:size": ["error", { maxNumericValue: 74800 }],
       },
     },
     upload: { target: "temporary-public-storage" },
