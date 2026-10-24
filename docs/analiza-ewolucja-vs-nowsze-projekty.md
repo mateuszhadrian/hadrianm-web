@@ -524,7 +524,7 @@ przebiegów × mobile/desktop → mediany w `$GITHUB_STEP_SUMMARY` + artefakt
 
 ### L — Lighthouse
 
-**L1 · MUST · S · ☐ — progi LCP z zapasem ≥ szumu runnera**: po pomiarze
+**L1 · MUST · S · ✅ wdrożone lokalnie 2026-10-24 (PR B `chore/lhci-budgets`; pomiar: run `lhci-measure.yml` 40079996952 na main `fe4914f`, mediany z 5; progi: LCP mobile 4851 = 3551 + 1300, desktop 3210 = 1910 + 1300 — gorszy URL to /en/; TBT desktop 300 = max(0×2; 0+300), między granicami Google 200/600 — bez snapu; perf 0,80 (m) / 0,85 (d) = mediana − 0,05 w dół do 0,05; `font:count` → error, nowy `font:size` error 113 600 (m) / 168 800 (d) = mediana + 10%, deterministyczny co do bajta w 5/5 przebiegów; `numberOfRuns: 5`) — progi LCP z zapasem ≥ szumu runnera**: po pomiarze
 (C4 lub `lhci-median.mjs` z 5 przebiegów na main): LCP =
 `max(mediana × 1,15; mediana + 1300)` (mobile i desktop), TBT desktop
 100 → wg reguły `max(mediana × 2; mediana + 300)` zaokrąglone do granicy
@@ -723,7 +723,7 @@ zmigrowane).
 | P4 „Wideo — mechanizm" | R1 Etapy 1–4 | wg planu wideo | brak (bez wpisu z wideo) |
 | P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | ✅ PR #54 (2026-10-22): zregenerowane 26 darwin + 25 linux, WYŁĄCZNIE `work-*` (section-work, work-modal, work-sheet, work-index-*) |
 | P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ✅ PR #55 (2026-10-22), baseline'y nietknięte |
-| P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | ◐ 2026-10-23 (`ci/lhci-measure`, PR A): C4/T3/T6 wdrożone lokalnie; L1 = PR B po pomiarze na main; baseline'y: 1 z T3 (work-index-grid webkit-iphone-se), diff zaakceptowany — darwin w drzewie, linux po pushu |
+| P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B `chore/lhci-budgets` (L1) wdrożony lokalnie 2026-10-24 |
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | contact-index (A2), services (A1); reszta brak |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
 | później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
@@ -900,4 +900,21 @@ osobny PR po pomiarze na main.
   na końcu. Decyzje pod PR B (L1): perf `minScore` z pomiaru
   (mediana − 0,05 w dół do 0,05), lista URL-i bez zmian (`/en/` zostaje) —
   zapisane przy L1 w §6.
+- **2026-10-24 (sesja 6)** — PR A **#56 zmergowany** (main `fe4914f`):
+  linux baseline przez workflow z inputami T6 (pierwsze użycie: zawężony
+  `spec` przepisał dokładnie 1 plik), commit darwin na końcu. Na PR
+  `lighthouse` czerwony 1× — tym razem **perf 0,89 vs minScore 0,9**
+  (LCP 3544 pod progiem; bajty co do bajta = main: script 90 065 B,
+  benchmarkIndex 4551) → rerun zielony; kolejne potwierdzenie progu na
+  medianie, tym razem drugiego. CI + Prod smoke na main po merge'u
+  zielone za pierwszym razem. **Pierwszy pomiar `lhci-measure.yml`: run
+  40079996952** (mediany z 5, gorszy URL): mobile perf 0,89 / LCP 3551 /
+  fonty 4 × 103 268 B; desktop perf 0,91 (/en/) / LCP 1910 (/en/!) /
+  fonty 7 × 153 419 B; font:size deterministyczny 5/5. Desktop LCP
+  /en/ 1910 vs stary próg 2000 = 90 ms zapasu — ta sama pułapka co
+  mobile, naprawiona tym samym ruchem. PR B `chore/lhci-budgets`
+  wdrożony lokalnie: progi wg L1 + decyzje (tabela wartości przy L1
+  w §6), komentarz „dlaczego ten próg" z datą i numerem runu przy
+  każdej asercji. Po merge'u PR B czerwony `lighthouse` z `d0ce27f`
+  zamknięty definitywnie. Następna paczka: P8 „Jakość" (A2 pierwszy).
 
