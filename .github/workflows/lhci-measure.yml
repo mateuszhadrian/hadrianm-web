@@ -1,0 +1,66 @@
+# Pomiar bazowy Lighthouse na RUNNERZE CI — jedyne źródło liczb do budżetów
+# (ratchet) w lighthouserc.cjs / lighthouserc.desktop.cjs (punkt C4 → L1).
+# WYŁĄCZNIE workflow_dispatch: nie bramkuje, nie commituje — zbiera N
+# przebiegów na obu configach i wrzuca mediany + surowe raporty jako artefakt.
+# Mediany z artefaktu wpisuje się do lighthouserc* ręcznie, osobnym commitem
+# (decyzja Mateusza). Lokalny `lhci` wypada gorzej niż CI (mnożnik CPU) —
+# NIE jest podstawą ratchetu.
+# Build przez `pnpm build` (treść PRODUKCYJNA), NIE `pnpm build:visual`:
+# job `lighthouse` w ci.yml mierzy artefakt `dist` z `pnpm build`, więc
+# pomiar bazowy musi mierzyć ten sam build — inaczej progi odnosiłyby się
+# do innych bajtów niż te, które bramkują PR-y. (Różnica wobec wzorca
+# hetmannieruchomosci-web, gdzie także bramka mierzy build z fixture.)
+# UWAGA GitHub: workflow z samym `workflow_dispatch` da się uruchomić
+# dopiero, gdy jego plik jest na gałęzi domyślnej (main) — do tego czasu
+# `gh workflow run` zwraca 404. Pierwszy pomiar biegnie z main po merge'u
+# PR-a z tym plikiem; później `--ref <branch>` działa normalnie.
+# Procedura: .claude/rules/testing.md, sekcja LHCI.
+name: LHCI measure (baseline)
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: Liczba przebiegów na adres (mediana z nieparzystej)
+        required: false
+        default: "5"
+jobs:
+  measure:
+    # Ten sam przypięty obraz co w ci.yml (C3) — mediany muszą powstawać
+    # na tej samej flocie, która bramkuje.
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      # Treść produkcyjna — jak artefakt `dist` joba lighthouse w ci.yml.
+      - run: pnpm build
+      - name: Collect — mobile
+        run: |
+          rm -rf .lighthouseci
+          pnpm exec lhci collect --config=lighthouserc.cjs --numberOfRuns=${{ inputs.runs }}
+          mkdir -p lhci-measure/mobile
+          cp .lighthouseci/lhr-*.json lhci-measure/mobile/
+          node scripts/lhci-median.mjs .lighthouseci | tee lhci-measure/median-mobile.txt
+      - name: Collect — desktop
+        run: |
+          rm -rf .lighthouseci
+          pnpm exec lhci collect --config=lighthouserc.desktop.cjs --numberOfRuns=${{ inputs.runs }}
+          mkdir -p lhci-measure/desktop
+          cp .lighthouseci/lhr-*.json lhci-measure/desktop/
+          node scripts/lhci-median.mjs .lighthouseci | tee lhci-measure/median-desktop.txt
+      - name: Mediany w podsumowaniu biegu
+        run: |
+          {
+            echo '## LHCI — mediany (mobile)'; echo '```'; cat lhci-measure/median-mobile.txt; echo '```'
+            echo '## LHCI — mediany (desktop)'; echo '```'; cat lhci-measure/median-desktop.txt; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lhci-measure
+          path: lhci-measure/
+          retention-days: 30

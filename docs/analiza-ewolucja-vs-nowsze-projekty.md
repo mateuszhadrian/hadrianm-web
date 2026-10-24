@@ -442,7 +442,7 @@ czerwony kontrakt zostaje w `cms-contract.test.ts` („katalog zawiera co
 najmniej jeden wpis") — świadomie, bo pusta lista realizacji na wizytówce
 to błąd treści, nie infrastruktury. Commit: `test: tolerate missing realizacje directory`.
 
-**T3 · SHOULD · S · ☐ — `settleImages()` w `prepareSweep`/`prepare`**
+**T3 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-23 (PR A `ci/lhci-measure`; `settleImages()` w `tests/helpers/visual.ts`, wywołana w `prepareSweep` i w lokalnym `prepare` sections.spec.ts; weryfikacja `test:visual`: 114 passed, 1 diff `work-index-grid` webkit-iphone-se ratio 0.01 — karta Delung, trzecia i najgłębiej pod foldem na SE 320×568: baseline miał ekrany PUSTE (lazy obraz bez podjętej próby ładowania w chwili zrzutu), po T3 deterministyczny stan końcowy — ikona błędu + alt jak na kartach 1–2, bo `/cdn-cgi/image` nie istnieje na preview; czyli dokładnie klasa wyścigu, którą T3 zdejmuje; diff ZAAKCEPTOWANY przez Mateusza 2026-10-23, darwin zregenerowany zawężonym przebiegiem — jedyny przepisany plik to `work-index-grid-darwin.png` webkit-iphone-se, kontrolny przebieg speca 18/18 passed; linux przez workflow z inputami T6 — `spec=tests/visual/work-index.spec.ts`, `mode=changed` — po pushu brancha, commit darwin NA KOŃCU) — `settleImages()` w `prepareSweep`/`prepare`**
 (eager + `decode()` dla obrazów w kadrze przed zrzutem) — port z
 `delung-web/tests/helpers/visual.ts:14-40`. Spodziewany efekt: mniej
 diffów „tylko krawędzie zdjęć" na runnerach. Commit: `test(visual): settle images before screenshots`.
@@ -467,7 +467,7 @@ na brakujących snapshotach). Baseline'y: darwin przez
 --update-snapshots` (11 klatek), linux przez workflow na gałęzi PR-a.
 Commit: `test(visual): add webkit desktop profile to hero sweep`.
 
-**T6 · SHOULD · S · ☐ — `update-visual-baselines.yml` z inputami `spec`
+**T6 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-23 (PR A `ci/lhci-measure`; krok aktualizacji = `pnpm exec playwright test ${spec} --update-snapshots=${mode}` zamiast `pnpm test:visual:update`) — `update-visual-baselines.yml` z inputami `spec`
 (ścieżka speca, domyślnie `tests/visual`) i `mode` (`changed`/`all`)** +
 akapit „zielony ≠ aktualny: pomiar progiem 0 bez ruszania baseline'u" w
 `.claude/rules/testing.md` (procedura: `maxDiffPixelRatio: 0` na jeden
@@ -487,6 +487,14 @@ geometria sub-pikselowo (`getBoundingClientRect` + tolerancja, nie
 (udział elementu w kadrze × czułość percepcyjna); czas mierz wewnątrz
 przeglądarki (`performance.now()` + `MutationObserver`), nie timerami
 testu; „czerwone w izolacji = z definicji nie flake".
+
+**T9 · COULD · S · ☐ — próg `FLAKY_DESKTOP_FRAMES` także dla `webkit-1440`**:
+profil `webkit-1440` (T5) NIE ma podwyższonego progu dla flaky klatek hero
+05–09 (ekran telefonu + ambient) — ma go tylko `chromium-1920` w
+`hero.spec.ts`. Objaw zaobserwowany przy S3 (sesja 4, §10): FAIL ratio
+0.01–0.02 wyłącznie na ekranie telefonu, kontrolny rerun tego samego
+buildu zielony. Nie naprawiać „przy okazji" — osobna mała zmiana z
+kontrolnym przebiegiem.
 
 ### C — CI / deploy
 
@@ -509,7 +517,7 @@ razem z kontrolą baseline'ów linux". Zrobić w JEDNYM PR z C1/C2 i sprawdzić,
 czy baseline'y linux nie drgnęły (jeśli `latest` już jest 24.04 — zero
 zmian). Commit: `ci: pin runners to ubuntu-24.04`.
 
-**C4 · SHOULD · S · ☐ — `lhci-measure.yml`** (`workflow_dispatch`: 5
+**C4 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-23 (PR A `ci/lhci-measure`; RÓŻNICA wobec wzorca hetmana: build przez `pnpm build`, NIE `pnpm build:visual` — job `lighthouse` w ci.yml mierzy artefakt `dist` z treścią produkcyjną, więc pomiar bazowy musi mierzyć ten sam build; gotcha z komentarza hetmana potwierdzona: `gh workflow run` działa dopiero, gdy plik jest na main) — `lhci-measure.yml`** (`workflow_dispatch`: 5
 przebiegów × mobile/desktop → mediany w `$GITHUB_STEP_SUMMARY` + artefakt
 30 dni) jako jedyne źródło liczb do L1. Wzorzec: hetman
 `.github/workflows/lhci-measure.yml`. Commit: `ci(lhci): add measurement workflow`.
@@ -527,6 +535,11 @@ osobny PR, po pomiarze na main** (ratchet-reguła). Dopisać do
 `.claude/rules/testing.md`: „pojedynczy czerwony lighthouse nie dowodzi
 regresji — porównaj `resource-summary` obu runów; sygnał = bajty".
 Commit: `chore(lhci): set budgets to runner medians plus variance margin`.
+Decyzje Mateusza 2026-10-23 (sesja 5, przed PR B):
+`categories:performance` TEŻ z pomiaru — `minScore` = mediana − 0,05,
+zaokrąglone W DÓŁ do wielokrotności 0,05 (stały próg 0,9 leżał na
+krawędzi: main mierzy 0,88–0,92); lista URL-i bez zmian — `/en/` zostaje
+w pomiarze i bramce (sensor `/polityka-prywatnosci/` = L2, osobno).
 
 **L2 · COULD · S · ☐ — trasa-sensor** `/polityka-prywatnosci/` jako drugi
 URL mobile (koszt samego chrome'u bez mediów) obok `/`; `/en/` zostaje
@@ -591,7 +604,7 @@ treść); smoke `@prod-smoke`: `GET /nie-ma-takiej-strony/` → status 404
 `tests/e2e/not-found.spec.ts`, `smoke.spec.ts` „status 404".
 Commit: `feat(seo): real 404 page with noindex`.
 
-**S2 · SHOULD · S · ◐ kod gotowy 2026-10-22 (P6: meta `og:image:width/height` 1200×630, `twitter:card summary_large_image`, `seo.spec.ts`, nowy kontrakt `tests/unit/og-image.test.ts` — wymiary z IHDR PNG MUSZĄ zgadzać się z meta, waga ≤ 300 KB); CZEKA NA OBRAZ od Mateusza (w drzewie roboczym placeholder 1200×630 — NIE commitować; stary kwadrat w repo obleje nowy test, więc commit S2 = plik + meta + test razem) — og:image 1200×630 + `summary_large_image`**:
+**S2 · SHOULD · S · ✅ 2026-10-22 (PR #55; obraz: Mateusz wybrał wariant „screenshot pierwszego ekranu hero PL" — brand + hasło, bez nav/przełącznika języka/burgera — zamiast eksportu z designu czy generatora z S4; `public/og-image.png` 1200×630, palette PNG 111 KB; kontrakt `tests/unit/og-image.test.ts`: wymiary z IHDR PNG = meta, waga ≤ 300 KB; S4 zostaje w backlogu bez zmian) — og:image 1200×630 + `summary_large_image`**:
 nowy obraz (eksport z designu albo generator `make-icons.mjs` — S4),
 kompresja (lekcja delung: 649 → 98 KB), `BaseLayout` meta
 `og:image:width/height`, `twitter:card`. Sprawdzić podgląd w debugerze
@@ -709,8 +722,8 @@ zmigrowane).
 | P3 „Fundament treści" | T2, T1, R2, M2 | warunek dla wideo i podmiany treści | brak (fixture = kopia dzisiejszych wpisów) |
 | P4 „Wideo — mechanizm" | R1 Etapy 1–4 | wg planu wideo | brak (bez wpisu z wideo) |
 | P5 „Wideo — treść" | R1 Etapy 5–7, R3 | panel + nagrania | ✅ PR #54 (2026-10-22): zregenerowane 26 darwin + 25 linux, WYŁĄCZNIE `work-*` (section-work, work-modal, work-sheet, work-index-*) |
-| P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ◐ 2026-10-22 (`feat/chrome-seo`): S1 ✅, S3 ✅, S2 czeka na obraz; baseline'y: patrz §10 (sesja 4) |
-| P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | brak |
+| P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ✅ PR #55 (2026-10-22), baseline'y nietknięte |
+| P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | ◐ 2026-10-23 (`ci/lhci-measure`, PR A): C4/T3/T6 wdrożone lokalnie; L1 = PR B po pomiarze na main; baseline'y: 1 z T3 (work-index-grid webkit-iphone-se), diff zaakceptowany — darwin w drzewie, linux po pushu |
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | contact-index (A2), services (A1); reszta brak |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
 | później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
@@ -844,6 +857,47 @@ osobny PR po pomiarze na main.
   klatki wideo, kontrolny rerun tego samego buildu zielony; uwaga: profil
   `webkit-1440` z T5 NIE ma podwyższonego progu `FLAKY_DESKTOP_FRAMES`
   z `hero.spec.ts` — ma go tylko `chromium-1920`; kandydat do osobnego
-  punktu T, nie naprawiany „przy okazji"), S2 ◐ kod + kontrakt
-  `og-image.test.ts` gotowe, czeka na obraz 1200×630.
+  punktu T, nie naprawiany „przy okazji" — zapisany jako **T9**), S2 ◐ kod
+  + kontrakt `og-image.test.ts` gotowe, czeka na obraz 1200×630.
+- **2026-10-22 (sesja 5)** — P6 na main: merge PR #55 (`d0ce27f`),
+  prod-smoke zielony (nowy test statusu 404 przeszedł na produkcji za
+  pierwszym razem), produkcja zweryfikowana curl-em: `/nie-ma-takiej-strony/`
+  i `/en/xyz/` → 404 + `noindex`, og 1200×630 + `summary_large_image`.
+  Test Mateusza na telefonie (404 PL/EN + burger, Safari w poziomie bez
+  powiększenia tekstu, pasek `theme-color`, karta og w
+  LinkedIn/Facebook/iMessage): bez usterek na pierwszy rzut oka —
+  `poprawki-po-implementacji.md` nie utworzony. **CI na main `d0ce27f`
+  czerwony 2× na jobie `lighthouse`** — diagnoza: NIE regresja P6, tylko
+  próg LCP leżący na medianie runnerów (przypadek z opisu L1). Liczby
+  (mediany LHCI z raportów „Open the report at …" w logach jobów; raport
+  HTML ma pełny LHR w `window.__LIGHTHOUSE_JSON__`):
+
+  | bieg                                                | LCP `/`     | LCP `/en/` | perf `/` |
+  | --------------------------------------------------- | ----------- | ---------- | -------- |
+  | main `0d77bb8` (PRZED P6, run 39746136299)          | 3555        | 3108       | 0,89     |
+  | PR #55 `2bce655` (drzewo = merge, run 39754712158)  | 3218        | 3485       | 0,92     |
+  | main `d0ce27f` próba 1 / 2 (run 39758987429)        | 3578 / 3576 | – / 3113   | 0,89     |
+  | próg (`lighthouserc.cjs`)                           | 3565        | 3565       | 0,90     |
+
+  Element LCP = `h1.hero__headline` (czas fontu), `script` identyczny
+  (90 065 B), dokument i total MNIEJSZE po P6, `benchmarkIndex` runnerów
+  2410–4260 (loteria maszyn). Wniosek: lipcowy próg 3100 × 1,15 = 3565
+  leży dziś NA medianie runnerów (main przed P6 mierzył 10 ms pod progiem);
+  perf score też pływa po obu stronach 0,90. Pomiar median po P5 (bajty
+  `#work`) i P6 odkładany był do P7, bo `lhci-measure.yml` (C4) nie
+  istniał — powstaje w tej paczce. Start P7 „Pomiary" (branch
+  `ci/lhci-measure`): C4, T3, T6 (PR A), potem L1 (PR B, osobny, po
+  pomiarze na main). Wynik sesji: C4 ✅ (build przez `pnpm build`, nie
+  `build:visual` — bramka w ci.yml mierzy treść produkcyjną), T3 ✅
+  (114 passed, 1 diff work-index-grid webkit-iphone-se = deterministyczny
+  stan obrazów karty Delung zamiast wyścigu lazy-load, szczegóły przy T3
+  w §6), T6 ✅ (inputy `spec`/`mode` + akapit „zielony ≠ aktualny"
+  i sekcja LHCI w `.claude/rules/testing.md`); nowy punkt T9 (próg
+  FLAKY_DESKTOP_FRAMES dla webkit-1440, COULD). Progi LHCI w PR A
+  nietknięte. Diff T3 zaakceptowany: darwin zregenerowany zawężonym
+  przebiegiem (jedyny przepisany plik = zaakceptowany; spec 18/18
+  passed), linux przez workflow z inputami T6 po pushu, commit darwin
+  na końcu. Decyzje pod PR B (L1): perf `minScore` z pomiaru
+  (mediana − 0,05 w dół do 0,05), lista URL-i bez zmian (`/en/` zostaje) —
+  zapisane przy L1 w §6.
 

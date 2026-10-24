@@ -55,6 +55,14 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   pliki spoza zaakceptowanego zestawu cofnij `git checkout --` (P5,
   2026-10-22). Nigdy nie „naprawiaj" rozjazdu darwin↔linux globalnym
   progiem — od tego jest `{platform}` w ścieżce snapshotów.
+- **Zielony ≠ aktualny** (T6): per-shot progi (`maxDiffPixelRatio`)
+  pochłaniają dryf POD progiem, więc przechodzący test może porównywać się
+  z baseline'em o nieaktualnej treści. Pomiar realnego dryfu BEZ ruszania
+  baseline'u: ustaw `maxDiffPixelRatio: 0` dla badanego zrzutu na JEDEN
+  przebieg, odczytaj diff z raportu, przywróć próg. Świadome przepisanie
+  takich „zielonych, ale nieaktualnych" zrzutów: workflow
+  `update-visual-baselines.yml` z inputami `spec` (ZAWĘŻONY do jednego
+  speca) i `mode: all` — nigdy do naprawiania czerwonego testu.
 - Flaky klatki hero desktop 05–09 (ekran telefonu + ambient, ~0.5–2%):
   mają podwyższony próg w hero.spec.ts; FAIL tam najpierw porównaj
   z przebiegiem kontrolnym, dopiero potem podejrzewaj regresję.
@@ -78,6 +86,26 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   nie `ubuntu-latest`): wersja systemu wpływa na binaria Playwrighta
   i baseline'y linux. Bump obrazu = świadoma zmiana w osobnym PR z kontrolą
   baseline'ów (rerun `test:visual` na main przed i po).
+
+## LHCI — budżety i pomiar
+
+- Pomiar bazowy/ratchet WYŁĄCZNIE workflowem `lhci-measure.yml`
+  (`workflow_dispatch` na main; domyślnie 5 przebiegów × mobile/desktop;
+  build `pnpm build` = ta sama treść produkcyjna, którą mierzy job
+  `lighthouse` w ci.yml). Lokalny `lhci collect` NIE jest podstawą progów
+  (lokalny CPU ≠ runner; lokalny LHCI liczy niżej niż CI także na main).
+  Mediany: podsumowanie biegu (`gh run view <id>` → link „Summary")
+  i artefakt `lhci-measure` (30 dni, surowe `lhr-*.json` + mediany txt).
+- Pojedynczy czerwony `lighthouse` nie dowodzi regresji — progi czasowe
+  leżą blisko mediany runnerów, a flota dryfuje (katalog flake'ów:
+  2026-07-09 ~13%, 2026-10-22 LCP 2× po 10 ms nad progiem na tym samym
+  SHA). Porównaj `resource-summary` obu runów: sygnał = bajty
+  (script/total/document), nie pojedynczy LCP. Raporty: log joba
+  „Open the report at …" — raport HTML ma pełny LHR
+  w `window.__LIGHTHOUSE_JSON__`.
+- Zmiana progu = osobny PR po pomiarze na main (ratchet-reguła); każda
+  asercja z komentarzem „dlaczego ten próg" (data + numer runu
+  `lhci-measure.yml`).
 
 ## Czego emulacja NIE wykrywa → fizyczne urządzenie
 
