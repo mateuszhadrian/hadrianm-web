@@ -64,3 +64,12 @@ html {
      Services (.of-intro), Work (.work, .work__head), Faq (.fq). */
   --section-gap: clamp(56px, 7vw, 96px);
 }
+
+/* ── Nakładki (overlay.ts): obszar przewijalny sheeta i panel nie oddają
+   przewijania przeglądarce. Bez tego mocniejszy gest w dół na przewiniętej
+   do góry treści uruchamia na Androidzie odświeżenie strony zamiast zamknąć
+   sheet. Drugą połową naprawy jest przejęcie gestu `touch*` w overlay.ts. ── */
+[data-overlay-scroll],
+[data-overlay-panel] {
+  overscroll-behavior: contain;
+}
