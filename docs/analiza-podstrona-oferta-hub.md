@@ -1,6 +1,7 @@
 # Analiza — podstrona `/oferta/` (hub oferty)
 
-> Status: **WDRAŻANE** (2026-07-19). Referencja wizualna:
+> Status: **WDROŻONE NA PRODUKCJI** (PR #46, merge 2026-07-19; log w §IV;
+> status odświeżony 2026-10-26, punkt D6 analizy ewolucji). Referencja wizualna:
 > `docs/design/export-oferta-hub/` (wariant B: wstęp + karty Pakiety /
 > Proces). Referencja pokazuje TYLKO wygląd i zachowanie sedna podstrony —
 > nic z niej nie jest osadzane 1:1; port na tokeny i komponenty projektu.

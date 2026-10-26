@@ -1,6 +1,8 @@
 # Podmiana ekranów LUMÉA w sekcji „Dla kogo" — plan wykonawczy
 
-Status: **AKTUALNY** (wdrażany 2026-07-14). Kontekst wcześniejszy:
+Status: **WDROŻONE NA PRODUKCJI** (PR #30, merge 2026-07-14, baseline'y
+w tym samym PR; status odświeżony 2026-10-26, punkt D6 analizy ewolucji;
+decyzje nadal obowiązują). Kontekst wcześniejszy:
 `analiza-sekcja-dla-kogo.md` (architektura `audience-*`, design „Talia kart").
 
 ## Cel

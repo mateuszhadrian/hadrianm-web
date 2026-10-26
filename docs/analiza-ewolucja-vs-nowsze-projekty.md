@@ -678,7 +678,7 @@ przypadkowe), zasada „decyzje ze skutkami (progi LHCI, baseline'y,
 schemat) = osobne commity", krok `gh run list -L 6` w bramce startowej,
 odsyłacz do `sesja-utrzymaniowa-szablon.md`. Commit: `docs(workflow): explicit git add and separate decision commits`.
 
-**D2 · SHOULD · S · ✅ 2026-10-25 (P9, branch `docs/p9-maintenance`; 12 wierszy cyklicznych C1–C12 z kolumną „ostatnio", 9 odłożonych O1–O9, 5 zamkniętych, procedury w §4 pliku; dopisane: ratchet LCP/perf po F1 jako O4 z wartościami policzonymi wg formuły L1, domena/skrzynka OVH, przegląd katalogu flake'ów) — `optional-todos.md` w formie dwóch tabel**:
+**D2 · SHOULD · S · ✅ na main 2026-10-26 (P9, PR #61, merge `5f8116d`; 12 wierszy cyklicznych C1–C12 z kolumną „ostatnio", 9 odłożonych O1–O9, 5 zamkniętych, procedury w §4 pliku; dopisane: ratchet LCP/perf po F1 jako O4 z wartościami policzonymi wg formuły L1, domena/skrzynka OVH, przegląd katalogu flake'ów) — `optional-todos.md` w formie dwóch tabel**:
 cykliczne (Worker auth + rotacja sekretów, przypięta wersja Sveltii, backup
 R2 `rclone sync` co tydzień/miesiąc, `pnpm outdated` kwartalnie z regułą
 „playwright parą", przegląd zużycia transformacji obrazów, sprzątanie
@@ -687,7 +687,7 @@ po bloku zmian) i odłożone (co / do kiedy–warunek) + „Zamknięte"; usunię
 przeterminowanych punktów. Dodatkowo: UptimeRobot (keyword) + Search
 Console (brak wskazany w kronice §E). Commit: `docs(todos): recurring and deferred tables`.
 
-**D3 · SHOULD · S · ✅ 2026-10-25 (P9; 104 wpisy DEC-01…DEC-104 w 10 grupach A–J, każdy = jedna linia + odsyłacz plik/sekcja + status; zasiew z pamięci projektu, reguł `.claude/rules/`, analiz i decyzji P7/P8: L1 `minScore` = mediana − 0,05, `/en/` zostaje, wyjątek axe `.of-w`/`.acc`, T9, Saira bez `unicode-range`, visual = fixture / e2e = produkcja; dwie rozbieżności pamięć↔kod odnotowane w statusach: „tylko Image" → `file` też wgrywa, „Oferta kotwicą" → hub; DEC-29/30 mają uzasadnienie tylko w pamięci — kandydaci do `sections.md`) — `docs/decyzje.md`**: rejestr decyzji zapadłych
+**D3 · SHOULD · S · ✅ na main 2026-10-26 (P9, PR #61; 104 wpisy DEC-01…DEC-104 w 10 grupach A–J, każdy = jedna linia + odsyłacz plik/sekcja + status; zasiew z pamięci projektu, reguł `.claude/rules/`, analiz i decyzji P7/P8: L1 `minScore` = mediana − 0,05, `/en/` zostaje, wyjątek axe `.of-w`/`.acc`, T9, Saira bez `unicode-range`, visual = fixture / e2e = produkcja; dwie rozbieżności pamięć↔kod odnotowane w statusach: „tylko Image" → `file` też wgrywa, „Oferta kotwicą" → hub; DEC-29/30 mają uzasadnienie tylko w pamięci — kandydaci do `sections.md`) — `docs/decyzje.md`**: rejestr decyzji zapadłych
 (numer · decyzja · gdzie uzasadnienie · status), zasiany z pamięci
 projektu i analiz (stałe Lenisa rozdzielone; `data-lenis-prevent-horizontal`;
 JSON-LD FAQ tylko na podstronie; entry-overlay zakazany; navbar `measure()`
@@ -695,14 +695,14 @@ nie optymalizować; `ScrollTrigger.refresh()` nie do rAF; Oferta w EN z PLN;
 …). Bramka startowa sesji czyta go zamiast pamięci rozproszonej.
 Commit: `docs: decision register`.
 
-**D4 · SHOULD · S · ✅ 2026-10-25 (P9; reguły §1 + tabele: otwarte/do potwierdzenia, rejestr testów bez usterek P5/P6/P8, zamknięte; zasiew po sprawdzeniu stanu: pkt 4 (`--wk-scale: 1.2`) i pkt 5 (starty reveal) są na main od PR #48 (2026-07-20) — wpisane jako „do potwierdzenia" (decyzja wyglądu, jedno słowo Mateusza), pkt 8 zamknięty testem F1 na telefonie 2026-10-24; **korekta opisu:** H1 NIE zasiany — wdrożony na main 2026-10-21 (PR #51), fragment „H1 do czasu wdrożenia" niżej jest nieaktualny) — `docs/poprawki-po-implementacji.md`**: jedno
+**D4 · SHOULD · S · ✅ na main 2026-10-26 (P9, PR #61; reguły §1 + tabele: otwarte/do potwierdzenia, rejestr testów bez usterek P5/P6/P8, zamknięte; zasiew po sprawdzeniu stanu: pkt 4 (`--wk-scale: 1.2`) i pkt 5 (starty reveal) są na main od PR #48 (2026-07-20) — wpisane jako „do potwierdzenia" (decyzja wyglądu, jedno słowo Mateusza), pkt 8 zamknięty testem F1 na telefonie 2026-10-24; **korekta opisu:** H1 NIE zasiany — wdrożony na main 2026-10-21 (PR #51), fragment „H1 do czasu wdrożenia" niżej jest nieaktualny) — `docs/poprawki-po-implementacji.md`**: jedno
 miejsce na usterki i decyzje wyglądu z testów na urządzeniach (reguła „nie
 naprawiamy przy okazji", klasyfikacja błąd / decyzja wyglądu / zmiana
 zakresu, każdy naprawiony błąd dostaje test). Zasiać: strojenie pkt 4/5
 i test fizyczny pkt 8 z `visual-corrections-part1.md`, H1 do czasu
 wdrożenia. Commit: `docs: post-implementation corrections list`.
 
-**D5 · COULD · S · ✅ 2026-10-25 (P9; 69 pozycji P-01…P-69 w 8 grupach: pomiar geometrii/czasu, baseline'y, Playwright API, CI/workflowy, LHCI, Astro/Vite/Tailwind, CMS/R2, ekosystem Claude; każda = objaw → przyczyna → jak nie wpaść + odsyłacz; pozycje z rodziny bez naszego incydentu oznaczone `[rodzina]`; pułapki z P8 dopisane (Docker ≠ runner, identyczny diff ≠ brak timingu, `trace_engine`, `test.skip` bez `testInfo`, `spec`+`mode=all`, axe `incomplete` vs `passes`); worktree + symlink `node_modules` = DWIE obserwacje bez rozstrzygnięcia, P-51) — `docs/pulapki.md`**: skondensowany katalog pułapek
+**D5 · COULD · S · ✅ na main 2026-10-26 (P9, PR #61; 69 pozycji P-01…P-69 w 8 grupach: pomiar geometrii/czasu, baseline'y, Playwright API, CI/workflowy, LHCI, Astro/Vite/Tailwind, CMS/R2, ekosystem Claude; każda = objaw → przyczyna → jak nie wpaść + odsyłacz; pozycje z rodziny bez naszego incydentu oznaczone `[rodzina]`; pułapki z P8 dopisane (Docker ≠ runner, identyczny diff ≠ brak timingu, `trace_engine`, `test.skip` bez `testInfo`, `spec`+`mode=all`, axe `incomplete` vs `passes`); worktree + symlink `node_modules` = DWIE obserwacje bez rozstrzygnięcia, P-51) — `docs/pulapki.md`**: skondensowany katalog pułapek
 pomiarowych/środowiskowych z rodziny (przejście CSS fałszuje odczyt
 geometrii; `opacity:0` łapie kliknięcia; na preview `/cdn-cgi/` nie
 istnieje → pixel-diff nie widzi regresji obrazów R2; `strict_required_status_checks`
@@ -712,7 +712,7 @@ komentarz frontmatteru z `<` psuje `astro check`; `*/` w komentarzu CSS
 wywraca Tailwind 4; `git worktree` + symlink `node_modules` psuje Tailwind;
 R2 EU wymaga endpointu `.eu.`; cron GH opóźniony ~6 h).
 
-**D6 · COULD · S · ☐ — `docs/README.md`: statusy dokumentów podstron
+**D6 · COULD · S · ✅ 2026-10-26 (sesja 9, branch `docs/close-p9-readme-statuses`; 6 wierszy README + linia statusu w nagłówku każdego z 6 dokumentów; daty z `git log --merges`: #29 karuzela i #30 LUMÉA 2026-07-14, #42 o-mnie / #43 kontakt / #44 faq 2026-07-17, #46 hub 2026-07-19 — baseline'y weszły w tych samych PR-ach, więc „czekają na akceptację" było nieaktualne od merge'u) — `docs/README.md`: statusy dokumentów podstron
 nieaktualne** (zauważone w P9, nie naprawiane „przy okazji"): wiersze
 `analiza-podstrona-faq.md` i `analiza-podstrona-kontakt.md` mówią
 „W TRAKCIE WDROŻENIA (2026-07-17)", `analiza-podstrona-o-mnie.md`
@@ -748,8 +748,8 @@ zmigrowane).
 | P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ✅ PR #55 (2026-10-22), baseline'y nietknięte |
 | P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B #57 (L1) ✅ na main 2026-10-24 — **P7 ✅ W CAŁOŚCI** (PR #56 + #57) |
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
-| P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | — (PR `docs/p9-maintenance`, 2026-10-25: D2–D5 ✅ wdrożone lokalnie, zero zmian poza `docs/`; nowy punkt D6 z obserwacji) |
-| później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
+| P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
+| później | H3, H4, T7, T8, R4, R5, S4, S5, M3, F2, L2 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 w `optional-todos.md`) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1045,4 +1045,32 @@ osobny PR po pomiarze na main.
   nowe wiersze + odświeżone `optional-todos.md` i
   `visual-corrections-part1.md`. Weryfikacja: `format:check` + `lint`
   (docs ignorowane — kontrola, że diff dotyka tylko `docs/`).
-
+- **2026-10-26 (sesja 9)** — bramka: main `5f8116d` (merge #61, P9),
+  status czysty, Prod smoke po #61 zielony (run 40295885175), CI
+  w trakcie przy starcie — sprawdzony przed oddaniem (zob. niżej). Zlecenie
+  Mateusza: „zrób wszystko zgodnie z rekomendacjami i dalej" → kolejność:
+  domknięcie P9, D6, zamknięcie PI-01/02, ratchet O4 osobnym PR-em.
+  **Domknięcie P9:** D2–D5 i wiersz §7 „✅ na main (PR #61)", indeks.
+  **D6** ✅ (branch `docs/close-p9-readme-statuses`): 6 wierszy
+  `docs/README.md` + linia statusu w nagłówkach `analiza-podstrona-faq.md`
+  (#44), `-kontakt.md` (#43), `-o-mnie.md` (#42), `-oferta-hub.md` (#46),
+  `analiza-realizacje-karuzela-mobile.md` (#29),
+  `analiza-podmiana-ekranow-lumea-dla-kogo.md` (#30) — daty z `git log
+  --merges`; baseline'y w każdym z tych PR-ów, więc „czekają na akceptację"
+  nieaktualne od lipca. **PI-01/PI-02** zamknięte jako „zostaje" — Mateusz
+  przyjął rekomendację z D4 (treść karuzeli i intro Oferty oglądane na
+  telefonach P5–P8 bez uwag); DEC-48 dostaje potwierdzenie; cofnięcie =
+  nowy wiersz, nie edycja. Zero zmian poza `docs/`. **Ratchet O4** (LCP/perf
+  po F1) przygotowany w TEJ sesji jako OSOBNY PR `chore/lhci-ratchet-after-f1`
+  o rozłącznym zestawie plików (`lighthouserc*.cjs`, `optional-todos.md`):
+  wg L1 z runu 40124168778 LCP mobile 4851 → 4678, desktop 3210 → 3177,
+  perf mobile 0,80 → 0,85 (desktop 0,85 bez zmian); statusy L1/O4 w §6
+  domyka następna sesja po merge'u. Kontrola przed zacieśnieniem: job
+  `lighthouse` na main po #61 (run 40295885239) — mediany mobile `/` 0,92 /
+  LCP 3197, `/en/` 0,94 / 2906; desktop `/` 0,92 / 1849, `/en/` 0,91 / 1897
+  — wszystko pod nowymi progami. **CI na main po #61:** `quality`
+  i `lighthouse` zielone, `e2e` czerwony na kroku `playwright install
+  --with-deps` — timeout 10 min (backstop) na pobieraniu paczek apt
+  z `azure.archive.ubuntu.com` (fonts-wqy-zenhei 7 MB szło 3 min); paczka
+  docs-only, więc flake infrastruktury (katalog flake'ów), rerun failed
+  jobs zlecony na tym samym SHA (`gh run rerun --failed`).
