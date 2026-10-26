@@ -20,7 +20,9 @@
 4. Przeczytaj: `docs/README.md` (indeks statusów), §6 backlogu dla punktów
    tej sesji (w całości — instrukcje są samowystarczalne), reguły z
    `.claude/rules/`, które załadują się do edytowanych ścieżek,
-   `docs/decyzje.md` (jeśli istnieje).
+   `docs/decyzje.md` (rejestr decyzji — czy to już rozstrzygnięte i gdzie),
+   `docs/poprawki-po-implementacji.md` (otwarte usterki z urządzeń),
+   `docs/pulapki.md` przy pracy w testach/CI/pomiarach.
 5. Utwórz branch `[typ/krotki-opis]` (typ = `fix/feat/chore/ci/test/docs/perf`).
 
 ### 1. Pierwsze zadanie: domknij poprzednią sesję
