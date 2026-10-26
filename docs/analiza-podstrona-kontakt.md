@@ -1,7 +1,8 @@
 # Analiza: przeniesienie sekcji „Kontakt" na podstronę `/kontakt`
 
-Data: 2026-07-17 · Status: **PLAN WYKONAWCZY** (decyzje domknięte
-z Mateuszem 2026-07-17; log wykonawczy będzie w §VII).
+Data: 2026-07-17 · Status: **WDROŻONE NA PRODUKCJI** (PR #43, merge
+2026-07-17; decyzje domknięte z Mateuszem 2026-07-17; log wykonawczy
+w §VII; status odświeżony 2026-10-26, punkt D6 analizy ewolucji).
 
 ## I. Cel
 

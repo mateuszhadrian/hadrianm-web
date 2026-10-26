@@ -1,6 +1,8 @@
 # Realizacje — karuzela mobile + przycisk „Więcej realizacji" (plan wykonawczy)
 
-> **Status:** plan wykonawczy. Design/behawior z pakietu referencyjnego
+> **Status:** **WDROŻONE NA PRODUKCJI** (PR #29, merge 2026-07-14,
+> baseline'y w tym samym PR; status odświeżony 2026-10-26, punkt D6 analizy
+> ewolucji). Design/behawior z pakietu referencyjnego
 > `docs/design/Karuzela Mobile - referencja/` (podgląd HTML + komponenty
 > `.rz-*`) oraz `docs/design/WiecejRealizacjiDesktopButton.astro`. Referencje
 > to WYŁĄCZNIE wzorzec wizualny/behawioralny — wpinamy je w istniejące
