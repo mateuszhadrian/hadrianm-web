@@ -44,8 +44,7 @@ scenariusz").
 
 | # | Zgłoszono | Objaw (gdzie, urządzenie) | Klasa | Decyzja | Status | Test |
 | --- | --- | --- | --- | --- | --- | --- |
-| PI-01 | 2026-07-18 (`visual-corrections-part1.md` §4) | Karuzela Realizacje na mobile: skala kafelków `--wk-scale` — plan przewidywał pętlę strojenia z Mateuszem na telefonie przed zamknięciem punktu | decyzja wyglądu | Wartość **1.2** jest na main od PR #48 (2026-07-20, `b9cd7a2`) i nie była zmieniana; treść karuzeli (3 realne wpisy z P5) oglądana na iPhone/Android 2026-10-22 bez uwag → traktować jako zaakceptowane, chyba że Mateusz powie inaczej | **do potwierdzenia** (jedno słowo Mateusza zamyka; przy „zmień" → `style(work): set mobile tile scale to <wartość>` + baseline'y `section-work`/`work-sheet` mobile) | wizualne `sections.spec.ts` (#work, profile mobile) — każda zmiana wartości = czerwony diff do akceptacji |
-| PI-02 | 2026-07-18 (`visual-corrections-part1.md` §5) | Oferta na głównej: starty rozjaśniania akapitów 2 i 3 (`paraStarts` w `services-config.ts`) — plan przewidywał weryfikację na telefonie | decyzja wyglądu | Na main od PR #48 (`bd69cec`); testy telefoniczne P5–P8 (2026-10-22/24) nie zgłosiły uwag do czytelności intro Oferty → jak PI-01 | **do potwierdzenia** (przy „zmień" → `fix(services): tune paragraph reveal starts` + baseline'y `services.spec.ts`) | sweep `services.spec.ts` (klatki z nowym timingiem = diff) |
+| — | — | brak otwartych pozycji (stan 2026-10-26; PI-01/02 zamknięte → §4) | — | — | — | — |
 
 ## 3. Rejestr testów na urządzeniach bez usterek
 
@@ -61,6 +60,8 @@ Zapis „sprawdzone, nic nie wyszło" — źródło: §10 analizy ewolucji.
 
 | # | Objaw | Klasa | Jak zamknięte |
 | --- | --- | --- | --- |
+| PI-01 | Karuzela Realizacje mobile: skala kafelków `--wk-scale` (pkt 4 `visual-corrections-part1.md`; plan przewidywał pętlę strojenia na telefonie) | decyzja wyglądu | **Zostaje 1.2** — na main od PR #48 (2026-07-20); treść karuzeli oglądana na iPhone/Android w P5–P8 bez uwag; Mateusz przyjął rekomendację 2026-10-26 (sesja 9). Cofnięcie = nowy wiersz tu + `style(work): …` + baseline'y `section-work`/`work-sheet` mobile. DEC-48 |
+| PI-02 | Oferta na głównej: starty rozjaśniania akapitów 2 i 3 (`paraStarts`, pkt 5 `visual-corrections-part1.md`) | decyzja wyglądu | **Zostaje** — na main od PR #48; testy telefoniczne P5–P8 bez uwag do czytelności intro; przyjęte razem z PI-01 2026-10-26. Cofnięcie = `fix(services): tune paragraph reveal starts` + baseline'y `services.spec.ts`. DEC-48 |
 | PI-03 | Przejścia między stronami: przeskoki liter (FOUC) — pkt 8 `visual-corrections-part1.md`; plan wymagał testu fizycznego (zimny cache + realne łącze) | błąd | Preloady + mikro-fade na main od PR #48 (`815191e`, 2026-07-20); od P8 (F1, 2026-10-24) fonty to polskie subsety — test Mateusza na telefonie „fonty bez regresji FOUT" pokrywa scenariusz pkt 8. Test: brak automatycznego (Playwright startuje bez flagi `sessionStorage` — fade nie występuje w zrzutach; kontrakt subsetów `fonts-subset.test.ts`) |
 | — | **H1** (Safari: obrys „z drewna"/„i stali" nad wypełnieniem) — w opisie D4 §6 wskazany do zasiewu „do czasu wdrożenia" | błąd | **Nie zasiany**: wdrożony na main 2026-10-21 (PR #51), potwierdzony przez Mateusza na Safari macOS; test = sweep hero `webkit-1440` (T5). Opis D4 w §6 skorygowany przy punkcie |
 
