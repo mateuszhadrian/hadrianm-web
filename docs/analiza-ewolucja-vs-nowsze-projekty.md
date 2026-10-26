@@ -583,7 +583,7 @@ endpoint `{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
 
 ### F — Fonty
 
-**F1 · SHOULD · M · ✅ na main 2026-10-24 (PR #59; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersję z zakresem cofnięto w trakcie diagnozy czerwonego sweepa `webkit-1440`, który okazał się klasą T9, nie winą zakresu); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte w P8; zacieśnienie `font:size` = mini-PR `chore/lhci-font-budgets` po pomiarze `lhci-measure.yml` run 40124168778 na main `cc3a05a`: mobile 4 × 67 998 B (`/`, było 103 268) → próg 74 800 (było 113 600), desktop 7 × 107 275 B (`/`, było 153 419) → próg 118 100 (było 168 800), deterministycznie 5/5, formuła L1 mediana + 10%) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
+**F1 · SHOULD · M · ✅ na main 2026-10-24 (PR #59; 3 subsety `latin-ext` → `src/assets/fonts/*-pl.woff2`: Archivo 32 608 → 4 736 B, Instrument Serif italic 12 384 → 4 988 B, Saira Condensed 600 14 736 → 3 864 B — razem 59 728 → 13 588 B; `src/styles/fonts.css` (globalne) + `src/styles/fonts-hero.css` (Saira, import w Hero — tylko strona główna; deklaracja bez `unicode-range`, 1:1 z dawnym `latin-ext-600.css` — wersję z zakresem cofnięto w trakcie diagnozy czerwonego sweepa `webkit-1440`, który okazał się klasą T9, nie winą zakresu); z `index.css` Archivo wypadł nieużywany `vietnamese`; preloady PL → subsety, serif tylko italic; `assetsInlineLimit` false dla `.woff2` (zero `data:` w CSS); pomiar Playwright na preview, `/` (pobrane fonty): mobile 4 pliki 66 780 B (L1: 103 268), desktop 7 plików 105 144 B (L1: 153 419), `/en/` 61 792 / 100 156 B, bez podwójnych pobrań; `subset-font` 2.9.0 jako devDependency — lockfile ręcznie oczyszczony z przy-okazyjnego podbicia `third-party-web`/`legacy-javascript` (pływający zakres w `@paulirish/trace_engine` Lighthouse'a); progi LHCI nietknięte w P8; zacieśnienie `font:size` = mini-PR `chore/lhci-font-budgets` po pomiarze `lhci-measure.yml` run 40124168778 na main `cc3a05a`: mobile 4 × 67 998 B (`/`, było 103 268) → próg 74 800 (było 113 600), desktop 7 × 107 275 B (`/`, było 153 419) → próg 118 100 (było 168 800), deterministycznie 5/5, formuła L1 mediana + 10%; ✅ na main 2026-10-24, PR #60, merge `68fe906`, CI + Prod smoke zielone) — polskie subsety fontów**: `scripts/subset-fonts.mjs`
 (`subset-font`, stała `SUBSET_CHARS = "ĄąĆćĘęŁłŃńŚśŹźŻż"` + ewentualne
 znaki z i18n EN spoza `latin` — test wskaże) → `src/assets/fonts/*.woff2`
 (commitowane); `src/styles/fonts.css` z deskryptorami 1:1 z Fontsource
@@ -678,7 +678,7 @@ przypadkowe), zasada „decyzje ze skutkami (progi LHCI, baseline'y,
 schemat) = osobne commity", krok `gh run list -L 6` w bramce startowej,
 odsyłacz do `sesja-utrzymaniowa-szablon.md`. Commit: `docs(workflow): explicit git add and separate decision commits`.
 
-**D2 · SHOULD · S · ☐ — `optional-todos.md` w formie dwóch tabel**:
+**D2 · SHOULD · S · ✅ 2026-10-25 (P9, branch `docs/p9-maintenance`; 12 wierszy cyklicznych C1–C12 z kolumną „ostatnio", 9 odłożonych O1–O9, 5 zamkniętych, procedury w §4 pliku; dopisane: ratchet LCP/perf po F1 jako O4 z wartościami policzonymi wg formuły L1, domena/skrzynka OVH, przegląd katalogu flake'ów) — `optional-todos.md` w formie dwóch tabel**:
 cykliczne (Worker auth + rotacja sekretów, przypięta wersja Sveltii, backup
 R2 `rclone sync` co tydzień/miesiąc, `pnpm outdated` kwartalnie z regułą
 „playwright parą", przegląd zużycia transformacji obrazów, sprzątanie
@@ -687,7 +687,7 @@ po bloku zmian) i odłożone (co / do kiedy–warunek) + „Zamknięte"; usunię
 przeterminowanych punktów. Dodatkowo: UptimeRobot (keyword) + Search
 Console (brak wskazany w kronice §E). Commit: `docs(todos): recurring and deferred tables`.
 
-**D3 · SHOULD · S · ☐ — `docs/decyzje.md`**: rejestr decyzji zapadłych
+**D3 · SHOULD · S · ✅ 2026-10-25 (P9; 104 wpisy DEC-01…DEC-104 w 10 grupach A–J, każdy = jedna linia + odsyłacz plik/sekcja + status; zasiew z pamięci projektu, reguł `.claude/rules/`, analiz i decyzji P7/P8: L1 `minScore` = mediana − 0,05, `/en/` zostaje, wyjątek axe `.of-w`/`.acc`, T9, Saira bez `unicode-range`, visual = fixture / e2e = produkcja; dwie rozbieżności pamięć↔kod odnotowane w statusach: „tylko Image" → `file` też wgrywa, „Oferta kotwicą" → hub; DEC-29/30 mają uzasadnienie tylko w pamięci — kandydaci do `sections.md`) — `docs/decyzje.md`**: rejestr decyzji zapadłych
 (numer · decyzja · gdzie uzasadnienie · status), zasiany z pamięci
 projektu i analiz (stałe Lenisa rozdzielone; `data-lenis-prevent-horizontal`;
 JSON-LD FAQ tylko na podstronie; entry-overlay zakazany; navbar `measure()`
@@ -695,14 +695,14 @@ nie optymalizować; `ScrollTrigger.refresh()` nie do rAF; Oferta w EN z PLN;
 …). Bramka startowa sesji czyta go zamiast pamięci rozproszonej.
 Commit: `docs: decision register`.
 
-**D4 · SHOULD · S · ☐ — `docs/poprawki-po-implementacji.md`**: jedno
+**D4 · SHOULD · S · ✅ 2026-10-25 (P9; reguły §1 + tabele: otwarte/do potwierdzenia, rejestr testów bez usterek P5/P6/P8, zamknięte; zasiew po sprawdzeniu stanu: pkt 4 (`--wk-scale: 1.2`) i pkt 5 (starty reveal) są na main od PR #48 (2026-07-20) — wpisane jako „do potwierdzenia" (decyzja wyglądu, jedno słowo Mateusza), pkt 8 zamknięty testem F1 na telefonie 2026-10-24; **korekta opisu:** H1 NIE zasiany — wdrożony na main 2026-10-21 (PR #51), fragment „H1 do czasu wdrożenia" niżej jest nieaktualny) — `docs/poprawki-po-implementacji.md`**: jedno
 miejsce na usterki i decyzje wyglądu z testów na urządzeniach (reguła „nie
 naprawiamy przy okazji", klasyfikacja błąd / decyzja wyglądu / zmiana
 zakresu, każdy naprawiony błąd dostaje test). Zasiać: strojenie pkt 4/5
 i test fizyczny pkt 8 z `visual-corrections-part1.md`, H1 do czasu
 wdrożenia. Commit: `docs: post-implementation corrections list`.
 
-**D5 · COULD · S · ☐ — `docs/pulapki.md`**: skondensowany katalog pułapek
+**D5 · COULD · S · ✅ 2026-10-25 (P9; 69 pozycji P-01…P-69 w 8 grupach: pomiar geometrii/czasu, baseline'y, Playwright API, CI/workflowy, LHCI, Astro/Vite/Tailwind, CMS/R2, ekosystem Claude; każda = objaw → przyczyna → jak nie wpaść + odsyłacz; pozycje z rodziny bez naszego incydentu oznaczone `[rodzina]`; pułapki z P8 dopisane (Docker ≠ runner, identyczny diff ≠ brak timingu, `trace_engine`, `test.skip` bez `testInfo`, `spec`+`mode=all`, axe `incomplete` vs `passes`); worktree + symlink `node_modules` = DWIE obserwacje bez rozstrzygnięcia, P-51) — `docs/pulapki.md`**: skondensowany katalog pułapek
 pomiarowych/środowiskowych z rodziny (przejście CSS fałszuje odczyt
 geometrii; `opacity:0` łapie kliknięcia; na preview `/cdn-cgi/` nie
 istnieje → pixel-diff nie widzi regresji obrazów R2; `strict_required_status_checks`
@@ -711,6 +711,18 @@ przed bundlami → override `:root` przegrywa, potrzebny `html:root`;
 komentarz frontmatteru z `<` psuje `astro check`; `*/` w komentarzu CSS
 wywraca Tailwind 4; `git worktree` + symlink `node_modules` psuje Tailwind;
 R2 EU wymaga endpointu `.eu.`; cron GH opóźniony ~6 h).
+
+**D6 · COULD · S · ☐ — `docs/README.md`: statusy dokumentów podstron
+nieaktualne** (zauważone w P9, nie naprawiane „przy okazji"): wiersze
+`analiza-podstrona-faq.md` i `analiza-podstrona-kontakt.md` mówią
+„W TRAKCIE WDROŻENIA (2026-07-17)", `analiza-podstrona-o-mnie.md`
+„WDROŻONE lokalnie", `analiza-podstrona-oferta-hub.md` „WDRAŻANE",
+`analiza-realizacje-karuzela-mobile.md` i
+`analiza-podmiana-ekranow-lumea-dla-kogo.md` „baseline'y czekają na
+akceptację" — wszystkie te podstrony/sekcje są na produkcji od lipca
+2026. Zrobić: per plik sprawdzić merge (`git log --merges -- <plik>`),
+wpisać „WDROŻONE NA PRODUKCJI (PR #nn, data)", ewentualnie nagłówkowy
+status w samym dokumencie. Commit: `docs(readme): refresh subpage document statuses`.
 
 ### Odrzucone z raportów (nie wchodzą do backlogu)
 
@@ -736,7 +748,7 @@ zmigrowane).
 | P6 „Chrome i SEO" | S1, S3, S2 | małe, niezależne | ✅ PR #55 (2026-10-22), baseline'y nietknięte |
 | P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B #57 (L1) ✅ na main 2026-10-24 — **P7 ✅ W CAŁOŚCI** (PR #56 + #57) |
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
-| P9 „Docs utrzymaniowe" | D2, D3, D4, (D5) | docs | — |
+| P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | — (PR `docs/p9-maintenance`, 2026-10-25: D2–D5 ✅ wdrożone lokalnie, zero zmian poza `docs/`; nowy punkt D6 z obserwacji) |
 | później | H3, T7, T8, R4, S4, S5, M3, F2, L2 | COULD | — |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
@@ -1001,4 +1013,36 @@ osobny PR po pomiarze na main.
   co do bajta 5/5; LCP mobile 3378 ms (L1: 3551), desktop 1877 ms
   (L1: 1910 /en/), perf 0,90 (m) / 0,92 (d). W mini-PR WYŁĄCZNIE progi
   `font:size` (74 800 / 118 100); ratchet LCP/perf = osobna decyzja.
+  **Domknięcie mini-PR:** #60 zmergowany (`68fe906`), checki na PR za
+  pierwszym razem, CI (run 40129958257) i Prod smoke (40129958334) na
+  main zielone. P8 zamknięta w całości.
+- **2026-10-25 (sesja 8)** — bramka: main `68fe906` (merge #60), status
+  czysty, 6 ostatnich biegów zielone (CI + Prod smoke po #60 i #59, LHCI
+  measure 40124168778). P9 „Docs utrzymaniowe" (branch
+  `docs/p9-maintenance`), paczka czysto dokumentacyjna — zero zmian
+  w `src/`, `tests/`, `lighthouserc*`, workflowach, `package.json`.
+  **D2** ✅ `optional-todos.md` przepisany na dwie tabele (12 cyklicznych
+  z kolumną „ostatnio", 9 odłożonych, 5 zamkniętych, procedury §4);
+  dopisane: ratchet LCP/perf po F1 jako odłożone O4 z progami policzonymi
+  wg L1 (LCP 4678 / 3177, perf 0,85 / 0,85 — zysk mały, decyzja Mateusza),
+  domena OVH, katalog flake'ów, Search Console, UptimeRobot keyword;
+  przeterminowane punkty (robots.txt, `pages.dev`, sieroty z refactoru,
+  Stream) do „Zamknięte". **D3** ✅ `decyzje.md`: 104 wpisy DEC-01…104
+  w 10 grupach, każdy jedna linia + odsyłacz + status; zasiew z pamięci,
+  reguł, analiz i P7/P8; dwie rozbieżności pamięć↔kod odnotowane (upload
+  `file` do R2; navbar bez kotwic). **D4** ✅ `poprawki-po-implementacji.md`:
+  reguły + tabele; stan pkt 4/5/8 `visual-corrections-part1.md`
+  SPRAWDZONY przed zasiewem — wszystkie trzy na main od PR #48
+  (2026-07-20, `--wk-scale: 1.2`, baseline'y `76764c6`); pkt 4/5 jako
+  „do potwierdzenia" (decyzja wyglądu), pkt 8 zamknięty testem F1 na
+  telefonie; H1 nie zasiany (korekta opisu D4). Testy telefoniczne
+  P5/P6/P8 zapisane w rejestrze „bez usterek". **D5** ✅ `pulapki.md`:
+  69 pozycji w 8 grupach, z P8 i z reguł; worktree = dwie obserwacje bez
+  rozstrzygnięcia. Poza zakresem (nie naprawiane): nieaktualne statusy
+  dokumentów podstron w `docs/README.md` → nowy punkt **D6** (COULD).
+  Szablon sesji: bramka startowa czyta teraz `decyzje.md`,
+  `poprawki-po-implementacji.md`, `pulapki.md`. `docs/README.md`: trzy
+  nowe wiersze + odświeżone `optional-todos.md` i
+  `visual-corrections-part1.md`. Weryfikacja: `format:check` + `lint`
+  (docs ignorowane — kontrola, że diff dotyka tylko `docs/`).
 
