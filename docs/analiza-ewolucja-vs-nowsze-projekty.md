@@ -486,13 +486,13 @@ przebieg, odczyt, przywrócenie). Wzorzec: `eha/pracownia-eha-web/.github/
 workflows/update-visual-baselines.yml:12-33`.
 Commit: `ci(baselines): allow spec and mode inputs`.
 
-**T7 · COULD · S · ☐ — warstwa `test:dist`** (`vitest.dist.config.ts`,
+**T7 · COULD · S · ✅ wdrożone 2026-10-26 (sesja 10, P10, branch `test/dist-layer-and-family-rules`; `vitest.dist.config.ts` osobno od `vitest.config.ts` — `test:unit` dalej 12 plików bez `tests/dist`; `tests/dist/dist.test.ts` = 6 asercji: (a) `localhost`/`127.0.0.1`/porty 4321 i 4399, (b) pełny e-mail BEZ wyjątków — polityka prywatności też składa adres z fragmentów (`PolicyPage.astro` `[data-pp-mail]`), stopka bez `mailto:`, więc w HTML nie ma żadnego adresu; bundle JS/CSS zostaje w `contact.spec.ts`, (c) `robots.txt` (Disallow `/admin` + `Sitemap:`), `sitemap-index.xml` → potomne na `site`, zbiór adresów sitemapy = zbudowane strony poza `404.html`/`admin/`; zielone na `build` i `build:visual` (22 HTML, 20 adresów), negatywny test z podrzuconym plikiem = 3 czerwone z `plik:linia → „trafienie" w: …kontekst…`; `pnpm test:dist` w `quality` po `pnpm build` (przed uploadem artefaktu) i w `pnpm test` między unit a e2e; `/release-check` bez ręcznego grepa; DEC-106) — warstwa `test:dist`** (`vitest.dist.config.ts`,
 `tests/dist/dist.test.ts`): skan `dist/**/*.html` pod kątem `localhost`,
 portów dev, pełnych adresów e-mail poza mechanizmem „[ POKAŻ ]", obecności
 `robots.txt`/`sitemap-index.xml`; w jobie `quality` po buildzie. Zastępuje
 ręczny grep w `/release-check`. Wzorzec: hetman `tests/dist/dist.test.ts`.
 
-**T8 · COULD · S · ☐ — reguły testów z rodziny do `testing.md`**:
+**T8 · COULD · S · ✅ wdrożone 2026-10-26 (sesja 10, P10; sekcja „Pomiar w testach" w `.claude/rules/testing.md` — geometria rect + tolerancja, czas w przeglądarce, sufit klasy, czerwone w izolacji, skan builda zamiast grepa; wiersz tabeli dla robots/sitemap/tras/danych kontaktowych → `pnpm build && pnpm test:dist`; DEC-107–110, DEC-88 → zastąpiona; `offsetHeight` w `scroll.ts`/`visual.ts`/`about.spec.ts` liczy pozycje scrolla, nie asercje — reguła to precyzuje; progi hero 0,02/0,01 sprzed reguły NIE przeliczane przy okazji → **T10** + PI-04) — reguły testów z rodziny do `testing.md`**:
 geometria sub-pikselowo (`getBoundingClientRect` + tolerancja, nie
 `offsetHeight`); próg per-shot podnosić dopiero po policzeniu sufitu klasy
 (udział elementu w kadrze × czułość percepcyjna); czas mierz wewnątrz
@@ -506,6 +506,16 @@ profil `webkit-1440` (T5) NIE ma podwyższonego progu dla flaky klatek hero
 0.01–0.02 wyłącznie na ekranie telefonu, kontrolny rerun tego samego
 buildu zielony. Nie naprawiać „przy okazji" — osobna mała zmiana z
 kontrolnym przebiegiem.
+
+**T10 · COULD · XS · ☐ — sufit klasy dla progów hero** (`FLAKY_DESKTOP_FRAMES`
+0,02 na chromium-1920/webkit-1440, pixel-5 00–03 0,01; DEC-79): progi
+ustalone z obserwowanych diffów (max ~0,011 / ~0,35 %), nie z policzonego
+udziału kadru telefonu / akcentu serif w zrzucie (reguła T8, DEC-109). Przy
+następnym dotknięciu `hero.spec.ts`: policzyć sufit (udział × ok. 0,1
+percepcyjnie), dopisać komentarz z liczbą i datą; próg zmienia się tylko,
+jeśli sufit wyjdzie poniżej obserwacji (wtedy = kontrolny przebieg na main).
+Wpis: `poprawki-po-implementacji.md` PI-04 (zmiana zakresu). Commit:
+`test(visual): document class ceiling for hero flaky thresholds`.
 
 ### C — CI / deploy
 
@@ -535,7 +545,7 @@ przebiegów × mobile/desktop → mediany w `$GITHUB_STEP_SUMMARY` + artefakt
 
 ### L — Lighthouse
 
-**L1 · MUST · S · ✅ na main 2026-10-24 (PR #57 `chore/lhci-budgets`, merge `d9750ce`; kontrolne CI na main run 40083791571 zielone, checki na PR za pierwszym razem; pomiar: run `lhci-measure.yml` 40079996952 na main `fe4914f`, mediany z 5; progi: LCP mobile 4851 = 3551 + 1300, desktop 3210 = 1910 + 1300 — gorszy URL to /en/; TBT desktop 300 = max(0×2; 0+300), między granicami Google 200/600 — bez snapu; perf 0,80 (m) / 0,85 (d) = mediana − 0,05 w dół do 0,05; `font:count` → error, nowy `font:size` error 113 600 (m) / 168 800 (d) = mediana + 10%, deterministyczny co do bajta w 5/5 przebiegów; `numberOfRuns: 5`) — progi LCP z zapasem ≥ szumu runnera**: po pomiarze
+**L1 · MUST · S · ✅ na main 2026-10-24 (PR #57 `chore/lhci-budgets`, merge `d9750ce`; kontrolne CI na main run 40083791571 zielone, checki na PR za pierwszym razem; pomiar: run `lhci-measure.yml` 40079996952 na main `fe4914f`, mediany z 5; progi: LCP mobile 4851 = 3551 + 1300, desktop 3210 = 1910 + 1300 — gorszy URL to /en/; TBT desktop 300 = max(0×2; 0+300), między granicami Google 200/600 — bez snapu; perf 0,80 (m) / 0,85 (d) = mediana − 0,05 w dół do 0,05; `font:count` → error, nowy `font:size` error 113 600 (m) / 168 800 (d) = mediana + 10%, deterministyczny co do bajta w 5/5 przebiegów; `numberOfRuns: 5`; **ratchet po F1** ✅ na main 2026-10-26 — PR #63 `chore/lhci-ratchet-after-f1`, merge `d7010ba`, dane z runu 40124168778: LCP 4678 (m) / 3177 (d), perf 0,85 (m) / 0,85 (d), checki za pierwszym razem; O4 w `optional-todos.md` zamknięte) — progi LCP z zapasem ≥ szumu runnera**: po pomiarze
 (C4 lub `lhci-median.mjs` z 5 przebiegów na main): LCP =
 `max(mediana × 1,15; mediana + 1300)` (mobile i desktop), TBT desktop
 100 → wg reguły `max(mediana × 2; mediana + 300)` zaokrąglone do granicy
@@ -749,7 +759,8 @@ zmigrowane).
 | P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B #57 (L1) ✅ na main 2026-10-24 — **P7 ✅ W CAŁOŚCI** (PR #56 + #57) |
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
-| później | H3, H4, T7, T8, R4, R5, S4, S5, M3, F2, L2 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 w `optional-todos.md`) |
+| P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ lokalnie 2026-10-26 (sesja 10, branch `test/dist-layer-and-family-rules`), baseline'y nietknięte |
+| później | H3, H4, R4, R5, S4, S5, M3, F2, L2, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1073,4 +1084,73 @@ osobny PR po pomiarze na main.
   --with-deps` — timeout 10 min (backstop) na pobieraniu paczek apt
   z `azure.archive.ubuntu.com` (fonts-wqy-zenhei 7 MB szło 3 min); paczka
   docs-only, więc flake infrastruktury (katalog flake'ów), rerun failed
-  jobs zlecony na tym samym SHA (`gh run rerun --failed`).
+  jobs zlecony na tym samym SHA (`gh run rerun --failed`) — rerun zielony.
+  **Po oddaniu (ta sama sesja):** Mateusz zacommitował i otworzył #62 (docs)
+  i #63 (ratchet); **#63 zmergowany** 2026-10-26 (`d7010ba`), checki za
+  pierwszym razem — nowe progi LHCI przeszły na runnerze (L1 ✅ ratchet).
+  #62 po `Merge branch 'main'` dostał DRUGI dziś timeout `playwright
+  install` (run 40305229025, ~40 KB/s z apt) → rerun zielony; TRZECI: CI
+  na main po #63 (run 40305176483, ten sam krok; main po #62 — run
+  40319111350 — do sprawdzenia w bramce następnej sesji). Trzy razy jednego
+  dnia = mały osobny PR `ci/playwright-install-retry`: `playwright install-deps`
+  osobnym krokiem z drugą próbą (`continue-on-error` + `if: outcome ==
+  failure`, limit 6 min per próba — apt wznawia z `partial/`), binaria
+  osobno z cache (8 min), job `e2e` 25 → 40 min; to samo w `prod-smoke.yml`
+  i `update-visual-baselines.yml`; P-40 w `pulapki.md` rozszerzone; DEC-105.
+  Statusy L1/README/DEC-105 jadą w TYM SAMYM PR-ze co retry (#62 już na
+  main, jeden PR = jedna loteria instalacji zamiast dwóch). Następna paczka — propozycja: **T7 + T8** (warstwa
+  `test:dist` + reguły testów z rodziny; same testy/docs, zero bajtów
+  strony) albo **R5**, gdy DNS Hetmana przełączony.
+- **2026-10-26 (sesja 10)** — bramka: origin/main `256d751` (merge #62),
+  NIE #64 — PR `ci/playwright-install-retry` nigdy nie powstał: jego zmiany
+  (3 workflowy + docs: L1 ratchet ✅, DEC-105, P-40, końcówka wpisu
+  sesji 9) leżały NIEZACOMMITOWANE w working tree na zmergowanej gałęzi
+  `docs/close-p9-readme-statuses`. Zachowane bez zmian i przeniesione na
+  nowy branch `test/dist-layer-and-family-rules` (checkout z origin/main
+  przenosi lokalne modyfikacje; pliki te nie zmieniły się między `51e43f4`
+  a `256d751`) → retry jedzie w TYM PR-ze (P10) jako osobny commit `ci`
+  (poza `ci.yml` zestaw plików rozłączny z T7/T8: T7 dodaje krok w
+  `quality`, retry zmienia `e2e`). CI na main: po #62 run 40319111350
+  zielony za pierwszym razem (`playwright install --with-deps` 44 s — bez
+  retry, więc pierwszy pomiar skuteczności retry = pierwszy bieg po
+  merge'u P10, krok „Zależności systemowe Playwrighta (próba 1/2)" w
+  `gh run view <id> --json jobs`); po #63 run 40305176483 `e2e` czerwony
+  na tym samym kroku (timeout 10 min), nie rerunowany — nadpisany
+  zielonym biegiem po #62, main zielony. Prod smoke po #62 zielony
+  (run 40319111343). `poprawki-po-implementacji.md`: brak nowych usterek
+  z urządzeń.
+  **T7 ✅**: `vitest.dist.config.ts` (osobny config; `test:unit` 12 plików,
+  bez `tests/dist`), `tests/dist/dist.test.ts` — 6 asercji (hosty/porty
+  dev, pełny e-mail, robots, sitemap-index, adresy sitemapy = strony).
+  Pytanie o `mailto:` w polityce prywatności rozstrzygnął kod:
+  `PolicyPage.astro` składa adres z fragmentów skryptem inline
+  (`[data-pp-mail]`), stopka nie ma `mailto:` → w HTML nie ma żadnego
+  adresu, test BEZ wyjątków (szablon `mailto:${a}` w skrypcie nie jest
+  adresem i nie łapie się). Bundle JS/CSS pokrywa `contact.spec.ts`
+  („antyscraping…", konkretne ciągi) — nie dublowane. Wyniki: `pnpm build
+  && pnpm test:dist` 6/6 (173 ms; 22 HTML, sitemapa 20 adresów = 22 − 404
+  − admin); `pnpm build:visual && pnpm test:dist` 6/6; negatywny test:
+  `dist/__wyciek__/index.html` z `http://localhost:4321`,
+  `127.0.0.1:4399` i `jan.kowalski@example.com` → 3 czerwone: 4 trafienia
+  hostów/portów i 2 e-maile w formacie `plik:linia → „trafienie" w:
+  …kontekst…` oraz „strona BEZ wpisu w sitemapie: /__wyciek__/"; po
+  usunięciu pliku 6/6. `ci.yml` `quality`: `pnpm test:dist` po `pnpm
+  build`, przed uploadem artefaktu; `pnpm test` = unit → dist → e2e →
+  visual; `/release-check` l. 36 → `pnpm test:dist`. Bramka: format:check,
+  lint, typecheck zielone.
+  **T8 ✅**: sekcja „Pomiar w testach" w `testing.md` + wiersz tabeli
+  dist/SEO; DEC-106–110, DEC-88 → zastąpiona. Sprzeczności z kodem:
+  `offsetHeight` w `scroll.ts`/`visual.ts`/`about.spec.ts` liczy POZYCJE
+  scrolla, nie asercje — reguła to precyzuje, nic nie przepisane; progi
+  hero 0,02/0,01 (DEC-79) z obserwacji, nie z sufitu klasy → NIE
+  przeliczane przy okazji: **T10** w §6 + PI-04 w `poprawki` (zmiana
+  zakresu). DEC-103 (reguły osobnym PR-em) — z polecenia Mateusza T8
+  jedzie razem z T7 (jedna loteria instalacji). Nowa pułapka **P-70**
+  (cudzysłów „…" zamykany ASCII `"` kończy literał TS/Pythona — trzy
+  potknięcia w tej sesji). Poza zakresem (XS, osobno): `CLAUDE.md`
+  „Komendy" bez `pnpm test:dist`; mapa skilla `/test` bez warstwy dist.
+  Zero bajtów strony; baseline'y nietknięte; lista „na telefon": nie
+  dotyczy. Przy `git add`: `tests/dist` był IGNOROWANY przez `dist/`
+  w `.gitignore` (wzorzec bez `/` łapie każdy katalog o tej nazwie) →
+  `/dist/` (tylko katalog główny), pułapka **P-71**. Następna paczka:
+  **R5** po DNS Hetmana (XS) albo T10 przy najbliższym dotknięciu hero.

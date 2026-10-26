@@ -70,7 +70,7 @@
 | P-37 | **Cron GitHub Actions bywa opóźniony o godziny (~6 h)** — nie planuj na nim niczego, co ma „zdążyć" | `[rodzina]` |
 | P-38 | **Strażnik prod-smoke czekający na PIERWSZY asset** (`head -1`) startował w środku propagacji Cloudflare (pierwszym bywał font o stałym hashu) → flake „MIME `text/html` na `_astro/*.css`"; dziś komplet assetów + `200` na każdym; `echo | grep` w pętli = Broken pipe | backlog **C1**; pamięć `ci-flakes-catalog` |
 | P-39 | **Deploy Cloudflare potrafi trwać > 10 min** — czerwony Prod smoke po merge'u przy deterministycznych hashach = rerun, nie regresja | ewolucja §10 sesja 2 |
-| P-40 | **Zawieszony `playwright install` (> 1 h)** — backstop `timeout-minutes` w `ci.yml`; „wszystko padło na apt-get" = infra GitHuba → rerun | pamięć `ci-flakes-catalog`; `daily-workflow.md` |
+| P-40 | **Zawieszony lub POWOLNY `playwright install --with-deps`** (> 1 h 2026-07-13; 2026-10-26 TRZY razy timeout 10 min przy ~40 KB/s z `azure.archive.ubuntu.com` — main po docs-only #61, PR #62, main po #63) — „wszystko padło na apt-get" = infra GitHuba, nie kod. Od PR `ci/playwright-install-retry`: zależności apt osobnym krokiem z drugą próbą (apt wznawia z `partial/`) i limitem 6 min per próba, binaria osobno z cache (8 min), job `e2e` 40 min. Czerwony tu = rerun failed jobs, nie diagnoza kodu | `ci.yml` job `e2e`, `prod-smoke.yml`, `update-visual-baselines.yml`; katalog flake'ów |
 | P-41 | **Workflow baseline'ów z `mode=changed` NIE przepisze zmiany pod progiem** (zielonej, ale nieaktualnej) — do tego `mode=all` zawężone filtrem `plik:linia` w inpucie `spec` (bez spacji) | backlog **T6**; `testing.md` |
 
 ## 5. Lighthouse / LHCI
@@ -120,3 +120,5 @@
 | P-67 | **`Bash(pnpm test:*)` w allowliście NIE łapie `pnpm test:unit`** — `:*` to skrót na „spacja + cokolwiek", więc dwukropek w nazwie skryptu wymaga jawnej listy | ewolucja §10 sesja 6 (#58) |
 | P-68 | **Reguły `Write(...)` w permissions są martwe** — uprawnienia plikowe matchują `Edit`/`Read` (`Edit` pokrywa Write/NotebookEdit) | ewolucja §10 sesja 6 (#58) |
 | P-69 | **`git worktree` do kontroli na main** — patrz P-51 (pnpm odmawia, `./node_modules/.bin/astro` działa) | ewolucja §10 sesja 7 |
+| P-70 | **Cudzysłów „…" w konwencji repo zamyka się ASCII `"`** — wklejony do literału TS/Pythona w podwójnych cudzysłowach KOŃCZY string (esbuild: „Expected ) but found…", heredoc Pythona: SyntaxError; trzy potknięcia w jednej sesji) — w tytułach testów i komunikatach pisz bez cudzysłowów albo w template literal / potrójnych cudzysłowach | ewolucja §10 sesja 10 (T7) |
+| P-71 | **`dist/` w `.gitignore` bez wiodącego `/` ignoruje KAŻDY katalog o tej nazwie** — `git add tests/dist` odmówił („ignored by one of your .gitignore files"); od T7 wzorzec to `/dist/` (tylko katalog główny) | ewolucja §10 sesja 10 (T7); `.gitignore` |
