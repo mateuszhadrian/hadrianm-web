@@ -33,7 +33,10 @@ Uruchom po kolei; każdy błąd napraw albo zgłoś:
   `rm -rf .lighthouseci && pnpm exec lhci autorun --config=lighthouserc.desktop.cjs`
   — budżety wydajnościowe (uwaga: progi mierzone na runnerze CI; lokalny
   Mac jest szybszy, więc lokalny FAIL = niemal na pewno realna regresja);
-- brak odwołań do `localhost`/portów dev w dist (grep).
+- `pnpm test:dist` — skan ZBUDOWANEGO dist (T7): `localhost`/porty dev,
+  pełne adresy e-mail poza mechanizmem „[ POKAŻ ]", `robots.txt` +
+  sitemapa na domenie produkcyjnej; przechodzi na dist z `build` i z
+  `build:visual` (w CI biegnie w `quality` po `pnpm build`).
 
 ## 4. Checklista urządzeń fizycznych
 
