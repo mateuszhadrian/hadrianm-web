@@ -9,24 +9,28 @@ module.exports = {
       settings: { preset: "desktop" },
     },
     assert: {
-      // Baseline 2026-10-24 (L1; workflow lhci-measure.yml, run 40079996952,
-      // mediany z 5 przebiegów na main fe4914f; gorszy z dwóch URL-i —
-      // na desktopie to /en/): perf 0.91 (/en/), LCP 1910 ms (/en/),
-      // TBT 0 ms, CLS 0.0000, script 88 KB, total 1761 KB,
-      // fonty 7 × 153 419 B (/).
+      // Baseline 2026-10-24 po F1 (workflow lhci-measure.yml, run
+      // 40124168778, mediany z 5 przebiegów na main cc3a05a; gorszy z dwóch
+      // URL-i — tym razem /): perf 0.92 (oba), LCP 1877 ms (/), TBT 0 ms,
+      // CLS 0.0000, script 88 KB, total 1716 KB, fonty 7 × 107 275 B (/).
+      // Poprzedni baseline (L1, run 40079996952, main fe4914f, przed F1):
+      // perf 0.91 (/en/), LCP 1910 ms (/en/), fonty 7 × 153 419 B.
       aggregationMethod: "median-run",
       assertions: {
-        // perf = mediana gorszego URL-a 0.91 (/en/) − 0.05, w dół do
-        // wielokrotności 0.05 → 0.85 (decyzja Mateusza 2026-10-23, reguła
-        // jak w lighthouserc.cjs).
+        // perf = mediana 0.92 (oba URL-e, run 40124168778) − 0.05 = 0.87,
+        // w dół do wielokrotności 0.05 → 0.85 — bez zmiany po F1 (wcześniej
+        // z mediany 0.91 /en/; decyzja Mateusza 2026-10-23, reguła jak
+        // w lighthouserc.cjs).
         "categories:performance": ["error", { minScore: 0.85 }],
-        // LCP = max(1910 × 1,15 = 2197; 1910 + 1300 = 3210) = 3210
-        // (run 40079996952, 2026-10-24; gorszy URL /en/). Poprzedni próg
-        // 2000 miał nad dzisiejszą medianą tylko 90 ms zapasu — ta sama
-        // pułapka „próg na medianie" co LCP mobile przed L1.
-        "largest-contentful-paint": ["error", { maxNumericValue: 3210 }],
-        // TBT = max(0 × 2; 0 + 300) = 300 (L1, run 40079996952; mediana
-        // 0 ms). Granice Google to 200/600 — 300 leży między nimi; snap
+        // LCP = max(1877 × 1,15 = 2159; 1877 + 1300 = 3177) = 3177
+        // (run 40124168778 po F1, ratchet 2026-10-26; gorszy URL /;
+        // poprzednio 3210 z mediany 1910 /en/, run 40079996952). Próg
+        // sprzed L1 (2000) miał nad medianą tylko 90 ms zapasu — ta sama
+        // pułapka „próg na medianie" co LCP mobile.
+        "largest-contentful-paint": ["error", { maxNumericValue: 3177 }],
+        // TBT = max(0 × 2; 0 + 300) = 300 (L1, run 40079996952, mediana
+        // 0 ms — w 40124168778 też 0). Granice Google to 200/600 — 300 leży
+        // między nimi; snap
         // w dół (200) łamałby regułę minimalnego zapasu, w górę (600)
         // rozbrajałby strażnika, więc zostaje wynik formuły.
         "total-blocking-time": ["error", { maxNumericValue: 300 }],
