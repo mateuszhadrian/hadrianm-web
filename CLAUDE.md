@@ -33,7 +33,10 @@ na main.
   patrz testy niżej)
 - `pnpm lint` / `pnpm lint:fix` / `pnpm format` / `pnpm format:check`
 - Testy (kontrakt: `.claude/rules/testing.md`): `pnpm test` (wszystko);
-  `pnpm test:unit` (Vitest, sekundy); `pnpm test:e2e` (Playwright:
+  `pnpm test:unit` (Vitest, sekundy); `pnpm test:dist` (Vitest na
+  ZBUDOWANYM `dist/`, po `pnpm build` albo `build:visual`: wycieki
+  localhost/portów dev, pełne e-maile, robots + sitemapa; osobny
+  `vitest.dist.config.ts`); `pnpm test:e2e` (Playwright:
   funkcjonalne+a11y+SEO); `pnpm test:visual` (screenshoty vs baseline;
   wymaga `pnpm build:visual`, NIE `pnpm build`; webServer sam wstaje na 4399);
   `pnpm test:visual:update` (nowe baseline'y — TYLKO za zgodą Mateusza);
@@ -49,7 +52,7 @@ na main.
   dla mobile (`public/ambient-bg-mobile-{red,blue}.webp`) po każdej zmianie
   wyglądu `AmbientBackground` / palety
 - CI (GitHub Actions) na push/PR — 3 joby (required checks na main):
-  `quality` (format:check → lint → typecheck → test:unit → build),
+  `quality` (format:check → lint → typecheck → test:unit → build → test:dist),
   `e2e` (test:e2e + test:visual na artefakcie dist), `lighthouse`
   (budżety ratchet, lighthouserc\*). Po merge'u do main dodatkowo
   `prod-smoke.yml` (czeka na deploy Cloudflare, potem test:smoke:prod).

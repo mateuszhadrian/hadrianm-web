@@ -486,13 +486,13 @@ przebieg, odczyt, przywrócenie). Wzorzec: `eha/pracownia-eha-web/.github/
 workflows/update-visual-baselines.yml:12-33`.
 Commit: `ci(baselines): allow spec and mode inputs`.
 
-**T7 · COULD · S · ✅ wdrożone 2026-10-26 (sesja 10, P10, branch `test/dist-layer-and-family-rules`; `vitest.dist.config.ts` osobno od `vitest.config.ts` — `test:unit` dalej 12 plików bez `tests/dist`; `tests/dist/dist.test.ts` = 6 asercji: (a) `localhost`/`127.0.0.1`/porty 4321 i 4399, (b) pełny e-mail BEZ wyjątków — polityka prywatności też składa adres z fragmentów (`PolicyPage.astro` `[data-pp-mail]`), stopka bez `mailto:`, więc w HTML nie ma żadnego adresu; bundle JS/CSS zostaje w `contact.spec.ts`, (c) `robots.txt` (Disallow `/admin` + `Sitemap:`), `sitemap-index.xml` → potomne na `site`, zbiór adresów sitemapy = zbudowane strony poza `404.html`/`admin/`; zielone na `build` i `build:visual` (22 HTML, 20 adresów), negatywny test z podrzuconym plikiem = 3 czerwone z `plik:linia → „trafienie" w: …kontekst…`; `pnpm test:dist` w `quality` po `pnpm build` (przed uploadem artefaktu) i w `pnpm test` między unit a e2e; `/release-check` bez ręcznego grepa; DEC-106) — warstwa `test:dist`** (`vitest.dist.config.ts`,
+**T7 · COULD · S · ✅ na main 2026-10-27 (PR #64, merge `c178204`; wdrożone 2026-10-26, sesja 10, P10; `vitest.dist.config.ts` osobno od `vitest.config.ts` — `test:unit` dalej 12 plików bez `tests/dist`; `tests/dist/dist.test.ts` = 6 asercji: (a) `localhost`/`127.0.0.1`/porty 4321 i 4399, (b) pełny e-mail BEZ wyjątków — polityka prywatności też składa adres z fragmentów (`PolicyPage.astro` `[data-pp-mail]`), stopka bez `mailto:`, więc w HTML nie ma żadnego adresu; bundle JS/CSS zostaje w `contact.spec.ts`, (c) `robots.txt` (Disallow `/admin` + `Sitemap:`), `sitemap-index.xml` → potomne na `site`, zbiór adresów sitemapy = zbudowane strony poza `404.html`/`admin/`; zielone na `build` i `build:visual` (22 HTML, 20 adresów), negatywny test z podrzuconym plikiem = 3 czerwone z `plik:linia → „trafienie" w: …kontekst…`; `pnpm test:dist` w `quality` po `pnpm build` (przed uploadem artefaktu) i w `pnpm test` między unit a e2e; `/release-check` bez ręcznego grepa; DEC-106) — warstwa `test:dist`** (`vitest.dist.config.ts`,
 `tests/dist/dist.test.ts`): skan `dist/**/*.html` pod kątem `localhost`,
 portów dev, pełnych adresów e-mail poza mechanizmem „[ POKAŻ ]", obecności
 `robots.txt`/`sitemap-index.xml`; w jobie `quality` po buildzie. Zastępuje
 ręczny grep w `/release-check`. Wzorzec: hetman `tests/dist/dist.test.ts`.
 
-**T8 · COULD · S · ✅ wdrożone 2026-10-26 (sesja 10, P10; sekcja „Pomiar w testach" w `.claude/rules/testing.md` — geometria rect + tolerancja, czas w przeglądarce, sufit klasy, czerwone w izolacji, skan builda zamiast grepa; wiersz tabeli dla robots/sitemap/tras/danych kontaktowych → `pnpm build && pnpm test:dist`; DEC-107–110, DEC-88 → zastąpiona; `offsetHeight` w `scroll.ts`/`visual.ts`/`about.spec.ts` liczy pozycje scrolla, nie asercje — reguła to precyzuje; progi hero 0,02/0,01 sprzed reguły NIE przeliczane przy okazji → **T10** + PI-04) — reguły testów z rodziny do `testing.md`**:
+**T8 · COULD · S · ✅ na main 2026-10-27 (PR #64, merge `c178204`; wdrożone 2026-10-26, sesja 10, P10; sekcja „Pomiar w testach" w `.claude/rules/testing.md` — geometria rect + tolerancja, czas w przeglądarce, sufit klasy, czerwone w izolacji, skan builda zamiast grepa; wiersz tabeli dla robots/sitemap/tras/danych kontaktowych → `pnpm build && pnpm test:dist`; DEC-107–110, DEC-88 → zastąpiona; `offsetHeight` w `scroll.ts`/`visual.ts`/`about.spec.ts` liczy pozycje scrolla, nie asercje — reguła to precyzuje; progi hero 0,02/0,01 sprzed reguły NIE przeliczane przy okazji → **T10** + PI-04) — reguły testów z rodziny do `testing.md`**:
 geometria sub-pikselowo (`getBoundingClientRect` + tolerancja, nie
 `offsetHeight`); próg per-shot podnosić dopiero po policzeniu sufitu klasy
 (udział elementu w kadrze × czułość percepcyjna); czas mierz wewnątrz
@@ -759,7 +759,7 @@ zmigrowane).
 | P7 „Pomiary" | C4 → L1 (osobny PR), T3, T6 | po P1–P6 na main — nowe mediany | PR A #56 ✅ na main 2026-10-24 (C4/T3/T6 + 1 baseline z T3: work-index-grid webkit-iphone-se, oba komplety); PR B #57 (L1) ✅ na main 2026-10-24 — **P7 ✅ W CAŁOŚCI** (PR #56 + #57) |
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
-| P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ lokalnie 2026-10-26 (sesja 10, branch `test/dist-layer-and-family-rules`), baseline'y nietknięte |
+| P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
 | później | H3, H4, R4, R5, S4, S5, M3, F2, L2, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
@@ -1154,3 +1154,20 @@ osobny PR po pomiarze na main.
   w `.gitignore` (wzorzec bez `/` łapie każdy katalog o tej nazwie) →
   `/dist/` (tylko katalog główny), pułapka **P-71**. Następna paczka:
   **R5** po DNS Hetmana (XS) albo T10 przy najbliższym dotknięciu hero.
+  **Domknięcie (2026-10-27)**: PR #64 (4 commity, head `63c2e9a`) — CI na
+  PR run 40362955030 zielone za 1. razem (`test:dist` po `build` 1 s;
+  install-deps próba 1 = 30 s, próba 2 pominięta); merge `c178204`
+  2026-10-27 16:02 UTC → CI na main run 40536992288 zielone za 1. razem
+  (`quality` 1 min 26 s, `test:dist` 1 s; `e2e` 21 min, install-deps
+  próba 1 = 33 s, próba 2 pominięta, binaria z cache 1 s; `lighthouse`
+  6 min) + Prod smoke run 40536992331 zielony. Pierwszy pomiar retry
+  (DEC-105): dwa biegi z rzędu bez apt-flake'a, 2. próba nieużyta —
+  mechanizm zweryfikowany tylko na ścieżce „próba 1 OK → próba 2
+  skipped"; ścieżka awaryjna sprawdzi się przy pierwszym realnym
+  timeoucie (kontrola: `gh run view <id> --json jobs`, krok „próba 2"
+  = success zamiast skipped). **P10 ✅ W CAŁOŚCI.** Domknięte w PR docs
+  `docs/close-p10` razem z dwoma XS spoza zakresu P10: `CLAUDE.md`
+  „Komendy" + linia CI z `test:dist`, mapa skilla `/test` z warstwą dist
+  (wiersz dla tras/SEO/danych kontaktowych, krok 2 „build + test:dist"
+  przed Playwrightem). Otwarte COULD-y bez zmian: H3, H4, R4, R5, S4, S5,
+  M3, F2, L2, T10.
