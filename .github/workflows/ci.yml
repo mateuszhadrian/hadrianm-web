@@ -70,9 +70,14 @@ jobs:
         run: sudo bash -c 'grep -rl packages.microsoft.com /etc/apt/sources.list.d/ | xargs -r rm -f'
       # Zależności systemowe (apt) OSOBNO i z drugą próbą: mirror apt na
       # runnerach bywa powolny (2026-10-26: 3× timeout 10 min przy ~40 KB/s
-      # z azure.archive.ubuntu.com — 2× main, 1× PR docs-only). Druga
-      # próba dociąga resztę z `partial/` (apt wznawia pobieranie), a krótki
-      # limit per próba nie pozwala zawieszeniu zjeść całego joba.
+      # z azure.archive.ubuntu.com — 2× main, 1× PR docs-only). Krótki limit
+      # per próba nie pozwala zawieszeniu zjeść całego joba. UWAGA: limit
+      # kroku zabija shell, NIE `apt-get` (root przez sudo) — ten pobiera
+      # dalej i trzyma /var/lib/dpkg/lock-frontend (2026-10-27, run
+      # 40567119421: próba 2 padła po 2 s na blokadzie; P-72). Dlatego
+      # próba 2 każe apt CZEKAĆ na blokadę (DPkg::Lock::Timeout, 7 min):
+      # gdy apt z próby 1 dokończy instalację, próba 2 jest no-opem; gdy
+      # mirror dalej się wlecze — czerwone = rerun failed jobs (DEC-111).
       - name: Zależności systemowe Playwrighta (próba 1)
         id: pw-deps
         continue-on-error: true
@@ -80,8 +85,10 @@ jobs:
         run: pnpm exec playwright install-deps chromium webkit firefox
       - name: Zależności systemowe Playwrighta (próba 2)
         if: steps.pw-deps.outcome == 'failure'
-        timeout-minutes: 6
-        run: pnpm exec playwright install-deps chromium webkit firefox
+        timeout-minutes: 8
+        run: |
+          echo 'DPkg::Lock::Timeout "420";' | sudo tee /etc/apt/apt.conf.d/99pw-lock-timeout
+          pnpm exec playwright install-deps chromium webkit firefox
       # Binaria z cache 1–3 min; zimny cache (bump Playwrighta) do ~6 min.
       - run: pnpm exec playwright install chromium webkit firefox
         timeout-minutes: 8
