@@ -1170,4 +1170,10 @@ osobny PR po pomiarze na main.
   „Komendy" + linia CI z `test:dist`, mapa skilla `/test` z warstwą dist
   (wiersz dla tras/SEO/danych kontaktowych, krok 2 „build + test:dist"
   przed Playwrightem). Otwarte COULD-y bez zmian: H3, H4, R4, R5, S4, S5,
-  M3, F2, L2, T10.
+  M3, F2, L2, T10. CI na tym PR-ze docs (#65, run 40553896112): `e2e`
+  czerwone 1/682 — `work.spec.ts:123` (wideo w nakładce, pixel-5,
+  `currentTime` 0) w OBU próbach Playwrighta; diff = 4 pliki md, więc
+  regresja wykluczona → rerun joba zielony. Pierwsze wystąpienie flake'a
+  P-31 na runnerze (dotąd tylko lokalnie pod obciążeniem) — P-31
+  zaktualizowana; jeśli wróci na main, kandydat na punkt T (np. poll
+  `currentTime` zamiast jednego odczytu po 600 ms).
