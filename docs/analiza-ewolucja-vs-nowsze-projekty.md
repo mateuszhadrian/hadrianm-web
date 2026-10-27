@@ -1177,3 +1177,15 @@ osobny PR po pomiarze na main.
   P-31 na runnerze (dotąd tylko lokalnie pod obciążeniem) — P-31
   zaktualizowana; jeśli wróci na main, kandydat na punkt T (np. poll
   `currentTime` zamiast jednego odczytu po 600 ms).
+  **Pierwszy realny bieg ścieżki awaryjnej DEC-105 — i jej porażka**
+  (run 40567119421 na #65 po push `394a317`): próba 1 timeout 6 min
+  (mirror ~40 KB/s, 5 z 181 pakietów), próba 2 czerwona po 2 s —
+  `apt-get` z próby 1 (root przez sudo) przeżył limit kroku i trzymał
+  `/var/lib/dpkg/lock-frontend` (`E: Could not get lock … held by
+  process 2658`, exit 100). Naprawa osobnym PR-em `ci/install-deps-wait-
+  for-lock` (nad #65): próba 2 = `DPkg::Lock::Timeout "420"` w
+  `/etc/apt/apt.conf.d/` + limit 8 min (apt czeka, osierocona instalacja
+  się dokańcza, powtórka = no-op), komentarze w 3 workflowach; **P-72**,
+  **DEC-111**, P-40 uzupełniona. Mirror zostaje loterią (zmiana mirrora
+  dopiero po kolejnych 2 wystąpieniach). Weryfikacja ścieżki = następny
+  realny timeout próby 1 (krok „próba 2" success zamiast failure).
