@@ -56,7 +56,7 @@
 | P-28 | **Przy zatrzymanym czasie wirtualnym CDP `Page.captureScreenshot` potrafi wisieć** — stąd `page.clock` zamiast `Emulation.setVirtualTimePolicy` | plan wideo §3 D9 korekta 1 |
 | P-29 | **Chromium nie przewija `<video>` bez odpowiedzi 206/`Accept-Ranges`** (`seekable` = [0,0], każdy seek = klatka 0 — film wygląda jak zdjęcie); **Chromium nie pobiera `poster` przy `preload="none"`** (0/7 na produkcji delung) — poster jako `<picture>` pod spodem | plan wideo §3 D5, D9 korekta 3 |
 | P-30 | **Animacja widziana po raz pierwszy liczy się od POPRZEDNIEGO kroku**, nie od zera — przejścia CSS wyzwalane co klatkę ze scrolla inaczej „zacinają się" w nagraniu | plan wideo §3 D9 korekta 3 |
-| P-31 | **Lokalny `test:e2e` pod pełnym obciążeniem daje flaki, których nie ma w izolacji ani w CI** (wideo `currentTime` 0, axe `.pp-sub` pixel-5) — „czerwone w izolacji = z definicji nie flake", ale czerwone tylko pod obciążeniem wymaga kontroli na main w tych samych warunkach (worktree + osobny preview) | ewolucja §10 sesja 7; pamięć `navbar-measure-nie-optymalizuj` |
+| P-31 | **Pełny `test:e2e` pod obciążeniem daje flaki, których nie ma w izolacji** (wideo `currentTime` 0, axe `.pp-sub` pixel-5) — lokalnie od 2026-10-24, a wideo także w CI od 2026-10-27 (PR #65 docs-only, run 40553896112: `work.spec.ts:123` pixel-5 czerwone w obu próbach Playwrighta, rerun joba zielony). „Czerwone w izolacji = z definicji nie flake", ale czerwone tylko pod obciążeniem wymaga kontroli na main w tych samych warunkach (lokalnie: worktree + osobny preview; w CI: diff bez bajtów strony albo rerun tego samego SHA) | ewolucja §10 sesja 7 i 10; pamięć `navbar-measure-nie-optymalizuj`, `ci-flakes-catalog` |
 
 ## 4. CI, runnery, workflowy GitHub
 
