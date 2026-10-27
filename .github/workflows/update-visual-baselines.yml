@@ -59,9 +59,19 @@ jobs:
       # Jak w ci.yml: feedy packages.microsoft.com bywają zepsute i nie są potrzebne.
       - name: Wyłącz feedy packages.microsoft.com (flaky)
         run: sudo bash -c 'grep -rl packages.microsoft.com /etc/apt/sources.list.d/ | xargs -r rm -f'
-      # timeout jak w ci.yml: udokumentowana klasa zawieszeń apt/CDN (>1h).
-      - run: pnpm exec playwright install --with-deps chromium webkit firefox
-        timeout-minutes: 10
+      # Jak w ci.yml: zależności apt osobno z drugą próbą i krótkimi limitami
+      # (klasa zawieszeń/spowolnień apt), binaria osobno z cache.
+      - name: Zależności systemowe Playwrighta (próba 1)
+        id: pw-deps
+        continue-on-error: true
+        timeout-minutes: 6
+        run: pnpm exec playwright install-deps chromium webkit firefox
+      - name: Zależności systemowe Playwrighta (próba 2)
+        if: steps.pw-deps.outcome == 'failure'
+        timeout-minutes: 6
+        run: pnpm exec playwright install-deps chromium webkit firefox
+      - run: pnpm exec playwright install chromium webkit firefox
+        timeout-minutes: 8
       # Zamrożona treść realizacji (tests/fixtures) — jak w jobie e2e w ci.yml;
       # baseline'y MUSZĄ powstawać na tym samym zestawie, na którym CI je porównuje.
       - run: pnpm build:visual

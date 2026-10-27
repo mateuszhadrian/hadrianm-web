@@ -4,14 +4,15 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
 
 ## Co zmieniasz → co uruchamiasz
 
-| Zmiana                                                        | Warstwa (komenda)                                                                                     |
-| ------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `src/components/sections/hero/**`                             | `pnpm test:unit` + `pnpm build:visual && pnpm test:visual` (skill `/verify-mobile`) + `pnpm test:e2e` |
-| `src/content.schema.ts` / `content.config.ts` / nowy wpis CMS | `pnpm test:unit` (kontrakt CMS)                                                                       |
-| `src/i18n/**`, `src/lib/img.ts`, `platform.ts`                | `pnpm test:unit`                                                                                      |
-| `src/scripts/**`, navbar, Work/overlaye                       | `pnpm test:e2e`                                                                                       |
-| Każda zmiana wyglądu                                          | `pnpm build:visual && pnpm test:visual`                                                               |
-| Przed release                                                 | pełne `pnpm test` + skill `/release-check`                                                            |
+| Zmiana                                                                                                              | Warstwa (komenda)                                                                                     |
+| ------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `src/components/sections/hero/**`                                                                                   | `pnpm test:unit` + `pnpm build:visual && pnpm test:visual` (skill `/verify-mobile`) + `pnpm test:e2e` |
+| `src/content.schema.ts` / `content.config.ts` / nowy wpis CMS                                                       | `pnpm test:unit` (kontrakt CMS)                                                                       |
+| `src/i18n/**`, `src/lib/img.ts`, `platform.ts`                                                                      | `pnpm test:unit`                                                                                      |
+| `src/scripts/**`, navbar, Work/overlaye                                                                             | `pnpm test:e2e`                                                                                       |
+| `public/robots.txt`, `astro.config.mjs` (`site`/sitemap), nowa lub usunięta trasa, head SEO, dane kontaktowe w HTML | `pnpm build && pnpm test:dist` (skan dist: localhost/porty dev, pełne e-maile, robots + sitemapa)     |
+| Każda zmiana wyglądu                                                                                                | `pnpm build:visual && pnpm test:visual`                                                               |
+| Przed release                                                                                                       | pełne `pnpm test` + skill `/release-check`                                                            |
 
 ## Zasady twarde
 
@@ -107,6 +108,39 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   nie `ubuntu-latest`): wersja systemu wpływa na binaria Playwrighta
   i baseline'y linux. Bump obrazu = świadoma zmiana w osobnym PR z kontrolą
   baseline'ów (rerun `test:visual` na main przed i po).
+
+## Pomiar w testach (reguły z rodziny — T8)
+
+Reguła = jedna linia; mechanizm pułapki opisuje `docs/pulapki.md` (P-nn),
+tu go nie powtarzamy.
+
+- **Kontrakt geometryczny w asercji mierz SUB-PIKSELOWO**:
+  `getBoundingClientRect()` + jawna stała tolerancji
+  (`SUBPIXEL_TOL_PX = 0.5`), nigdy `offsetHeight`/`offsetTop` porównywane
+  z drugą zaokrągloną liczbą (P-03). Wyliczanie POZYCJI scrolla
+  z `offsetHeight` w helperach (`scroll.ts`, `visual.ts`, `about.spec.ts`)
+  to nie asercja — zostaje.
+- **Czas mierz wewnątrz przeglądarki**: `performance.now()` +
+  `MutationObserver`/`requestAnimationFrame` w `page.evaluate`, nigdy
+  timerami Node po stronie testu (P-04).
+- **Próg per-shot podnoś dopiero po POLICZENIU SUFITU klasy**, nie „z
+  zapasem": wskaż elementy, które MOGĄ się różnić, policz ich udział
+  w kadrze (surowy sufit; Playwright liczy percepcyjnie, ok. 10× łagodniej)
+  i pokaż pasma diffu pokrywające się z tymi elementami. Bez dowodu
+  mechanizmu próg nie rośnie; podniesiony próg ma komentarz z liczbą
+  i datą (P-13, P-15). Progi hero 0,02/0,01 (DEC-79) są sprzed tej reguły —
+  nie przeliczać „przy okazji" (backlog **T10**).
+- **Czerwone w izolacji = z definicji NIE flake**: powtórz sam test na tym
+  samym buildzie (`pnpm exec playwright test <spec> -g "<nazwa>"`); flake
+  wymaga zielonego przebiegu kontrolnego. Czerwone TYLKO pod obciążeniem
+  pełnego `test:e2e` kontroluj na main w tych samych warunkach (P-31),
+  dopiero potem rerun w CI.
+- **Skan builda, nie grep z pamięci**: wycieki `localhost`/portów dev,
+  pełnych e-maili i spójność robots/sitemapy sprawdza `pnpm test:dist`
+  (`tests/dist/dist.test.ts`; job `quality` po `pnpm build`, przechodzi też
+  na `build:visual`). Nowa klasa wycieku = nowa asercja tam, nie ręczny
+  grep w skillu. `test:unit` NIE obejmuje `tests/dist` (osobny
+  `vitest.dist.config.ts` — unit ma być szybki i niezależny od `dist/`).
 
 ## LHCI — budżety i pomiar
 

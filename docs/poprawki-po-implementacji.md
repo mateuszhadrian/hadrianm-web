@@ -44,7 +44,7 @@ scenariusz").
 
 | # | Zgłoszono | Objaw (gdzie, urządzenie) | Klasa | Decyzja | Status | Test |
 | --- | --- | --- | --- | --- | --- | --- |
-| — | — | brak otwartych pozycji (stan 2026-10-26; PI-01/02 zamknięte → §4) | — | — | — | — |
+| PI-04 | 2026-10-26 (sesja 10, T8 — z lektury kodu, nie z urządzenia) | Progi flaky klatek hero (`FLAKY_DESKTOP_FRAMES` 0,02 na chromium-1920/webkit-1440, pixel-5 00–03 0,01; DEC-79) ustalone z obserwowanych diffów, nie z policzonego sufitu klasy wg nowej reguły `testing.md` „Pomiar w testach" (DEC-109) | zmiana zakresu | punkt backlogu **T10** (§6 analizy ewolucji): przeliczyć sufit przy następnym dotknięciu `hero.spec.ts`, nie „przy okazji" | otwarte | sweep hero `tests/visual/hero.spec.ts` — po przeliczeniu komentarz z sufitem przy progu |
 
 ## 3. Rejestr testów na urządzeniach bez usterek
 
