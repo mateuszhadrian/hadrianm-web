@@ -517,8 +517,9 @@ jeśli sufit wyjdzie poniżej obserwacji (wtedy = kontrolny przebieg na main).
 Wpis: `poprawki-po-implementacji.md` PI-04 (zmiana zakresu). Commit:
 `test(visual): document class ceiling for hero flaky thresholds`.
 
-**T11 · SHOULD · XS · ✅ wdrożone 2026-10-28 (branch
-`test/overlay-video-local-fixture`; wyzwalacz: `work.spec.ts:123` czerwone
+**T11 · SHOULD · XS · ✅ na main 2026-10-28 (PR #67, merge `0bce589`;
+CI na PR run 40720478806 i na main 40730558262: `e2e` 682 passed,
+0 flaky, apt przez próbę 1; wyzwalacz: `work.spec.ts:123` czerwone
 w CI 2026-10-27 na PR #65 (pixel-5) i 2026-10-28 na main, run 40659086581
 (chromium-1920 i pixel-5 w obu próbach, 1366 flaky; 679 passed) przy diffie
 bez bajtów strony; mechanizm potwierdzony sondą: `play()` zdejmuje `paused`
@@ -621,9 +622,13 @@ znaki z i18n EN spoza `latin` — test wskaże) → `src/assets/fonts/*.woff2`
 `eha/pracownia-eha-web/scripts/subset-fonts.mjs`, `src/styles/fonts.css`,
 `tests/unit/fonts-subset.test.ts`. Commit: `perf(fonts): ship polish subsets instead of full latin-ext`.
 
-**F2 · COULD · S · ☐ — reguła**: „`document.fonts.ready` jest fałszywym
-sygnałem przy preloadowanych fontach — do bramek używać `fonts.load()`"
-w `.claude/rules/sections.md`.
+**F2 · COULD · S · ✅ 2026-10-28 (branch `docs/close-t11`; wpis w sekcji
+„Wspólne" `sections.md` z mechanizmem: `ready` rozstrzyga się, gdy nie ma
+trwających ładowań, a preloadowany font zaczyna się ładować dopiero przy
+pierwszym układzie tekstu; istniejące użycia — navbar, re-glue hero,
+mikro-fade — mają własny fallback i zostają) — reguła**:
+„`document.fonts.ready` jest fałszywym sygnałem przy preloadowanych fontach
+— do bramek używać `fonts.load()`" w `.claude/rules/sections.md`.
 
 ### S — SEO i chrome
 
@@ -775,7 +780,7 @@ zmigrowane).
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
 | P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
-| później | H3, H4, R4, R5, S4, S5, M3, F2, L2, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63) |
+| później | H3, H4, R4, R5, S4, S5, M3, L2, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ `docs/close-t11`) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1218,3 +1223,19 @@ osobny PR po pomiarze na main.
   **DEC-112**, P-31 uzupełniona, reguła w `testing.md`. Rerun `e2e` na
   main zielony (12:44–13:04 UTC) — main czysty; zielony rerun to loteria
   sieci, nie dowód, stąd T11 mimo wszystko.
+  **2026-10-28 (wieczór)**: #67 ✅ merge `0bce589` (CI na PR run
+  40720478806: `e2e` 682 passed, 0 flaky, próba 2 apt pominięta; Prod smoke
+  main 40730558300 zielony; CI main 40730558262 zielone za 1. razem:
+  `e2e` 682 passed, 0 flaky, visual 115 passed, apt przez próbę 1 —
+  pierwszy main bez loterii R2). Domknięcie = branch `docs/close-t11`
+  (ten wpis, §6/§7/README). Przy okazji dwa COULD-y bez bajtów strony:
+  **F2 ✅** (reguła `fonts.ready` vs `fonts.load()` w `sections.md`, §4.6).
+  **R5 — sygnał sprawdzony, jeszcze nie**: `hetmannieruchomosci.com`
+  odpowiada 200 bez przekierowania, ale starą stroną (tytuł „HETMAN
+  Nieruchomości", bez `generator: Astro`; `nowa.` = Astro 6.4.6, inny
+  HTML) → `liveUrl` zostaje na `nowa.`. **S5 — warunek niespełniony**:
+  polityka (`PolicyPage.astro`) deklaruje „bez analityki, reklam i cookies
+  marketingowych", NIE „bez zapisu w urządzeniu"; jedyne zapisy to flagi
+  `sessionStorage` (`hm:visited` mikro-fade, zamknięcie `LowPowerNotice`)
+  — techniczne, bez danych osobowych, kasowane z kartą. Propozycja:
+  zamknąć S5 jako „nie dotyczy" (przenieść do §9) — decyzja Mateusza.
