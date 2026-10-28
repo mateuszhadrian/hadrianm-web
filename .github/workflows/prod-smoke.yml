@@ -79,8 +79,9 @@ jobs:
       # Jak w ci.yml: feedy packages.microsoft.com bywają zepsute i nie są potrzebne.
       - name: Wyłącz feedy packages.microsoft.com (flaky)
         run: sudo bash -c 'grep -rl packages.microsoft.com /etc/apt/sources.list.d/ | xargs -r rm -f'
-      # Jak w ci.yml: zależności apt osobno z drugą próbą (powolny mirror,
-      # 2026-10-26), binaria osobno z cache.
+      # Jak w ci.yml: zależności apt osobno z drugą próbą, która CZEKA na
+      # apt z próby 1 (limit kroku nie zabija `sudo apt-get`; P-72, DEC-111),
+      # binaria osobno z cache.
       - name: Zależności systemowe Playwrighta (próba 1)
         id: pw-deps
         continue-on-error: true
@@ -88,8 +89,10 @@ jobs:
         run: pnpm exec playwright install-deps chromium webkit firefox
       - name: Zależności systemowe Playwrighta (próba 2)
         if: steps.pw-deps.outcome == 'failure'
-        timeout-minutes: 6
-        run: pnpm exec playwright install-deps chromium webkit firefox
+        timeout-minutes: 8
+        run: |
+          echo 'DPkg::Lock::Timeout "420";' | sudo tee /etc/apt/apt.conf.d/99pw-lock-timeout
+          pnpm exec playwright install-deps chromium webkit firefox
       - run: pnpm exec playwright install chromium webkit firefox
         timeout-minutes: 8
       - run: pnpm test:smoke:prod
