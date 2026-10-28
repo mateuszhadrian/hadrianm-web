@@ -517,6 +517,21 @@ jeśli sufit wyjdzie poniżej obserwacji (wtedy = kontrolny przebieg na main).
 Wpis: `poprawki-po-implementacji.md` PI-04 (zmiana zakresu). Commit:
 `test(visual): document class ceiling for hero flaky thresholds`.
 
+**T11 · SHOULD · XS · ✅ wdrożone 2026-10-28 (branch
+`test/overlay-video-local-fixture`; wyzwalacz: `work.spec.ts:123` czerwone
+w CI 2026-10-27 na PR #65 (pixel-5) i 2026-10-28 na main, run 40659086581
+(chromium-1920 i pixel-5 w obu próbach, 1366 flaky; 679 passed) przy diffie
+bez bajtów strony; mechanizm potwierdzony sondą: `play()` zdejmuje `paused`
+od razu, `currentTime` rusza po danych z sieci — 600 ms po `!paused` to
+pomiar R2, nie odtwarzania; lokalnie z fixture 12/12 na 7 profilach, cały
+work.spec 24/24; DEC-112, P-73) — wideo nakładki w e2e z LOKALNEJ fixture,
+nie z R2**: `page.route` na `media.hadrianm.pl/*.mp4` →
+`tests/fixtures/video/screen-loop.mp4` (ffmpeg `testsrc2` 32×32, 1 s,
+10 klatek, 2,3 KB; `public/lpm-probe.mp4` odpadł — w Chromium zostaje na
+`readyState` 1), asercja `expect.poll(!paused && currentTime > 0, 10 s)`
+zamiast odczytu po 600 ms; adres `src` nadal = R2. Commit:
+`test(e2e): serve overlay video from a local fixture and poll playback`.
+
 ### C — CI / deploy
 
 **C1 · MUST · S · ✅ na main 2026-10-21 (PR #50) — strażnik prod-smoke na komplet assetów**: w
@@ -1189,3 +1204,17 @@ osobny PR po pomiarze na main.
   **DEC-111**, P-40 uzupełniona. Mirror zostaje loterią (zmiana mirrora
   dopiero po kolejnych 2 wystąpieniach). Weryfikacja ścieżki = następny
   realny timeout próby 1 (krok „próba 2" success zamiast failure).
+  **2026-10-28**: #65 ✅ merge `c2e4085` (CI main 40585447363 + Prod smoke
+  40585447397 zielone), #66 ✅ merge `aa6eb6a` (Prod smoke 40659086634
+  zielony; CI main run 40659086581 `e2e` czerwone: `work.spec.ts:123` na
+  chromium-1920 i pixel-5 w obu próbach, 1366 flaky, 679 passed; apt przez
+  próbę 1 w 31 s). Drugie wystąpienie flake'a wideo w CI w ciągu doby,
+  szersze, diff bez bajtów strony → nie rerun „na ślepo", tylko mechanizm:
+  sonda w Playwrighcie pokazała `paused=false`, `readyState=1`,
+  `currentTime=0` — wideo z R2 (`preload=none`, ~730 KB) na ścieżce PR
+  = sieć zewnętrzna, wbrew regule `CHECK_REMOTE_MEDIA`. → **T11 ✅** na
+  branchu `test/overlay-video-local-fixture` (route na fixture + poll;
+  `public/lpm-probe.mp4` nie gra w Chromium; fixture z ffmpeg); **P-73**,
+  **DEC-112**, P-31 uzupełniona, reguła w `testing.md`. Rerun `e2e` na
+  main zielony (12:44–13:04 UTC) — main czysty; zielony rerun to loteria
+  sieci, nie dowód, stąd T11 mimo wszystko.

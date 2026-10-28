@@ -1,6 +1,7 @@
 // Sekcja Realizacje: kafle z Content Collections + otwieranie/zamykanie
 // WorkDetail. Desktop (≥761px): galeria `.work__gallery` → Modal. Mobile
 // (≤760px): karuzela `.wk-car` → BottomSheet. Strona główna pokazuje max 3.
+import { fileURLToPath } from "node:url";
 import { expect, test, type Page } from "@playwright/test";
 import {
   firstScreenVideo,
@@ -16,6 +17,15 @@ const ENTRY_COUNT = realizacjeFiles().length;
 
 // Strona główna kapuje listę do 3 (pełna lista: /realizacje/, work-index.spec.ts).
 const HOME_COUNT = Math.min(HOME_MAX, ENTRY_COUNT);
+
+// Lokalny zamiennik wideo z R2 na ścieżce PR (zero sieci zewnętrznej): 32×32,
+// 1 s, 10 klatek, h264 baseline, faststart, 2,3 KB. `public/lpm-probe.mp4`
+// NIE nadaje się: Chromium zostaje na readyState 1 (sonda iOS, P-73).
+// Regeneracja: ffmpeg -f lavfi -i "testsrc2=size=32x32:rate=10" -t 1
+//   -c:v libx264 -profile:v baseline -pix_fmt yuv420p -movflags +faststart -an
+const LOCAL_VIDEO = fileURLToPath(
+  new URL("../fixtures/video/screen-loop.mp4", import.meta.url),
+);
 
 test.skip(
   ENTRY_COUNT === 0,
@@ -126,6 +136,15 @@ test.describe("wideo ekranów w nakładce", () => {
     browserName,
   }, testInfo) => {
     test.skip(!FIRST_VIDEO, "brak wpisu z wideo — nic do odtworzenia");
+    // Wideo ekranów żyje w R2 (media.hadrianm.pl). Na ścieżce PR NIE czekamy
+    // na sieć zewnętrzną (testing.md: test mediów R2 tylko poza PR): każde
+    // .mp4 z R2 dostaje LOCAL_VIDEO. `src` elementu nadal wskazuje R2 —
+    // asercja adresu zostaje; odtwarzanie sprawdzamy na danych lokalnych
+    // (2026-10-27/28: `currentTime` 0 na runnerach dwa dni z rzędu, P-73).
+    await page.route(
+      /^https:\/\/media\.hadrianm\.pl\/.+\.mp4(\?.*)?$/,
+      (route) => route.fulfill({ path: LOCAL_VIDEO, contentType: "video/mp4" }),
+    );
     const overlay = await openFirst(page, !!isMobile);
     const videos = overlay.locator("video.wd__video");
     await expect(videos).toHaveCount(2); // laptop + telefon
@@ -156,19 +175,15 @@ test.describe("wideo ekranów w nakładce", () => {
       browserName === "chromium" &&
       !testInfo.project.name.includes("firefox")
     ) {
+      // `play()` zdejmuje `paused` od razu; `currentTime` rusza dopiero, gdy
+      // dekoder dostanie dane — dlatego poll do skutku, nie jeden odczyt po
+      // stałym czasie (P-04, P-73).
       await expect
-        .poll(async () => (await read()).every((v) => !v.paused), {
-          message: "oba wideo grają",
+        .poll(async () => (await read()).every((v) => !v.paused && v.t > 0), {
+          message: "oba wideo grają (currentTime > 0)",
+          timeout: 10_000,
         })
         .toBe(true);
-      const before = await read();
-      await page.waitForTimeout(600);
-      const after = await read();
-      after.forEach((v, i) =>
-        expect(v.t, `wideo #${i}: currentTime rośnie`).toBeGreaterThan(
-          before[i].t,
-        ),
-      );
     }
     await overlay.locator("[data-overlay-close]").click();
     await expect(overlay).toBeHidden();

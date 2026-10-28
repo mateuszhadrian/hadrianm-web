@@ -101,7 +101,11 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   `update-visual-baselines.yml` (bez spacji). Zmiana POD progiem (zielona,
   ale nieaktualna) wymaga `mode=all` — `changed` jej nie przepisze.
 - Test mediów R2 (`CHECK_REMOTE_MEDIA=1`) tylko poza ścieżką PR
-  (zewnętrzna sieć = flaky).
+  (zewnętrzna sieć = flaky). Wideo nakładki Realizacji w e2e gra z LOKALNEJ
+  fixture (`tests/fixtures/video/screen-loop.mp4`, `page.route` na `.mp4`
+  z R2 w `work.spec.ts`); odtwarzanie sprawdzaj `expect.poll` na
+  `currentTime`, nie odczytem po stałym czasie (P-73, DEC-112).
+  `public/lpm-probe.mp4` nie gra w Chromium — nie używaj go jako fixture.
 - Wersje `playwright` i `@playwright/test` podnoś PARĄ (jeden zestaw
   binariów); bump = też tag obrazu Dockera w procedurze baseline'ów.
 - Runnery GitHub są PRZYPIĘTE (`ubuntu-24.04` we wszystkich workflowach,
