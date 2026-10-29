@@ -37,6 +37,16 @@ reguła `cms-realizacje.md`).
   nie hardkodują.
 - Warstwy testów po zmianie: `.claude/rules/testing.md`; sekcje mają
   własne specy w `tests/visual/`.
+- **`document.fonts.ready` to FAŁSZYWY sygnał przy fontach preloadowanych**
+  (lekcja delung, ewolucja §4.6): obietnica rozstrzyga się, gdy nie ma
+  trwających ładowań — font z `<link rel="preload">` zaczyna się ładować
+  dopiero przy pierwszym układzie tekstu, więc `ready` potrafi spełnić się
+  PRZED podmianą kroju, a pomiar/bramka widzi fallback. Bramkę na fonty
+  rób przez `document.fonts.load("<waga> 1em <rodzina>")` (wymusza
+  ładowanie i czeka na nie). Istniejące `fonts.ready` (navbar `measure()`,
+  re-glue hero w `timeline-base.ts`, mikro-fade w `BaseLayout`) są
+  dopisami do działającego stanu z własnym fallbackiem — nie dokładaj
+  nowych bramek na tym sygnale.
 
 ## About (`om`) i Audience (`dk`) — pinned+scrub+snap
 
