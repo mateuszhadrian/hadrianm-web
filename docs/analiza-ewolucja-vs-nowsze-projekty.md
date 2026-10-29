@@ -661,9 +661,15 @@ blok (poza wysyłany HTML). Baseline'y: brak wpływu (zweryfikować
 **S4 · COULD · S · ☐ — `scripts/make-icons.mjs`** (wektor → komplet ikon +
 og jednym poleceniem; strażnik „GENERAT" w `seo.spec.ts`). Wzorzec: eha.
 
-**S5 · COULD · S · ☐ — fade przejść po `document.referrer`** zamiast
-`sessionStorage` — tylko jeśli polityka prywatności hadrianm deklaruje
-brak zapisu w urządzeniu (sprawdzić treść `polityka-prywatnosci.astro`).
+**S5 · COULD · S · ✅ ZAMKNIĘTE jako „nie dotyczy" 2026-10-29 (decyzja
+Mateusza po sprawdzeniu warunku 2026-10-28: polityka w `PolicyPage.astro`
+deklaruje „bez analityki, reklam i cookies marketingowych", NIE „bez
+zapisu w urządzeniu"; jedyne zapisy to flagi `sessionStorage` `hm:visited`
+(mikro-fade) i zamknięcie `LowPowerNotice` — techniczne, bez danych
+osobowych, kasowane z kartą; wpis w §9) — fade przejść po
+`document.referrer`** zamiast `sessionStorage` — tylko jeśli polityka
+prywatności hadrianm deklaruje brak zapisu w urządzeniu (sprawdzić treść
+`polityka-prywatnosci.astro`).
 
 ### A — Dostępność
 
@@ -780,7 +786,7 @@ zmigrowane).
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
 | P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
-| później | H3, H4, R4, R5, S4, S5, M3, L2, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ `docs/close-t11`) |
+| później | H3, H4, R4, R5, S4, M3, L2, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -826,6 +832,11 @@ osobny PR po pomiarze na main.
 - Generyczne nakładki zastąpione inline-sheetami (hetman) — nasze
   `Modal`/`BottomSheet` są reużywane w 3 miejscach.
 - Cloudflare Stream — patrz plan wideo.
+- Fade przejść po `document.referrer` zamiast flagi `sessionStorage` (S5,
+  2026-10-29) — warunek punktu niespełniony: polityka prywatności nie
+  deklaruje „bez zapisu w urządzeniu", a flagi `sessionStorage` są
+  techniczne (bez danych osobowych, znikają z kartą). Wraca tylko, gdy
+  polityka miałaby taką deklarację dostać.
 
 ## 10. Log sesji (append-only)
 
@@ -1239,3 +1250,9 @@ osobny PR po pomiarze na main.
   `sessionStorage` (`hm:visited` mikro-fade, zamknięcie `LowPowerNotice`)
   — techniczne, bez danych osobowych, kasowane z kartą. Propozycja:
   zamknąć S5 jako „nie dotyczy" (przenieść do §9) — decyzja Mateusza.
+  **2026-10-29**: #68 ✅ merge `c44fea8` (docs-only; Prod smoke 40845053268
+  zielony, CI main 40845053137 zielone za 1. razem). Decyzja Mateusza:
+  **S5 zamknięte jako „nie dotyczy"** (§6 + §9; branch `docs/close-s5`).
+  Otwarte COULD-y: H3, H4, R4, R5, S4, M3, L2, T10. Następna sesja (nowy
+  kontekst, prompt z szablonu): rekomendacja L2 (trasa-sensor
+  `/polityka-prywatnosci/` w LHCI mobile) + przegląd cykliczny D2.
