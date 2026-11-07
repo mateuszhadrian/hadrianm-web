@@ -12,7 +12,24 @@ module.exports = {
   ci: {
     collect: {
       staticDistDir: "./dist",
-      url: ["/", "/en/"], // ścieżki w obrębie staticDistDir
+      // Ścieżki w obrębie staticDistDir. `/` i `/en/` = bramka (budżety
+      // ratchet poniżej, DEC-93: /en/ zostaje). `/polityka-prywatnosci/` =
+      // TRASA-SENSOR (L2, 2026-10-29): sam chrome strony (navbar + footer
+      // + 4 fonty + ~7 KB JS, zero mediów hero) mierzony tymi SAMYMI
+      // progami — regresja na niej (np. nowy skrypt w BaseLayout, font
+      // bez subsetu, CLS z navbara) to regresja chrome'u, nie treści;
+      // na `/` zginęłaby w zapasie do progu albo w szumie mediów.
+      // Sanity lokalne 2026-10-29 (1 przebieg, NIE podstawa progów):
+      // perf 0,99, LCP 1661 ms, 4 fonty × 67 998 B (co do bajta jak `/`),
+      // script 7 KB, total 90 KB — zapas do każdej asercji wielokrotny.
+      // Progi NIETKNIĘTE (sensor, nie ratchet); gdyby kiedyś ratchetować
+      // z tej trasy, to osobna para asercji, nie zaostrzenie wspólnych.
+      // Koszt: +5 przebiegów mobile ≈ +1–1,5 min joba `lighthouse`
+      // (przed L2: 4 min 53 s – 6 min 14 s na main, runy 40536992288 –
+      // 40845053137; jeden przebieg mobile ≈ 15–20 s). Tylko mobile —
+      // desktop (lighthouserc.desktop.cjs) bez zmian, bo sensor ma łapać
+      // chrome, a nie podwajać koszt joba.
+      url: ["/", "/en/", "/polityka-prywatnosci/"],
       numberOfRuns: 5, // mediana z 5 (L1) — tłumi loterię maszyn lepiej niż 3
     },
     assert: {

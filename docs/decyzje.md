@@ -159,6 +159,7 @@
 | DEC-93 | Lista URL-i bez zmian — **`/en/` zostaje** w pomiarze i bramce; trasa-sensor `/polityka-prywatnosci/` = L2 osobno | ewolucja §6 **L1**, **L2** | obowiązuje |
 | DEC-94 | `font:count` i `font:size` jako `error`; `font:size` = mediana + 10% (74 800 / 118 100 po F1) | ewolucja §6 **L1**, **F1**; PR #60 | obowiązuje |
 | DEC-95 | Pojedynczy czerwony `lighthouse` nie dowodzi regresji — porównaj `resource-summary` obu runów (sygnał = bajty) | `testing.md` „LHCI"; ewolucja §4.4 | obowiązuje |
+| DEC-113 | Trasa-sensor `/polityka-prywatnosci/` jako trzeci URL **tylko w profilu mobile** (`lighthouserc.cjs`), mierzona tymi samymi asercjami co `/` i `/en/`: sensor chrome'u strony (navbar, footer, fonty, skrypty `BaseLayout`), nie ratchet — progów się z niej nie wyprowadza ani nie dodaje osobnych; desktop bez sensora (koszt joba vs zysk: chrome mobile i desktop to ten sam HTML/JS, różnią się tylko fonty hero po stronie `/`) | `lighthouserc.cjs` (komentarz przy `url`); `testing.md` „LHCI"; ewolucja §6 **L2** | obowiązuje |
 
 ## J. Proces i dokumentacja
 
