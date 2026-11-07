@@ -578,9 +578,12 @@ zaokrąglone W DÓŁ do wielokrotności 0,05 (stały próg 0,9 leżał na
 krawędzi: main mierzy 0,88–0,92); lista URL-i bez zmian — `/en/` zostaje
 w pomiarze i bramce (sensor `/polityka-prywatnosci/` = L2, osobno).
 
-**L2 · COULD · S · ✅ wdrożone lokalnie 2026-10-29 (sesja 12, branch
-`chore/lhci-privacy-sensor`, PR w toku; merge + czas joba `lighthouse` na
-main do wpisania przy domknięciu) — trasa-sensor** `/polityka-prywatnosci/`
+**L2 · COULD · S · ✅ PR #70 `chore/lhci-privacy-sensor` (kod 2026-10-29,
+PR 2026-11-07; merge do wpisania przy domknięciu). Pierwszy bieg sensora
+(run 42344521350) od razu czerwony na CLS 0,027 — realny bug polityki
+(PI-05), naprawiony osobno w #71 (`769aac0`); po wciągnięciu main rerun
+42365817605 zielony na 3 URL-ach, job `lighthouse` 6 min 7 s (sensor 55 s;
+przed L2 4 min 53 s – 6 min 14 s — w rozrzucie) — trasa-sensor** `/polityka-prywatnosci/`
 jako TRZECI URL mobile w `lighthouserc.cjs` (`url: ["/", "/en/",
 "/polityka-prywatnosci/"]`; desktop bez zmian; `/en/` zostaje — DEC-93).
 Sens: sam chrome strony (navbar + footer + 4 fonty + ~7 KB JS, zero mediów
@@ -590,8 +593,9 @@ progu albo w szumie mediów, na sensorze zjada wielokrotny zapas widocznie.
 Progi NIETKNIĘTE (sensor, nie ratchet; z sensora nie ratchetujemy wspólnych
 asercji — DEC-113). Sanity lokalne (1 przebieg, nie podstawa progów): perf
 0,99, LCP 1661 ms, fonty 4 × 67 998 B (co do bajta jak `/`), script 7 KB,
-total 90 KB, CLS 0. Koszt: +5 przebiegów mobile ≈ +1–1,5 min (job przed
-L2: 4 min 53 s – 6 min 14 s, ostatni na main po #69 run 40943719827 =
+total 90 KB, CLS 0 — ale sanity bez jawnego CPU ×4 przegapiło CLS (P-74).
+Koszt zmierzony: 5 przebiegów sensora 55 s, job 6 min 7 s (run 42365817605;
+przed L2 4 min 53 s – 6 min 14 s, ostatni na main po #69 run 40943719827 =
 5 min 34 s). Pierwotny opis: drugi URL mobile obok `/`; `/en/` zostaje
 tylko jeśli budżet czasu joba pozwala.
 
@@ -1289,3 +1293,31 @@ osobny PR po pomiarze na main.
   (sensor ≠ ratchet, tylko mobile), zdanie o liście URL-i w `testing.md`
   „LHCI". Zero bajtów strony; baseline'y nietknięte; „na telefon": nie
   dotyczy. Następny krok sesji: po merge'u L2 — M3 (`feat/r2-scripts`).
+  **2026-11-07 (kontynuacja po przerwie)**: PR #70 otwarty; `lighthouse`
+  CZERWONY — sensor zadziałał od razu: `cumulative-layout-shift` 0,027 na
+  `/polityka-prywatnosci/` (próg 0,005; run 42344521350, mediana z 5;
+  mobile 3 URL = 3 min 12 s, sam sensor 5 przebiegów = 55 s). Mechanizm
+  (sonda Playwright 412×823 z JS i bez JS): hoistowany `<script>` wstawiał
+  e-mail administratora PO pierwszym malowaniu przy CPU ×4, akapit sekcji 01
+  rósł o 26,34 px i przesuwał 8 sekcji; lokalny `lhci` bez jawnego dławienia
+  trafiał w timing „przed malowaniem" (CLS 0), z
+  `--settings.throttling.cpuSlowdownMultiplier=4` dawał 0,0270 co do
+  czwartego miejsca jak CI. Bug od powstania strony (2026-07-11), realne
+  słabe telefony. Naprawa osobnym PR-em **#71 ✅ merge `769aac0`**
+  (`fix/privacy-mail-cls`: `<script is:inline>` tuż za treścią; CLS 0 na obu
+  trasach polityki przy ×4; CI na PR zielone za 1. razem, `lighthouse`
+  4 min 59 s) + **PI-05**, **P-74**, **DEC-114**, reguła w `layout-seo.md`.
+  Następnie `main` wciągnięty do #70 (merge `284276e`) → rerun CI
+  42365817605 (czas joba `lighthouse` z sensorem: patrz §6 L2). **M3 ✅
+  wdrożone lokalnie** i wystawione jako PR **#72** (`feat/r2-scripts`, 3
+  commity: deps / feat / docs) — szczegóły w §6 M3; decyzja Mateusza: dwa
+  tokeny R2 (DEC-115). Pułapki po drodze: `pnpm-lock.yaml` jest na
+  deny-liście Claude'a, a `sed` z hashami blokuje klasyfikator → cofnięcie
+  P-47 (`third-party-web` 0.30.0→0.29.2, `legacy-javascript` 0.0.4→0.0.1)
+  zrobił Mateusz jedną komendą `sed` w terminalu; `.gitignore` ma `.env*`,
+  więc `.env.example` nie powstał (nazwy zmiennych w docs i regule);
+  cudzysłów „tak" zamykany ASCII `"` dwa razy ubił heredoc Pythona (P-70).
+  Stare serwery `astro preview` z października wisiały na 4398–4403 — sondy
+  na wolnym porcie 447x. Kolejność merge'ów: #71 ✅ → #70 → #72; po #72
+  Mateusz uzupełnia `.env` (dwa tokeny) i robi pierwszy `pnpm r2:orphans`
+  (raport) — wynik do C7 „ostatnio".

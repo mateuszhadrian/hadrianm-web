@@ -24,11 +24,14 @@ module.exports = {
       // script 7 KB, total 90 KB — zapas do każdej asercji wielokrotny.
       // Progi NIETKNIĘTE (sensor, nie ratchet); gdyby kiedyś ratchetować
       // z tej trasy, to osobna para asercji, nie zaostrzenie wspólnych.
-      // Koszt: +5 przebiegów mobile ≈ +1–1,5 min joba `lighthouse`
-      // (przed L2: 4 min 53 s – 6 min 14 s na main, runy 40536992288 –
-      // 40845053137; jeden przebieg mobile ≈ 15–20 s). Tylko mobile —
-      // desktop (lighthouserc.desktop.cjs) bez zmian, bo sensor ma łapać
-      // chrome, a nie podwajać koszt joba.
+      // Koszt ZMIERZONY (run 42365817605, PR #70, 2026-11-07): 5 przebiegów
+      // sensora = 55 s (~11 s/przebieg), cały job `lighthouse` 6 min 7 s
+      // (przed L2 na main: 4 min 53 s – 6 min 14 s, runy 40536992288 –
+      // 40943719827) — mieści się w dotychczasowym rozrzucie. Tylko mobile —
+      // desktop (lighthouserc.desktop.cjs) bez sensora, bo chrome mobile
+      // i desktop to ten sam HTML/JS (DEC-113).
+      // Pierwszy bieg sensora (run 42344521350) złapał realny bug: CLS 0,027
+      // z e-maila wstawianego po pierwszym malowaniu (PI-05, P-74, PR #71).
       url: ["/", "/en/", "/polityka-prywatnosci/"],
       numberOfRuns: 5, // mediana z 5 (L1) — tłumi loterię maszyn lepiej niż 3
     },
