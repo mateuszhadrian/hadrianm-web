@@ -271,6 +271,29 @@ const c = content[lang];
           </section>
         ))
       }
+      {
+        /* Antyscraping (kontrakt: tests/e2e/contact.spec.ts + tests/dist —
+           pełny adres NIE występuje w HTML): e-mail składany z fragmentów
+           jak w contact-ui.ts; bez JS zostaje zdanie z linkiem do formularza.
+           is:inline TUŻ ZA treścią, nie moduł hoistowany: moduł wykonuje się
+           po pierwszym malowaniu (CPU ×4 = emulacja LH mobile i realne
+           słabe telefony), wstawiony adres zawijał akapit o jedną linię
+           (+26 px) i przesuwał wszystkie sekcje niżej — CLS 0,027 na
+           trasie-sensorze LHCI (PR #70, 2026-11-07; P-74). Skrypt
+           synchroniczny w parserze wykonuje się przed pierwszym malowaniem,
+           więc układ jest finalny od pierwszej klatki. Bez komentarzy
+           W bloku (reguła layout-seo.md — Astro wysyła treść 1:1). */
+      }
+      <script is:inline>
+        document.querySelectorAll("[data-pp-mail]").forEach((el) => {
+          const f = ["info", "hadrianm", "pl"];
+          const addr = f[0] + "@" + f[1] + "." + f[2];
+          const a = document.createElement("a");
+          a.href = "mailto:" + addr;
+          a.textContent = addr;
+          el.replaceWith(a);
+        });
+      </script>
     </main>
 
     {/* Współdzielony footer strony (ten sam co finał strony głównej). */}
@@ -279,20 +302,6 @@ const c = content[lang];
     </div>
   </div>
 </BaseLayout>
-
-<script>
-  // Antyscraping (kontrakt: tests/e2e/contact.spec.ts — grep dist bez pełnego
-  // adresu): e-mail składany z fragmentów jak w contact-ui.ts. Bez JS zostaje
-  // fallback wskazujący sekcję kontakt.
-  const FR = ["info", "hadrianm", "pl"];
-  const addr = `${FR[0]}@${FR[1]}.${FR[2]}`;
-  document.querySelectorAll("[data-pp-mail]").forEach((el) => {
-    const a = document.createElement("a");
-    a.href = `mailto:${addr}`;
-    a.textContent = addr;
-    el.replaceWith(a);
-  });
-</script>
 
 <style>
   /* Prosty layout dokumentu na tokenach projektu (global.css); typografia

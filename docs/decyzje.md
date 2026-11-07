@@ -115,6 +115,7 @@
 | DEC-64 | Tło ambient jako `AmbientBackground.astro` (warianty red/blue), tekstura statyczna na mobile (`public/ambient-bg-mobile-*.webp`, `pnpm capture:ambient-bg`) | `analiza-tlo-hero-animowane-chmury.md`; `CLAUDE.md` komendy | obowiązuje |
 | DEC-65 | `document.fonts.ready` to fałszywy sygnał przy preloadach — do bramek `fonts.load()`; dziś zdejmuje tylko mikro-fade z twardym timeoutem | ewolucja §4.6, §6 **F2** | obowiązuje jako wiedza; reguła = F2 (COULD) |
 | DEC-66 | Generator ikon `make-icons.mjs` — tylko jako COULD (S4); dziś og ręcznie | ewolucja §6 **S4** | odłożone |
+| DEC-114 | Skrypt, który na starcie strony ZMIENIA tekst lub układ (np. e-mail składany z fragmentów w `PolicyPage.astro`), idzie jako `<script is:inline>` tuż za zmienianą treścią, nigdy jako hoistowany moduł: moduł wykonuje się po pierwszym malowaniu przy CPU ×4 (LH mobile, słabe telefony) i daje CLS niewidoczny na szybkim Macu (0,027 na trasie-sensorze L2, PR #70). Antyscraping bez zmian (pełny adres nadal nie występuje w HTML); treść bloku bez komentarzy (DEC-61) | `layout-seo.md`; `pulapki.md` P-74; `poprawki-po-implementacji.md` PI-05 | obowiązuje (naprawiony bug — nie cofać) |
 
 ## G. Dostępność
 
