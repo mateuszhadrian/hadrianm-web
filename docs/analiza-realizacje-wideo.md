@@ -250,6 +250,13 @@ Dashboard R2 (6 plików, ręcznie) albo `scripts/upload-r2.mjs` na
 (nieczytane przez Claude'a — reguła 4 z `CLAUDE.md`), `ContentType`
 z rozszerzenia, `--dry-run`. Wtedy pola w panelu wracają do `string` (URL).
 
+ℹ️ **AKTUALIZACJA 2026-11-07 (M3)**: skrypt istnieje — `pnpm r2:upload --
+~/hadrianm-site-videos/<slug>/ --dry-run` pokazuje plan, bez `--dry-run`
+wgrywa pod `realizacje/<nazwa pliku>` i wypisuje URL-e do wklejenia w panelu
+(pola `file`/`image` przyjmują URL — zmiana typu pól na `string` NIE była
+potrzebna, widget `file` działa od P5). Reguła: `.claude/rules/capture-scripts.md`
+„Skrypty R2"; procedura: `optional-todos.md` §4.7.
+
 ## 9. Czego ten plan NIE robi
 
 - Nie zmienia sceny urządzeń w hero (drewelomet) — osobny punkt backlogu.

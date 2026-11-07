@@ -37,6 +37,7 @@
 | DEC-11 | Domena `.pl` w **OVH** (Cloudflare Registrar nie obsługuje `.pl`), NS na Cloudflare; skrzynka `info@` w OVH, mail transakcyjny (Resend) na subdomenie `send.` — poczta nietknięta | `hosting_first_analysis.md` (adnotacja), `hosting_second_analysis_sveltia.md` §7; `mailbox_setup.md`; `contact-me-form-analysis-implementation.md` (DNS) | obowiązuje |
 | DEC-12 | Cloudflare **Stream** — NIE; wideo realizacji jako MP4 w R2, `cdn-cgi/media` jako poster — NIE | `analiza-realizacje-wideo.md` §3.1; ewolucja §9 | odrzucone |
 | DEC-13 | Worker `sveltia-cms-auth` wdrożony ręcznie; odświeżanie i rotacja sekretów cyklicznie | `optional-todos.md` C1, C2, §4.1–4.2 | obowiązuje |
+| DEC-115 | Skrypty R2 (M3): `pnpm r2:orphans` (raport domyślnie; kasowanie tylko `--delete` + potwierdzenie „tak") i `pnpm r2:upload` (klucz płasko pod `realizacje/`, MIME z rozszerzenia, bez nadpisywania bez `--force`); **dwa tokeny** zawężone do bucketa — Object Read (`R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`: raport, backup `rclone`) i Object Read & Write (`R2_WRITE_*`: upload, kasowanie), żeby raport fizycznie nie mógł kasować; sekrety wyłącznie z `.env` przez `node --env-file-if-exists` (bez dotenv, bez `.env.example` — `.gitignore` ma `.env*`); czysta logika w `scripts/r2/lib.mjs` z testem bez sieci, przebieg przeciw bucketowi robi Mateusz | `.claude/rules/capture-scripts.md` „Skrypty R2"; `optional-todos.md` §4.3/§4.5/§4.7; ewolucja §6 **M3** | obowiązuje |
 
 ## B. Wideo realizacji (R1) — decyzje planu, które nadal obowiązują
 
