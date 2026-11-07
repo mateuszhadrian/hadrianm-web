@@ -601,11 +601,29 @@ trybie lokalnego repo, wycofanie = jedna linia w `public/admin/index.html`).
 Robić PRZED Etapem 2 planu wideo (widget `file`, `accept`).
 Commit: `chore(cms): bump sveltia to 0.178.0`.
 
-**M3 · COULD · S · ☐ — skrypt `scripts/upload-r2.mjs`** (plan B z
-`analiza-realizacje-wideo.md` §8) + `scripts/r2-orphans.mjs` (lista
-plików w R2 nieużytych w żadnym JSON-ie — sprzątanie sierot zamiast
-klikania w dashboardzie). Wzorzec: hetman `@aws-sdk/client-s3`,
-endpoint `{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
+**M3 · COULD · S · ✅ wdrożone lokalnie 2026-11-07 (sesja 12, branch
+`feat/r2-scripts`; merge do wpisania przy domknięciu; przebieg „na sucho"
+przeciw prawdziwemu bucketowi = Mateusz po uzupełnieniu `.env`) — skrypty
+R2**: `scripts/r2/lib.mjs` (czysta logika: `collectMediaUrls` tym samym
+regexem co `media-r2.test.ts` → `urlToKey`, `diffKeys` sieroty/brakujące,
+`contentTypeFor`, `r2Endpoint(…, "eu")`, `readCredentials` z dwóch tokenów;
+22 testy w `tests/unit/r2-lib.test.ts`, zero sieci), `scripts/r2-orphans.mjs`
+(`pnpm r2:orphans`: raport domyślnie, `--delete` za tokenem zapisu + pytanie
+„tak", `--json`), `scripts/upload-r2.mjs` (`pnpm r2:upload -- <pliki|katalog>`,
+klucz płasko pod `realizacje/`, MIME z rozszerzenia, bez nadpisywania bez
+`--force`, `--dry-run`). Sekrety z `.env` przez `node --env-file-if-exists`
+(bez dotenv, bez `.env.example` — `.gitignore` ma `.env*`); nazwy zmiennych
+w `optional-todos.md` §4.3/§4.5/§4.7 i regule `capture-scripts.md`. Decyzja
+Mateusza 2026-11-07: DWA tokeny (odczyt do raportów/backupu, osobny zapis
+do uploadu/kasowania) — DEC-115. Zależność `@aws-sdk/client-s3` (dev);
+`pnpm add` podbił przy okazji `third-party-web` 0.29.2→0.30.0 i
+`legacy-javascript` 0.0.1→0.0.4 (P-47) — lockfile na deny-liście Claude'a,
+cofnięcie ręczne Mateusza przed commitem (5 miejsc, lista w raporcie sesji).
+C7 i C4 w `optional-todos.md` → procedura skryptem; O6 zamknięte. Pierwotny
+opis: skrypt `scripts/upload-r2.mjs` (plan B z `analiza-realizacje-wideo.md`
+§8) + `scripts/r2-orphans.mjs` (lista plików w R2 nieużytych w żadnym
+JSON-ie). Wzorzec: hetman `@aws-sdk/client-s3`, endpoint
+`{account}.eu.r2.cloudflarestorage.com` (jurysdykcja EU).
 
 ### F — Fonty
 
