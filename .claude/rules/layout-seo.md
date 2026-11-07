@@ -39,6 +39,14 @@ Kontekst decyzji: `docs/analiza-ewolucja-vs-nowsze-projekty.md` §4.7 i §6
   bloku 1:1 na każdej trasie (−575 B/trasę po wyniesieniu, S3). Opis
   dawaj w `{/* … */}` NAD blokiem; `<style>`/`<style is:global>` są
   minifikowane, więc komentarzy CSS to nie dotyczy.
+- **Skrypt zmieniający tekst/układ na starcie = `is:inline` tuż za
+  zmienianą treścią**, nie hoistowany moduł (`<script>` bez atrybutów →
+  `type="module"`, wykonuje się PO pierwszym malowaniu przy CPU ×4):
+  e-mail z fragmentów w `PolicyPage.astro` zawijał akapit o linię i dawał
+  CLS 0,027 na trasie-sensorze LHCI, niewidoczny lokalnie bez jawnego
+  `--settings.throttling.cpuSlowdownMultiplier=4` (P-74, DEC-114, PI-05).
+  Skrypty TYLKO reagujące na zdarzenia (klik, scroll) mogą zostać
+  modułami.
 - `theme-color` = `#000000` = tło `body` każdej trasy (każdy `*Page.astro`
   ustawia `:global(body) { background: #000 }`, ambient też startuje od
   `#000`). Zmiana tła strony = zmiana `theme-color` + `theme_color`

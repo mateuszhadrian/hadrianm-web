@@ -101,6 +101,7 @@
 | P-56 | **Dwa egzemplarze chrome'u w DOM = martwy burger** — skrypt Navbara wiąże się z pierwszym `[data-nav]`, menu ma stałe `id`; na 404 nieaktywny blok językowy trzeba USUNĄĆ, nie ukryć | backlog **S1**; `layout-seo.md` |
 | P-57 | **Scoped CSS Astro nie łapie komponentu potomnego ani spanów tworzonych w runtime** — `:global(...)` dla `.of-w`/`.acc`; pozycjonowanie BackButtona przez wrapper | `sections.md` „Services"; pamięć `realizacje-subpage` |
 | P-58 | **`-webkit-text-size-adjust` z preflightu Tailwinda (`100%`)** nadpisuje intencję — jawne `text-size-adjust: none` na `html` | backlog **S3**; `layout-seo.md` |
+| P-74 | **Hoistowany `<script>` Astro (moduł, `type="module"`) wykonuje się PO pierwszym malowaniu przy wolnym CPU** — mutacja DOM zmieniająca tekst/układ na starcie (e-mail składany z fragmentów w `PolicyPage.astro`) daje layout shift, którego szybki Mac nie pokazuje (skrypt zdąża przed pierwszą klatką: lokalny `lhci` 1 przebieg = CLS 0), a runner i realny telefon tak (LH mobile CPU ×4: CLS 0,0270 co do czwartego miejsca lokalnie i w CI). Lekarstwo: `<script is:inline>` tuż za zmienianą treścią (synchroniczny w parserze, przed malowaniem), nie `requestAnimationFrame`/`fonts.ready`. Reprodukcja lokalna: jawne `--settings.throttling.cpuSlowdownMultiplier=4` (domyślne LH mobile, ale lokalny bieg bez flagi trafiał w timing „przed malowaniem”) | PI-05 w `poprawki-po-implementacji.md`; DEC-114; `layout-seo.md`; sensor L2 (PR #70, run 42344521350) |
 
 ## 7. CMS (Sveltia), R2, treść
 
