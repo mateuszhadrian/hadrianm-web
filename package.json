@@ -37,6 +37,8 @@
     "capture:devices": "node scripts/capture-device-videos.mjs",
     "capture:site": "node scripts/capture-site-videos.mjs",
     "capture:ambient-bg": "node scripts/capture-ambient-bg.mjs",
+    "r2:orphans": "node --env-file-if-exists=.env scripts/r2-orphans.mjs",
+    "r2:upload": "node --env-file-if-exists=.env scripts/upload-r2.mjs",
     "prepare": "husky"
   },
   "dependencies": {
@@ -55,6 +57,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
+    "@aws-sdk/client-s3": "^3.1163.0",
     "@axe-core/playwright": "^4.12.1",
     "@commitlint/cli": "^21.0.2",
     "@commitlint/config-conventional": "^21.0.2",
