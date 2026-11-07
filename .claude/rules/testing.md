@@ -155,6 +155,12 @@ tu go nie powtarzamy.
   (lokalny CPU ≠ runner; lokalny LHCI liczy niżej niż CI także na main).
   Mediany: podsumowanie biegu (`gh run view <id>` → link „Summary")
   i artefakt `lhci-measure` (30 dni, surowe `lhr-*.json` + mediany txt).
+- Lista URL-i: `/` i `/en/` = bramka w OBU profilach (progi ratchet z
+  gorszego z tych dwóch, DEC-93); `/polityka-prywatnosci/` TYLKO mobile =
+  trasa-sensor chrome'u (L2, DEC-113): te same asercje, ale progów się z
+  niej NIE ratchetuje (zapas wielokrotny — zawsze byłaby „lepszym" URL-em)
+  i nie dodaje się dla niej osobnych; czerwony sensor przy zielonym `/` =
+  regresja chrome'u (BaseLayout/Navbar/Footer/fonty), szukaj w diffie tam.
 - Pojedynczy czerwony `lighthouse` nie dowodzi regresji — progi czasowe
   leżą blisko mediany runnerów, a flota dryfuje (katalog flake'ów:
   2026-07-09 ~13%, 2026-10-22 LCP 2× po 10 ms nad progiem na tym samym
