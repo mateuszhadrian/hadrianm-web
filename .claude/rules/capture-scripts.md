@@ -63,6 +63,36 @@ paths:
   pola „Zrzut"). Po wpisie: `CHECK_REMOTE_MEDIA=1 pnpm exec vitest run
 tests/unit/media-r2.test.ts` (regex łapie też `.mp4`).
 
+## Skrypty R2 — `r2-orphans.mjs` i `upload-r2.mjs` (`pnpm r2:orphans`, `pnpm r2:upload`)
+
+- Jedyne skrypty z siecią do bucketa `hadrianm-media` (API S3,
+  `@aws-sdk/client-s3`, endpoint **EU** `{account}.eu.r2.cloudflarestorage.com`
+  — bez `.eu.` R2 odpowiada 403, P-64). Czysta logika (URL → klucz, różnica
+  bucket↔treść, MIME, env) w `scripts/r2/lib.mjs`, testowana w
+  `tests/unit/r2-lib.test.ts` BEZ sieci; przebieg przeciw prawdziwemu
+  bucketowi robi wyłącznie Mateusz.
+- Sekrety TYLKO z `.env` (ładowane przez `node --env-file-if-exists=.env`
+  w `package.json`, bez dotenv; `.env*` jest w `.gitignore` i na deny-liście
+  Claude'a — nie czytaj, nie loguj, nie twórz `.env.example`, bo też byłby
+  ignorowany). DWA tokeny (DEC-115): `R2_ACCESS_KEY_ID`/`R2_SECRET_ACCESS_KEY`
+  = Object Read (raport sierot, backup `rclone`), `R2_WRITE_ACCESS_KEY_ID`/
+  `R2_WRITE_SECRET_ACCESS_KEY` = Object Read & Write (upload, kasowanie);
+  wspólne `R2_ACCOUNT_ID`. Brak zmiennej = błąd z NAZWAMI, nigdy wartościami.
+- `r2:orphans` domyślnie = RAPORT (token odczytu): sieroty (w buckecie bez
+  URL-a w `src/content/realizacje/*.json`) + brakujące (URL w treści bez
+  obiektu). Kasowanie tylko `--delete` (token zapisu) + pytanie „tak"
+  w terminalu (`--yes` pomija — tylko po obejrzeniu raportu). Katalog treści
+  może nie istnieć (P-59) → pusta lista = wszystko jest sierotą, więc przy
+  zerze wpisów NIE kasuj. Po kasowaniu: `CHECK_REMOTE_MEDIA=1 pnpm exec
+vitest run tests/unit/media-r2.test.ts`.
+- `r2:upload -- <plik|katalog>…`: klucz = `realizacje/<nazwa pliku>` (płasko,
+  jak Sveltia — P-65), `ContentType` z rozszerzenia (bez tego `<video>` nie
+  gra), istniejący obiekt pomijany bez `--force`, `--dry-run` = sam plan.
+  Wypisuje URL-e do wklejenia w panelu. Panel pozostaje domyślną drogą
+  uploadu — skrypt to plan B (`analiza-realizacje-wideo.md` §8).
+- Nie wnoś tu kolejnych „ręcznych grepów" na treść: lista URL-i mediów
+  pochodzi z `collectMediaUrls` (ten sam regex, co `media-r2.test.ts`).
+
 ## Siatka regresyjna hero
 
 - Dawny `scripts/verify-hero.mjs` został WYCOFANY (2026-07-07) — sweep
