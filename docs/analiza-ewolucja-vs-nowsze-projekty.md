@@ -578,8 +578,10 @@ zaokrąglone W DÓŁ do wielokrotności 0,05 (stały próg 0,9 leżał na
 krawędzi: main mierzy 0,88–0,92); lista URL-i bez zmian — `/en/` zostaje
 w pomiarze i bramce (sensor `/polityka-prywatnosci/` = L2, osobno).
 
-**L2 · COULD · S · ✅ PR #70 `chore/lhci-privacy-sensor` (kod 2026-10-29,
-PR 2026-11-07; merge do wpisania przy domknięciu). Pierwszy bieg sensora
+**L2 · COULD · S · ✅ NA MAIN 2026-11-07 (PR #70 `chore/lhci-privacy-sensor`,
+merge `7bad3d6`; CI main run 42368733920 zielone za 1. razem, job
+`lighthouse` z sensorem 6 min 3 s; Prod smoke 42368734352 zielony; kod
+2026-10-29, PR 2026-11-07). Pierwszy bieg sensora
 (run 42344521350) od razu czerwony na CLS 0,027 — realny bug polityki
 (PI-05), naprawiony osobno w #71 (`769aac0`); po wciągnięciu main rerun
 42365817605 zielony na 3 URL-ach, job `lighthouse` 6 min 7 s (sensor 55 s;
@@ -618,10 +620,11 @@ trybie lokalnego repo, wycofanie = jedna linia w `public/admin/index.html`).
 Robić PRZED Etapem 2 planu wideo (widget `file`, `accept`).
 Commit: `chore(cms): bump sveltia to 0.178.0`.
 
-**M3 · COULD · S · ✅ wdrożone lokalnie 2026-11-07 (sesja 12, branch
-`feat/r2-scripts`; merge do wpisania przy domknięciu; przebieg „na sucho"
-przeciw prawdziwemu bucketowi = Mateusz po uzupełnieniu `.env`) — skrypty
-R2**: `scripts/r2/lib.mjs` (czysta logika: `collectMediaUrls` tym samym
+**M3 · COULD · S · ✅ NA MAIN 2026-11-07 (PR #72 `feat/r2-scripts`, merge
+`96952ab`; CI na PR 42369020632 zielone za 1. razem po wciągnięciu main —
+wcześniej bieg z `workflow_dispatch` 42366488925 też zielony; przebieg „na
+sucho" przeciw prawdziwemu bucketowi = Mateusz po uzupełnieniu `.env`,
+wynik → C7 „ostatnio") — skrypty R2**: `scripts/r2/lib.mjs` (czysta logika: `collectMediaUrls` tym samym
 regexem co `media-r2.test.ts` → `urlToKey`, `diffKeys` sieroty/brakujące,
 `contentTypeFor`, `r2Endpoint(…, "eu")`, `readCredentials` z dwóch tokenów;
 22 testy w `tests/unit/r2-lib.test.ts`, zero sieci), `scripts/r2-orphans.mjs`
@@ -822,7 +825,7 @@ zmigrowane).
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
 | P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
-| później | H3, H4, R4, R5, S4, M3, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; L2 na branchu `chore/lhci-privacy-sensor` sesja 12 — progi nietknięte, baseline'y nietknięte) |
+| później | H3, H4, R4, R5, S4, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1336,6 +1339,21 @@ osobny PR po pomiarze na main.
   więc `.env.example` nie powstał (nazwy zmiennych w docs i regule);
   cudzysłów „tak" zamykany ASCII `"` dwa razy ubił heredoc Pythona (P-70).
   Stare serwery `astro preview` z października wisiały na 4398–4403 — sondy
-  na wolnym porcie 447x. Kolejność merge'ów: #71 ✅ → #70 → #72; po #72
-  Mateusz uzupełnia `.env` (dwa tokeny) i robi pierwszy `pnpm r2:orphans`
-  (raport) — wynik do C7 „ostatnio".
+  na wolnym porcie 447x. Kolejność merge'ów: **#71 ✅ `769aac0` → #70 ✅ `7bad3d6` → #72 ✅
+  `96952ab`** (wszystkie 2026-11-07; CI main po #70 run 42368733920
+  zielone, `lighthouse` 6 min 3 s; po #72 run 42371328113 zielone za
+  1. razem — `quality` 1 min 4 s, `lighthouse` 6 min 44 s, `e2e` 20 min;
+  Prod smoke 42371328062 zielony). #72 bez widocznych checków: webhook `pull_request`
+  zgubiony → `gh workflow run ci.yml --ref feat/r2-scripts` dał zielony bieg
+  na commicie, ale PR go NIE pokazuje (GitHub nie wiąże biegów
+  `workflow_dispatch` z PR-em); konflikt README z #71 → merge main do
+  branchu (jeden konflikt, oba wiersze zachowane) → `pull_request:
+  synchronize` dał normalny bieg. **2026-11-21**: tokeny R2 (Account API
+  token ×2: `hadrianm-media-read` Object Read, `hadrianm-media-write`
+  Object Read & Write, oba zawężone do bucketa) + `.env` — Mateusz; pierwszy
+  `pnpm r2:orphans` przeciw prawdziwemu bucketowi: 3 wpisy, 24 URL-e =
+  24 obiekty, 0 brakujących, 1 „sierota" = pusty obiekt `realizacje/`
+  (znacznik katalogu z dashboardu, 0 B) → `isFolderMarker` w `lib.mjs`,
+  raport go pomija (test + **P-75**); C7 „ostatnio" = 2026-11-21. Domknięcie
+  sesji = branch `docs/close-session-12`. Otwarte COULD-y: H3, H4, R4, R5,
+  S4, T10.

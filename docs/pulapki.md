@@ -115,6 +115,7 @@
 | P-64 | **R2 w jurysdykcji EU wymaga endpointu `.eu.`** (`{account}.eu.r2.cloudflarestorage.com`) — bez tego listowanie/S3 pada | `[rodzina]`; backlog **M3**; `optional-todos.md` §4.3 |
 | P-65 | **Jeden prefix uploadu Sveltii dla `image` i `file`** — MP4 lądują płasko obok zdjęć, podfolder z planu nie powstaje | plan wideo D4 korekta P5 |
 | P-66 | **Test mediów R2 w ścieżce PR = flaky** (zewnętrzna sieć) — `CHECK_REMOTE_MEDIA=1` tylko ręcznie | `testing.md` |
+| P-75 | **„Create folder" w dashboardzie R2 tworzy pusty obiekt o kluczu `prefix/` (0 B)** — listowanie S3 zwraca go jak plik; naiwna różnica bucket↔treść pokazuje go jako sierotę (pierwszy `pnpm r2:orphans` 2026-11-21: 25 obiektów = 24 media + `realizacje/`). Raport pomija klucze z `/` na końcu (`isFolderMarker`); nie kasuj go ręcznie — bez niego dashboard nie pokaże „folderu" | `scripts/r2/lib.mjs`; `optional-todos.md` §4.5 |
 
 ## 8. Ekosystem Claude Code (settings, hooki)
 
