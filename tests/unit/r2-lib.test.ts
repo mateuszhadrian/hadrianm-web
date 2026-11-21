@@ -9,6 +9,7 @@ import {
   collectMediaUrls,
   contentTypeFor,
   diffKeys,
+  isFolderMarker,
   keyToUrl,
   planUpload,
   r2Endpoint,
@@ -102,6 +103,14 @@ describe("diffKeys", () => {
       orphans: ["realizacje/old.webp", "realizacje/z.webp"],
       missing: ["realizacje/gone.webp"],
     });
+  });
+
+  it("znacznik katalogu z dashboardu (`realizacje/`, 0 B) nie jest sierotą — P-75", () => {
+    expect(isFolderMarker("realizacje/")).toBe(true);
+    expect(isFolderMarker("realizacje/a.webp")).toBe(false);
+    expect(
+      diffKeys(["realizacje/", "realizacje/a.webp"], ["realizacje/a.webp"]),
+    ).toEqual({ orphans: [], missing: [] });
   });
 
   it("pusta treść → wszystko w buckecie jest sierotą (raport, nie kasowanie — pilnuje skrypt)", () => {

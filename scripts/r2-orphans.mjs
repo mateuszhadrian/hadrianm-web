@@ -28,6 +28,7 @@ import {
   collectMediaUrls,
   diffKeys,
   formatBytes,
+  isFolderMarker,
   keyToUrl,
   r2Endpoint,
   readCredentials,
@@ -95,8 +96,11 @@ async function main() {
   const usedKeys = collectMediaUrls(texts).map(urlToKey);
 
   const reader = makeClient(false);
-  const objects = await listBucket(reader, PREFIX);
+  const all = await listBucket(reader, PREFIX);
   reader.destroy();
+  // Znaczniki katalogów (`prefix/`, 0 B — dashboard R2) to nie media (P-75).
+  const markers = all.filter((o) => isFolderMarker(o.key)).length;
+  const objects = all.filter((o) => !isFolderMarker(o.key));
 
   const sizes = new Map(objects.map((o) => [o.key, o.size]));
   const { orphans, missing } = diffKeys(
@@ -123,7 +127,8 @@ async function main() {
   } else {
     console.log(
       `Wpisy: ${texts.length} · URL-e mediów w treści: ${usedKeys.length} · ` +
-        `obiekty w ${BUCKET}/${PREFIX}: ${objects.length}`,
+        `obiekty w ${BUCKET}/${PREFIX}: ${objects.length}` +
+        (markers ? ` (+${markers} znacznik katalogu, pominięty)` : ""),
     );
     console.log(
       `\nSieroty (w buckecie, bez użycia w treści): ${orphans.length} · ${formatBytes(orphanBytes)}`,

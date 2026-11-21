@@ -64,12 +64,24 @@ export function keyToUrl(key) {
  * @returns {{ orphans: string[]; missing: string[] }}
  */
 export function diffKeys(bucketKeys, usedKeys) {
-  const bucket = new Set(bucketKeys);
+  const bucket = new Set([...bucketKeys].filter((k) => !isFolderMarker(k)));
   const used = new Set(usedKeys);
   return {
     orphans: [...bucket].filter((k) => !used.has(k)).sort(),
     missing: [...used].filter((k) => !bucket.has(k)).sort(),
   };
+}
+
+/**
+ * Znacznik katalogu: dashboard R2 przy „Create folder" tworzy pusty obiekt
+ * o kluczu `prefix/` (0 B). To nie plik — raport sierot go pomija, upload
+ * nigdy go nie tworzy (pierwszy przebieg `pnpm r2:orphans` 2026-11-21: 25
+ * obiektów = 24 media + `realizacje/`; P-75).
+ * @param {string} key
+ * @returns {boolean}
+ */
+export function isFolderMarker(key) {
+  return key.endsWith("/");
 }
 
 const MIME = {
