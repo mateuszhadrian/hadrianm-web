@@ -22,13 +22,13 @@
 | C1 | Odświeżenie Workera `sveltia-cms-auth` | co 3–6 mies. lub gdy logowanie do `/admin` kaprysi | Worker wdrożony ręcznie (`wrangler deploy`) — nie dostaje poprawek z repo `sveltia/sveltia-cms-auth` | §4.1 | wdrożony 2026-07-03; odświeżenie — jeszcze nie |
 | C2 | Przegląd dostępów i rotacja sekretów | co 6 mies. | GitHub + Cloudflare kontrolują kod, treść, panel, hosting i domenę | §4.2 (Client Secret OAuth, 2FA, `ALLOWED_DOMAINS`, tokeny R2/Resend/Turnstile) | — (jeszcze nie) |
 | C3 | Przypięta wersja Sveltii (`public/admin/index.html`, dziś 0.178.0) | kwartalnie: zajrzyj do changelogu; bump TYLKO z potrzeby | Nowsze binarium = nowe pola/poprawki, ale też ryzyko regresji panelu | Procedura bumpu = backlog **M2** (sonda binarium, test w trybie lokalnego repo, wycofanie jedną linią); dalsze podbicie = punkt **M3**-sąsiad w §6 (osobny PR) | 0.170.0 → 0.178.0 2026-10-21 (PR #52) |
-| C4 | Backup R2 (`rclone sync` bucketa `hadrianm-media`) | co miesiąc (po każdej nowej realizacji — od razu) | JSON-y wpisów są w gicie, ale **media żyją wyłącznie w R2**; Sveltia nie ma kosza | §4.3 (pierwsze uruchomienie = konfiguracja remote'a; ten sam token tylko-do-odczytu, co `pnpm r2:orphans` — zmienne `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` w `.env`) | — (remote jeszcze nieskonfigurowany) |
+| C4 | Backup R2 (`rclone sync` bucketa `hadrianm-media`) | co miesiąc (po każdej nowej realizacji — od razu) | JSON-y wpisów są w gicie, ale **media żyją wyłącznie w R2**; Sveltia nie ma kosza | §4.3 (pierwsze uruchomienie = konfiguracja remote'a; ten sam token tylko-do-odczytu, co `pnpm r2:orphans` — zmienne `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` w `.env`) | 2026-11-22 — pierwszy `rclone sync` do `~/hadrianm-r2-backup/hadrianm-media`: 24 obiekty, 5,748 MiB; `rclone check --one-way` 0 różnic, 24 pliki lokalnie (= 24 media z `pnpm r2:orphans`, znacznik `realizacje/` jako katalog); remote `hadrianm` bez kluczy w `rclone.conf`, token odczytu z `.env` (§4.3; kontrola `rclone size hadrianm:hadrianm-media` 24 / 5,748 MiB); remote `r2` = eha, nie ruszać (P-77) |
 | C5 | `pnpm outdated` + aktualizacja zależności | kwartalnie; Astro/Tailwind/GSAP major = osobny PR z pełnym `pnpm test` | Dryf zależności kumuluje się; duże skoki są droższe niż małe | §4.4 — reguła „`playwright` i `@playwright/test` PARĄ" + kontrola baseline'ów linux + pułapka lockfile'a `@paulirish/trace_engine` | 2026-10-24 (dodano `subset-font`, F1) |
-| C6 | Zużycie Cloudflare Image Transformations | co miesiąc (dashboard → Images → Transformations) | Darmowy limit ≈ 5 000 unikalnych transformacji/mies. (`photos-management-for-cms-analysis.md` §5); portfolio jest daleko poniżej, ale każda nowa realizacja dodaje warianty | Odczyt licznika w dashboardzie; jeśli > 50% limitu — przegląd rozmiarów w `src/lib/img.ts` (`imgAt()`) | — |
+| C6 | Zużycie Cloudflare Image Transformations | co miesiąc (dashboard → Images → Transformations) | Darmowy limit ≈ 5 000 unikalnych transformacji/mies. (`photos-management-for-cms-analysis.md` §5); portfolio jest daleko poniżej, ale każda nowa realizacja dodaje warianty | Odczyt licznika w dashboardzie; jeśli > 50% limitu — przegląd rozmiarów w `src/lib/img.ts` (`imgAt()`) | 2026-11-22 — 254 / 5 000 (5,1 %; 3 realizacje), daleko pod progiem 50 % → `imgAt()` bez zmian |
 | C7 | Sieroty w R2 | po każdym usunięciu/podmianie wpisu lub zdjęcia; kontrola kwartalna | Sveltia NIE kasuje plików z R2 przy usuwaniu wpisu (`.claude/rules/cms-realizacje.md`) | §4.5 — `pnpm r2:orphans` (raport: sieroty + brakujące media; kasowanie `--delete` za tokenem zapisu i po potwierdzeniu); skrypt z **M3** (2026-11-07) | 2026-11-21 — pierwszy przebieg skryptem: 24 URL-e w treści = 24 obiekty, 0 sierot, 0 brakujących (25. obiekt = znacznik katalogu `realizacje/`, P-75); wcześniej 2026-10-21 (18 sierot usuniętych ręcznie, P5) |
 | C8 | Obraz runnera i obraz Dockera przy bumpie Playwrighta | przy KAŻDYM bumpie Playwrighta (nie kalendarzowo) | Wersja systemu runnera (`ubuntu-24.04`, przypięta — C3 backlogu) i tag `mcr.microsoft.com/playwright:v<wersja>-noble` wpływają na baseline'y linux | Bump = osobny PR: para wersji + tag Dockera w `.claude/rules/testing.md` + rerun `test:visual` na main przed i po | Playwright 1.61.1 (2026-07) |
 | C9 | Przegląd budżetów LHCI po bloku zmian | po każdej paczce zmieniającej bajty strony głównej | Progi to ratchet: po poprawie perf zacieśniamy, żeby bramka łapała regresje | `lhci-measure.yml` na main → mediany → osobny PR wg reguły **L1** (`.claude/rules/testing.md` „LHCI"). Po F1 zrobione w dwóch krokach: `font:size` (#60) i LCP/perf (O4 → §3) | 2026-10-26 (LCP/perf po F1, PR `chore/lhci-ratchet-after-f1`) |
-| C10 | Przegląd katalogu flake'ów CI | co miesiąc (razem z tą tabelą) | Flake wpisany bez daty wygaśnięcia zostaje „wiedzą" na zawsze; po naprawie przyczyny wpis ma zniknąć | Katalog: `.claude/rules/testing.md` (flaky klatki hero, LCP, Prod smoke MIME) + pamięć projektu; porównaj z `gh run list -L 20` | 2026-10-24 (T9 domknął klasę `webkit-1440` 05–09) |
+| C10 | Przegląd katalogu flake'ów CI | co miesiąc (razem z tą tabelą) | Flake wpisany bez daty wygaśnięcia zostaje „wiedzą" na zawsze; po naprawie przyczyny wpis ma zniknąć | §4.8 — `gh run list` to za mało: pokazuje wynik OSTATNIEJ próby, a CI ma `retries: 1`, więc flake'i widać tylko w rerunach (`run_attempt > 1`) i w logu e2e (`N flaky`), P-76. Katalog: `.claude/rules/testing.md` (flaky klatki hero, LCP, flaki z retry) + pamięć projektu | 2026-11-22 — okno od 2026-10-24: 65 biegów, czerwone wyłącznie znane (T9 `webkit-1440` przed progiem, apt 2026-10-26/27 przed DEC-111, wideo nakładki przed T11, CLS polityki = realny bug PI-05); po merge'u P8 (35 biegów CI) 6 zielonych z `flaky` — nowe sygnatury: axe `color-contrast` pixel-5 na elementach reveal (`/oferta/`, `/en/services/`, `/dla-kogo/`), wideo hero `currentTime` webkit-iphone-14, zamknięcie sheeta webkit-iphone-14, `socket hang up` preview firefox → PI-06; wcześniej 2026-10-24 (T9) |
 | C11 | Search Console — indeksowanie i błędy | co miesiąc (po skonfigurowaniu — O2) | Jedyne zewnętrzne źródło o soft-404, błędach crawl, Core Web Vitals z pola | Raporty „Indeksowanie stron" i „Core Web Vitals"; sitemapa: `https://hadrianm.pl/sitemap-index.xml` (`@astrojs/sitemap`, wskazana w `public/robots.txt`) | — (własność niezweryfikowana) |
 | C12 | Odnowienie domeny `hadrianm.pl` (OVH) i skrzynki `info@` | rocznie (przypomnienie OVH mailem) | Domena wygasa = strona, panel i poczta padają naraz | `hosting_first_analysis.md` (adnotacja: OVH, ~72,50 zł/rok, NS → Cloudflare), `mailbox_setup.md` | kupiona 2026-07-03 |
 
@@ -111,18 +111,50 @@ R2_WRITE_ACCESS_KEY_ID=     # token (b) Object Read & Write
 R2_WRITE_SECRET_ACCESS_KEY=
 ```
 
-Następnie `rclone config` → remote typu S3, provider Cloudflare, klucze
-tokenu (a), endpoint
-`https://<account-id>.eu.r2.cloudflarestorage.com` (bucket w jurysdykcji
-EU — bez `.eu.` listowanie pada), region `auto`. Potem cyklicznie:
+**rclone bez dubla sekretów** (sprawdzone 2026-11-22, rclone 1.75.1).
+`env_auth = true` NIE pomaga: czyta tylko nazwy AWS (`AWS_ACCESS_KEY_ID`,
+`AWS_SECRET_ACCESS_KEY`, profil `~/.aws/credentials`), nie `R2_*`. Działa
+nadpisanie per remote: `RCLONE_CONFIG_<REMOTE>_ACCESS_KEY_ID` /
+`_SECRET_ACCESS_KEY` mają pierwszeństwo przed plikiem konfiguracji (rclone
+docs „Precedence"; `-vv` wypisuje „Setting access_key_id=XXX for … from
+environment variable").
+
+**Remote `hadrianm`, NIE `r2`** (P-77): nazwa `r2` w
+`~/.config/rclone/rclone.conf` należy do **eha** (`rclone sync r2:eha-media`
+w docs eha/delung/hetman, klucze tokenu z 1Password zapisane w pliku) —
+NIE czyść jej i nie zmieniaj jej endpointu. Nasz remote `hadrianm` trzyma
+tylko część jawną i ZERO kluczy (utworzenie, raz):
 
 ```bash
-rclone sync r2:hadrianm-media ~/hadrianm-r2-backup/hadrianm-media --progress
+rclone config create hadrianm s3 provider=Cloudflare \
+  endpoint=https://<account-id>.eu.r2.cloudflarestorage.com \
+  region=auto acl=private no_check_bucket=true >/dev/null
 ```
+
+(bucket w jurysdykcji EU — bez `.eu.` listowanie pada; Account ID jest
+jawny w `public/admin/config.yml`). Bez kluczy w env `hadrianm:` odpowiada
+odmową — to celowe: backup idzie wyłącznie tokenem odczytu z `.env`.
+Cyklicznie, z katalogu projektu:
+
+```bash
+( . ./.env && export RCLONE_CONFIG_HADRIANM_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID" \
+    RCLONE_CONFIG_HADRIANM_SECRET_ACCESS_KEY="$R2_SECRET_ACCESS_KEY" && \
+  rclone sync hadrianm:hadrianm-media ~/hadrianm-r2-backup/hadrianm-media --progress )
+```
+
+Kontrola (ta sama podpowłoka, zamiast `sync`): `rclone size
+hadrianm:hadrianm-media` (liczba obiektów = media z `pnpm r2:orphans`;
+znacznik katalogu `realizacje/` rclone traktuje jak katalog, nie plik —
+P-75) oraz `rclone check hadrianm:hadrianm-media
+~/hadrianm-r2-backup/hadrianm-media --one-way` („0 differences found").
+Podpowłoka `( … )` nie zostawia kluczy w środowisku terminala.
+`rclone config update`/`create` wypisują config RAZEM z sekretami — zawsze
+z `>/dev/null`.
 
 `sync` odzwierciedla usunięcia — to zamierzone (kopia 1:1 stanu bucketa);
 jeśli ma być historia, dodaj `--backup-dir` z datą. Katalog backupu NIE jest
-w repo. Tokenu nie wpisuj do żadnego pliku w projekcie.
+w repo. Tokenu nie wpisuj do żadnego pliku w projekcie ani do
+`rclone.conf`.
 
 ### 4.4. `pnpm outdated` i bumpy (C5)
 
@@ -183,3 +215,31 @@ z rozszerzenia, istniejący obiekt pomijany (nadpisanie: `--force`), inny
 prefix: `--prefix`. Token z zapisem (§4.3 b). URL-e z wyjścia wklej w panelu
 (pola „Zrzut"/„Wideo ekranu"), potem `CHECK_REMOTE_MEDIA=1 pnpm exec vitest
 run tests/unit/media-r2.test.ts`.
+
+### 4.8. Przegląd flake'ów CI (C10)
+
+`gh run list` pokazuje tylko wynik OSTATNIEJ próby, a Playwright w CI ma
+`retries: 1` — flake, który przeszedł w retry, daje zielony bieg (P-76).
+Trzy odczyty dla okna od poprzedniego przeglądu (`OD=2026-11-22`):
+
+```bash
+# 1) czerwone (ostatnia próba)
+gh run list --status failure -L 20
+# 2) reruny: bieg zielony dopiero w 2. próbie
+gh api -X GET 'repos/{owner}/{repo}/actions/runs' -f created=">=$OD" \
+  -f per_page=100 --paginate --jq '.workflow_runs[] | select(.run_attempt > 1)
+  | "\(.created_at[0:10]) \(.name) \(.head_branch) \(.id) a=\(.run_attempt)"'
+# pierwsza próba rerunu: gh api repos/{owner}/{repo}/actions/runs/<id>/attempts/1/jobs
+# 3) flaki z retry w logu joba e2e (każdy bieg CI z okna)
+for id in $(gh run list -w CI -L 50 --created ">=$OD" --json databaseId -q '.[].databaseId'); do
+  j=$(gh api "repos/{owner}/{repo}/actions/runs/$id/jobs" -q '.jobs[]|select(.name=="e2e")|.id')
+  gh api "repos/{owner}/{repo}/actions/jobs/$j/logs" | grep -A3 -E 'Z +[0-9]+ flaky$' \
+    | sed "s/^/$id /"
+done
+```
+
+Każde trafienie porównaj z katalogiem (`.claude/rules/testing.md`, pamięć
+`ci-flakes-catalog`); nowe → wpis z numerem runu, wpis bez wystąpienia od
+≥ 30 dni → data ostatniego wystąpienia (usunięcie tylko decyzją Mateusza).
+Ten sam test z retry 2× na main w 30 dniach = kandydat na punkt T (wzorzec
+T11), nie „luźniejszy próg".

@@ -76,6 +76,17 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   diffu, deterministycznie per maszyna): próg 0.01 w hero.spec.ts. NIE
   regeneruj baseline'u na ten objaw — workflow trafi na inną maszynę i „nie
   zobaczy" zmian (potwierdzone 2026-07-12); kontrola: rerun joba na main.
+  Ostatni czerwony: 2026-07-12; od 2026-10-24 zero (C10 2026-11-22, 65
+  biegów) — próg pochłania objaw, więc brak czerwieni nie dowodzi wygaśnięcia.
+- **Flaki z retry** (CI `retries: 1` → job zielony, ślad tylko `N flaky`
+  w logu e2e; P-76, przegląd `optional-todos.md` §4.8). Znane sygnatury
+  (PI-06, 2026-11-22): axe `color-contrast` chromium-pixel-5 na elementach
+  w trakcie reveal (`/oferta/`, `/en/services/`, `/dla-kogo/`); wideo hero
+  `currentTime` webkit-iphone-14 (`hero-functional.spec.ts`); zamknięcie
+  sheeta webkit-iphone-14 (`work.spec.ts:82`); `socket hang up` preview na
+  firefox. Pojedyncze `1 flaky` ≠ regresja; ten sam test 2× na main
+  w 30 dniach = punkt T (wzorzec T11), nigdy wpis do allowlisty axe ani
+  luźniejszy próg.
 - Wideo na zrzutach zawsze przez maskę (klatka wideo to loteria);
   odtwarzanie sprawdza funkcjonalnie `tests/e2e/hero-functional.spec.ts`.
 - NIE emuluj `prefers-reduced-motion: reduce` (bramka w BaseLayout = testy
@@ -164,7 +175,8 @@ tu go nie powtarzamy.
 - Pojedynczy czerwony `lighthouse` nie dowodzi regresji — progi czasowe
   leżą blisko mediany runnerów, a flota dryfuje (katalog flake'ów:
   2026-07-09 ~13%, 2026-10-22 LCP 2× po 10 ms nad progiem na tym samym
-  SHA). Porównaj `resource-summary` obu runów: sygnał = bajty
+  SHA; od ratchetu L1 2026-10-24 zero czerwonych z czasu — jedyny czerwony
+  `lighthouse` do 2026-11-22 to realny CLS polityki, PI-05). Porównaj `resource-summary` obu runów: sygnał = bajty
   (script/total/document), nie pojedynczy LCP. Raporty: log joba
   „Open the report at …" — raport HTML ma pełny LHR
   w `window.__LIGHTHOUSE_JSON__`.

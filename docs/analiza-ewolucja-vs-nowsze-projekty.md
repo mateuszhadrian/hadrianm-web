@@ -424,6 +424,10 @@ stoi nowa strona do czasu podmiany DNS). Gdy nowa strona wejdzie na
 zależy od tej wartości; nagrania i zrzuty zostają, bo treść strony ta sama).
 Sygnał: HEAD na `nowa.` zaczyna przekierowywać albo klient potwierdza
 przełączenie.
+**ZAWIESZONE do sygnału od Mateusza (decyzja 2026-11-22)**: klient zostaje
+na `nowa.hetmannieruchomosci.com` przez dłuższy czas — sesje NIE sprawdzają
+już HEAD/DNS. R5 rusza dopiero, gdy Mateusz sam zgłosi przełączenie; wtedy
+zmiana WYŁĄCZNIE w panelu (pole „Adres strony"), bez kodu i bez testów.
 
 ### T — Testy
 
@@ -825,7 +829,7 @@ zmigrowane).
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
 | P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
-| później | H3, H4, R4, R5, S4, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte) |
+| później | H3, H4, R4, R5, S4, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte; sesja 13 (2026-11-22): przegląd cykliczny C4/C6/C10 docs-only, R5 ZAWIESZONE do sygnału od Mateusza) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1357,3 +1361,51 @@ osobny PR po pomiarze na main.
   raport go pomija (test + **P-75**); C7 „ostatnio" = 2026-11-21. Domknięcie
   sesji = branch `docs/close-session-12`. Otwarte COULD-y: H3, H4, R4, R5,
   S4, T10.
+- **Sesja 13 (2026-11-22, przegląd cykliczny C4/C6/C10 → S4, nowy
+  kontekst)**: bramka OK (main `b9f6c37` = merge #73
+  `docs/close-session-12`, drzewo czyste, 6 ostatnich biegów zielonych).
+  Domknięcie poprzedniej: **#73 ✅ merge `b9f6c37`** (2026-11-21; docs
+  sesji 12 + `isFolderMarker` w `scripts/r2/lib.mjs`; CI na PR 44882572100
+  i CI main 44894571337 zielone za 1. razem — e2e 682 passed, visual 115
+  passed, 0 flaky; Prod smoke 44894571351 zielony). **R5 zawieszone** do
+  sygnału od Mateusza (adnotacja w §6; sesje nie sprawdzają już DNS).
+  **C7 pominięte** — od 2026-11-21 brak commitów panelu
+  w `src/content/realizacje/`.
+  **C10** (okno od 2026-10-24: 65 biegów, 44 CI): czerwone wyłącznie znane
+  i zamknięte — T9 `webkit-1440` 05–09 (PR #59 przed progiem), apt
+  2026-10-26/27 (przed DEC-111; od #66 bez wystąpienia), wideo nakładki
+  `work.spec.ts:123` (przed T11; od #67 bez wystąpienia), `lighthouse` CLS
+  polityki (realny bug PI-05, nie flake). Nowe: **flaki maskowane retry
+  Playwrighta** — po merge'u P8 6 z 35 biegów CI zielonych z `N flaky`,
+  widocznych tylko w logu joba e2e (`gh run list` ich nie pokazuje, P-76):
+  axe `color-contrast` pixel-5 na elementach w trakcie reveal (`/oferta/`,
+  `/en/services/` — 2× na main — i nowa trasa `/dla-kogo/`), wideo hero
+  `currentTime` webkit-iphone-14, zamknięcie sheeta webkit-iphone-14,
+  `socket hang up` preview firefox → **PI-06** (propozycja T12 dla klasy
+  axe — decyzja Mateusza). Wpisy ≥ 30 dni bez wystąpienia dostały datę
+  (pixel-5 00–03: 2026-07-12; LCP: 2026-10-22), nic nie usunięte.
+  Procedura skanu (czerwone + `run_attempt > 1` + `N flaky`) jako
+  `optional-todos.md` §4.8, reguła w `testing.md`.
+  **C4**: remote `r2` w `rclone.conf` już istniał (endpoint EU poprawny,
+  `no_check_bucket`), ale z kluczami w pliku — dubel sekretów.
+  `env_auth` czyta tylko nazwy AWS, nie `R2_*`; działa nadpisanie
+  `RCLONE_CONFIG_R2_ACCESS_KEY_ID`/`_SECRET_ACCESS_KEY` z `.env`
+  w podpowłoce (precedencja „remote env > config file" sprawdzona na
+  atrapie konfiguracji) → §4.3 przepisane: klucze w `rclone.conf` puste,
+  backup wyłącznie tokenem odczytu z `.env`. Mateusz wyczyścił klucze
+  (`rclone config update r2 access_key_id "" secret_access_key "" region
+  auto`) i zrobił pierwszy `sync`: `rclone size` 24 obiekty / 5,748 MiB,
+  `rclone check --one-way` 0 różnic, 24 pliki lokalnie = 24 media
+  z raportu sierot (znacznik `realizacje/` rclone liczy jako katalog,
+  zgodnie z §4.3). **Incydent (P-77)**: wyczyszczone klucze `r2` należały
+  do eha (docs eha/delung/hetman: `rclone sync r2:<projekt>-media`;
+  `~/Backups/eha-media` z 2026-09-14) — mój błąd: krok zaproponowany bez
+  sprawdzenia rodziny. Naprawa tego samego dnia: klucze eha przywrócone
+  z 1Password przez `op read` (1Password CLI 2.42.0 zainstalowane;
+  `rclone size r2:eha-media` 37 obiektów / 103,7 MiB, endpoint EU bez
+  zmian), dla hadrianm osobny remote `hadrianm` bez kluczy (`rclone size
+  hadrianm:hadrianm-media` 24 / 5,748 MiB) → §4.3 przepisane na
+  `RCLONE_CONFIG_HADRIANM_*`. Poza zakresem: kopia eha (54 pliki z
+  2026-09-14 vs 37 obiektów w buckecie) jest nieaktualna — procedura eha.
+  **C6**: 254 / 5 000 transformacji w bieżącym miesiącu (5,1 %) — pod
+  progiem 50 %, `imgAt()` bez zmian, bez punktu w §6.
