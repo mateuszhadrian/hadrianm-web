@@ -93,6 +93,26 @@ vitest run tests/unit/media-r2.test.ts`.
 - Nie wnoś tu kolejnych „ręcznych grepów" na treść: lista URL-i mediów
   pochodzi z `collectMediaUrls` (ten sam regex, co `media-r2.test.ts`).
 
+## Ikony — `make-icons.mjs` (`pnpm make:icons`)
+
+- Źródło JEDNO: `src/assets/brand/hm-icon.svg` (pełna ikona 512×512: tło,
+  kropki, glify „hm”). Generat w `public/`: `favicon.svg` (źródło 1:1 +
+  komentarz GENERAT w pierwszej linii), `favicon.ico` (16+32, payload PNG),
+  `apple-touch-icon.png` 180, `icon-192.png`, `icon-512.png`. Commitowany —
+  build niczego nie liczy (DEC-116).
+- NIE edytuj tych plików w `public/` ręcznie: zmiana rysunku = edycja
+  źródła + `pnpm make:icons`. `tests/e2e/seo.spec.ts` (test „ikony…”)
+  porównuje serwowany `favicon.svg` ze źródłem i sprawdza wymiary rastrów
+  (IHDR) z manifestem.
+- `og-image.png` NIE jest w generatorze (screenshot hero, DEC-59) — nie
+  dokładaj go „dla kompletu” jak w eha.
+- Przed podmianą zmienionych rastrów: `pnpm make:icons -- --out <katalog
+w scratchpadzie>` i porównanie stary/nowy (wymiary, waga, podgląd) —
+  ikona w karcie i na ekranie głównym to zmiana widoczna, decyzja Mateusza.
+- Rastry: paleta 256 kolorów, bez alfy (iOS podkłada czerń pod
+  przezroczystość). librsvg rysuje SVG od razu w docelowym rozmiarze —
+  nadpróbkowanie przez `density` nic nie zmienia.
+
 ## Siatka regresyjna hero
 
 - Dawny `scripts/verify-hero.mjs` został WYCOFANY (2026-07-07) — sweep

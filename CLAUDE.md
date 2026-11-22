@@ -48,6 +48,9 @@ na main.
   `docs/analiza-realizacje-wideo.md`)
 - `pnpm capture:devices` — regeneracja MP4 ekranów urządzeń (użyj skilla
   `/capture-devices`, ma pre-checki)
+- `pnpm make:icons` — ikony z `src/assets/brand/hm-icon.svg` (favicon
+  svg/ico, apple-touch, 192/512) do `public/`; `og-image.png` poza
+  generatorem (S4, DEC-116)
 - `pnpm capture:ambient-bg` — regeneracja statycznych tekstur tła ambient
   dla mobile (`public/ambient-bg-mobile-{red,blue}.webp`) po każdej zmianie
   wyglądu `AmbientBackground` / palety
