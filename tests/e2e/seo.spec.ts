@@ -1,11 +1,15 @@
 // SEO/linki: canonical, meta OG/Twitter, sitemap (obie wersje językowe),
-// robots.txt (blokada /admin), crawl wewnętrznych linków (< 400).
+// robots.txt (blokada /admin), crawl wewnętrznych linków (< 400), ikony
+// (komplet z scripts/make-icons.mjs, favicon.svg = generat — S4).
 // Meta są identyczne między projektami — biega tylko na chromium-1920.
+import { readFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { useChromium1920Only } from "../helpers/guards";
 import { gotoReady } from "../helpers/scroll";
 
 const SITE = "https://hadrianm.pl";
+/** Źródło ikon (S4) — public/favicon.svg i rastry są jego GENERATEM. */
+const ICON_SOURCE = "src/assets/brand/hm-icon.svg";
 
 useChromium1920Only(
   "meta/sitemap/crawl są niezależne od profilu — jeden projekt wystarczy",
@@ -63,6 +67,52 @@ test("robots.txt blokuje /admin i wskazuje sitemapę", async ({ request }) => {
   const body = await res.text();
   expect(body).toContain("Disallow: /admin");
   expect(body).toContain(`Sitemap: ${SITE}/sitemap-index.xml`);
+});
+
+test("ikony: komplet z make-icons, favicon.svg = generat ze źródła", async ({
+  request,
+}) => {
+  // Rastry: status, właściwy format i wymiar z nagłówka IHDR (bajty 16–19).
+  for (const [path, size] of [
+    ["/apple-touch-icon.png", 180],
+    ["/icon-192.png", 192],
+    ["/icon-512.png", 512],
+  ] as const) {
+    const res = await request.get(path);
+    expect(res.status(), `ikona ${path}`).toBe(200);
+    const body = await res.body();
+    expect(body.subarray(1, 4).toString("latin1"), `${path}: nie PNG`).toBe(
+      "PNG",
+    );
+    expect(body.readUInt32BE(16), `${path}: szerokość`).toBe(size);
+  }
+  const ico = await (await request.get("/favicon.ico")).body();
+  expect(ico.readUInt16LE(2), "favicon.ico: nagłówek ICO").toBe(1);
+  expect(ico.readUInt16LE(4), "favicon.ico: liczba obrazów").toBe(2);
+
+  // favicon.svg jest GENERATEM `pnpm make:icons`: komentarz GENERAT + źródło
+  // 1:1. Ręczna edycja (nawet z zachowanym komentarzem) rozjeżdża go
+  // z rastrami — zmiana rysunku idzie przez źródło i generator.
+  const svg = await (await request.get("/favicon.svg")).text();
+  const end = svg.indexOf("-->\n");
+  expect(end, "favicon.svg bez komentarza GENERAT").toBeGreaterThan(0);
+  expect(svg.slice(0, end)).toContain("GENERAT: node scripts/make-icons.mjs");
+  expect(
+    svg.slice(end + 4),
+    `favicon.svg ≠ ${ICON_SOURCE} — edytuj źródło i uruchom pnpm make:icons`,
+  ).toBe(readFileSync(ICON_SOURCE, "utf8"));
+
+  // Manifest wskazuje istniejące ikony o zadeklarowanych wymiarach.
+  const manifest = await (await request.get("/site.webmanifest")).json();
+  expect(manifest.icons.length).toBeGreaterThan(0);
+  for (const icon of manifest.icons as { src: string; sizes: string }[]) {
+    const res = await request.get(icon.src);
+    expect(res.status(), `ikona z manifestu ${icon.src}`).toBe(200);
+    const width = (await res.body()).readUInt32BE(16);
+    expect(`${width}x${width}`, `${icon.src}: sizes w manifeście`).toBe(
+      icon.sizes,
+    );
+  }
 });
 
 test("sitemapa istnieje i linkuje obie wersje językowe", async ({
