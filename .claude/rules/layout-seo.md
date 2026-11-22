@@ -4,6 +4,8 @@ paths:
   - "src/pages/404.astro"
   - "src/styles/global.css"
   - "public/og-image.png"
+  - "public/favicon.svg"
+  - "src/assets/brand/**"
   - "public/site.webmanifest"
 ---
 
@@ -55,6 +57,13 @@ Kontekst decyzji: `docs/analiza-ewolucja-vs-nowsze-projekty.md` §4.7 i §6
   `twitter:card summary_large_image`. Wymiary w meta i w pliku pilnuje
   `tests/unit/og-image.test.ts` (czyta IHDR PNG; limit wagi 300 KB) —
   podmiana obrazu = plik + meta w jednym commicie.
+- Ikony (`favicon.svg`, `favicon.ico`, `apple-touch-icon.png`,
+  `icon-192/512.png`) to GENERAT `pnpm make:icons` ze źródła
+  `src/assets/brand/hm-icon.svg` (S4, DEC-116; reguła w
+  `capture-scripts.md`, sekcja Ikony). Linki w `BaseLayout` i rozmiary
+  w `site.webmanifest` bez zmian; nowy rozmiar = generator + manifest
+  razem (`seo.spec.ts` porównuje `sizes` z IHDR). `og-image.png`
+  generatem NIE jest.
 
 ## Fonty (F1, P8)
 

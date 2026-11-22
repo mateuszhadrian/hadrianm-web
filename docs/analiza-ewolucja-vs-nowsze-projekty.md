@@ -537,6 +537,34 @@ nie z R2**: `page.route` na `media.hadrianm.pl/*.mp4` →
 zamiast odczytu po 600 ms; adres `src` nadal = R2. Commit:
 `test(e2e): serve overlay video from a local fixture and poll playback`.
 
+**T12 · SHOULD · S · ☐ — skan axe dopiero po zakończeniu animacji wejścia**
+(decyzja Mateusza 2026-11-22, sesja 13; wyzwalacz: PI-06 z przeglądu C10).
+Objaw — flake maskowany retry (job zielony, `1 flaky` w logu e2e, P-76):
+axe `color-contrast` na chromium-pixel-5 zgłasza elementy w TRAKCIE
+reveal (stan pośredni krycia): `.pp-sub` `/oferta/` + `/en/services/`
+(2026-10-24, run 40127470101), `.pp-sub` + `.ofh-desc` `/en/services/`
+(2026-10-27 **main** 40585447363), `.ch-tag` + `.ch-para` rozdziału 01
+`/dla-kogo/` (2026-11-07 **main** 42365253325) — reguła „2× na main
+w 30 dniach". **Eskalacja 2026-11-22**: PR #75 (S4, diff bez bajtów
+`/oferta/`), run 45001124231 — `.pp-sub` (+ `.ofh-desc` w retry) `/oferta/`
+pixel-5 czerwone w OBU próbach → pierwszy raz klasa przebiła retry
+i zablokowała PR; kontrola w izolacji na tym samym branchu: 10/10 zielone
+(`--repeat-each 5`, `/oferta/` + `/en/services/`) = obciążenie, nie
+regresja (P-31, DEC-110). Stan końcowy ma kontrast AA (jak A1). Zakres:
+`tests/e2e/a11y.spec.ts` — przed `AxeBuilder.analyze()` poczekać, aż
+`document.getAnimations()` nie ma biegnących animacji/przejść (poll
+w przeglądarce, DEC-108), z limitem i czytelnym komunikatem; BEZ wpisów do
+allowlisty (ratchet) i BEZ luźniejszych progów; elementy reveal
+sterowane scrollem, które nie zaczęły animacji, axe i tak pomija
+(krycie 0 / `visibility`). Najpierw mechanizm: sonda na pixel-5 pod
+obciążeniem pełnego `test:e2e` (P-31) — czy w chwili skanu biegnie
+przejście na zgłoszonym węźle; dopiero potem zmiana. Dowód naprawy = zero
+`flaky` tej sygnatury w kolejnym przeglądzie C10 (§4.8 `optional-todos.md`).
+Poza zakresem T12 (obserwacja w C10): wideo hero `currentTime`
+webkit-iphone-14 (kandydat na `expect.poll` jak T11), zamknięcie sheeta
+webkit-iphone-14, `socket hang up` preview firefox. Commit:
+`test(a11y): scan axe after entrance animations settle`.
+
 ### C — CI / deploy
 
 **C1 · MUST · S · ✅ na main 2026-10-21 (PR #50) — strażnik prod-smoke na komplet assetów**: w
@@ -700,8 +728,24 @@ strony; komentarze z bloków `is:inline` w `BaseLayout` przenieść nad
 blok (poza wysyłany HTML). Baseline'y: brak wpływu (zweryfikować
 `test:visual`). Commit: `fix(layout): color-scheme, text-size-adjust, theme-color`.
 
-**S4 · COULD · S · ☐ — `scripts/make-icons.mjs`** (wektor → komplet ikon +
-og jednym poleceniem; strażnik „GENERAT" w `seo.spec.ts`). Wzorzec: eha.
+**S4 · COULD · S · ✅ 2026-11-22 (sesja 13, branch `feat/make-icons`; DEC-116) — `scripts/make-icons.mjs`** (wektor → komplet ikon
+jednym poleceniem; strażnik „GENERAT” w `seo.spec.ts`). Wzorzec: eha.
+**Korekta wykonawcza — u nas BEZ og**: `og-image.png` to screenshot hero
+(S2, DEC-59), nie render logo jak w eha. Źródłem jest dawny ręczny
+`public/favicon.svg` (pełna ikona 512 z tłem — innego wektora marki
+w repo nie było), przeniesiony 1:1 do `src/assets/brand/hm-icon.svg`;
+`pnpm make:icons` pisze `favicon.svg` (źródło + komentarz GENERAT),
+`favicon.ico` (16+32, PNG), `apple-touch-icon` 180, `icon-192/512` (sharp,
+paleta 256, bez alfy). Rastry różnią się od lipcowych tylko AA (śr. Δ
+1,3/255; `icon-512` 2,2 — lipcowa rekompresja zostawiła 18 kolorów i pasy
+w gradiencie, nowy jest wierny wektorowi) → porównanie pokazane,
+podmiana zaakceptowana przez Mateusza. Wagi: 102,5 → 98,7 KB łącznie
+(`icon-512` 27,8 → 54,6 KB, ale manifest `display: browser` = ikona nie
+jest pobierana przy wejściu na stronę). Strażnik w `seo.spec.ts`:
+serwowany `favicon.svg` = nagłówek GENERAT + źródło 1:1, IHDR rastrów =
+nazwy i `sizes` manifestu; test negatywny (ręczna zmiana koloru z
+zachowanym komentarzem; usunięty komentarz) → 2× czerwone, po `pnpm
+make:icons` zielone. Manifest i linki `BaseLayout` bez zmian.
 
 **S5 · COULD · S · ✅ ZAMKNIĘTE jako „nie dotyczy" 2026-10-29 (PR #69
 `docs/close-s5`, merge `c747efa`; decyzja
@@ -829,7 +873,7 @@ zmigrowane).
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
 | P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
-| później | H3, H4, R4, R5, S4, T10 | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte; sesja 13 (2026-11-22): przegląd cykliczny C4/C6/C10 docs-only, R5 ZAWIESZONE do sygnału od Mateusza) |
+| później | H3, H4, R4, R5, T10, T12 (S4 ✅ sesja 13) | COULD / T12 SHOULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte; sesja 13 (2026-11-22): przegląd cykliczny C4/C6/C10 docs-only, R5 ZAWIESZONE do sygnału od Mateusza) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1409,3 +1453,14 @@ osobny PR po pomiarze na main.
   2026-09-14 vs 37 obiektów w buckecie) jest nieaktualna — procedura eha.
   **C6**: 254 / 5 000 transformacji w bieżącym miesiącu (5,1 %) — pod
   progiem 50 %, `imgAt()` bez zmian, bez punktu w §6.
+  **Część B — S4 ✅** (po merge'u #74 `84b5901`; branch `feat/make-icons`):
+  generator `pnpm make:icons` + strażnik w `seo.spec.ts` + DEC-116 (S4 bez
+  og); szczegóły i liczby w §6 S4. Weryfikacja: `format:check`, `lint`,
+  `typecheck` (0 błędów; 4 podpowiedzi = stan main), `test:unit` 115,
+  `build` + `test:dist` 6/6, `seo.spec.ts` + `smoke.spec.ts`
+  (chromium-1920) 11 passed, test negatywny strażnika 2× czerwony →
+  zielony. Baseline'y i progi LHCI nietknięte (ikony nie są w zrzutach).
+  Po drodze P-70 po raz czwarty (cudzysłów „…” w stringu Pythona przy
+  edycji docs — skrypt nie wykonał się, zero szkód). Otwarte COULD-y: H3,
+  H4, R4, T10 + R5 zawieszone. **Decyzja Mateusza: T12 — tak** (punkt
+  w §6, SHOULD; PI-06 → T12) — rekomendacja na następną sesję.

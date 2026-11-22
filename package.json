@@ -37,6 +37,7 @@
     "capture:devices": "node scripts/capture-device-videos.mjs",
     "capture:site": "node scripts/capture-site-videos.mjs",
     "capture:ambient-bg": "node scripts/capture-ambient-bg.mjs",
+    "make:icons": "node scripts/make-icons.mjs",
     "r2:orphans": "node --env-file-if-exists=.env scripts/r2-orphans.mjs",
     "r2:upload": "node --env-file-if-exists=.env scripts/upload-r2.mjs",
     "prepare": "husky"
