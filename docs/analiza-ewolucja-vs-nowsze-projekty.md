@@ -728,7 +728,7 @@ strony; komentarze z bloków `is:inline` w `BaseLayout` przenieść nad
 blok (poza wysyłany HTML). Baseline'y: brak wpływu (zweryfikować
 `test:visual`). Commit: `fix(layout): color-scheme, text-size-adjust, theme-color`.
 
-**S4 · COULD · S · ✅ 2026-11-22 (sesja 13, branch `feat/make-icons`; DEC-116) — `scripts/make-icons.mjs`** (wektor → komplet ikon
+**S4 · COULD · S · ✅ na main 2026-11-22 (sesja 13, branch `feat/make-icons`, PR #75, merge `7f40a0d`; CI main run 45015574748 zielone za 1. razem — e2e 683 passed, 0 flaky, visual 115 passed; Prod smoke 45015574676 zielony; produkcja: serwowany `favicon.svg` zaczyna się od `<!-- GENERAT`, `icon-512.png` 54 572 B; DEC-116) — `scripts/make-icons.mjs`** (wektor → komplet ikon (wektor → komplet ikon
 jednym poleceniem; strażnik „GENERAT” w `seo.spec.ts`). Wzorzec: eha.
 **Korekta wykonawcza — u nas BEZ og**: `og-image.png` to screenshot hero
 (S2, DEC-59), nie render logo jak w eha. Źródłem jest dawny ręczny
@@ -1464,3 +1464,17 @@ osobny PR po pomiarze na main.
   edycji docs — skrypt nie wykonał się, zero szkód). Otwarte COULD-y: H3,
   H4, R4, T10 + R5 zawieszone. **Decyzja Mateusza: T12 — tak** (punkt
   w §6, SHOULD; PI-06 → T12) — rekomendacja na następną sesję.
+- **Sesja 14 (2026-11-22, domknięcie sesji 13 → T12, nowy kontekst)**:
+  bramka OK (main `7f40a0d` = merge #75 `feat/make-icons`, drzewo czyste).
+  Domknięcie poprzedniej: **#75 ✅ merge `7f40a0d`** (S4 + punkt T12;
+  CI na PR: run 45001124231 czerwony — `.pp-sub` `/oferta/` pixel-5
+  w obu próbach, eskalacja T12 — i run 45013117181 zielony; CI main
+  45015574748 zielone za 1. razem — `quality` 1 min 18 s, `lighthouse`
+  6 min 41 s, `e2e` 17 min 30 s: 683 passed, 0 flaky, visual 115 passed;
+  Prod smoke 45015574676 zielony). Kontrola produkcji: serwowany
+  `favicon.svg` zaczyna się od `<!-- GENERAT`, `icon-512.png`
+  `content-length: 54572` (= plik z repo). Test ikon na telefonie (ekran
+  główny iOS/Android, karta przeglądarki): **jeszcze nie wykonany**
+  (Mateusz, 2026-11-22) — wynik do `poprawki-po-implementacji.md` §3 albo
+  nowy PI przy następnej sesji. R5 nadal zawieszone (DNS nie sprawdzany).
+  C1 (Worker `sveltia-cms-auth`): decyzja Mateusza — nie w tej sesji.
