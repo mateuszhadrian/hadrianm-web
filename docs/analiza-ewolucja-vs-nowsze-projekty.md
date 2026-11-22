@@ -537,7 +537,7 @@ nie z R2**: `page.route` na `media.hadrianm.pl/*.mp4` →
 zamiast odczytu po 600 ms; adres `src` nadal = R2. Commit:
 `test(e2e): serve overlay video from a local fixture and poll playback`.
 
-**T12 · SHOULD · S · ☐ — skan axe dopiero po zakończeniu animacji wejścia**
+**T12 · SHOULD · S · ✅ 2026-11-22 (sesja 14, branch `test/a11y-after-animations`; test-only, `src/` nietknięte; DEC-117, P-78) — skan axe dopiero po zakończeniu animacji wejścia**
 (decyzja Mateusza 2026-11-22, sesja 13; wyzwalacz: PI-06 z przeglądu C10).
 Objaw — flake maskowany retry (job zielony, `1 flaky` w logu e2e, P-76):
 axe `color-contrast` na chromium-pixel-5 zgłasza elementy w TRAKCIE
@@ -560,6 +560,54 @@ sterowane scrollem, które nie zaczęły animacji, axe i tak pomija
 obciążeniem pełnego `test:e2e` (P-31) — czy w chwili skanu biegnie
 przejście na zgłoszonym węźle; dopiero potem zmiana. Dowód naprawy = zero
 `flaky` tej sygnatury w kolejnym przeglądzie C10 (§4.8 `optional-todos.md`).
+**Wykonanie (sesja 14)** — sonda tymczasowa (niecommitowana, pixel-5):
+CDP `Emulation.setCPUThrottlingRate` ×1–×20, `MutationObserver` na
+`style`/`class`, podsłuch `getComputedStyle` kontenerów zgłaszanych węzłów
+(czas ściany vs `document.timeline.currentTime`, zwrócone krycie).
+Mechanizm `/oferta/` + `/en/services/`: `gotoReady` (`networkidle` = 500 ms
+ciszy sieci liczone od pobrania chunku `services-scroll`) startuje skan
+w POŁOWIE reveal — przejście karty 2 (`transition-delay` 0,16 s, koniec
+960 ms) 466–515/960 ms w każdym przebiegu sondy; zegar animacji STOI
+w trakcie analizy (odczyty axe w odstępie 40–150 ms widzą ten sam
+`timeline.currentTime`), więc axe ocenia klatkę sprzed skanu. Przy CPU ×1
+axe czytał krycie karty 2 = 0,970–0,982; próg (krycie karty wymuszone,
+reguła `color-contrast`): `.pp-sub` pada przy ≤ 0,95 (4,40:1; 0,97
+przechodzi), `.ofh-desc` przy ≤ 0,80 (4,24:1) — dokładnie dwie sygnatury
+CI (run 45001124231: `.pp-sub` w 1. próbie, `.pp-sub` + `.ofh-desc`
+w retry, węzły wyłącznie w karcie 2). Zapas lokalny = 2–3 punkty krycia.
+`/dla-kogo/` mobile: tween GSAP `autoAlpha` 0,6 s na `article.dk-ch`
+rozdziału 01 (`once`) — style inline, `getAnimations()` go nie widzi;
+ostatnia mutacja 200–450 ms po starcie skanu; axe czytał krycie 1 (×1)
+albo 0 z `visibility: hidden` (×6 — węzeł pominięty), CI trafia
+w środek tweenu. **Naturalnego czerwonego lokalnie NIE odtworzono**: CPU
+×4/×6/×12/×20 0/48 (dławienie spowalnia proporcjonalnie także
+wstrzyknięcie axe), `a11y.spec` pixel-5 `--repeat-each 10 --workers 16`
+200/200, pełne `test:e2e` 683 passed / 0 flaky (5,8 min). Deterministyczna
+reprodukcja sygnatur = wariant sondy: przejście huba 6 s (wstrzyknięty
+CSS) → stary przebieg czerwony (`.pp-sub`, `.ofh-desc` karty 2,
+`.pp-label`, `.animated-cta__label`); zegar GSAP ×0,1 (`Date.now`
+podmieniony przed startem strony — GSAP łapie referencję przy załadowaniu
+modułu, `window.gsap` nie istnieje) → czerwony rozdział 01 `/dla-kogo/`
+(`.ch-tag`, `h3`, `.ch-para`). Zmiana: `tests/helpers/animations.ts`
+`waitForEntranceAnimations(page)` — poll w `requestAnimationFrame`
+w przeglądarce: (a) brak skończonych animacji `running`/`pending`
+w `document.getAnimations()` (ambient z `endTime` = Infinity pomijany,
+faza `transition-delay` się liczy), (b) brak zmian
+`opacity`/`visibility`/`color` w atrybucie `style` (`MutationObserver`
+z `attributeOldValue`; same transformy pomijane) — nieprzerwanie 400 ms
+i ≥ 10 klatek; limit 10 s → błąd z listą trwających animacji.
+`a11y.spec.ts` woła go po `gotoReady`; allowlista, tagi i filtr bez
+zmian. Po: wariant 6 s → czeka 6065 ms, zielony; limit 2 s → „Animacje
+wejścia nie ustały w 2013 ms: transition opacity div.ofh-intro.on
+2500/6000 ms; …"; GSAP ×0,1 → czeka 7331 ms, zielony. Spis 20 tras ×
+2 profile: helper ustaje w 401–1481 ms (minimum = okno ciszy; najdłużej
+`/kontakt/` i `/faq/` ~1,46 s — tam też biegną wejścia). Pełne `test:e2e` po zmianie 2×: `a11y.spec.ts` 40/40 zielone w obu
+przebiegach (przebieg 2: 683 passed w 5,6 min; przebieg 1: 682 + 1 czerwony spoza zakresu
+— `policy.spec.ts:113` chromium-1920, w izolacji 3/20 czerwone na wejściach
+identycznych z main → istniejący błąd, **PI-07**, nie skutek T12).
+Dowód skuteczności w CI = zero `flaky` tej sygnatury w przeglądzie C10
+~2026-12-22 (§4.8 `optional-todos.md`); nawrót → PI-06 (a) otwiera się
+ponownie z numerem runu.
 Poza zakresem T12 (obserwacja w C10): wideo hero `currentTime`
 webkit-iphone-14 (kandydat na `expect.poll` jak T11), zamknięcie sheeta
 webkit-iphone-14, `socket hang up` preview firefox. Commit:
@@ -728,7 +776,7 @@ strony; komentarze z bloków `is:inline` w `BaseLayout` przenieść nad
 blok (poza wysyłany HTML). Baseline'y: brak wpływu (zweryfikować
 `test:visual`). Commit: `fix(layout): color-scheme, text-size-adjust, theme-color`.
 
-**S4 · COULD · S · ✅ na main 2026-11-22 (sesja 13, branch `feat/make-icons`, PR #75, merge `7f40a0d`; CI main run 45015574748 zielone za 1. razem — e2e 683 passed, 0 flaky, visual 115 passed; Prod smoke 45015574676 zielony; produkcja: serwowany `favicon.svg` zaczyna się od `<!-- GENERAT`, `icon-512.png` 54 572 B; DEC-116) — `scripts/make-icons.mjs`** (wektor → komplet ikon (wektor → komplet ikon
+**S4 · COULD · S · ✅ na main 2026-11-22 (sesja 13, branch `feat/make-icons`, PR #75, merge `7f40a0d`; CI main run 45015574748 zielone za 1. razem — e2e 683 passed, 0 flaky, visual 115 passed; Prod smoke 45015574676 zielony; produkcja: serwowany `favicon.svg` zaczyna się od `<!-- GENERAT`, `icon-512.png` 54 572 B; DEC-116) — `scripts/make-icons.mjs`** (wektor → komplet ikon
 jednym poleceniem; strażnik „GENERAT” w `seo.spec.ts`). Wzorzec: eha.
 **Korekta wykonawcza — u nas BEZ og**: `og-image.png` to screenshot hero
 (S2, DEC-59), nie render logo jak w eha. Źródłem jest dawny ręczny
@@ -873,7 +921,7 @@ zmigrowane).
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
 | P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
-| później | H3, H4, R4, R5, T10, T12 (S4 ✅ sesja 13) | COULD / T12 SHOULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte; sesja 13 (2026-11-22): przegląd cykliczny C4/C6/C10 docs-only, R5 ZAWIESZONE do sygnału od Mateusza) |
+| później | H3, H4, R4, R5, T10 (S4 ✅ sesja 13, T12 ✅ sesja 14) | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte; sesja 13 (2026-11-22): przegląd cykliczny C4/C6/C10 docs-only, R5 ZAWIESZONE do sygnału od Mateusza; sesja 14 (2026-11-22): T12 ✅ test-only — allowlista axe, progi LHCI i baseline'y nietknięte) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1478,3 +1526,22 @@ osobny PR po pomiarze na main.
   (Mateusz, 2026-11-22) — wynik do `poprawki-po-implementacji.md` §3 albo
   nowy PI przy następnej sesji. R5 nadal zawieszone (DNS nie sprawdzany).
   C1 (Worker `sveltia-cms-auth`): decyzja Mateusza — nie w tej sesji.
+  **Część A — T12 ✅** (branch `test/a11y-after-animations`, test-only:
+  `tests/helpers/animations.ts` + jedno wywołanie w `a11y.spec.ts`;
+  szczegóły i liczby w §6 T12, DEC-117, P-78). Mechanizm potwierdzony
+  sondą przed zmianą: skan startuje w połowie reveal (`networkidle` ≠
+  koniec animacji), zegar animacji stoi w trakcie analizy, `.pp-sub` ma
+  zapas zaledwie 2–3 punktów krycia (pada przy karcie ≤ 0,95, lokalnie
+  axe czytał 0,97–0,98). Naturalnego czerwonego lokalnie nie odtworzono
+  (CPU ×4–×20, 16 workerów, pełne e2e — Mac za szybki); sygnatury CI
+  odtworzone deterministycznie wariantem sondy (przejście 6 s / zegar GSAP
+  ×0,1): przed czerwone, po zielone, krótki limit → czytelny błąd. Po
+  drodze: CDP-dławienie CPU NIE odtwarza wyścigów „animacja vs skan" — axe
+  zwalnia proporcjonalnie (P-78). Weryfikacja: `format:check`, `lint`,
+  `typecheck` (0 błędów; 4 podpowiedzi = stan main), `test:unit` 115.
+  Pełne `test:e2e` 2× — `a11y.spec.ts` zielone w obu (przebieg 2: 683
+  passed / 5,6 min; przebieg 1: 682 + `policy.spec.ts:113` chromium-1920
+  czerwone — w izolacji 3/20, `src/`/`dist/`/spec identyczne z main →
+  istniejący błąd spoza zakresu, zapisany jako **PI-07**). Allowlista
+  axe, progi LHCI i baseline'y nietknięte; `git diff --stat` = `tests/` +
+  docs + `testing.md`.

@@ -81,7 +81,8 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
 - **Flaki z retry** (CI `retries: 1` → job zielony, ślad tylko `N flaky`
   w logu e2e; P-76, przegląd `optional-todos.md` §4.8). Znane sygnatury
   (PI-06, 2026-11-22): axe `color-contrast` chromium-pixel-5 na elementach
-  w trakcie reveal (`/oferta/`, `/en/services/`, `/dla-kogo/`); wideo hero
+  w trakcie reveal (`/oferta/`, `/en/services/`, `/dla-kogo/` — naprawione
+  T12 2026-11-22; nawrót = PI-06 (a) wraca z runem); wideo hero
   `currentTime` webkit-iphone-14 (`hero-functional.spec.ts`); zamknięcie
   sheeta webkit-iphone-14 (`work.spec.ts:82`); `socket hang up` preview na
   firefox. Pojedyncze `1 flaky` ≠ regresja; ten sam test 2× na main
@@ -100,6 +101,17 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   Naruszenie „losowe" (zależne od geometrii skanu) diagnozuj przez
   `withRules([...])` i węzeł w `incomplete` vs `passes` — czysty skan
   niczego nie dowodzi (A2: link w nocie RODO był `incomplete`).
+- **Skan axe (i każdy pomiar wyglądu „teraz") dopiero po ustaniu animacji
+  wejścia** — `waitForEntranceAnimations(page)` z `tests/helpers/animations.ts`
+  po `gotoReady` (T12, DEC-117). `networkidle` ≠ koniec animacji (skan
+  startował w połowie reveal huba), a zegar animacji stoi w trakcie
+  analizy — axe ocenia klatkę pośrednią. Helper czeka na skończone
+  animacje z `getAnimations()` ORAZ ciszę krycia/koloru w stylach inline
+  (GSAP poza `getAnimations()`); nie zastępuj go `waitForTimeout`, nie
+  luzuj okna ciszy/limitu „z zapasem". Wyścigu „animacja vs skan" NIE
+  odtworzysz dławieniem CPU (axe zwalnia proporcjonalnie, P-78) —
+  reprodukcja: wydłużone przejście (wstrzyknięty CSS) albo zegar GSAP
+  przez `Date.now` w `addInitScript`.
 - Gesty dotykowe (swipe sheeta) testuj przez CDP `Input.dispatchTouchEvent`
   (`page.context().newCDPSession(page)`, tylko Chromium) — `page.mouse`
   idzie ścieżką `pointer*` i przechodzi przy martwym dotyku (`touch*` +

@@ -128,6 +128,7 @@
 | DEC-69 | Link w nocie RODO odróżnialny podkreśleniem, kolor bez zmian (1,37:1 nie da się podnieść do 3:1 bez porzucenia akcentu) | ewolucja §6 **A2** | obowiązuje |
 | DEC-70 | `.pp-sub` → `--faint` (kontrast podtytułów podstron) | pamięć `oferta-hub-subpage`; `analiza-podstrona-oferta-hub.md` | obowiązuje |
 | DEC-71 | Naruszenie axe „losowe" diagnozować przez `incomplete` vs `passes` — czysty skan niczego nie dowodzi | `testing.md` „a11y"; ewolucja §10 sesja 7 (A2) | obowiązuje |
+| DEC-117 | Skan axe w `a11y.spec.ts` dopiero po ustaniu animacji wejścia: `waitForEntranceAnimations(page)` (`tests/helpers/animations.ts`) — poll w rAF w przeglądarce (DEC-108): brak skończonych animacji `running`/`pending` w `document.getAnimations()` (nieskończone, np. ambient, pomijane) ORAZ brak zmian `opacity`/`visibility`/`color` w atrybucie `style` (GSAP), nieprzerwanie 400 ms i ≥ 10 klatek, limit 10 s z listą trwających animacji. Bez wpisów do allowlisty, bez luźniejszego filtra, bez emulacji `reduce`, bez zmian w `src/`. Wyzwalacz: `.pp-sub` `/oferta/` przebił retry na PR #75 (run 45001124231) — skan startował w połowie reveal (przejście karty 2 ~480/960 ms), `.pp-sub` pada już przy kryciu karty ≤ 0,95 | ewolucja §6 **T12**, §10 sesja 14; `testing.md` „a11y"; `pulapki.md` P-78; `poprawki-po-implementacji.md` PI-06 (a) | obowiązuje |
 
 ## H. Testy i baseline'y
 
