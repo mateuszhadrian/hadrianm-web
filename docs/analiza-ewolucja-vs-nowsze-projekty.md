@@ -545,7 +545,12 @@ reveal (stan pośredni krycia): `.pp-sub` `/oferta/` + `/en/services/`
 (2026-10-24, run 40127470101), `.pp-sub` + `.ofh-desc` `/en/services/`
 (2026-10-27 **main** 40585447363), `.ch-tag` + `.ch-para` rozdziału 01
 `/dla-kogo/` (2026-11-07 **main** 42365253325) — reguła „2× na main
-w 30 dniach". Stan końcowy ma kontrast AA (jak A1). Zakres:
+w 30 dniach". **Eskalacja 2026-11-22**: PR #75 (S4, diff bez bajtów
+`/oferta/`), run 45001124231 — `.pp-sub` (+ `.ofh-desc` w retry) `/oferta/`
+pixel-5 czerwone w OBU próbach → pierwszy raz klasa przebiła retry
+i zablokowała PR; kontrola w izolacji na tym samym branchu: 10/10 zielone
+(`--repeat-each 5`, `/oferta/` + `/en/services/`) = obciążenie, nie
+regresja (P-31, DEC-110). Stan końcowy ma kontrast AA (jak A1). Zakres:
 `tests/e2e/a11y.spec.ts` — przed `AxeBuilder.analyze()` poczekać, aż
 `document.getAnimations()` nie ma biegnących animacji/przejść (poll
 w przeglądarce, DEC-108), z limitem i czytelnym komunikatem; BEZ wpisów do
