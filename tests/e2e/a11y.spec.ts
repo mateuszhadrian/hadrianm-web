@@ -4,6 +4,7 @@
 // (układy się różnią); pozostałe projekty nie wnoszą nowych informacji.
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { waitForEntranceAnimations } from "../helpers/animations";
 import { gotoReady } from "../helpers/scroll";
 
 const A11Y_PROJECTS = ["chromium-1920", "chromium-pixel-5"];
@@ -67,6 +68,13 @@ for (const path of [
       "skan a11y tylko na chromium-1920 i chromium-pixel-5",
     );
     await gotoReady(page, path);
+    // T12 / PI-06 (DEC-117): skan dopiero po ustaniu animacji wejścia.
+    // networkidle startuje skan w POŁOWIE reveal (/oferta/: przejście karty 2
+    // ~480/960 ms w każdym przebiegu), a zegar animacji stoi w trakcie
+    // analizy — axe ocenia klatkę pośrednią. .pp-sub pada już przy kryciu
+    // karty ≤ 0.95 (4.40:1), lokalnie axe czytał 0.97–0.98 → flake pod
+    // obciążeniem CI (.pp-sub/.ofh-desc /oferta/, .ch-* /dla-kogo/ — GSAP).
+    await waitForEntranceAnimations(page);
     const results = await new AxeBuilder({ page })
       .withTags(["wcag2a", "wcag2aa"])
       .analyze();
