@@ -537,7 +537,7 @@ nie z R2**: `page.route` na `media.hadrianm.pl/*.mp4` →
 zamiast odczytu po 600 ms; adres `src` nadal = R2. Commit:
 `test(e2e): serve overlay video from a local fixture and poll playback`.
 
-**T12 · SHOULD · S · ✅ 2026-11-22 (sesja 14, branch `test/a11y-after-animations`; test-only, `src/` nietknięte; DEC-117, P-78) — skan axe dopiero po zakończeniu animacji wejścia**
+**T12 · SHOULD · S · ✅ na main 2026-11-22 (sesja 14, branch `test/a11y-after-animations`, PR #76, merge `c5a5d84`; CI na PR 45020546147 i CI main 45023497326 zielone za 1. razem — e2e 683 passed, 0 flaky, visual 115 passed; Prod smoke 45023497312 31 passed; test-only, `src/` nietknięte; DEC-117, P-78) — skan axe dopiero po zakończeniu animacji wejścia**
 (decyzja Mateusza 2026-11-22, sesja 13; wyzwalacz: PI-06 z przeglądu C10).
 Objaw — flake maskowany retry (job zielony, `1 flaky` w logu e2e, P-76):
 axe `color-contrast` na chromium-pixel-5 zgłasza elementy w TRAKCIE
@@ -921,7 +921,7 @@ zmigrowane).
 | P8 „Jakość" | A2 (pierwszy — usuwa losowe czerwone `e2e`), A1, T4, U1, F1 | każdy z własnym pomiarem | ✅ na main 2026-10-24 (PR #59, merge `cc3a05a`; CI + Prod smoke zielone, telefon OK): A2/T4/U1/F1 ✅, A1 zamknięte jako przeformułowane (wyjątek axe zostaje); baseline'y WYŁĄCZNIE contact-index-form (6 darwin + 6 linux), services nietknięte; progi LHCI nietknięte → po merge'u mini-PR `font:size` |
 | P9 „Docs utrzymaniowe" | D2, D3, D4, D5 | docs | ✅ na main 2026-10-26 (PR #61, merge `5f8116d`; CI + Prod smoke zielone — paczka bez bajtów strony); D6 z obserwacji → sesja 9 |
 | P10 „Testy z rodziny" | T7, T8 (+ retry instalacji Playwrighta, DEC-105) | same testy/docs, zero bajtów strony; retry jedzie w tym samym PR-ze = jedna loteria instalacji | ✅ na main 2026-10-27 (PR #64, merge `c178204`; CI 40536992288 + Prod smoke 40536992331 zielone za 1. razem, `test:dist` w `quality` 1 s, install-deps próba 1 = 33 s / próba 2 pominięta), baseline'y nietknięte |
-| później | H3, H4, R4, R5, T10 (S4 ✅ sesja 13, T12 ✅ sesja 14) | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte; sesja 13 (2026-11-22): przegląd cykliczny C4/C6/C10 docs-only, R5 ZAWIESZONE do sygnału od Mateusza; sesja 14 (2026-11-22): T12 ✅ test-only — allowlista axe, progi LHCI i baseline'y nietknięte) |
+| później | H3, H4, R4, R5, T10 (S4 ✅ sesja 13 #75, T12 ✅ sesja 14 #76) | COULD | — (D6 ✅ sesja 9; ratchet LCP/perf po F1 = O4 ✅ #63; T11 ✅ #67; F2 ✅ #68; S5 zamknięte „nie dotyczy" 2026-10-29 #69; sesja 12 (2026-11-07): L2 ✅ #70, PI-05 fix ✅ #71 (złapany przez sensor L2), M3 ✅ #72 — progi i baseline'y nietknięte; sesja 13 (2026-11-22): przegląd cykliczny C4/C6/C10 docs-only, R5 ZAWIESZONE do sygnału od Mateusza; sesja 14 (2026-11-22): T12 ✅ test-only #76 `c5a5d84` — allowlista axe, progi LHCI i baseline'y nietknięte) |
 
 Zasady: paczka = branch `typ/krotki-opis` → PR → 3 zielone checki →
 merge; baseline'y regenerowane raz na paczkę, po pokazaniu diffów
@@ -1522,9 +1522,10 @@ osobny PR po pomiarze na main.
   Prod smoke 45015574676 zielony). Kontrola produkcji: serwowany
   `favicon.svg` zaczyna się od `<!-- GENERAT`, `icon-512.png`
   `content-length: 54572` (= plik z repo). Test ikon na telefonie (ekran
-  główny iOS/Android, karta przeglądarki): **jeszcze nie wykonany**
-  (Mateusz, 2026-11-22) — wynik do `poprawki-po-implementacji.md` §3 albo
-  nowy PI przy następnej sesji. R5 nadal zawieszone (DNS nie sprawdzany).
+  główny iOS/Android, karta przeglądarki): w trakcie sesji jeszcze nie
+  wykonany — wykonany po merge'u #76, **bez usterek** (Mateusz,
+  2026-11-22) → `poprawki-po-implementacji.md` §3 (wpis w domknięciu,
+  sesja 15). R5 nadal zawieszone (DNS nie sprawdzany).
   C1 (Worker `sveltia-cms-auth`): decyzja Mateusza — nie w tej sesji.
   **Część A — T12 ✅** (branch `test/a11y-after-animations`, test-only:
   `tests/helpers/animations.ts` + jedno wywołanie w `a11y.spec.ts`;
@@ -1545,3 +1546,15 @@ osobny PR po pomiarze na main.
   istniejący błąd spoza zakresu, zapisany jako **PI-07**). Allowlista
   axe, progi LHCI i baseline'y nietknięte; `git diff --stat` = `tests/` +
   docs + `testing.md`.
+- **Sesja 15 (2026-11-22, domknięcie sesji 14 → sesja operacyjna C1 + O1
+  + O2, nowy kontekst)**: bramka OK (main `c5a5d84` = merge #76
+  `test/a11y-after-animations`, drzewo czyste, 6 ostatnich biegów
+  zielonych, nic nowego po #76; data przed 2026-12-20 → przegląd
+  grudniowy nie w tej sesji). Domknięcie poprzedniej: **#76 ✅ merge
+  `c5a5d84`** (domknięcie sesji 13 + T12; CI na PR 45020546147 i CI main
+  45023497326 zielone za 1. razem — `quality` 1 min 10 s, `lighthouse`
+  6 min 5 s, `e2e` 20 min 18 s: 683 passed, 0 flaky, visual 115 passed;
+  Prod smoke 45023497312 zielony — 31 passed, 2 min 32 s). Test ikon S4
+  na telefonie (ekran główny iOS/Android, karta przeglądarki): bez
+  usterek → `poprawki-po-implementacji.md` §3. R5 nadal zawieszone (DNS
+  nie sprawdzany).
