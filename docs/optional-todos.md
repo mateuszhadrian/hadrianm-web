@@ -19,7 +19,7 @@
 
 | # | Co | Jak często | Po co | Jak (procedura / odsyłacz) | Ostatnio |
 | --- | --- | --- | --- | --- | --- |
-| C1 | Odświeżenie Workera `sveltia-cms-auth` | co 3–6 mies. lub gdy logowanie do `/admin` kaprysi | Worker wdrożony ręcznie (`wrangler deploy`) — nie dostaje poprawek z repo `sveltia/sveltia-cms-auth` | §4.1 | wdrożony 2026-07-03; odświeżenie — jeszcze nie |
+| C1 | Odświeżenie Workera `sveltia-cms-auth` | co 3–6 mies. lub gdy logowanie do `/admin` kaprysi | Worker wdrożony ręcznie (`wrangler deploy`) — nie dostaje poprawek z repo `sveltia/sveltia-cms-auth` | §4.1 | 2026-11-23 — redeploy z upstreamu `e62e76a` (kod = `26b168a`; poprzednio ≈ `13a24b0` z 2026-06-28, wdrożony 2026-07-03), wersja Workera `052c136c` (rollback: `b1332bce` z 2026-07-03); nadal OAuth App (upstream od 2026-11-11 dokumentuje GitHub App — O10); sondy `/auth`: `hadrianm.pl`/`localhost` → 302 do GitHuba, obca domena → `UNSUPPORTED_DOMAIN`; logowanie produkcja + localhost OK (Mateusz). Przy okazji poprawiona §4.1 (zmienne Text vs sekrety, P-79) |
 | C2 | Przegląd dostępów i rotacja sekretów | co 6 mies. | GitHub + Cloudflare kontrolują kod, treść, panel, hosting i domenę | §4.2 (Client Secret OAuth, 2FA, `ALLOWED_DOMAINS`, tokeny R2/Resend/Turnstile) | — (jeszcze nie) |
 | C3 | Przypięta wersja Sveltii (`public/admin/index.html`, dziś 0.178.0) | kwartalnie: zajrzyj do changelogu; bump TYLKO z potrzeby | Nowsze binarium = nowe pola/poprawki, ale też ryzyko regresji panelu | Procedura bumpu = backlog **M2** (sonda binarium, test w trybie lokalnego repo, wycofanie jedną linią); dalsze podbicie = punkt **M3**-sąsiad w §6 (osobny PR) | 0.170.0 → 0.178.0 2026-10-21 (PR #52) |
 | C4 | Backup R2 (`rclone sync` bucketa `hadrianm-media`) | co miesiąc (po każdej nowej realizacji — od razu) | JSON-y wpisów są w gicie, ale **media żyją wyłącznie w R2**; Sveltia nie ma kosza | §4.3 (pierwsze uruchomienie = konfiguracja remote'a; ten sam token tylko-do-odczytu, co `pnpm r2:orphans` — zmienne `R2_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` w `.env`) | 2026-11-22 — pierwszy `rclone sync` do `~/hadrianm-r2-backup/hadrianm-media`: 24 obiekty, 5,748 MiB; `rclone check --one-way` 0 różnic, 24 pliki lokalnie (= 24 media z `pnpm r2:orphans`, znacznik `realizacje/` jako katalog); remote `hadrianm` bez kluczy w `rclone.conf`, token odczytu z `.env` (§4.3; kontrola `rclone size hadrianm:hadrianm-media` 24 / 5,748 MiB); remote `r2` = eha, nie ruszać (P-77) |
@@ -29,31 +29,32 @@
 | C8 | Obraz runnera i obraz Dockera przy bumpie Playwrighta | przy KAŻDYM bumpie Playwrighta (nie kalendarzowo) | Wersja systemu runnera (`ubuntu-24.04`, przypięta — C3 backlogu) i tag `mcr.microsoft.com/playwright:v<wersja>-noble` wpływają na baseline'y linux | Bump = osobny PR: para wersji + tag Dockera w `.claude/rules/testing.md` + rerun `test:visual` na main przed i po | Playwright 1.61.1 (2026-07) |
 | C9 | Przegląd budżetów LHCI po bloku zmian | po każdej paczce zmieniającej bajty strony głównej | Progi to ratchet: po poprawie perf zacieśniamy, żeby bramka łapała regresje | `lhci-measure.yml` na main → mediany → osobny PR wg reguły **L1** (`.claude/rules/testing.md` „LHCI"). Po F1 zrobione w dwóch krokach: `font:size` (#60) i LCP/perf (O4 → §3) | 2026-10-26 (LCP/perf po F1, PR `chore/lhci-ratchet-after-f1`) |
 | C10 | Przegląd katalogu flake'ów CI | co miesiąc (razem z tą tabelą) | Flake wpisany bez daty wygaśnięcia zostaje „wiedzą" na zawsze; po naprawie przyczyny wpis ma zniknąć | §4.8 — `gh run list` to za mało: pokazuje wynik OSTATNIEJ próby, a CI ma `retries: 1`, więc flake'i widać tylko w rerunach (`run_attempt > 1`) i w logu e2e (`N flaky`), P-76. Katalog: `.claude/rules/testing.md` (flaky klatki hero, LCP, flaki z retry) + pamięć projektu | 2026-11-22 — okno od 2026-10-24: 65 biegów, czerwone wyłącznie znane (T9 `webkit-1440` przed progiem, apt 2026-10-26/27 przed DEC-111, wideo nakładki przed T11, CLS polityki = realny bug PI-05); po merge'u P8 (35 biegów CI) 6 zielonych z `flaky` — nowe sygnatury: axe `color-contrast` pixel-5 na elementach reveal (`/oferta/`, `/en/services/`, `/dla-kogo/`), wideo hero `currentTime` webkit-iphone-14, zamknięcie sheeta webkit-iphone-14, `socket hang up` preview firefox → PI-06; wcześniej 2026-10-24 (T9) |
-| C11 | Search Console — indeksowanie i błędy | co miesiąc (po skonfigurowaniu — O2) | Jedyne zewnętrzne źródło o soft-404, błędach crawl, Core Web Vitals z pola | Raporty „Indeksowanie stron" i „Core Web Vitals"; sitemapa: `https://hadrianm.pl/sitemap-index.xml` (`@astrojs/sitemap`, wskazana w `public/robots.txt`) | — (własność niezweryfikowana) |
+| C11 | Search Console — indeksowanie i błędy | co miesiąc (po skonfigurowaniu — O2) | Jedyne zewnętrzne źródło o soft-404, błędach crawl, Core Web Vitals z pola | Raporty „Indeksowanie stron" i „Core Web Vitals"; sitemapa: `https://hadrianm.pl/sitemap-index.xml` (`@astrojs/sitemap`, wskazana w `public/robots.txt`) | 2026-11-23 — skonfigurowane (O2 → §3): własność `hadrianm.pl` zweryfikowana, sitemapa zgłoszona; pierwszy realny odczyt raportów (indeksowanie, CWV z pola) przy przeglądzie grudniowym ~2026-12-20/22 — wtedy też potwierdź stan mapy witryny „Powodzenie” i 20 wykrytych stron |
 | C12 | Odnowienie domeny `hadrianm.pl` (OVH) i skrzynki `info@` | rocznie (przypomnienie OVH mailem) | Domena wygasa = strona, panel i poczta padają naraz | `hosting_first_analysis.md` (adnotacja: OVH, ~72,50 zł/rok, NS → Cloudflare), `mailbox_setup.md` | kupiona 2026-07-03 |
 
 ## 2. Odłożone
 
 | # | Co | Do kiedy / warunek | Notatka |
 | --- | --- | --- | --- |
-| O1 | UptimeRobot — monitor HTTP(S) z **keyword** na `https://hadrianm.pl/` | najbliższa sesja operacyjna; brak dziś jakiegokolwiek monitoringu poza `prod-smoke` po deployu (kronika §E) | Keyword = fraza z hero (np. nazwa marki) — sam status 200 nie wykryje soft-404 ani pustej strony; drugi monitor na `/admin` zbędny (panel = Sveltia z CDN). Alert mailem; darmowy plan, interwał 5 min |
-| O2 | Google Search Console — weryfikacja własności + zgłoszenie sitemapy | razem z O1 | Weryfikacja przez rekord DNS TXT w Cloudflare (bez zmian w repo); po weryfikacji → tabela cykliczna C11 |
-| O3 | Własna subdomena Workera `auth.hadrianm.pl` zamiast `sveltia-cms-auth.tenhadrian.workers.dev` | warunek (domena w Cloudflare) spełniony od 2026-07-05; zrobić przy pierwszym pokazie panelu klientowi albo przy C1 | §4.6 — TRZY miejsca naraz (Cloudflare custom domain, callback OAuth GitHub, `base_url` w `public/admin/config.yml`), inaczej logowanie pada |
+| O3 | Własna subdomena Workera `auth.hadrianm.pl` zamiast `sveltia-cms-auth.tenhadrian.workers.dev` | warunek (domena w Cloudflare) spełniony od 2026-07-05; przy pierwszym pokazie panelu klientowi albo razem z O10 (przy C1 2026-11-23: nie — decyzja Mateusza) | §4.6 — TRZY miejsca naraz (Cloudflare custom domain, callback OAuth GitHub, `base_url` w `public/admin/config.yml`), inaczej logowanie pada |
 | O5 | `liveUrl` Hetmana po przełączeniu domeny | gdy HEAD na `nowa.hetmannieruchomosci.com` zacznie przekierowywać albo klient potwierdzi | Backlog **R5** — zmiana WYŁĄCZNIE w panelu (pole „Adres strony"); żaden test ani baseline nie zależy od tej wartości |
 | O7 | Alias skrzynki OVH w Gmailu | kiedykolwiek, bez warunku | Instrukcja: `gmail_alias_setup.md` |
 | O8 | Kandydaci refactoru „wymagający OSOBNEJ decyzji" | tylko z pomiarem i decyzją Mateusza | `first-bigger-improvement-refactor-analysis.md` §8 (Etap 7); część już pokryta backlogiem H3/H4 |
 | O9 | White-label szablonu (Etap 7 ekosystemu Claude Code) | przy starcie kolejnego projektu z tego szablonu | `claude-code-ecosystem-initialization.md` §9; w praktyce rodzina delung/eha/hetman już z niego wyrosła — zweryfikować, co zostało do ekstrakcji |
+| O10 | Logowanie do panelu: OAuth App → **GitHub App** (albo Sveltia CMS Additions) | decyzja Mateusza; naturalny moment = C2 (rotacja sekretów, styczeń 2027) albo pokaz panelu klientowi (razem z O3) | Upstream `sveltia-cms-auth` od 2026-11-11 (`8cc825c`) dokumentuje tylko GitHub App: dostęp wyłącznie do repo, na którym aplikacja jest zainstalowana, zamiast scope `repo` OAuth App = WSZYSTKIE repo konta (także prywatne/klienckie). OAuth App nadal działa (C1 2026-11-23: kod przeczytany + logowanie OK). Migracja wg README upstreamu („How do I migrate to a GitHub App?”): ten sam callback `…/callback`, podmiana `GITHUB_CLIENT_ID`/`GITHUB_CLIENT_SECRET` w Workerze, `config.yml` bez zmian; tokeny z wygasaniem (8 h) wymagają odświeżania w Sveltii — sprawdzić wsparcie w przypiętej wersji (C3, dziś 0.178.0) albo wyłączyć wygasanie. Additions (od `e62e76a`, 2026-11-22 rekomendowane przez upstream): Sveltia ≥ 0.271.0 + `auth_type: additions` + nowy `base_url` = kod → osobny PR |
 
 ## 3. Zamknięte
 
 | Data | Co | Jak zamknięte |
 | --- | --- | --- |
 | 2026-07-05 | Weryfikacja `robots.txt` na produkcji | Strona na domenie; blokadę `/admin` i wskazanie sitemapy pilnuje `tests/e2e/seo.spec.ts` („robots.txt blokuje /admin i wskazuje sitemapę") |
-| 2026-07-05 | `pages.dev` w `ALLOWED_DOMAINS` Workera | Bezprzedmiotowe po podpięciu domeny; jeśli wpis został dodany na czas testów — usunąć przy C2 (nigdy wildcard `*.pages.dev`) |
+| 2026-07-05 | `pages.dev` w `ALLOWED_DOMAINS` Workera | Bezprzedmiotowe po podpięciu domeny; jeśli wpis został dodany na czas testów — usunąć przy C2 (nigdy wildcard `*.pages.dev`). **Potwierdzone przy C1 2026-11-23**: lista = `hadrianm.pl,localhost,hadrianm-web.pages.dev` — wpis `hadrianm-web.pages.dev` jest; redeploy celowo przeniósł listę bez zmian, usunięcie przy C2 (dashboard albo `[vars]` w `wrangler.toml` klonu, §4.1) |
 | 2026-10-21 | Ręczne sprzątanie sierot R2 z refactoru (`first-bigger-improvement-refactor-analysis.md` §6.6) | 18 sierot skasowanych w P5 (HEAD 404); dalej jako cykliczne C7 |
 | 2026-10-20 | Cloudflare Stream (Etap 6 `hosting_second_analysis_sveltia.md`) | ODRZUCONY — wideo realizacji z R2 (`analiza-realizacje-wideo.md` §3.1, ewolucja §9) |
 | 2026-10-24 | Zacieśnienie `font:size` po F1 | PR #60 (74 800 / 118 100 B, run 40124168778) |
 | 2026-11-07 | O6 — skrypty `scripts/upload-r2.mjs` + `scripts/r2-orphans.mjs` | Backlog **M3** (branch `feat/r2-scripts`): `pnpm r2:orphans` / `pnpm r2:upload`, logika w `scripts/r2/lib.mjs` + 22 testy; dwa tokeny R2 (DEC-115); procedury §4.3, §4.5, §4.7; numer O6 nie wraca do użycia |
+| 2026-11-23 | O1 — UptimeRobot (monitoring dostępności) | Dwa monitory **Keyword** (plan Free, interwał 5 min, lokalizacja domyślna, alert mailem na adres konta): `https://hadrianm.pl` — keyword `PRACOWNIA STRON I APLIKACJI`; `https://hadrianm.pl/en/` — keyword `APP STUDIO` (NIE `WEB & APP STUDIO`: w surowym HTML jest `&amp;`, keyword nigdy by się nie znalazł). Warunek **„Start incident when keyword doesn't exist”** — domyślne „exists” = alarm przy działającej stronie. Keywordy = `hero.eyebrow` z `src/i18n/ui.ts` (plus `<title>`/og:title bez rozróżniania wielkości liter), nieobecne w 404 PL i EN (`curl` 2026-11-23) → monitor wykrywa też soft-404 i pustą stronę. Zmiana `hero.eyebrow` = zmiana keywordu w UptimeRobot w tym samym dniu; fałszywy alarm przy działającej stronie = zmiana keywordu, nie wyłączenie monitora. Oba Up po utworzeniu. Numer O1 nie wraca do użycia |
+| 2026-11-23 | O2 — Google Search Console | Usługa typu **Domena** `hadrianm.pl`, weryfikacja **ręcznym** rekordem TXT `@` w Cloudflare DNS („Dowolny dostawca DNS” — NIE automat Cloudflare/Domain Connect, który loguje Google do konta Cloudflare). `dig` (1.1.1.1, 8.8.8.8, NS autorytatywny `*.ns.cloudflare.com`): rekord `google-site-verification` obecny obok SPF OVH; weryfikacja przeszła za 1. razem. Rekord ZOSTAJE na stałe (usunięcie = utrata weryfikacji). Sitemapa `https://hadrianm.pl/sitemap-index.xml` zgłoszona; stan tuż po zgłoszeniu „Nie udało się pobrać” przy poprawnej stronie serwera (200, `application/xml`, bez `X-Robots-Tag`, XML poprawny, 20 URL-i = 10 PL + 10 EN, `robots.txt` wskazuje mapę) — stan przejściowy świeżej usługi, kontrola w C11. Dalej cyklicznie **C11**. Numer O2 nie wraca do użycia |
 | 2026-10-26 | O4 — ratchet LCP/perf po F1 | PR `chore/lhci-ratchet-after-f1` wg formuły L1 z runu 40124168778: LCP mobile 4851 → 4678, desktop 3210 → 3177, perf mobile 0,80 → 0,85 (desktop 0,85 bez zmian); numer O4 nie wraca do użycia |
 
 ---
@@ -63,18 +64,80 @@
 ### 4.1. Odświeżenie Workera `sveltia-cms-auth` (C1)
 
 Kreator „Deploy to Cloudflare Workers" nie działał, więc Worker stoi z
-ręcznego `wrangler deploy` i nie aktualizuje się sam:
+ręcznego `wrangler deploy` i nie aktualizuje się sam. Przepisane po
+pierwszym odświeżeniu (2026-11-23, sesja 15) — poprzednia wersja tej
+sekcji twierdziła, że wszystkie zmienne przeżywają redeploy; to nieprawda
+(P-79).
+
+**1. Klon i odczyt** (zwykły terminal; katalog poza repo, nie `/tmp`):
 
 ```bash
-git clone --depth 1 https://github.com/sveltia/sveltia-cms-auth /tmp/sveltia-cms-auth
-cd /tmp/sveltia-cms-auth
-npx wrangler deploy   # wymaga zalogowania: npx wrangler login
+mkdir -p ~/tmp
+git clone --depth 1 https://github.com/sveltia/sveltia-cms-auth ~/tmp/sveltia-cms-auth
+cd ~/tmp/sveltia-cms-auth
+git log -1 --format='%h %cs %s'      # wersja do kolumny „Ostatnio” C1
+cat wrangler.toml                     # name MUSI być "sveltia-cms-auth" (inaczej drugi Worker bez zmiennych)
+npx wrangler@4.164.0 whoami           # wersja = devDependency z package.json klonu
+npx wrangler@4.164.0 deployments list # aktywna wersja = cel rollbacku
 ```
 
-Sekrety (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `ALLOWED_DOMAINS`) są
-przypięte do Workera w Cloudflare i **przeżywają** redeploy. Po wdrożeniu:
-logowanie na `/admin` (produkcja i localhost — ten drugi wymaga
-`site_domain` w `config.yml`, jest).
+`wrangler login` tylko, gdy `whoami` nie widzi konta: config wranglera
+(`~/Library/Preferences/.wrangler/`) jest jeden na komputer i używają go
+projekty rodziny (P-77; 2026-11-23 jedno konto, login z 2026-10-17).
+Przed deployem przejrzyj zmiany upstreamu od ostatniego „Ostatnio”
+(`gh api repos/sveltia/sveltia-cms-auth/commits`) — od 2026-11-11 README
+opisuje tylko GitHub App (OAuth App działa dalej, O10).
+
+**2. Zmienne Text vs sekrety.** `wrangler deploy` nadpisuje konfigurację
+z dashboardu konfiguracją z `wrangler.toml`: sekret
+(`GITHUB_CLIENT_SECRET`) przeżywa, zmienne typu Text (`GITHUB_CLIENT_ID`,
+`ALLOWED_DOMAINS`) znikają. Wrangler 4 pokazuje przed wysłaniem diff
+„local configuration … differs from the remote configuration” i pyta
+`(Y/n)` — sekcja `vars` z minusami = zmienne zostałyby skasowane. Samo
+`keep_vars = true` (wzorzec eha) tego diffu NIE uciszyło, więc
+deterministycznie: w `wrangler.toml` KLONU (nie w repo) dopisz
+`keep_vars = true` i sekcję `[vars]` z wartościami przepisanymi
+z ostrzeżenia (obie jawne — Client ID leci w URL-u autoryzacji):
+
+```toml
+keep_vars = true
+
+[vars]
+ALLOWED_DOMAINS = "<lista z ostrzeżenia>"
+GITHUB_CLIENT_ID = "<Client ID z ostrzeżenia>"
+```
+
+`npx wrangler@4.164.0 deploy --dry-run` wypisuje bindingi (obie zmienne),
+a właściwy `deploy` ma w diffie pokazywać WYŁĄCZNIE `compatibility_date`
+— dopiero wtedy `Y`. Wynik: `Current Version ID`.
+
+**3. Kontrola z terminala** (bez logowania; `client_id` w odpowiedzi jest
+jawny):
+
+```bash
+W=https://sveltia-cms-auth.tenhadrian.workers.dev
+curl -sI "$W/auth?provider=github&site_id=hadrianm.pl" | grep -i '^location'   # → github.com/login/oauth/authorize
+curl -s  "$W/auth?provider=github&site_id=example.com" | grep -o UNSUPPORTED_DOMAIN
+```
+
+`MISCONFIGURED_CLIENT` albo 302 dla obcej domeny = zmienne zniknęły →
+rollback.
+
+**4. Logowanie.** Produkcja: `https://hadrianm.pl/admin/` — NAJPIERW Sign
+out (Sveltia trzyma token w przeglądarce; bez wylogowania test nie dotyka
+Workera), potem „Sign in with GitHub”. Localhost: `pnpm dev` →
+`http://localhost:4321/admin/index.html` (dev Astro nie podaje
+`index.html` dla `/admin/` → 404; Cloudflare Pages podaje). Od upstreamu
+`95745c8` (2026-08-18) token trafia tylko do strony z hosta
+w `ALLOWED_DOMAINS` (origin popupu), więc lokalne logowanie wymaga
+`localhost` na liście (jest); `site_domain: hadrianm.pl` w `config.yml`
+pokrywa tylko pierwszą kontrolę (`site_id`). W panelu nic nie edytuj —
+pisze na `main`.
+
+**Rollback**: `npx wrangler@4.164.0 rollback <version-id>` albo dashboard
+→ Workers & Pages → `sveltia-cms-auth` → Deployments → Rollback (wersja
+zawiera swoje zmienne). Version ID poprzedniej wersji zanotuj w kolumnie
+„Ostatnio” C1.
 
 ### 4.2. Przegląd dostępów i rotacja sekretów (C2)
 

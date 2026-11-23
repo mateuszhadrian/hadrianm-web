@@ -1558,3 +1558,51 @@ osobny PR po pomiarze na main.
   na telefonie (ekran główny iOS/Android, karta przeglądarki): bez
   usterek → `poprawki-po-implementacji.md` §3. R5 nadal zawieszone (DNS
   nie sprawdzany).
+  **Część operacyjna (2026-11-23; kroki na kontach wykonał Mateusz,
+  kontrola z terminala; zero zmian w kodzie strony)** — decyzje Mateusza:
+  C1 + O1 + O2 tak, O3 nie, drugi monitor na `/en/` tak.
+  **C1 ✅** — Worker `sveltia-cms-auth` odświeżony z upstreamu `e62e76a`
+  (2026-11-22, różni się od `26b168a` tylko README; nasz poprzedni ≈
+  `13a24b0` z 2026-06-28). Przed deployem przegląd zmian upstreamu:
+  `95745c8` (2026-08-18, token tylko do strony z `ALLOWED_DOMAINS` —
+  łatka bezpieczeństwa), `8cc825c` (2026-11-11, przejście na GitHub App
+  + refresh tokenów + koniec GitLaba; OAuth App nadal działa — kod
+  przeczytany: scope `repo,user`, brak `refresh_token` obsłużony) →
+  nowy punkt **O10** (OAuth App → GitHub App / Sveltia CMS Additions,
+  decyzja Mateusza). Rodzina (P-77): `wrangler whoami` — jedno konto,
+  login z 2026-10-17 bez zmian; docs eha ostrzegały, że redeploy bez
+  `keep_vars` kasuje zmienne — nasza §4.1 twierdziła, że „przeżywają”.
+  Historia wersji Workera potwierdziła: `GITHUB_CLIENT_SECRET` = sekret,
+  `GITHUB_CLIENT_ID` i `ALLOWED_DOMAINS` = Text. Pierwsze podejście
+  z samym `keep_vars = true`: wrangler 4.164 i tak pokazał diff z obiema
+  zmiennymi na minusie → przerwane (`n`), `[vars]` z wartościami
+  z ostrzeżenia w `wrangler.toml` klonu (`~/tmp/sveltia-cms-auth`, poza
+  repo), `--dry-run` z obiema zmiennymi, drugi diff tylko
+  `compatibility_date` 2023-03-24 → 2026-11-11 → deploy: wersja
+  `052c136c`, 11,26 KiB, start 3 ms (rollback: `b1332bce` z 2026-07-03)
+  → **P-79**, §4.1 przepisana. Sondy `/auth` przed i po: `hadrianm.pl`
+  i `localhost` → 302 do `github.com/login/oauth/authorize`, obca domena
+  → `UNSUPPORTED_DOMAIN`; po: `POST /oauth/access_token` bez `Origin` →
+  403 (nowy endpoint refreshu). Logowanie: produkcja (po Sign out) i
+  localhost — OK. Po drodze: `pnpm dev` daje 404 na `/admin/` (dev Astro
+  nie podaje `index.html` katalogu z `public/`) — lokalnie
+  `/admin/index.html`, dopisane w §4.1, nie usterka strony.
+  `ALLOWED_DOMAINS` zawiera `hadrianm-web.pages.dev` — przeniesione bez
+  zmian, usunięcie przy C2 (`optional-todos.md` §3).
+  **O1 ✅** — UptimeRobot Free, dwa monitory Keyword co 5 min:
+  `https://hadrianm.pl` / `PRACOWNIA STRON I APLIKACJI`,
+  `https://hadrianm.pl/en/` / `APP STUDIO` (`hero.eyebrow`; w surowym HTML
+  EN jest `WEB &amp; APP STUDIO`, więc pełna fraza z `&` nigdy by się nie
+  znalazła); oba nieobecne w 404 PL/EN (curl). Gotcha panelu: domyślnie
+  „Start incident when keyword exists” — trzeba przełączyć na „doesn't
+  exist”. Oba Up.
+  **O2 ✅** — Search Console, usługa Domena `hadrianm.pl`; Google
+  proponował automat Cloudflare (Domain Connect — dostęp Google do konta
+  Cloudflare) → wybrane „Dowolny dostawca DNS” i ręczny TXT `@`; `dig`
+  1.1.1.1 / 8.8.8.8 / NS autorytatywny: rekord obecny obok SPF OVH;
+  weryfikacja za 1. razem. Sitemapa `sitemap-index.xml` zgłoszona — stan
+  tuż po zgłoszeniu „Nie udało się pobrać”; strona serwera czysta (200,
+  `application/xml`, XML poprawny, 20 URL-i, `robots.txt` wskazuje mapę,
+  UA Googlebota bez blokady) → stan przejściowy świeżej usługi, odczyt
+  w C11 przy przeglądzie grudniowym. Wyniki: `optional-todos.md` C1/C11
+  „Ostatnio”, O1/O2 → §3.
