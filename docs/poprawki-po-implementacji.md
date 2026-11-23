@@ -57,6 +57,7 @@ Zapis „sprawdzone, nic nie wyszło" — źródło: §10 analizy ewolucji.
 | 2026-10-22 | P5 (#54) — wideo realizacji, Etap 7 planu | nakładki modal/sheet z wideo, pętla bez szwu, reduce, Low Power Mode | iPhone Safari (+ LPM), Android Chrome, desktop Safari/Chrome/Firefox | bez usterek → R1 ✅ |
 | 2026-10-22 | P6 (#55) — chrome i SEO | 404 PL/EN + burger, Safari w poziomie bez powiększenia tekstu, pasek `theme-color`, karta og (LinkedIn/Facebook/iMessage) | iPhone, Android, komunikatory | bez usterek |
 | 2026-10-24 | P8 (#59) — jakość | U1: swipe-down sheeta bez pull-to-refresh, sheet przewinięty przewija treść; F1: fonty bez regresji FOUT przy nawigacji | Android Chrome, iPhone Safari | bez usterek (F1 zamyka też test fizyczny pkt 8 `visual-corrections-part1.md` — zimny cache + realne łącze, patrz §4) |
+| 2026-11-22 | S4 (#75) — ikony z `pnpm make:icons` | ikona po „Dodaj do ekranu głównego" iOS/Android + ikona karty przeglądarki | iPhone, Android | bez usterek (Mateusz potwierdził 2026-11-22) |
 
 ## 4. Zamknięte
 
