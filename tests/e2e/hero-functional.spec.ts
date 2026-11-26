@@ -35,13 +35,25 @@ test.describe("mobile: wideo ekranów urządzeń", () => {
       expect(v.src, "wideo ma wstrzyknięte src").toBe(true);
       expect(v.paused, "wideo nie jest zapauzowane").toBe(false);
     }
-    await page.waitForTimeout(600);
-    const second = await read();
-    second.forEach((v, i) => {
-      expect(v.t, `wideo #${i}: currentTime rośnie`).toBeGreaterThan(
-        first[i].t,
-      );
-    });
+    // `paused` = false nie znaczy, że klatki już lecą: `currentTime` rusza,
+    // gdy dekoder dostanie dane, a pod obciążeniem (webkit-iphone-*) bywa to
+    // później niż po stałym 600 ms. Dlatego poll do skutku (P-73, DEC-112),
+    // nie jeden odczyt po stałym czasie; wynik per wideo, żeby raport
+    // wskazał, które stoi.
+    await expect
+      .poll(
+        async () => {
+          const now = await read();
+          return first.map(
+            (f, i) => !!now[i] && !now[i].paused && now[i].t > f.t,
+          );
+        },
+        {
+          message: `każde wideo gra: paused=false i currentTime rośnie względem pierwszego odczytu (${first.map((f) => f.t.toFixed(3)).join(", ")} s)`,
+          timeout: 10_000,
+        },
+      )
+      .toEqual(first.map(() => true));
   });
 });
 

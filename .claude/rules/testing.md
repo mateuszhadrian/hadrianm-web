@@ -83,7 +83,8 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   (PI-06, 2026-11-22): axe `color-contrast` chromium-pixel-5 na elementach
   w trakcie reveal (`/oferta/`, `/en/services/`, `/dla-kogo/` — naprawione
   T12 2026-11-22; nawrót = PI-06 (a) wraca z runem); wideo hero
-  `currentTime` webkit-iphone-14 (`hero-functional.spec.ts`); zamknięcie
+  `currentTime` webkit-iphone-14/-se (`hero-functional.spec.ts` — naprawione
+  2026-11-26 `expect.poll`, PI-06 (b); nawrót = PI-06 (b) wraca z runem); zamknięcie
   sheeta webkit-iphone-14 (`work.spec.ts:82`); `socket hang up` preview na
   firefox. Pojedyncze `1 flaky` ≠ regresja; ten sam test 2× na main
   w 30 dniach = punkt T (wzorzec T11), nigdy wpis do allowlisty axe ani
@@ -116,6 +117,11 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   (`page.context().newCDPSession(page)`, tylko Chromium) — `page.mouse`
   idzie ścieżką `pointer*` i przechodzi przy martwym dotyku (`touch*` +
   `preventDefault`). Wzorzec: `tests/e2e/overlay-swipe.spec.ts`.
+- Klik w element, którego zachowanie dokłada JS, zaraz po nawigacji
+  kliknięciem: najpierw `page.waitForLoadState("domcontentloaded")` —
+  `toHaveURL` to commit, a handlery modułów Astro istnieją od DCL (P-80,
+  PI-07). Test „wstecz” (`a[data-back]`) asertuje typ nawigacji
+  `back_forward` — sam adres powrotu przechodzi też na fallbacku `href`.
 - Funkcja w `test.skip(fn, …)` dostaje TYLKO fixture'y (bez `testInfo`) —
   skip po nazwie projektu rób w `test.beforeEach(({ … }, testInfo) => …)`.
 - Zawężanie baseline'ów do JEDNEGO testu: filtr `plik:linia`

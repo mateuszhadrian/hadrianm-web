@@ -118,10 +118,30 @@ test("strzałka „wstecz” wraca na stronę główną w zapamiętane miejsce",
   // nawigacja stronicowa (bez kotwic), więc sync Lenisa nie jest potrzebny.
   await page.locator('.ft-leg a[href="/polityka-prywatnosci/"]').click();
   await expect(page).toHaveURL(/\/polityka-prywatnosci\/?$/);
+  // initBackLinks żyje w skrypcie-module BaseLayoutu (deferred) — do
+  // DOMContentLoaded strzałka jest zwykłym linkiem `href="/"` (zamierzony
+  // fallback, back-link.ts). toHaveURL łapie dopiero commit nawigacji, więc
+  // pod obciążeniem test klikał przed podpięciem handlera: nowa nawigacja
+  // na górę strony zamiast history.back() (PI-07, sonda 2026-11-26).
+  // Użytkownik klika na wyrenderowanej stronie — czekamy na ten stan.
+  await page.waitForLoadState("domcontentloaded");
   const saved = await page.evaluate(() => window.scrollY);
 
   await page.locator("a[data-back]").click();
   await expect(page).toHaveURL(/\/$/);
+  // Powrót przez historię, nie fallback href — bez tego zgubiony handler
+  // wyglądałby jak niedziałające przywracanie scrolla (scrollY 0).
+  expect(
+    await page.evaluate(
+      () =>
+        (
+          performance.getEntriesByType(
+            "navigation",
+          )[0] as PerformanceNavigationTiming
+        ).type,
+    ),
+    "powrót to cofnięcie w historii (history.back), nie nowa nawigacja",
+  ).toBe("back_forward");
   // history.back() → natywne scroll restoration przywraca pozycję sprzed
   // przejścia (koniec strony, nie góra). Poll: przywrócenie bywa asynchroniczne.
   await expect
