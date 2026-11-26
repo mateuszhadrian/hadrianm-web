@@ -117,6 +117,11 @@ Plan i decyzje: `docs/testing-tools-and-environemnts-setup-analysis.md`.
   (`page.context().newCDPSession(page)`, tylko Chromium) — `page.mouse`
   idzie ścieżką `pointer*` i przechodzi przy martwym dotyku (`touch*` +
   `preventDefault`). Wzorzec: `tests/e2e/overlay-swipe.spec.ts`.
+- Klik w element, którego zachowanie dokłada JS, zaraz po nawigacji
+  kliknięciem: najpierw `page.waitForLoadState("domcontentloaded")` —
+  `toHaveURL` to commit, a handlery modułów Astro istnieją od DCL (P-80,
+  PI-07). Test „wstecz” (`a[data-back]`) asertuje typ nawigacji
+  `back_forward` — sam adres powrotu przechodzi też na fallbacku `href`.
 - Funkcja w `test.skip(fn, …)` dostaje TYLKO fixture'y (bez `testInfo`) —
   skip po nazwie projektu rób w `test.beforeEach(({ … }, testInfo) => …)`.
 - Zawężanie baseline'ów do JEDNEGO testu: filtr `plik:linia`

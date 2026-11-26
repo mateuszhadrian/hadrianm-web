@@ -1629,3 +1629,48 @@ osobny PR po pomiarze na main.
   „✅ na main” (PR #56 = P7 PR A, merge `fe4914f`, 2026-10-24) —
   sprawdzone `git log --merges`. R5 nadal zawieszone (DNS nie
   sprawdzany).
+  **Część A — PI-06 (b) ✅** (test-only): `hero-functional.spec.ts`
+  („w środku sweepa oba wideo grają”) — pojedynczy odczyt `currentTime`
+  po `waitForTimeout(600)` → `expect.poll` (10 s) z wynikiem per wideo
+  (`!paused && t > pierwszy odczyt`) i komunikatem z czasami pierwszego
+  odczytu; asercje startowe (`src`, `paused` false) bez zmian. Izolacja
+  `--repeat-each 10` × webkit-iphone-se / webkit-iphone-14 /
+  chromium-pixel-5 (komplet profili mobilnych configu) = 30/30; test
+  negatywny (wideo zapauzowane po 1. odczycie + zablokowany self-heal
+  `play()`) czerwony po 10 s na webkit-iphone-se i chromium-pixel-5,
+  raport `[false, false]` + komunikat → cofnięty. Mechanizm = P-73 także
+  dla wideo LOKALNEGO (start dekodera pod obciążeniem); DEC-112 zasięg,
+  P-73 dopisek, `testing.md` „Flaki z retry”.
+  **Część B — PI-07 ✅ (wyścig testu, `src/` nietknięte)**. Test ręczny
+  Mateusza na produkcji (desktop, 3× Chrome, 3× Safari + raz przyciskiem
+  przeglądarki): powrót zawsze na dół strony → przeglądarki OK. Sonda
+  (tymczasowy spec, `addInitScript`: typ nawigacji, `pageshow`,
+  `scrollRestoration`, `scrollY`/`scrollHeight`/stan Lenisa co klatkę,
+  owinięte `scrollTo` ze stosem): zielone (20/20 z `networkidle` na
+  polityce, 30/30 1:1 z testem) = `back_forward`, `persisted` false (bez
+  bfcache — pełne przeładowanie), natywne przywrócenie przed DCL
+  (19544), potem `ScrollTrigger.refresh()` ×N: `scrollTo(0,0)` → pomiar →
+  `scrollTo(0, zapisana)` → 19624; Lenis tuż przed klikiem
+  rozsynchronizowany (`scroll` 0 przy `scrollY` 19624 po natywnym
+  scrollu Playwrighta) — bez znaczenia przy przeładowaniu. Czerwony
+  (1/26 pod `--workers 14`; reszta biegów = timeouty `goto` z
+  przeciążenia, bez informacji): na `/` typ `navigate`, nie
+  `back_forward`; na polityce w chwili kliku zero zdarzeń DCL/load →
+  klik przed podpięciem `initBackLinks` (moduł BaseLayoutu, deferred) →
+  fallback `href="/"` = nowa nawigacja na górę. Dowód deterministyczny:
+  `page.route` opóźniający `/_astro/*.js` polityki o 1,5 s → bez
+  czekania 5/5 `navigate`/0, z `waitForLoadState("domcontentloaded")`
+  5/5 `back_forward`/19624. Wykluczone: (a) przycięcie przywracania
+  przez niepełną wysokość, (b) refresh/start Lenisa zerujący pozycję,
+  (c) bfcache + `pageshow persisted`. Poprawka testu (rekomendacja
+  przyjęta wg ścieżki „tylko środowisko testu” z planu sesji; Mateusz:
+  „zgodnie z najlepszą rekomendacją”): czekanie na DCL przed klikiem +
+  asercja `back_forward`. Dziś przed poprawką: izolacja 20/20 zielona,
+  pełne e2e 682 + ten test czerwony; po: `policy.spec.ts` ×10 = 80/80,
+  pełne `test:e2e` 683 passed / 0 failed (6,2 min). P-80, reguła
+  w `testing.md` „Zasady twarde”. Spoza zakresu → **PI-08**: 7 testów
+  „back button wraca …” sprawdza tylko adres powrotu (fałszywa zieleń
+  na fallbacku `href`) i ma ten sam wyścig — kandydat na punkt T
+  (wspólny helper w `tests/helpers/`). Weryfikacja: `prettier --check`,
+  `eslint` na zmienionych specach, `typecheck` 0 błędów (4 podpowiedzi
+  = stan main); baseline'y, allowlista axe, progi nietknięte.
