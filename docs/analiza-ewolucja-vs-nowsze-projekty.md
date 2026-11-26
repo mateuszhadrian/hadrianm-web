@@ -396,7 +396,7 @@ i porównanie rozrzutu klatek 05–09 między przebiegami). Commit:
 **R1 · MUST · L · ✅ 2026-10-22 (PR #53 P4: Etapy 1–4; PR #54 P5: Etapy 5–6; Etap 7 — telefony i desktopy na produkcji 2026-10-22, bez usterek) — wideo w podglądzie realizacji** — plan i etapy:
 `docs/analiza-realizacje-wideo.md` (zamknięty; decyzje D1–D14 obowiązują).
 
-**R2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — `results` i `quote`/`author`/`role` opcjonalne**:
+**R2 · MUST · S · ✅ na main 2026-10-21 (PR #52 = P3, merge `ed287a5`; wdrożone lokalnie 2026-10-21) — `results` i `quote`/`author`/`role` opcjonalne**:
 Zod `.optional()` / `.default([])`, `config.yml` `required: false`,
 `WorkDetail.astro` renderuje blok „Liczby i wyniki" tylko gdy `results.length
 > 0` i cytat tylko gdy `quote` (siatka `.wdx__results` na 1–2 pozycje:
@@ -431,7 +431,7 @@ zmiana WYŁĄCZNIE w panelu (pole „Adres strony"), bez kodu i bez testów.
 
 ### T — Testy
 
-**T1 · MUST · M · ✅ wdrożone lokalnie 2026-10-21 (PR P3; baseline'y bez zmian — fixture = kopia wpisów) — zamrożony fixture treści dla `test:visual`**:
+**T1 · MUST · M · ✅ na main 2026-10-21 (PR #52 = P3, merge `ed287a5`; wdrożone lokalnie 2026-10-21; baseline'y bez zmian — fixture = kopia wpisów) — zamrożony fixture treści dla `test:visual`**:
 `content.config.ts` czyta `base` z `process.env.REALIZACJE_DIR ??
 "./src/content/realizacje"`; `tests/fixtures/realizacje/*.json` (3 wpisy:
 od P5 2026-10-21 kopie hetman/pracownia-eha/delung z dnia podmiany treści —
@@ -449,7 +449,7 @@ fixture, e2e = treść produkcyjna". Wzorzec: `delung-web/tests/helpers/
 guards.ts` `assertVisualFixture`, `delung-web/package.json` `build:visual`.
 Commit: `test(visual): freeze realizacje fixture for screenshot builds`.
 
-**T2 · MUST · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3) — testy odporne na pustą kolekcję**:
+**T2 · MUST · S · ✅ na main 2026-10-21 (PR #52 = P3, merge `ed287a5`; wdrożone lokalnie 2026-10-21) — testy odporne na pustą kolekcję**:
 `tests/helpers/realizacje.ts` z `realizacjeFiles(): string[]`
 (`existsSync` → `[]`) i `realizacjeDir`; zamiana w 4 plikach (§5 pkt 7);
 w e2e `test.skip(ENTRY_COUNT === 0, "brak wpisów w panelu")`; jeden
@@ -457,7 +457,7 @@ czerwony kontrakt zostaje w `cms-contract.test.ts` („katalog zawiera co
 najmniej jeden wpis") — świadomie, bo pusta lista realizacji na wizytówce
 to błąd treści, nie infrastruktury. Commit: `test: tolerate missing realizacje directory`.
 
-**T3 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-23 (PR A `ci/lhci-measure`; `settleImages()` w `tests/helpers/visual.ts`, wywołana w `prepareSweep` i w lokalnym `prepare` sections.spec.ts; weryfikacja `test:visual`: 114 passed, 1 diff `work-index-grid` webkit-iphone-se ratio 0.01 — karta Delung, trzecia i najgłębiej pod foldem na SE 320×568: baseline miał ekrany PUSTE (lazy obraz bez podjętej próby ładowania w chwili zrzutu), po T3 deterministyczny stan końcowy — ikona błędu + alt jak na kartach 1–2, bo `/cdn-cgi/image` nie istnieje na preview; czyli dokładnie klasa wyścigu, którą T3 zdejmuje; diff ZAAKCEPTOWANY przez Mateusza 2026-10-23, darwin zregenerowany zawężonym przebiegiem — jedyny przepisany plik to `work-index-grid-darwin.png` webkit-iphone-se, kontrolny przebieg speca 18/18 passed; linux przez workflow z inputami T6 — `spec=tests/visual/work-index.spec.ts`, `mode=changed` — po pushu brancha, commit darwin NA KOŃCU) — `settleImages()` w `prepareSweep`/`prepare`**
+**T3 · SHOULD · S · ✅ na main 2026-10-24 (PR #56 `ci/lhci-measure` = P7 PR A, merge `fe4914f`; wdrożone lokalnie 2026-10-23; `settleImages()` w `tests/helpers/visual.ts`, wywołana w `prepareSweep` i w lokalnym `prepare` sections.spec.ts; weryfikacja `test:visual`: 114 passed, 1 diff `work-index-grid` webkit-iphone-se ratio 0.01 — karta Delung, trzecia i najgłębiej pod foldem na SE 320×568: baseline miał ekrany PUSTE (lazy obraz bez podjętej próby ładowania w chwili zrzutu), po T3 deterministyczny stan końcowy — ikona błędu + alt jak na kartach 1–2, bo `/cdn-cgi/image` nie istnieje na preview; czyli dokładnie klasa wyścigu, którą T3 zdejmuje; diff ZAAKCEPTOWANY przez Mateusza 2026-10-23, darwin zregenerowany zawężonym przebiegiem — jedyny przepisany plik to `work-index-grid-darwin.png` webkit-iphone-se, kontrolny przebieg speca 18/18 passed; linux przez workflow z inputami T6 — `spec=tests/visual/work-index.spec.ts`, `mode=changed` — po pushu brancha, commit darwin NA KOŃCU) — `settleImages()` w `prepareSweep`/`prepare`**
 (eager + `decode()` dla obrazów w kadrze przed zrzutem) — port z
 `delung-web/tests/helpers/visual.ts:14-40`. Spodziewany efekt: mniej
 diffów „tylko krawędzie zdjęć" na runnerach. Commit: `test(visual): settle images before screenshots`.
@@ -482,7 +482,7 @@ na brakujących snapshotach). Baseline'y: darwin przez
 --update-snapshots` (11 klatek), linux przez workflow na gałęzi PR-a.
 Commit: `test(visual): add webkit desktop profile to hero sweep`.
 
-**T6 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-23 (PR A `ci/lhci-measure`; krok aktualizacji = `pnpm exec playwright test ${spec} --update-snapshots=${mode}` zamiast `pnpm test:visual:update`) — `update-visual-baselines.yml` z inputami `spec`
+**T6 · SHOULD · S · ✅ na main 2026-10-24 (PR #56 `ci/lhci-measure` = P7 PR A, merge `fe4914f`; wdrożone lokalnie 2026-10-23; krok aktualizacji = `pnpm exec playwright test ${spec} --update-snapshots=${mode}` zamiast `pnpm test:visual:update`) — `update-visual-baselines.yml` z inputami `spec`
 (ścieżka speca, domyślnie `tests/visual`) i `mode` (`changed`/`all`)** +
 akapit „zielony ≠ aktualny: pomiar progiem 0 bez ruszania baseline'u" w
 `.claude/rules/testing.md` (procedura: `maxDiffPixelRatio: 0` na jeden
@@ -634,7 +634,7 @@ razem z kontrolą baseline'ów linux". Zrobić w JEDNYM PR z C1/C2 i sprawdzić,
 czy baseline'y linux nie drgnęły (jeśli `latest` już jest 24.04 — zero
 zmian). Commit: `ci: pin runners to ubuntu-24.04`.
 
-**C4 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-23 (PR A `ci/lhci-measure`; RÓŻNICA wobec wzorca hetmana: build przez `pnpm build`, NIE `pnpm build:visual` — job `lighthouse` w ci.yml mierzy artefakt `dist` z treścią produkcyjną, więc pomiar bazowy musi mierzyć ten sam build; gotcha z komentarza hetmana potwierdzona: `gh workflow run` działa dopiero, gdy plik jest na main) — `lhci-measure.yml`** (`workflow_dispatch`: 5
+**C4 · SHOULD · S · ✅ na main 2026-10-24 (PR #56 `ci/lhci-measure` = P7 PR A, merge `fe4914f`; wdrożone lokalnie 2026-10-23; RÓŻNICA wobec wzorca hetmana: build przez `pnpm build`, NIE `pnpm build:visual` — job `lighthouse` w ci.yml mierzy artefakt `dist` z treścią produkcyjną, więc pomiar bazowy musi mierzyć ten sam build; gotcha z komentarza hetmana potwierdzona: `gh workflow run` działa dopiero, gdy plik jest na main) — `lhci-measure.yml`** (`workflow_dispatch`: 5
 przebiegów × mobile/desktop → mediany w `$GITHUB_STEP_SUMMARY` + artefakt
 30 dni) jako jedyne źródło liczb do L1. Wzorzec: hetman
 `.github/workflows/lhci-measure.yml`. Commit: `ci(lhci): add measurement workflow`.
@@ -694,7 +694,7 @@ Weryfikacja w panelu po merge'u: otwórz istniejący wpis, zapisz bez zmian
 nie), (b) „nigdy `git add .`", (c) nazwy plików slugifikowane.
 Commit: `chore(cms): ascii slugs, site_domain, slugified media names`.
 
-**M2 · SHOULD · S · ✅ wdrożone lokalnie 2026-10-21 (PR P3; sonda binarium = wynik delung co do bajta: 1 972 914 → 2 480 375 B, `cloudflare_r2` 5→14 = tłumaczenia, reszta symboli bez zmian, brak CSP; przeklik panelu w trybie lokalnym — Mateusz) — Sveltia 0.170.0 → 0.178.0** wg procedury
+**M2 · SHOULD · S · ✅ na main 2026-10-21 (PR #52 = P3, merge `ed287a5`; wdrożone lokalnie 2026-10-21; sonda binarium = wynik delung co do bajta: 1 972 914 → 2 480 375 B, `cloudflare_r2` 5→14 = tłumaczenia, reszta symboli bez zmian, brak CSP; przeklik panelu w trybie lokalnym — Mateusz) — Sveltia 0.170.0 → 0.178.0** wg procedury
 `delung-web/docs/analiza-remont-panelu.md` §12 (sonda binarium, test w
 trybie lokalnego repo, wycofanie = jedna linia w `public/admin/index.html`).
 Robić PRZED Etapem 2 planu wideo (widget `file`, `accept`).
@@ -1606,3 +1606,26 @@ osobny PR po pomiarze na main.
   UA Googlebota bez blokady) → stan przejściowy świeżej usługi, odczyt
   w C11 przy przeglądzie grudniowym. Wyniki: `optional-todos.md` C1/C11
   „Ostatnio”, O1/O2 → §3.
+- **Sesja 16 (2026-11-26, domknięcie sesji 15 → niezawodność testów:
+  PI-06 (b) + PI-07, nowy kontekst)**: bramka OK (main `3102fa3` = merge
+  #77, drzewo czyste, branch `docs/close-session-14-ops` już usunięty
+  lokalnie i na origin, 6 ostatnich biegów zielonych; data przed
+  2026-12-20 → przegląd grudniowy nie w tej sesji). Domknięcie
+  poprzedniej: **#77 ✅ merge `3102fa3`** (2026-11-23; docs-only; CI na
+  PR 45248511020 zielone — e2e 682 passed + **1 flaky**: PI-06 (b)
+  `hero-functional.spec.ts:18` na NOWYM profilu webkit-iphone-se,
+  `currentTime` 0,00813778 = 0,00813778 — drugie wystąpienie, oba poza
+  main (2026-11-07 run 42366488925 `feat/r2-scripts` dispatch); CI main
+  45253381011 zielone za 1. razem — `quality` 1 min 24 s, `lighthouse`
+  6 min 22 s, `e2e` 28 min 42 s: 683 passed, 0 flaky, visual 115; Prod
+  smoke 45253380820 31 passed; liczby z `gh run view --json jobs` + grep
+  logów jobów). Search Console: „Testuj opublikowany URL” na mapie
+  (Mateusz, 2026-11-23) → „Pobieranie strony: Udane”; panel Mapy witryn
+  2026-11-26 (odczyt Claude przez Chrome, na prośbę Mateusza): stan
+  **Sukces**, **20** wykrytych stron, ostatni odczyt 25 lis → „Nie udało
+  się pobrać” z sesji 15 był stanem przejściowym (wiersz O2 w
+  `optional-todos.md` §3). Porządek statusów §6: nagłówki R2, T1, T2, M2
+  → „✅ na main” (PR #52 = P3, merge `ed287a5`, 2026-10-21), T3, T6, C4 →
+  „✅ na main” (PR #56 = P7 PR A, merge `fe4914f`, 2026-10-24) —
+  sprawdzone `git log --merges`. R5 nadal zawieszone (DNS nie
+  sprawdzany).
