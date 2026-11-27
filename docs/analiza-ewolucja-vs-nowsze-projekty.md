@@ -613,6 +613,26 @@ webkit-iphone-14 (kandydat na `expect.poll` jak T11), zamknięcie sheeta
 webkit-iphone-14, `socket hang up` preview firefox. Commit:
 `test(a11y): scan axe after entrance animations settle`.
 
+**T13 · SHOULD · XS · ✅ wdrożone 2026-11-26 (sesja 17, branch `test/back-link-helper`; test-only, `src/` nietknięte; wyzwalacz: PI-08 z diagnozy PI-07, P-80) — wspólny helper strzałki „wstecz” w testach**:
+`tests/helpers/back-link.ts` — `clickBackAndExpectHistory(page, path)`:
+`waitForLoadState("domcontentloaded")` (handler `initBackLinks` z modułu
+istnieje od DCL) → klik `a[data-back]` → poll `pathname` z komunikatem →
+asercja `PerformanceNavigationTiming.type` = `back_forward` (fallback
+`href` = `navigate`); `navigationType(page)` eksportowane osobno. Użyty
+we WSZYSTKICH 8 miejscach klikających strzałkę: `about-index`,
+`faq-index`, `audience-index`, `work-index`, `contact-index` (po 2 języki),
+`services-subpages` (zajawka → podstrona → `/` oraz hub `/oferta/` →
+podstrona → hub; tu fallback `href` = `/`, nie hub → pod wyścigiem
+czerwony) i `policy.spec.ts` (inline z PI-07 zastąpiony helperem) — 15
+testów na chromium-1920. Weryfikacja: 15 × 5 = zielone; test negatywny
+(capture-listener `stopPropagation` na `window` = handler nie dostaje
+kliku, jak przed DCL) → 15/15 czerwone: 13 × `back_forward` ≠ `navigate`
+z komunikatem, 2 warianty huba × adres `/` ≠ `/oferta/` — czyli przed T13
+12 z tych testów przeszłoby na fallbacku (fałszywa zieleń) → cofnięty.
+Reguła: `testing.md` „Zasady twarde” — strzałkę klika się wyłącznie przez
+helper. Commit: `test(e2e): shared back-link helper asserting history
+navigation (pi-08)`.
+
 ### C — CI / deploy
 
 **C1 · MUST · S · ✅ na main 2026-10-21 (PR #50) — strażnik prod-smoke na komplet assetów**: w
@@ -1686,3 +1706,16 @@ osobny PR po pomiarze na main.
   115; Prod smoke 45893697656 31 passed, 2 min; liczby z `gh run view
   --json jobs` + grep logów jobów). Dowód skuteczności PI-06 (b) i PI-07
   w CI = przegląd C10 ~2026-12-20/22.
+  **PI-08 → T13 ✅** (test-only, branch `test/back-link-helper`):
+  helper `tests/helpers/back-link.ts` (`clickBackAndExpectHistory` —
+  DCL → klik → poll adresu z komunikatem → asercja `back_forward`;
+  `navigationType`) we wszystkich 8 miejscach klikających strzałkę
+  (15 testów chromium-1920, w tym `policy.spec.ts` — inline z sesji 16
+  zastąpiony helperem). 15 × 5 zielone; test negatywny (handler
+  zablokowany capture-listenerem = stan sprzed DCL) 15/15 czerwone —
+  13 × `navigate` ≠ `back_forward`, 2 × hub `/` ≠ `/oferta/` → przed T13
+  12 testów przechodziło na fallbacku → cofnięty. Pełne `test:e2e` 683
+  passed / 0 failed (5,9 min). `format:check`/`eslint tests`/`typecheck`
+  czyste. Przy okazji zakresu (statusy, nie kod): wiersz README
+  `poprawki-po-implementacji.md` nie miał zamknięć z sesji 16 (PI-06 (b),
+  PI-07) — uzupełniony; `CLAUDE.md` mapa `tests/helpers/` + `back-link.ts`.

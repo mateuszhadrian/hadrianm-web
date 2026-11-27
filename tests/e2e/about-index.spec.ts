@@ -7,6 +7,7 @@
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
 import { CONTACT_PATH, SERVICES_PATH } from "../../src/lib/routes";
+import { clickBackAndExpectHistory } from "../helpers/back-link";
 import {
   collectPageIssues,
   useChromium1920Only,
@@ -151,9 +152,8 @@ for (const p of PAGES) {
       await gotoReady(page, p.homePath);
       await page.locator(`.nav-link[href="${p.path}"]`).click();
       await expect.poll(() => new URL(page.url()).pathname).toBe(p.path);
-      await page.locator("a[data-back]").click();
       // history.back() → wracamy na stronę główną (przywrócona historia).
-      await expect.poll(() => new URL(page.url()).pathname).toBe(p.homePath);
+      await clickBackAndExpectHistory(page, p.homePath);
     });
 
     test(`strona ładuje się bez błędów konsoli i 404`, async ({ page }) => {
