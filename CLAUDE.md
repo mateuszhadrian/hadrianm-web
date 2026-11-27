@@ -98,7 +98,8 @@ na main.
   kontrakt CMS), `e2e/` (Playwright: nawigacja, Work, i18n, hero
   funkcjonalnie, a11y, SEO, smoke `@prod-smoke`), `visual/` (screenshoty
   vs baseline'y per-platform w `visual/__screenshots__/` — commitowane),
-  `helpers/` (assertPreview, scroll przez Lenisa, freeze.css).
+  `helpers/` (assertPreview, scroll przez Lenisa, freeze.css, strzałka
+  „wstecz" — `back-link.ts`).
 - `public/admin/` — panel Sveltia CMS (config.yml = definicja pól panelu).
 - `scripts/` — narzędzia dev-only (capture wideo, optymalizacja obrazów).
 - `docs/` — analizy decyzyjne po polsku; **statusy plików w `docs/README.md`**

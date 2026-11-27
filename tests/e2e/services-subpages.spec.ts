@@ -11,6 +11,7 @@
 import { expect, test } from "@playwright/test";
 import { ui } from "../../src/i18n/ui";
 import { CONTACT_PATH, SERVICES_PATH } from "../../src/lib/routes";
+import { clickBackAndExpectHistory } from "../helpers/back-link";
 import {
   collectPageIssues,
   useChromium1920Only,
@@ -289,9 +290,8 @@ test.describe("wejście z zajawki + powrót (history.back)", () => {
       await page.waitForTimeout(300);
       await cta.click();
       await expect.poll(() => new URL(page.url()).pathname).toBe(path);
-      await page.locator("a[data-back]").click();
       // history.back() → wracamy na stronę główną (przywrócona historia).
-      await expect.poll(() => new URL(page.url()).pathname).toBe("/");
+      await clickBackAndExpectHistory(page, "/");
     });
   }
 
@@ -309,9 +309,10 @@ test.describe("wejście z zajawki + powrót (history.back)", () => {
       await page.waitForTimeout(300);
       await cta.click();
       await expect.poll(() => new URL(page.url()).pathname).toBe(path);
-      await page.locator("a[data-back]").click();
       // history.back() → wracamy na hub (przywrócona historia).
-      await expect.poll(() => new URL(page.url()).pathname).toBe("/oferta/");
+      // Fallback href strzałki to "/", nie hub — bez helpera wyścig dawał tu
+      // czerwony, a na wariancie "/" fałszywą zieleń (PI-08).
+      await clickBackAndExpectHistory(page, "/oferta/");
     });
   }
 });
