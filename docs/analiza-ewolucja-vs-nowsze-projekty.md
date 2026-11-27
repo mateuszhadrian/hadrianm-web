@@ -1674,3 +1674,15 @@ osobny PR po pomiarze na main.
   (wspólny helper w `tests/helpers/`). Weryfikacja: `prettier --check`,
   `eslint` na zmienionych specach, `typecheck` 0 błędów (4 podpowiedzi
   = stan main); baseline'y, allowlista axe, progi nietknięte.
+- **Sesja 17 (2026-11-26, domknięcie sesji 16 → PI-08, ta sama
+  rozmowa)**: bramka OK (main `346ee3d` = merge #78
+  `test/hero-video-poll-and-back-scroll`, drzewo czyste, branch #78
+  usunięty lokalnie i na origin). Domknięcie poprzedniej: **#78 ✅ merge
+  `346ee3d`** (2026-11-26; test-only; CI na PR 45888320785 zielone —
+  `quality` 1 min 15 s, `lighthouse` 7 min 9 s, `e2e` 18 min 5 s: 683
+  passed, **0 flaky** (sygnatura wideo hero nieobecna), visual 115; CI
+  main 45893697575 zielone za 1. razem — `quality` 1 min 14 s,
+  `lighthouse` 5 min 54 s, `e2e` 18 min 9 s: 683 passed, 0 flaky, visual
+  115; Prod smoke 45893697656 31 passed, 2 min; liczby z `gh run view
+  --json jobs` + grep logów jobów). Dowód skuteczności PI-06 (b) i PI-07
+  w CI = przegląd C10 ~2026-12-20/22.
